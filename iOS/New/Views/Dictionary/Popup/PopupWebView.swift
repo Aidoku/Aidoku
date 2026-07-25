@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Features/Popup/PopupWebView.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Features/Popup/PopupWebView.swift
 //  Modified for use in Aidoku
 //
 
@@ -200,7 +200,7 @@ struct PopupWebView: UIViewRepresentable {
 //            var dy = e.changedTouches[0].clientY - startY;
 //            var hasSelection = window.getSelection().toString();
 //            
-//            if (Math.abs(dx) > window.swipeThreshold && Math.abs(dy) < 20 && !hasSelection) {
+//            if (Math.abs(dx) > window.swipeThreshold && Math.abs(dy) < 30 && !hasSelection) {
 //                webkit.messageHandlers.swipeDismiss.postMessage(null);
 //            }
 //        });
@@ -410,7 +410,7 @@ struct PopupWebView: UIViewRepresentable {
         }
 
         func scrollViewDidScroll(_ scrollView: UIScrollView) {
-            parent.onScrollViewOffsetChanged?(scrollView.contentOffset.y)
+            parent.onScrollViewOffsetChanged?(scrollView.contentOffset.y + scrollView.adjustedContentInset.top)
             guard scrollView.contentOffset.x != 0 else { return }
             scrollView.contentOffset.x = 0
         }

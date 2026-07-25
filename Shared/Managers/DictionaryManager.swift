@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Core/DictionaryManager.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Core/DictionaryManager.swift
 //  Modified for use in Aidoku
 //
 
@@ -137,7 +137,7 @@ class DictionaryManager {
                 return nil
             }
             let result = DictionaryInfo(index: index, path: $0)
-            if index.isUpdatable && !index.indexUrl.isEmpty && !index.downloadUrl.isEmpty {
+            if index.isUpdatable == true && !(index.indexUrl ?? "").isEmpty && !(index.downloadUrl ?? "").isEmpty {
                 updatableDictionaries.append((result, type))
             }
             return result
@@ -275,15 +275,16 @@ class DictionaryManager {
                         .appendingPathComponent(String(title))
                     defer { try? FileManager.default.removeItem(at: temp) }
 
-                    if importResult.term_count > 0 {
+                    let counts = importResult.summary.counts
+                    if counts.terms.total > 0 {
                         let destination = dictionariesDir.appendingPathComponent(DictionaryType.term.rawValue).appendingPathComponent(title)
                         try? FileManager.default.copyItem(at: temp, to: destination)
                     }
-                    if importResult.freq_count > 0 {
+                    if counts.termMeta[std.string("freq")] != nil {
                         let destination = dictionariesDir.appendingPathComponent(DictionaryType.frequency.rawValue).appendingPathComponent(title)
                         try? FileManager.default.copyItem(at: temp, to: destination)
                     }
-                    if importResult.pitch_count > 0 {
+                    if counts.termMeta[std.string("pitch")] != nil || counts.termMeta[std.string("ipa")] != nil {
                         let destination = dictionariesDir.appendingPathComponent(DictionaryType.pitch.rawValue).appendingPathComponent(title)
                         try? FileManager.default.copyItem(at: temp, to: destination)
                     }
@@ -323,11 +324,14 @@ class DictionaryManager {
                 }
 
                 do {
-                    guard let importResult = try await self.importRemoteDictionary(
-                        indexUrl: index.indexUrl,
-                        type: type,
-                        session: session
-                    ) else { continue }
+                    guard
+                        let indexUrl = index.indexUrl,
+                        let importResult = try await self.importRemoteDictionary(
+                            indexUrl: indexUrl,
+                            type: type,
+                            session: session
+                        )
+                    else { continue }
 
                     let new = String(importResult.title)
                     let old = dictionary.index.title
@@ -434,7 +438,9 @@ class DictionaryManager {
             }
         }
 
-        let (temp, _) = try await session.download(from: URL(string: remoteIndex.downloadUrl)!)
+        guard let downloadUrl = remoteIndex.downloadUrl else { return nil }
+
+        let (temp, _) = try await session.download(from: URL(string: downloadUrl)!)
         tempFiles.append(temp)
 
         await MainActor.run {

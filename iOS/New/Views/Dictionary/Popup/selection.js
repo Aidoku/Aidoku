@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Features/Reader/ReaderWebView/selection.js
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Features/Reader/ReaderWebView/selection.js
 //  Modified for use in Aidoku
 //
 
@@ -96,7 +96,7 @@ window.hoshiSelection = {
 
     findParagraph(node) {
         let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-        return el?.closest('p, .glossary-content') || null;
+        return el?.closest('p, .glossary-content, .expr-tag') || null;
     },
 
     createWalker(rootNode) {

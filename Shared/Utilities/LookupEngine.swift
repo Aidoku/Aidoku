@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Core/LookupEngine.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Core/LookupEngine.swift
 //  Modified for use in Aidoku
 //
 

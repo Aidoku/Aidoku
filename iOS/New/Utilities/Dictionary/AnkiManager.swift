@@ -41,7 +41,7 @@ class AnkiManager {
 
     let cardFormats: [AnkiCardFormat] = [.init(id: UUID(), name: "", icon: AnkiCardFormat.icons[0], fieldMappings: [:], tags: "")]
 
-    static let wordAddedNotification = Notification.Name("hoshiWordAdded")
+    static let wordAddedNotification = Notification.Name.dictionaryVocabChanged
 
     func checkDuplicates(fields: [String: String]) async -> [Bool] {
         guard let expression = fields["{expression}"] else { return [false] }

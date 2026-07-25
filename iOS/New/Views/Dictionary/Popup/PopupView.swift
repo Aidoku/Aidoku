@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/ff31274acf44683e5b61abdfb2a273fc738d4711/Features/Popup/PopupView.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Features/Popup/PopupView.swift
 //  Modified for use in Aidoku
 //
 
@@ -41,8 +41,6 @@ struct PopupLayout {
     let maxHeight: CGFloat
     let isVertical: Bool
     let isFullWidth: Bool
-    var topInset: CGFloat = 0
-    var bottomInset: CGFloat = 0
 
     private let popupPadding: CGFloat = 4
     private let screenBorderPadding: CGFloat = 6
@@ -60,11 +58,11 @@ struct PopupLayout {
     }
 
     private var spaceAbove: CGFloat {
-        selectionRect.minY - availableFrame.minY - topInset - popupPadding
+        selectionRect.minY - availableFrame.minY - popupPadding
     }
 
     private var spaceBelow: CGFloat {
-        availableFrame.maxY - bottomInset - selectionRect.maxY - popupPadding
+        availableFrame.maxY - selectionRect.maxY - popupPadding
     }
 
     private var showBelow: Bool {
@@ -109,8 +107,8 @@ struct PopupLayout {
 
                 y = selectionRect.minY + (height / 2)
                 y = max(
-                    availableFrame.minY + height / 2 + screenBorderPadding + topInset,
-                    min(y, availableFrame.maxY - bottomInset - height / 2 - screenBorderPadding)
+                    availableFrame.minY + height / 2 + screenBorderPadding,
+                    min(y, availableFrame.maxY - height / 2 - screenBorderPadding)
                 )
             } else {
                 x = selectionRect.minX + (width / 2)
@@ -125,8 +123,8 @@ struct PopupLayout {
                     y = selectionRect.minY - popupPadding - (height / 2)
                 }
                 y = max(
-                    availableFrame.minY + height / 2 + topInset + screenBorderPadding,
-                    min(y, availableFrame.maxY - bottomInset - height / 2 - screenBorderPadding)
+                    availableFrame.minY + height / 2 + screenBorderPadding,
+                    min(y, availableFrame.maxY - height / 2 - screenBorderPadding)
                 )
             }
         }
@@ -145,8 +143,6 @@ struct PopupView: View {
     let availableFrame: CGRect
     let isVertical: Bool
     let isFullWidth: Bool
-    var topInset: CGFloat = 0
-    var bottomInset: CGFloat = 0
     let chapterId: ChapterIdentifier?
     let page: Int
 //    let coverURL: URL?
@@ -177,8 +173,6 @@ struct PopupView: View {
         availableFrame: CGRect,
         isVertical: Bool,
         isFullWidth: Bool,
-        topInset: CGFloat = 0,
-        bottomInset: CGFloat = 0,
         chapterId: ChapterIdentifier?,
         page: Int,
 //        coverURL: URL?,
@@ -200,8 +194,6 @@ struct PopupView: View {
         self.availableFrame = availableFrame
         self.isVertical = isVertical
         self.isFullWidth = isFullWidth
-        self.topInset = topInset
-        self.bottomInset = bottomInset
         self.chapterId = chapterId
         self.page = page
 //        self.coverURL = coverURL
@@ -231,9 +223,7 @@ struct PopupView: View {
             maxWidth: CGFloat(userConfig.popupWidth),
             maxHeight: CGFloat(userConfig.popupHeight),
             isVertical: isVertical,
-            isFullWidth: isFullWidth,
-            topInset: topInset,
-            bottomInset: bottomInset
+            isFullWidth: isFullWidth
         )
 
         guard result.width.isFinite,
