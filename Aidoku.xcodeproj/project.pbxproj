@@ -382,6 +382,8 @@
 		FB67EE6627F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */; };
 		FB67EE6727F4D7BF00C468EA /* WasmGlobalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */; };
 		FB6E34CC279E189300BFE54B /* GetButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6E34CB279E189300BFE54B /* GetButtonView.swift */; };
+		FB6F3AA430147DA600CB64C4 /* DictionarySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */; };
+		FB6F3AA530147DA600CB64C4 /* DictionarySettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */; };
 		FB716DEA283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
 		FB716DEB283D5F3E00F1BB5D /* LogManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DE9283D5F3E00F1BB5D /* LogManager.swift */; };
 		FB716DFC283DA2D400F1BB5D /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB716DFB283DA2D400F1BB5D /* Logger.swift */; };
@@ -968,6 +970,7 @@
 		FB67EE6527F4D7BE00C468EA /* WasmGlobalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmGlobalStore.swift; sourceTree = "<group>"; };
 		FB6E34CB279E189300BFE54B /* GetButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetButtonView.swift; sourceTree = "<group>"; };
 		FB6F1E782B7AF63D006FAA2E /* 0.6.7.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = 0.6.7.xcdatamodel; sourceTree = "<group>"; };
+		FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionarySettings.swift; sourceTree = "<group>"; };
 		FB716DE9283D5F3E00F1BB5D /* LogManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogManager.swift; sourceTree = "<group>"; };
 		FB716DFB283DA2D400F1BB5D /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		FB716DFE283DA2D900F1BB5D /* LogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStore.swift; sourceTree = "<group>"; };
@@ -2069,6 +2072,15 @@
 			path = Utilities;
 			sourceTree = "<group>";
 		};
+		FB6F3AA230147D9300CB64C4 /* AppSettings */ = {
+			isa = PBXGroup;
+			children = (
+				FBFA033A3008DF610008B4B6 /* AppSettings.swift */,
+				FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */,
+			);
+			path = AppSettings;
+			sourceTree = "<group>";
+		};
 		FB716DE8283D5F2000F1BB5D /* Logging */ = {
 			isa = PBXGroup;
 			children = (
@@ -2558,7 +2570,7 @@
 		FBFA033E3008DF610008B4B6 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
-				FBFA033A3008DF610008B4B6 /* AppSettings.swift */,
+				FB6F3AA230147D9300CB64C4 /* AppSettings */,
 				FBFA033B3008DF610008B4B6 /* SettingsKey.swift */,
 				FBFA033C3008DF610008B4B6 /* SettingsValue.swift */,
 				FBFA033D3008DF610008B4B6 /* SettingsValue+Extensions.swift */,
@@ -3043,6 +3055,7 @@
 				FB99591E2F6863A700B632D5 /* ReaderTextView.swift in Sources */,
 				FB4B0AE8285D0A0E0066A13B /* Dictionary.swift in Sources */,
 				FB55AFA928AAB1440083EFC3 /* UIViewController.swift in Sources */,
+				FB6F3AA530147DA600CB64C4 /* DictionarySettings.swift in Sources */,
 				FB80997D2FD7F5850088FE9A /* iOSVersion.swift in Sources */,
 				FB0518322E0AEFF500CEE275 /* UpscaleProcessor.swift in Sources */,
 				EE7A41C02F5CF5050044AF4C /* DictionaryManager.swift in Sources */,
@@ -3419,6 +3432,7 @@
 				FB0E1CDC288AEB0400B67BA9 /* OAuthResponse.swift in Sources */,
 				FB6340CF27947BCA0072A2A2 /* ExternalSourceInfo.swift in Sources */,
 				FBA36E722F55D3D700597190 /* SavedSearch.swift in Sources */,
+				FB6F3AA430147DA600CB64C4 /* DictionarySettings.swift in Sources */,
 				FB1A4E652E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
 				FBF059BD2EF7015500907B0E /* YearlyMonthData.swift in Sources */,
 				FB79841A2E0D8432000761A9 /* Collection.swift in Sources */,

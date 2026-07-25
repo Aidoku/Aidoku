@@ -616,6 +616,10 @@
 "VOCAB_SOURCE" = "Source";
 "CLEAR_VOCABULARY_LIST" = "Clear Vocabulary List";
 "CLEAR_VOCABULARY_LIST_TEXT" = "This action is irreversible. All saved vocabulary will be removed.";
+"DICTIONARY_UPDATES" = "Updates";
+"UPDATE_NOW" = "Update Now";
+"LAST_UPDATED_%@" = "Last updated: %@";
+"MONTHLY" = "Monthly";
 
 // Backups
 "BACKUPS" = "Backups";

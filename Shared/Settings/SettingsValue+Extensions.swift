@@ -5,6 +5,8 @@
 //  Created by skitty on 7/16/26.
 //
 
+import Foundation
+
 extension Bool: SettingsValue {}
 extension String: SettingsValue {}
 extension Int: SettingsValue {}
@@ -21,5 +23,16 @@ extension RawRepresentable where Self: SettingsValue, RawValue: SettingsValue {
 
     func serialize() -> Any? {
         rawValue.serialize()
+    }
+}
+
+extension Date: SettingsValue {
+    static func deserialize(from object: Any) -> Self? {
+        guard let interval = object as? TimeInterval else { return nil }
+        return Date(timeIntervalSince1970: interval)
+    }
+
+    func serialize() -> Any? {
+        timeIntervalSince1970
     }
 }

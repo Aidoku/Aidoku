@@ -217,11 +217,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // makes the main thread win the race deterministically.
         _ = CoreDataManager.shared
 
-        if #available(iOS 18.0, *) {
-            // initialize lookup engine with installed dictionaries
-            _ = DictionaryManager.shared
-        }
-
         // check for icloud availability
         // https://developer.apple.com/documentation/foundation/filemanager/url(forubiquitycontaineridentifier:)
         // Do not call this method from your app’s main thread. Because this method might take a nontrivial amount of
@@ -285,6 +280,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Task {
             await BackupManager.shared.scheduleAutoBackup()
             await MangaManager.shared.scheduleLibraryRefresh()
+            if #available(iOS 18.0, *) {
+                DictionaryManager.shared.autoUpdateDictionaries()
+            }
         }
 
         UNUserNotificationCenter.current().delegate = self

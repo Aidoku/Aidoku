@@ -1,33 +1,18 @@
 //
-//  AppSettings.swift
+//  DictionarySettings.swift
 //  Aidoku
 //
-//  Created by skitty on 7/16/26.
+//  Created by skitty on 7/25/26.
 //
 
 import Foundation
-
-struct AppSettings {
-    static let dictionary = DictionarySettings()
-
-    private static var keys: [any SettingsDefault] {
-        dictionary.keys
-    }
-
-    static func registerDefaults() {
-        var values: [String: Any] = [:]
-        for key in keys {
-            guard let object = key.defaultObject else { continue }
-            values[key.key] = object
-        }
-        UserDefaults.standard.register(defaults: values)
-    }
-}
 
 struct DictionarySettings {
     var keys: [any SettingsDefault] {
         [
             enable,
+            updateInterval,
+            lastUpdate,
             lookupGesture,
             textOverlayMode,
             restrictOCRLanguages,
@@ -45,18 +30,9 @@ struct DictionarySettings {
         }
         return nil
     })
-    enum LookupGesture: String, SettingsValue, CaseIterable {
-        case singleTap = "single-tap"
-        case longPress = "long-press"
-
-        var title: String {
-            switch self {
-                case .singleTap: NSLocalizedString("SINGLE_TAP")
-                case .longPress: NSLocalizedString("LONG_PRESS")
-            }
-        }
-    }
     let lookupGesture = SettingsKey<LookupGesture>("Dictionary.lookupGesture", default: .singleTap)
+    let updateInterval = SettingsKey<UpdateInterval>("Dictionary.updateInterval", default: .never)
+    let lastUpdate = SettingsKey<Date>("Dictionary.lastUpdate", default: Date.distantPast)
     let textOverlayMode = SettingsKey<Bool>("Dictionary.textOverlayMode", default: false)
     let restrictOCRLanguages = SettingsKey<Bool>("Dictionary.restrictOCRLanguages", default: false)
     let restrictedOCRLanguages = SettingsKey<[String]>("Dictionary.restrictedOCRLanguages", default: [])
@@ -85,5 +61,44 @@ struct DictionarySettings {
         }
         let languages = AppSettings.dictionary.restrictedOCRLanguages.get()
         return languages.contains(language)
+    }
+}
+
+extension DictionarySettings {
+    enum LookupGesture: String, SettingsValue, CaseIterable {
+        case singleTap = "single-tap"
+        case longPress = "long-press"
+
+        var title: String {
+            switch self {
+                case .singleTap: NSLocalizedString("SINGLE_TAP")
+                case .longPress: NSLocalizedString("LONG_PRESS")
+            }
+        }
+    }
+
+    enum UpdateInterval: String, SettingsValue, CaseIterable {
+        case never
+        case daily
+        case weekly
+        case monthly
+
+        var title: String {
+            switch self {
+                case .never: NSLocalizedString("NEVER")
+                case .daily: NSLocalizedString("DAILY")
+                case .weekly: NSLocalizedString("WEEKLY")
+                case .monthly: NSLocalizedString("MONTHLY")
+            }
+        }
+
+        var timeInterval: TimeInterval {
+            switch self {
+                case .never: 0
+                case .daily: 24 * 60 * 60
+                case .weekly: 7 * 24 * 60 * 60
+                case .monthly: 30 * 24 * 60 * 60
+            }
+        }
     }
 }

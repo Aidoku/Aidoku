@@ -29,7 +29,7 @@ class DictionaryManager {
     private(set) var termDictionaries: [DictionaryInfo] = []
     private(set) var frequencyDictionaries: [DictionaryInfo] = []
     private(set) var pitchDictionaries: [DictionaryInfo] = []
-//    private(set) var updatableDictionaries: [(DictionaryInfo, DictionaryType)] = []
+    private(set) var updatableDictionaries: [(DictionaryInfo, DictionaryType)] = []
 //    private(set) var collapsedDictionaries: Set<String> = []
     private(set) var isImporting = false
     private(set) var isUpdating = false
@@ -42,7 +42,7 @@ class DictionaryManager {
     }
 
     private static let configFileName = "config.json"
-    private static let collapsedConfig = "collapsed.json"
+//    private static let collapsedConfig = "collapsed.json"
 
     private init() {
         loadDictionaries()
@@ -51,7 +51,7 @@ class DictionaryManager {
     }
 
     func loadDictionaries() {
-//        updatableDictionaries = []
+        updatableDictionaries = []
         let storedTermDicts = (try? getDictionariesFromStorage(type: .term)) ?? []
         let storedFreqDicts = (try? getDictionariesFromStorage(type: .frequency)) ?? []
         let storedPitchDicts = (try? getDictionariesFromStorage(type: .pitch)) ?? []
@@ -137,9 +137,9 @@ class DictionaryManager {
                 return nil
             }
             let result = DictionaryInfo(index: index, path: $0)
-//            if index.isUpdatable && !index.indexUrl.isEmpty && !index.downloadUrl.isEmpty {
-//                updatableDictionaries.append((result, type))
-//            }
+            if index.isUpdatable && !index.indexUrl.isEmpty && !index.downloadUrl.isEmpty {
+                updatableDictionaries.append((result, type))
+            }
             return result
         }
     }
@@ -376,129 +376,125 @@ class DictionaryManager {
         }
     }
 
-//    func updateDictionaries(showErrors: Bool = true, session: URLSession = .shared) {
-//        let dictionaries = updatableDictionaries
-//        isUpdating = true
-//        Task.detached {
-//            var tempFiles: [URL] = []
-//            defer {
-//                for file in tempFiles {
-//                    try? FileManager.default.removeItem(at: file)
-//                }
-//            }
-//            var failures: [String] = []
-//            for (dictionary, type) in dictionaries {
-//                let index = dictionary.index
-//                await MainActor.run {
-//                    self.currentImport = "Checking \(index.title)"
-//                }
-//
-//                do {
-//                    let (data, _) = try await session.data(from: URL(string: index.indexUrl)!)
-//                    let remoteIndex = try JSONDecoder().decode(DictionaryIndex.self, from: data)
-//
-//                    if index.revision == remoteIndex.revision {
-//                        continue
-//                    }
-//
-//                    await MainActor.run {
-//                        self.currentImport = "Downloading \(remoteIndex.title)"
-//                    }
-//
-//                    let (temp, _) = try await session.download(from: URL(string: remoteIndex.downloadUrl)!)
-//                    tempFiles.append(temp)
-//
-//                    await MainActor.run {
-//                        self.currentImport = "Importing \(remoteIndex.title)"
-//                    }
-//
-//                    let tempDir = FileManager.default.temporaryDirectory
-//                        .appendingPathComponent(UUID().uuidString)
-//                    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-//                    tempFiles.append(tempDir)
-//
-//                    let importResult = dictionary_importer.import(
-//                        std.string(temp.path(percentEncoded: false)),
-//                        std.string(tempDir.path(percentEncoded: false))
-//                    )
-//
-//                    if !importResult.success {
-//                        failures.append("\(index.title): Import failed")
-//                        continue
-//                    }
-//
-//                    let new = String(importResult.title)
-//                    let old = dictionary.index.title
-//                    let tempPath = tempDir.appendingPathComponent(new)
-//                    let destPath = try await Self.getDictionariesDirectory()
-//                        .appendingPathComponent(type.rawValue)
-//                        .appendingPathComponent(new)
-//
-//                    if new == old {
-//                        try? FileManager.default.removeItem(at: destPath)
-//                    }
-//                    try FileManager.default.moveItem(at: tempPath, to: destPath)
-//
-//                    await MainActor.run {
-//                        self.loadDictionaries()
-//                        if old != new {
-//                            if let currentIndex = self.getDictionaryIndex(title: old, type: type) {
-//                                let wasEnabled = self.isDictionaryEnabled(at: currentIndex, type: type)
+    func updateDictionaries(showErrors: Bool = true, session: URLSession = .shared) {
+        let dictionaries = updatableDictionaries
+        isUpdating = true
+        Task.detached {
+            var tempFiles: [URL] = []
+            defer {
+                for file in tempFiles {
+                    try? FileManager.default.removeItem(at: file)
+                }
+            }
+            var failures: [String] = []
+            for (dictionary, type) in dictionaries {
+                let index = dictionary.index
+                await MainActor.run {
+                    self.currentImport = "Checking \(index.title)"
+                }
+
+                do {
+                    let (data, _) = try await session.data(from: URL(string: index.indexUrl)!)
+                    let remoteIndex = try JSONDecoder().decode(DictionaryIndex.self, from: data)
+
+                    if index.revision == remoteIndex.revision {
+                        continue
+                    }
+
+                    await MainActor.run {
+                        self.currentImport = "Downloading \(remoteIndex.title)"
+                    }
+
+                    let (temp, _) = try await session.download(from: URL(string: remoteIndex.downloadUrl)!)
+                    tempFiles.append(temp)
+
+                    await MainActor.run {
+                        self.currentImport = "Importing \(remoteIndex.title)"
+                    }
+
+                    let tempDir = FileManager.default.temporaryDirectory
+                        .appendingPathComponent(UUID().uuidString)
+                    try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+                    tempFiles.append(tempDir)
+
+                    let importResult = dictionary_importer.import(
+                        std.string(temp.path(percentEncoded: false)),
+                        std.string(tempDir.path(percentEncoded: false))
+                    )
+
+                    if !importResult.success {
+                        failures.append("\(index.title): Import failed")
+                        continue
+                    }
+
+                    let new = String(importResult.title)
+                    let old = dictionary.index.title
+                    let tempPath = tempDir.appendingPathComponent(new)
+                    let destPath = try await Self.getDictionariesDirectory()
+                        .appendingPathComponent(type.rawValue)
+                        .appendingPathComponent(new)
+
+                    if new == old {
+                        try? FileManager.default.removeItem(at: destPath)
+                    }
+                    try FileManager.default.moveItem(at: tempPath, to: destPath)
+
+                    await MainActor.run {
+                        self.loadDictionaries()
+                        if old != new {
+                            if let currentIndex = self.getDictionaryIndex(title: old, type: type) {
+                                let wasEnabled = self.isDictionaryEnabled(at: currentIndex, type: type)
 //                                let wasCollapsed = self.collapsedDictionaries.contains(old)
-//                                let wasCategory = type == .term ? self.termDictionaries[currentIndex].category : .none
-//                                self.deleteDictionary(indexSet: IndexSet(integer: currentIndex), type: type)
-//                                let importedIndex = self.getDictionaryIndex(title: new, type: type)!
-//                                self.setDictionaryEnabled(index: importedIndex, enabled: wasEnabled, type: type)
-//                                let newId = type == .term ? self.termDictionaries[importedIndex].id : nil
-//                                self.moveDictionary(from: IndexSet(integer: importedIndex), to: currentIndex, type: type)
-//                                if let newId, wasCategory != .none {
-//                                    self.setDictionaryCategory(id: newId, category: wasCategory)
-//                                }
-////                                AnkiManager.shared.updateHandlebar(old: old, new: new)
+                                let wasCategory = type == .term ? self.termDictionaries[currentIndex].category : .none
+                                self.deleteDictionary(indexSet: IndexSet(integer: currentIndex), type: type)
+                                let importedIndex = self.getDictionaryIndex(title: new, type: type)!
+                                self.setDictionaryEnabled(index: importedIndex, enabled: wasEnabled, type: type)
+                                let newId = type == .term ? self.termDictionaries[importedIndex].id : nil
+                                self.moveDictionary(from: IndexSet(integer: importedIndex), to: currentIndex, type: type)
+                                if let newId, wasCategory != .none {
+                                    self.setDictionaryCategory(id: newId, category: wasCategory)
+                                }
+//                                AnkiManager.shared.updateHandlebar(old: old, new: new)
 //                                if wasCollapsed {
 //                                    self.collapsedDictionaries.insert(new)
 //                                    self.saveCollapsedDictionaries()
 //                                }
-//                            }
-//                        } else {
-//                            self.rebuildLookupQuery()
-//                        }
-//                    }
-//                } catch {
-//                    failures.append("\(index.title): \(error.localizedDescription)")
-//                }
-//            }
-//
-//            await MainActor.run { [failures] in
-//                self.isUpdating = false
-//                if failures.count < dictionaries.count {
-//                    UserDefaults.standard.set(Date.now, forKey: "lastDictionaryUpdate")
-//                }
-//                if !failures.isEmpty && showErrors {
-//                    self.showError(failures.joined(separator: "\n"))
-//                }
-//            }
-//        }
-//    }
+                            }
+                        } else {
+                            self.rebuildLookupQuery()
+                        }
+                    }
+                } catch {
+                    failures.append("\(index.title): \(error.localizedDescription)")
+                }
+            }
 
-//    func autoUpdateDictionaries() {
-//        guard !isImporting, !isUpdating, !updatableDictionaries.isEmpty else {
-//            return
-//        }
-//
-//        let interval = UserDefaults.standard.string(forKey: "dictionaryUpdateInterval")
-//            .flatMap(DictionaryUpdateInterval.init)?
-//            .timeInterval ?? DictionaryUpdateInterval.weekly.timeInterval
-//        let lastUpdate = UserDefaults.standard.object(forKey: "lastDictionaryUpdate") as? Date ?? .distantPast
-//        guard Date().timeIntervalSince(lastUpdate) >= interval else {
-//            return
-//        }
-//
-//        let config = URLSessionConfiguration.default
-//        config.allowsExpensiveNetworkAccess = false
-//        config.allowsConstrainedNetworkAccess = false
-//        updateDictionaries(showErrors: false, session: URLSession(configuration: config))
-//    }
+            await MainActor.run { [failures] in
+                self.isUpdating = false
+                if failures.count < dictionaries.count {
+                    AppSettings.dictionary.lastUpdate.set(Date.now)
+                }
+                if !failures.isEmpty && showErrors {
+                    self.showError(failures.joined(separator: "\n"))
+                }
+            }
+        }
+    }
+
+    func autoUpdateDictionaries() {
+        guard !isImporting, !isUpdating, !updatableDictionaries.isEmpty else { return }
+
+        let interval = AppSettings.dictionary.updateInterval.get().timeInterval
+        guard interval > 0 else { return }
+
+        let lastUpdate = AppSettings.dictionary.lastUpdate.get()
+        guard Date.now.timeIntervalSince(lastUpdate) >= interval else { return }
+
+        let config = URLSessionConfiguration.default
+        config.allowsExpensiveNetworkAccess = false
+        config.allowsConstrainedNetworkAccess = false
+        updateDictionaries(showErrors: false, session: URLSession(configuration: config))
+    }
 
     func toggleDictionary(id: UUID, enabled: Bool, type: DictionaryType) {
         switch type {
@@ -560,7 +556,7 @@ class DictionaryManager {
                     let dictionary = termDictionaries[index]
                     try? FileManager.default.removeItem(at: dictionary.path)
                     termDictionaries.remove(at: index)
-//                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
+                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
 //                    collapsedDictionaries.remove(dictionary.index.title)
                 }
             case .frequency:
@@ -568,7 +564,7 @@ class DictionaryManager {
                     let dictionary = frequencyDictionaries[index]
                     try? FileManager.default.removeItem(at: dictionary.path)
                     frequencyDictionaries.remove(at: index)
-//                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
+                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
 //                    collapsedDictionaries.remove(dictionary.index.title)
                 }
             case .pitch:
@@ -576,7 +572,7 @@ class DictionaryManager {
                     let dictionary = pitchDictionaries[index]
                     try? FileManager.default.removeItem(at: dictionary.path)
                     pitchDictionaries.remove(at: index)
-//                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
+                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
 //                    collapsedDictionaries.remove(dictionary.index.title)
                 }
         }
@@ -595,38 +591,38 @@ class DictionaryManager {
 //        saveCollapsedDictionaries()
 //    }
 
-//    private func isDictionaryEnabled(at index: Int, type: DictionaryType) -> Bool {
-//        switch type {
-//            case .term:
-//                termDictionaries[index].isEnabled
-//            case .frequency:
-//                frequencyDictionaries[index].isEnabled
-//            case .pitch:
-//                pitchDictionaries[index].isEnabled
-//        }
-//    }
+    private func isDictionaryEnabled(at index: Int, type: DictionaryType) -> Bool {
+        switch type {
+            case .term:
+                termDictionaries[index].isEnabled
+            case .frequency:
+                frequencyDictionaries[index].isEnabled
+            case .pitch:
+                pitchDictionaries[index].isEnabled
+        }
+    }
 
-//    private func setDictionaryEnabled(index: Int, enabled: Bool, type: DictionaryType) {
-//        switch type {
-//            case .term:
-//                termDictionaries[index].isEnabled = enabled
-//            case .frequency:
-//                frequencyDictionaries[index].isEnabled = enabled
-//            case .pitch:
-//                pitchDictionaries[index].isEnabled = enabled
-//        }
-//    }
+    private func setDictionaryEnabled(index: Int, enabled: Bool, type: DictionaryType) {
+        switch type {
+            case .term:
+                termDictionaries[index].isEnabled = enabled
+            case .frequency:
+                frequencyDictionaries[index].isEnabled = enabled
+            case .pitch:
+                pitchDictionaries[index].isEnabled = enabled
+        }
+    }
 
-//    private func getDictionaryIndex(title: String, type: DictionaryType) -> Int? {
-//        switch type {
-//            case .term:
-//                termDictionaries.firstIndex { $0.index.title == title }
-//            case .frequency:
-//                frequencyDictionaries.firstIndex { $0.index.title == title }
-//            case .pitch:
-//                pitchDictionaries.firstIndex { $0.index.title == title }
-//        }
-//    }
+    private func getDictionaryIndex(title: String, type: DictionaryType) -> Int? {
+        switch type {
+            case .term:
+                termDictionaries.firstIndex { $0.index.title == title }
+            case .frequency:
+                frequencyDictionaries.firstIndex { $0.index.title == title }
+            case .pitch:
+                pitchDictionaries.firstIndex { $0.index.title == title }
+        }
+    }
 
     private static func getDictionariesDirectory() throws -> URL {
         FileManager.default.documentDirectory.appendingPathComponent("Dictionaries")

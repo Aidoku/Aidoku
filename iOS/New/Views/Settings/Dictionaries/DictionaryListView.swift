@@ -31,49 +31,42 @@ struct DictionaryListView: View {
     var body: some View {
         List {
             if !dismissedInfo.value {
-                ZStack(alignment: .topTrailing) {
-                    HStack(alignment: .top, spacing: 16) {
-                        Image(systemName: "character.book.closed")
-                            .font(.title)
-                            .foregroundStyle(.tint)
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(NSLocalizedString("ABOUT_DICTIONARIES"))
-                                .fontWeight(.medium)
-                                .foregroundStyle(.primary)
-                            Text(NSLocalizedString("ABOUT_DICTIONARIES_TEXT"))
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.leading)
-                            Button {
-                                showSafari = true
-                            } label: {
-                                Text(NSLocalizedString("LEARN_MORE"))
-                                    .padding(.vertical, 5)
-                                    .padding(.horizontal, 11)
-                                    .background(Capsule().fill(.tint.opacity(0.1)))
+                aboutSection
+            }
+
+            if !dictionaryManager.updatableDictionaries.isEmpty {
+                Section {
+                    SettingView(setting: .init(
+                        key: AppSettings.dictionary.updateInterval.key,
+                        title: NSLocalizedString("UPDATE_INTERVAL"),
+                        value: .select(.init(
+                            values: DictionarySettings.UpdateInterval.allCases.map { $0.rawValue },
+                            titles: DictionarySettings.UpdateInterval.allCases.map { $0.title }
+                        )),
+                    ))
+                    Button(NSLocalizedString("UPDATE_NOW")) {
+                        DictionaryManager.shared.updateDictionaries()
+                    }
+                } header: {
+                    Text(NSLocalizedString("DICTIONARY_UPDATES"))
+                } footer: {
+                    let progressView = ProgressView()
+                        .progressViewStyle(.circular)
+                        .scaleEffect(0.6)
+                        .padding(.vertical, -2)
+
+                    let date = AppSettings.dictionary.lastUpdate.get()
+                    if date > Date.distantPast {
+                        HStack(spacing: 4) {
+                            Text(String(format: NSLocalizedString("LAST_UPDATED_%@"), date.formatted(.relative(presentation: .named))))
+                            if dictionaryManager.isUpdating {
+                                progressView
                             }
-                            .buttonStyle(.borderless)
-                            .padding(.top, 4)
                         }
+                    } else if dictionaryManager.isUpdating {
+                        progressView
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    Button {
-                        withAnimation {
-                            dismissedInfo.value = true
-                        }
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14).weight(.bold))
-                            .foregroundStyle(.secondary)
-                            .padding(6)
-                            .background(Circle().fill(Color(uiColor: .tertiarySystemFill)))
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(.primary)
-                    .offset(x: 8, y: -8)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
             }
 
             let items = [
@@ -101,6 +94,7 @@ struct DictionaryListView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .disabled(dictionaryManager.isImporting || dictionaryManager.isUpdating)
             }
         }
         .overlay {
@@ -131,6 +125,52 @@ struct DictionaryListView: View {
         .sheet(item: $selectedDictionaryInfo) { dict in
             DictionaryInfoView(dictionary: dict)
         }
+    }
+
+    var aboutSection: some View {
+        ZStack(alignment: .topTrailing) {
+            HStack(alignment: .top, spacing: 16) {
+                Image(systemName: "character.book.closed")
+                    .font(.title)
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(NSLocalizedString("ABOUT_DICTIONARIES"))
+                        .fontWeight(.medium)
+                        .foregroundStyle(.primary)
+                    Text(NSLocalizedString("ABOUT_DICTIONARIES_TEXT"))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                    Button {
+                        showSafari = true
+                    } label: {
+                        Text(NSLocalizedString("LEARN_MORE"))
+                            .padding(.vertical, 5)
+                            .padding(.horizontal, 11)
+                            .background(Capsule().fill(.tint.opacity(0.1)))
+                    }
+                    .buttonStyle(.borderless)
+                    .padding(.top, 4)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                withAnimation {
+                    dismissedInfo.value = true
+                }
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14).weight(.bold))
+                    .foregroundStyle(.secondary)
+                    .padding(6)
+                    .background(Circle().fill(Color(uiColor: .tertiarySystemFill)))
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.primary)
+            .offset(x: 8, y: -8)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 6)
     }
 
     func dictRow(_ dict: DictionaryInfo, index: IndexSet, type: DictionaryType) -> some View {
