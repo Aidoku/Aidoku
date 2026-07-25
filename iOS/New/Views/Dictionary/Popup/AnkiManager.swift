@@ -52,7 +52,7 @@ class AnkiManager {
     func showNotes(fields: [String: String], formatIndex: Int) async {
         guard
             #available(iOS 18.0, *),
-            let presentationController = await (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController,
+            let presentationController = await (UIApplication.shared.delegate as? AppDelegate)?.topViewController,
             let expression = fields["{expression}"],
             let entry = await VocabManager.shared.get(word: expression, reading: fields["{reading}"])
         else {
