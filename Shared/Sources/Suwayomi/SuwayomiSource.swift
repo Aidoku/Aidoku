@@ -610,6 +610,7 @@ extension SuwayomiSourceRunner {
         let response: SuwayomiMangaResponse = try await helper.request(body: Payload())
         return response.data.mangas.nodes
             .flatMap { $0.genre ?? [] }
+            .unique()
             .sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
             .map { .init(id: $0, title: $0) }
     }
