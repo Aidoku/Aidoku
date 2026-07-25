@@ -63,7 +63,8 @@ final class ReaderDictionaryCoordinator {
         text: String,
         anchorRect: CGRect,
         charRects: [CGRect] = [],
-        appendPopup: Bool = false
+        appendPopup: Bool = false,
+        page: Int
     ) -> (openedPopup: Bool, matchedChars: Int) {
         guard let owner else { return (false, 0) }
 
@@ -107,6 +108,8 @@ final class ReaderDictionaryCoordinator {
             availableFrame: availableFrame,
             isVertical: isVertical,
             isFullWidth: false,
+            chapterId: .init(sourceKey: owner.manga.sourceKey, mangaKey: owner.manga.key, chapterKey: owner.chapter.key),
+            page: page,
             clearSelection: false,
             onTextSelected: { [weak self] selection in
                 guard let self else { return nil }
@@ -114,7 +117,8 @@ final class ReaderDictionaryCoordinator {
                 let (openedPopup, count) = self.performLookup(
                     text: selection.text,
                     anchorRect: selection.rect,
-                    appendPopup: true
+                    appendPopup: true,
+                    page: page
                 )
                 guard openedPopup else {
                     return nil

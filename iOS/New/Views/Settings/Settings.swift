@@ -651,6 +651,11 @@ extension Settings {
                     key: "Dictionary.dictionaries",
                     title: NSLocalizedString("DICTIONARIES"),
                     value: .page(.init(items: []))
+                ),
+                .init(
+                    key: "Dictionary.vocabulary",
+                    title: NSLocalizedString("VOCABULARY"),
+                    value: .page(.init(items: []))
                 )
             ]))
         )

@@ -605,6 +605,15 @@
 "IMPORT_ERROR" = "Import Error";
 "REVISION" = "Revision";
 "REMOVE_DICTIONARY" = "Remove Dictionary";
+"REMOVE_WORD" = "Remove Word";
+"VOCABULARY" = "Vocabulary";
+"1_WORD" = "1 word";
+"%i_WORDS" = "%i words";
+"NO_VOCABULARY" = "No Vocabulary";
+"NO_VOCABULARY_TEXT" = "Saved vocabulary will appear here.";
+"DEFINITION" = "Definition";
+"VOCAB_CONTEXT" = "Context";
+"VOCAB_SOURCE" = "Source";
 
 // Backups
 "BACKUPS" = "Backups";

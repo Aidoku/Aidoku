@@ -23,102 +23,103 @@ struct SelectionData {
     var clozeOffset: Int?
 }
 
-//class AudioHandler: NSObject, WKURLSchemeHandler {
-//    private var tasks = Set<ObjectIdentifier>()
-//
-//    func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
-//        guard let requestUrl = task.request.url,
-//              let components = URLComponents(url: requestUrl, resolvingAgainstBaseURL: false),
-//              let targetUrlString = components.queryItems?.first(where: { $0.name == "url" })?.value,
-//              let targetUrl = URL(string: targetUrlString) else {
-//            task.didFailWithError(URLError(.badURL))
-//            return
-//        }
-//
-//        let taskId = ObjectIdentifier(task)
-//        tasks.insert(taskId)
-//
-//        Task {
-//            do {
-//                let request = URLRequest(url: targetUrl, timeoutInterval: 4)
-//                let (data, _) = try await URLSession.shared.data(for: request)
-//
-//                await MainActor.run {
-//                    guard self.tasks.contains(taskId) else { return }
-//
-//                    let response = HTTPURLResponse(
-//                        url: requestUrl,
-//                        statusCode: 200,
-//                        httpVersion: "HTTP/1.1",
-//                        headerFields: [
-//                            "Access-Control-Allow-Origin": "*",
-//                            "Content-Type": "application/json"
-//                        ]
-//                    )!
-//                    task.didReceive(response)
-//                    task.didReceive(data)
-//                    task.didFinish()
-//                }
-//            } catch {
-//                await MainActor.run {
-//                    guard self.tasks.contains(taskId) else { return }
-//                    task.didFailWithError(error)
-//                }
-//            }
-//        }
-//    }
-//
-//    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {
-//        tasks.remove(ObjectIdentifier(task))
-//    }
-//}
+class AudioHandler: NSObject, WKURLSchemeHandler {
+    private var tasks = Set<ObjectIdentifier>()
 
-//class ImageHandler: NSObject, WKURLSchemeHandler {
-//    func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
-//        guard let requestUrl = task.request.url,
-//              let components = URLComponents(url: requestUrl, resolvingAgainstBaseURL: false),
-//              let dictionary = components.queryItems?.first(where: { $0.name == "dictionary" })?.value,
-//              let mediaPath = components.queryItems?.first(where: { $0.name == "path" })?.value else {
-//            task.didFailWithError(URLError(.badURL))
-//            return
-//        }
-//
-//        LookupEngine.shared.withMediaFile(dictName: dictionary, mediaPath: mediaPath) { data in
-//            let mime = mimeType(for: mediaPath)
-//            Task { @MainActor in
-//                guard !data.isEmpty else {
-//                    task.didFailWithError(URLError(.fileDoesNotExist))
-//                    return
-//                }
-//
-//                let response = URLResponse(
-//                    url: requestUrl,
-//                    mimeType: mime,
-//                    expectedContentLength: data.count,
-//                    textEncodingName: nil
-//                )
-//                task.didReceive(response)
-//                task.didReceive(data)
-//                task.didFinish()
-//            }
-//        }
-//    }
-//
-//    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {}
-//
-//    private func mimeType(for path: String) -> String {
-//        switch URL(fileURLWithPath: path).pathExtension.lowercased() {
-//        case "png": return "image/png"
-//        case "jpg", "jpeg": return "image/jpeg"
-//        case "gif": return "image/gif"
-//        case "webp": return "image/webp"
-//        case "avif": return "image/avif"
-//        case "heic": return "image/heic"
-//        case "svg": return "image/svg+xml"
-//        default: return "application/octet-stream"
-//        }
-//    }
-//}
+    func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
+        guard let requestUrl = task.request.url,
+              let components = URLComponents(url: requestUrl, resolvingAgainstBaseURL: false),
+              let targetUrlString = components.queryItems?.first(where: { $0.name == "url" })?.value,
+              let targetUrl = URL(string: targetUrlString) else {
+            task.didFailWithError(URLError(.badURL))
+            return
+        }
+
+        let taskId = ObjectIdentifier(task)
+        tasks.insert(taskId)
+
+        Task {
+            do {
+                let request = URLRequest(url: targetUrl, timeoutInterval: 4)
+                let (data, _) = try await URLSession.shared.data(for: request)
+
+                await MainActor.run {
+                    guard self.tasks.contains(taskId) else { return }
+
+                    let response = HTTPURLResponse(
+                        url: requestUrl,
+                        statusCode: 200,
+                        httpVersion: "HTTP/1.1",
+                        headerFields: [
+                            "Access-Control-Allow-Origin": "*",
+                            "Content-Type": "application/json"
+                        ]
+                    )!
+                    task.didReceive(response)
+                    task.didReceive(data)
+                    task.didFinish()
+                }
+            } catch {
+                await MainActor.run {
+                    guard self.tasks.contains(taskId) else { return }
+                    task.didFailWithError(error)
+                }
+            }
+        }
+    }
+
+    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {
+        tasks.remove(ObjectIdentifier(task))
+    }
+}
+
+@available(iOS 18.0, *)
+class ImageHandler: NSObject, WKURLSchemeHandler {
+    func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
+        guard let requestUrl = task.request.url,
+              let components = URLComponents(url: requestUrl, resolvingAgainstBaseURL: false),
+              let dictionary = components.queryItems?.first(where: { $0.name == "dictionary" })?.value,
+              let mediaPath = components.queryItems?.first(where: { $0.name == "path" })?.value else {
+            task.didFailWithError(URLError(.badURL))
+            return
+        }
+
+        LookupEngine.shared.withMediaFile(dictName: dictionary, mediaPath: mediaPath) { data in
+            let mime = mimeType(for: mediaPath)
+            Task { @MainActor in
+                guard !data.isEmpty else {
+                    task.didFailWithError(URLError(.fileDoesNotExist))
+                    return
+                }
+
+                let response = URLResponse(
+                    url: requestUrl,
+                    mimeType: mime,
+                    expectedContentLength: data.count,
+                    textEncodingName: nil
+                )
+                task.didReceive(response)
+                task.didReceive(data)
+                task.didFinish()
+            }
+        }
+    }
+
+    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {}
+
+    private func mimeType(for path: String) -> String {
+        switch URL(fileURLWithPath: path).pathExtension.lowercased() {
+        case "png": return "image/png"
+        case "jpg", "jpeg": return "image/jpeg"
+        case "gif": return "image/gif"
+        case "webp": return "image/webp"
+        case "avif": return "image/avif"
+        case "heic": return "image/heic"
+        case "svg": return "image/svg+xml"
+        default: return "application/octet-stream"
+        }
+    }
+}
 
 //class DocumentResourceHandler: NSObject, WKURLSchemeHandler {
 //    func webView(_ webView: WKWebView, start urlSchemeTask: WKURLSchemeTask) {
@@ -159,6 +160,7 @@ struct SelectionData {
 //    }
 //}
 
+@available(iOS 18.0, *)
 struct PopupWebView: UIViewRepresentable {
     let content: String
     let position: CGPoint
@@ -176,6 +178,8 @@ struct PopupWebView: UIViewRepresentable {
     var onSwipeDismiss: (() -> Void)?
     var onRedirect: ((String) -> [[String: Any]])?
     var scrollViewBounces: Bool = false
+    var isScrollEnabled: Bool = true
+    var onContentHeightChanged: ((CGFloat) -> Void)?
     var onScrollViewOffsetChanged: ((CGFloat) -> Void)?
     var onScrollViewWillBeginDragging: (() -> Void)?
     var onScrollViewDidEndDragging: (() -> Void)?
@@ -216,19 +220,20 @@ struct PopupWebView: UIViewRepresentable {
 //        config.userContentController.add(context.coordinator, name: "playWordAudio")
         config.userContentController.add(context.coordinator, name: "buttonRects")
         config.userContentController.add(context.coordinator, name: "showNotes")
+        config.userContentController.add(context.coordinator, name: "contentHeightChanged")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "mineEntry")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "duplicateCheck")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "getEntries")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "lookupRedirect")
-//        config.setURLSchemeHandler(AudioHandler(), forURLScheme: "audio")
-//        config.setURLSchemeHandler(ImageHandler(), forURLScheme: "image")
+        config.setURLSchemeHandler(AudioHandler(), forURLScheme: "audio")
+        config.setURLSchemeHandler(ImageHandler(), forURLScheme: "image")
 //        config.setURLSchemeHandler(DocumentResourceHandler(), forURLScheme: "local-resources")
         config.mediaTypesRequiringUserActionForPlayback = []
 
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = false
         webView.backgroundColor = .clear
-        webView.scrollView.isScrollEnabled = true
+        webView.scrollView.isScrollEnabled = isScrollEnabled
         webView.scrollView.bounces = scrollViewBounces
         webView.scrollView.keyboardDismissMode = .onDrag
         webView.scrollView.showsHorizontalScrollIndicator = false
@@ -240,12 +245,14 @@ struct PopupWebView: UIViewRepresentable {
 
     func updateUIView(_ webView: WKWebView, context: Context) {
         context.coordinator.parent = self
-        if !context.coordinator.wasLoaded {
+        if !context.coordinator.wasLoaded || context.coordinator.currentContent != content {
             context.coordinator.currentContent = content
             context.coordinator.wasLoaded = true
             let html = constructHtml(content: content)
             webView.loadHTMLString(html, baseURL: Bundle.main.resourceURL)
         }
+        webView.scrollView.isScrollEnabled = isScrollEnabled
+        webView.scrollView.bounces = scrollViewBounces
 
         if context.coordinator.clearSelection != clearSelection {
             context.coordinator.clearSelection = clearSelection
@@ -264,7 +271,7 @@ struct PopupWebView: UIViewRepresentable {
     }
 
     static func dismantleUIView(_ webView: WKWebView, coordinator: Coordinator) {
-//        coordinator.removeWordAddedObserver()
+        coordinator.removeWordAddedObserver()
 //        Task {
 //            await WordAudioPlayer.shared.stop(id: coordinator.id)
 //        }
@@ -275,6 +282,7 @@ struct PopupWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "playWordAudio")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "buttonRects")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "showNotes")
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "contentHeightChanged")
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "mineEntry", contentWorld: .page)
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "duplicateCheck", contentWorld: .page)
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "getEntries", contentWorld: .page)
@@ -293,29 +301,29 @@ struct PopupWebView: UIViewRepresentable {
         private var buttons: [String: UIButton] = [:]
         // swiftlint:disable:next large_tuple
         private var buttonActions: [UIButton: (kind: String, entryIndex: Int, slotIndex: Int)] = [:]
-//        private var wordAddedObserver: NSObjectProtocol?
+        private var wordAddedObserver: NSObjectProtocol?
         let id = UUID()
 
         init(parent: PopupWebView) {
             self.parent = parent
             super.init()
-//            wordAddedObserver = NotificationCenter.default.addObserver(
-//                forName: AnkiManager.wordAddedNotification,
-//                object: nil,
-//                queue: .main
-//            ) { [weak self] _ in
-//                MainActor.assumeIsolated {
-//                    self?.webView?.evaluateJavaScript("recheckDuplicates()")
-//                }
-//            }
+            wordAddedObserver = NotificationCenter.default.addObserver(
+                forName: AnkiManager.wordAddedNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.webView?.evaluateJavaScript("recheckDuplicates()")
+                }
+            }
         }
 
-//        func removeWordAddedObserver() {
-//            if let wordAddedObserver {
-//                NotificationCenter.default.removeObserver(wordAddedObserver)
-//                self.wordAddedObserver = nil
-//            }
-//        }
+        func removeWordAddedObserver() {
+            if let wordAddedObserver {
+                NotificationCenter.default.removeObserver(wordAddedObserver)
+                self.wordAddedObserver = nil
+            }
+        }
 
         private func updateButtons(_ rects: [[String: Any]], in webView: WKWebView) {
             var activeKeys = Set<String>()
@@ -333,9 +341,13 @@ struct PopupWebView: UIViewRepresentable {
                 }
 
                 let slotIndex = rect["slotIndex"] as? Int ?? 0
-//                if kind != "audio", !AnkiManager.shared.cardFormats.indices.contains(slotIndex) {
-//                    continue
-//                }
+                if kind != "audio", !AnkiManager.shared.cardFormats.indices.contains(slotIndex) {
+                    continue
+                }
+                let state = rect["state"] as? String ?? "default"
+                if state == "duplicate" {
+                    continue // disable creating duplicate cards
+                }
                 let key = "\(kind)-\(entryIndex)-\(slotIndex)"
                 activeKeys.insert(key)
 
@@ -352,10 +364,10 @@ struct PopupWebView: UIViewRepresentable {
 
                 buttonActions[button] = (kind, entryIndex, slotIndex)
                 button.frame = CGRect(x: x, y: y, width: width, height: height)
-                let state = rect["state"] as? String ?? "default"
                 button.setImage(symbolImage(kind: kind, state: state, slotIndex: slotIndex, config: symbolConfig), for: .normal)
                 button.isEnabled = rect["enabled"] as? Bool ?? true
-                button.alpha = button.isEnabled ? (kind == "note" ? 0.58 : 0.85) : 0.55
+                button.alpha = button.isEnabled ? 0.85 : 0.55
+//                button.alpha = button.isEnabled ? (kind == "note" ? 0.58 : 0.85) : 0.55
             }
 
             for key in buttons.keys.filter({ !activeKeys.contains($0) }) {
@@ -371,19 +383,18 @@ struct PopupWebView: UIViewRepresentable {
                 return UIImage(systemName: state == "error" ? "speaker.slash" : "speaker.wave.2", withConfiguration: config)
             }
             if kind == "note" {
-                let noteConfig = UIImage.SymbolConfiguration(pointSize: 9 * parent.scale, weight: .medium)
-                return UIImage(systemName: "magnifyingglass", withConfiguration: noteConfig)
+//                let noteConfig = UIImage.SymbolConfiguration(pointSize: 9 * parent.scale, weight: .medium)
+                return UIImage(systemName: "magnifyingglass", withConfiguration: config)
             }
-//            guard AnkiManager.shared.cardFormats.indices.contains(slotIndex) else { return nil }
-//            var icon = AnkiManager.shared.cardFormats[slotIndex].icon
-//            let isSmall = icon.hasSuffix(".small")
-//            if isSmall {
-//                icon = String(icon.dropLast(".small".count))
-//            }
-//            let name = state == "duplicate" ? (AnkiCardFormat.duplicateIcons[icon] ?? icon) : icon
-//            let iconConfig = isSmall ? UIImage.SymbolConfiguration(pointSize: 10 * parent.scale, weight: .medium) : config
-//            return UIImage(systemName: name, withConfiguration: iconConfig)
-            return nil
+            guard AnkiManager.shared.cardFormats.indices.contains(slotIndex) else { return nil }
+            var icon = AnkiManager.shared.cardFormats[slotIndex].icon
+            let isSmall = icon.hasSuffix(".small")
+            if isSmall {
+                icon = String(icon.dropLast(".small".count))
+            }
+            let name = state == "duplicate" ? (AnkiCardFormat.duplicateIcons[icon] ?? icon) : icon
+            let iconConfig = isSmall ? UIImage.SymbolConfiguration(pointSize: 10 * parent.scale, weight: .medium) : config
+            return UIImage(systemName: name, withConfiguration: iconConfig)
         }
 
         @objc private func buttonTapped(_ sender: UIButton) {
@@ -423,6 +434,7 @@ struct PopupWebView: UIViewRepresentable {
                 window.dictionaryStyles = dictionaryStyles;
                 window.entryCount = entryCount;
                 window.renderPopup();
+                window.installContentHeightObserver?.();
                 """,
                 arguments: [
                     "dictionaryStyles": parent.dictionaryStyles,
@@ -435,16 +447,16 @@ struct PopupWebView: UIViewRepresentable {
         }
 
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) async -> (Any?, String?) {
-//            if message.name == "mineEntry", let content = message.body as? [String: String] {
-//                guard let slotIndex = content["slotIndex"].flatMap(Int.init),
-//                      AnkiManager.shared.cardFormats.indices.contains(slotIndex) else {
-//                    return (false, nil)
-//                }
-//                return (await parent.onMine?(content, AnkiManager.shared.cardFormats[slotIndex].id) ?? false, nil)
-//            }
-//            if message.name == "duplicateCheck", let fields = message.body as? [String: String] {
-//                return (await AnkiManager.shared.checkDuplicates(fields: fields), nil)
-//            }
+            if message.name == "mineEntry", let content = message.body as? [String: String] {
+                guard let slotIndex = content["slotIndex"].flatMap(Int.init),
+                      AnkiManager.shared.cardFormats.indices.contains(slotIndex) else {
+                    return (false, nil)
+                }
+                return (await parent.onMine?(content, AnkiManager.shared.cardFormats[slotIndex].id) ?? false, nil)
+            }
+            if message.name == "duplicateCheck", let fields = message.body as? [String: String] {
+                return (await AnkiManager.shared.checkDuplicates(fields: fields), nil)
+            }
             if message.name == "getEntries", let body = message.body as? [String: Any] {
                 let start = body["start"] as? Int ?? 0
                 let count = body["count"] as? Int ?? 0
@@ -470,9 +482,25 @@ struct PopupWebView: UIViewRepresentable {
                     let rects = message.body as? [[String: Any]] {
                 guard let webView = message.webView else { return }
                 updateButtons(rects, in: webView)
-//            } else if message.name == "showNotes", let fields = message.body as? [String: String],
-//                    let slotIndex = fields["slotIndex"].flatMap(Int.init) {
-//                Task { await AnkiManager.shared.showNotes(fields: fields, formatIndex: slotIndex) }
+            } else if message.name == "contentHeightChanged" {
+                let height: CGFloat?
+                if let value = message.body as? CGFloat {
+                    height = value
+                } else if let value = message.body as? Double {
+                    height = CGFloat(value)
+                } else if let value = message.body as? Int {
+                    height = CGFloat(value)
+                } else if let value = message.body as? NSNumber {
+                    height = CGFloat(truncating: value)
+                } else {
+                    height = nil
+                }
+                if let height {
+                    parent.onContentHeightChanged?(ceil(height))
+                }
+            } else if message.name == "showNotes", let fields = message.body as? [String: String],
+                    let slotIndex = fields["slotIndex"].flatMap(Int.init) {
+                Task { await AnkiManager.shared.showNotes(fields: fields, formatIndex: slotIndex) }
             } else if message.name == "textSelected" {
                 guard let body = message.body as? [String: Any],
                       let text = body["text"] as? String,
@@ -521,6 +549,24 @@ struct PopupWebView: UIViewRepresentable {
             <script>
                 window.scanNonJapaneseText = \(scanNonJapaneseText);
                 window.scanLength = \(scanLength);
+                window.installContentHeightObserver = function() {
+                    if (window.contentHeightObserver) {
+                        window.contentHeightObserver.disconnect();
+                    }
+                    const sendContentHeight = function() {
+                        const height = Math.max(
+                            document.body.scrollHeight,
+                            document.documentElement.scrollHeight,
+                            document.body.offsetHeight,
+                            document.documentElement.offsetHeight
+                        );
+                        window.webkit.messageHandlers.contentHeightChanged.postMessage(height);
+                    };
+                    window.contentHeightObserver = new ResizeObserver(sendContentHeight);
+                    window.contentHeightObserver.observe(document.documentElement);
+                    window.contentHeightObserver.observe(document.body);
+                    requestAnimationFrame(sendContentHeight);
+                };
             </script>
             <script src="selection.js"></script>
             <script src="popup.js"></script>

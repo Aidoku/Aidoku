@@ -93,8 +93,9 @@ body {
 }
 
 .button-slot[data-kind="note"] {
-    width: calc(14px * var(--popup-scale));
-    margin-right: calc(-4px * var(--popup-scale));
+/*    width: calc(14px * var(--popup-scale));*/
+/*    margin-right: calc(-4px * var(--popup-scale));*/
+    position: relative;
 }
 
 .button-slot[data-kind="note"][data-placement="above"] {

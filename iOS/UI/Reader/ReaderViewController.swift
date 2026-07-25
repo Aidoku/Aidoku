@@ -40,6 +40,7 @@ class ReaderViewController: BaseObservingViewController {
             }
         }
     }
+    private var forceStartPage: Int?
     private var currentPage = 1
     private var currentPosition: Double?
     private var sessionReadPages: Set<Int> = []
@@ -116,7 +117,8 @@ class ReaderViewController: BaseObservingViewController {
     init(
         source: AidokuRunner.Source?,
         manga: AidokuRunner.Manga,
-        chapter: AidokuRunner.Chapter
+        chapter: AidokuRunner.Chapter,
+        startPage: Int? = nil
     ) {
         self.source = source
         self.manga = manga
@@ -130,6 +132,7 @@ class ReaderViewController: BaseObservingViewController {
             case .webtoon: .webtoon
             case .unknown: .none
         }
+        self.forceStartPage = startPage
         super.init()
     }
 
@@ -495,15 +498,20 @@ class ReaderViewController: BaseObservingViewController {
             }
         }
 
-        let (completed, startPage) = CoreDataManager.shared.getProgress(
-            sourceId: source?.key ?? manga.sourceKey,
-            mangaId: manga.key,
-            chapterId: chapter.key
-        )
-        if !completed, let startPage {
-            currentPage = startPage
+        if let forceStartPage {
+            currentPage = forceStartPage
+            self.forceStartPage = nil
         } else {
-            currentPage = -1
+            let (completed, startPage) = CoreDataManager.shared.getProgress(
+                sourceId: source?.key ?? manga.sourceKey,
+                mangaId: manga.key,
+                chapterId: chapter.key
+            )
+            if !completed, let startPage {
+                currentPage = startPage
+            } else {
+                currentPage = -1
+            }
         }
         reader?.setChapter(chapter, startPage: currentPage)
     }
@@ -1063,7 +1071,8 @@ extension ReaderViewController: ReaderHoldingDelegate {
                     _ = dictionaryCoordinator.performLookup(
                         text: selection.text,
                         anchorRect: selection.charRect,
-                        charRects: selection.charRects
+                        charRects: selection.charRects,
+                        page: currentPage
                     )
                 }
 
@@ -1149,7 +1158,8 @@ extension ReaderViewController {
                 if dictionaryCoordinator.performLookup(
                     text: result.text,
                     anchorRect: result.charRect,
-                    charRects: result.charRects
+                    charRects: result.charRects,
+                    page: currentPage
                 ).openedPopup {
                     return
                 }
@@ -1303,7 +1313,7 @@ extension ReaderViewController {
         guard #available(iOS 18.0, *), let reader = reader as? ReaderDictionaryReader else { return }
         reader.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
             guard let self, AppSettings.dictionary.textOverlayMode.get() else { return }
-            _ = dictionaryCoordinator.performLookup(text: text, anchorRect: rect, charRects: charRects)
+            _ = dictionaryCoordinator.performLookup(text: text, anchorRect: rect, charRects: charRects, page: currentPage)
         }
     }
 }
@@ -1321,6 +1331,11 @@ extension ReaderViewController {
 
     func showBars() {
         guard let navigationController else { return }
+
+        if #available(iOS 27.0, *) {
+            navigationController.navigationBar.isHidden = true
+            navigationController.isNavigationBarHidden = false
+        }
 
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = false
@@ -1394,7 +1409,11 @@ extension ReaderViewController {
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in
-                navigationController.navigationBar.isHidden = true
+                if #available(iOS 27.0, *) {
+                    navigationController.isNavigationBarHidden = true
+                } else {
+                    navigationController.navigationBar.isHidden = true
+                }
                 if #available(iOS 26.0, *) {
                     navigationController.isToolbarHidden = true
                 } else {

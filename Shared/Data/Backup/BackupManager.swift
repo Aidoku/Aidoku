@@ -99,6 +99,7 @@ actor BackupManager {
         let chapters: Bool
         let tracking: Bool
         let readingSessions: Bool
+        let vocabulary: Bool
         let updates: Bool
         let categories: Bool
         let settings: Bool
@@ -243,6 +244,7 @@ extension BackupManager {
         case history
         case chapters
         case sessions
+        case vocabulary
         case updates
         case track
         case sources
@@ -255,6 +257,7 @@ extension BackupManager {
                 case .history: NSLocalizedString("HISTORY")
                 case .chapters: NSLocalizedString("CHAPTERS")
                 case .sessions: NSLocalizedString("READING_SESSIONS")
+                case .vocabulary: NSLocalizedString("VOCABULARY")
                 case .updates: NSLocalizedString("UPDATES")
                 case .track: NSLocalizedString("TRACKERS")
                 case .sources: NSLocalizedString("SOURCES")
@@ -496,6 +499,25 @@ extension BackupManager {
                 }
             }
         }
+        let vocabTask = Task {
+            if let vocabItems = backup.vocabulary {
+                let result = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearVocab(context: context)
+                    for item in vocabItems {
+                        _ = item.toObject(context: context)
+                    }
+                    do {
+                        try context.save()
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+                if !result {
+                    throw BackupError.vocabulary
+                }
+            }
+        }
         let trackTask = Task {
             if let backupTrackItems = backup.trackItems {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -547,6 +569,7 @@ extension BackupManager {
         do {
             try await updatesTask.value
             try await sessionsTask.value
+            try await vocabTask.value
             try await trackTask.value
             try await sourceTask.value
         } catch {
@@ -658,6 +681,7 @@ extension BackupManager {
         let chapters = UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters")
         let tracking = UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking")
         let readingSessions = UserDefaults.standard.bool(forKey: "AutomaticBackups.readingSessions")
+        let vocabulary = UserDefaults.standard.bool(forKey: "AutomaticBackups.vocabulary")
         let updates = UserDefaults.standard.bool(forKey: "AutomaticBackups.updates")
         let categories = UserDefaults.standard.bool(forKey: "AutomaticBackups.categories")
         let settings = UserDefaults.standard.bool(forKey: "AutomaticBackups.settings")
@@ -672,6 +696,7 @@ extension BackupManager {
                 chapters: chapters,
                 tracking: tracking,
                 readingSessions: readingSessions,
+                vocabulary: vocabulary,
                 updates: updates,
                 categories: categories,
                 settings: settings,

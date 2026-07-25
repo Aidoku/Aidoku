@@ -193,6 +193,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "AutomaticBackups.history": true,
                 "AutomaticBackups.categories": true,
                 "AutomaticBackups.readingSessions": true,
+                "AutomaticBackups.vocabulary": true,
                 "AutomaticBackups.updates": false,
                 "AutomaticBackups.settings": true,
                 "AutomaticBackups.sourceLists": true,
@@ -215,6 +216,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // launch (no window ever appears). Forcing first init on the main thread here
         // makes the main thread win the race deterministically.
         _ = CoreDataManager.shared
+
+        if #available(iOS 18.0, *) {
+            // initialize lookup engine with installed dictionaries
+            _ = DictionaryManager.shared
+        }
 
         // check for icloud availability
         // https://developer.apple.com/documentation/foundation/filemanager/url(forubiquitycontaineridentifier:)

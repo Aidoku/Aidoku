@@ -295,6 +295,10 @@ extension SettingsView {
             if #available(iOS 18.0, *) {
                 DictionaryListView()
             }
+        } else if key == "Dictionary.vocabulary" {
+            if #available(iOS 18.0, *) {
+                DictionaryVocabListView()
+            }
         } else if key == "Tracking" {
             SettingsTrackingView()
         } else if key == "About" {

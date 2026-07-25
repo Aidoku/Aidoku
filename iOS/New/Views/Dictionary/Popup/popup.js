@@ -1428,7 +1428,8 @@ async function checkDuplicates(entryIndex) {
         const isValidFormat = window.validFormatFlags[i];
         updateButtonSlot(slot, {
             state: isDuplicate ? 'duplicate' : 'default',
-            enabled: isValidFormat && !(isDuplicate && !window.allowDupes)
+            enabled: isValidFormat && !(isDuplicate && !window.allowDupes),
+            hidden: isDuplicate
         });
         updateButtonSlot(getButtonSlot('note', entryIndex, i), {
             hidden: !isDuplicate || window.disableShowNotes

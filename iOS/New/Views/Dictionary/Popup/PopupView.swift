@@ -30,6 +30,8 @@ struct UserConfig {
         return CGFloat(height)
     }
     var popupScale: Double = 1
+
+    var allowsMining = true
 }
 
 struct PopupLayout {
@@ -145,6 +147,8 @@ struct PopupView: View {
     let isFullWidth: Bool
     var topInset: CGFloat = 0
     var bottomInset: CGFloat = 0
+    let chapterId: ChapterIdentifier?
+    let page: Int
 //    let coverURL: URL?
 //    let documentTitle: String?
     var clearSelection: Bool
@@ -175,6 +179,8 @@ struct PopupView: View {
         isFullWidth: Bool,
         topInset: CGFloat = 0,
         bottomInset: CGFloat = 0,
+        chapterId: ChapterIdentifier?,
+        page: Int,
 //        coverURL: URL?,
 //        documentTitle: String?,
         clearSelection: Bool,
@@ -196,6 +202,8 @@ struct PopupView: View {
         self.isFullWidth = isFullWidth
         self.topInset = topInset
         self.bottomInset = bottomInset
+        self.chapterId = chapterId
+        self.page = page
 //        self.coverURL = coverURL
 //        self.documentTitle = documentTitle
         self.clearSelection = clearSelection
@@ -404,19 +412,21 @@ struct PopupView: View {
 //        if AnkiManager.shared.needsSasayakiAudio, let cue = sasayakiCue, let player = sasayakiPlayer, player.hasAudio {
 //            sasayakiAudioData = await player.cueSentenceAudio(cue, sentence: sentence)
 //        }
-//
-//        return await AnkiManager.shared.addNote(
-//            content: content,
-//            context: MiningContext(
-//                sentence: sentence,
+        guard let chapterId else { return false }
+
+        return await AnkiManager.shared.addNote(
+            content: content,
+            context: MiningContext(
+                sentence: sentence,
+                chapterId: chapterId,
+                page: page
 //                clozeOffset: clozeOffset,
 //                documentTitle: documentTitle,
 //                coverURL: coverURL,
 //                sasayakiAudioData: sasayakiAudioData
-//            ),
-//            formatId: formatId
-//        )
-        false
+            ),
+            formatId: formatId
+        )
     }
 
     private static func buildLookupEntries(lookupResults: [LookupResult]) -> [[String: Any]] {
@@ -496,7 +506,7 @@ struct PopupView: View {
         return entries
     }
 
-    private static func buildContent(lookupResults: [LookupResult], userConfig: UserConfig) -> (content: String, lookupEntries: [[String: Any]]) {
+    static func buildContent(lookupResults: [LookupResult], userConfig: UserConfig) -> (content: String, lookupEntries: [[String: Any]]) {
         let entries = buildLookupEntries(lookupResults: lookupResults)
 
 //        let collapsedDictionaries = userConfig.collapseMode == .custom
@@ -525,7 +535,7 @@ struct PopupView: View {
             window.audioSources = [];
             window.audioEnableAutoplay = false;
             window.audioPlaybackMode = "interrupt";
-            window.cardFormatCount = 0;
+            window.cardFormatCount = \(userConfig.allowsMining ? 1 : 0);
             window.validFormatFlags = [];
             window.isAnkiConnectReachable = false;
             window.excludedDictionaries = [];

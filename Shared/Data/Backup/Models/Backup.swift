@@ -16,6 +16,7 @@ struct Backup: Codable, Hashable, Identifiable, Sendable {
     var chapters: [BackupChapter]?
     var trackItems: [BackupTrackItem]?
     var readingSessions: [BackupReadingSession]?
+    var vocabulary: [BackupVocabEntry]?
     var updates: [BackupUpdate]?
     var categories: [BackupCategory]?
     var sources: [BackupSource]?
