@@ -13,6 +13,7 @@ extension VocabObject {
             word: word,
             reading: reading,
             sentence: sentence,
+            localImageId: localImageId,
             page: Int(page),
             createdDate: createdDate ?? .distantPast
         )
@@ -25,6 +26,7 @@ extension VocabObject {
         word = entry.word
         reading = entry.reading
         sentence = entry.sentence
+        localImageId = entry.localImageId
         page = entry.page.flatMap(Int16.init) ?? 0
         createdDate = entry.createdDate
     }

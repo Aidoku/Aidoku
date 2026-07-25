@@ -114,6 +114,7 @@
     <entity name="Vocab" representedClassName="VocabObject" syncable="YES" codeGenerationType="class">
         <attribute name="chapterId" attributeType="String" defaultValueString=""/>
         <attribute name="createdDate" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
+        <attribute name="localImageId" optional="YES" attributeType="String"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
         <attribute name="page" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="reading" optional="YES" attributeType="String"/>
