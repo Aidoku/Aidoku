@@ -68,6 +68,7 @@ struct DictionaryVocabListView: View {
                                 .padding(.horizontal)
                             }
                         }
+                        .padding(.bottom)
                     }
                     .scrollContentBackground(.hidden)
                 }
@@ -87,7 +88,7 @@ struct DictionaryVocabListView: View {
                     Button(role: .destructive) {
                         showingClearConfirmation = true
                     } label: {
-                        Label(NSLocalizedString("CLEAR"), systemImage: "trash")
+                        Label(NSLocalizedString("CLEAR_VOCABULARY_LIST"), systemImage: "trash")
                     }
                     .disabled(entries.isEmpty)
                 } label: {

@@ -123,7 +123,14 @@ struct DictionaryVocabDetailsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    if !isEditing {
+                    if isEditing {
+                        Button(NSLocalizedString("CANCEL")) {
+                            editedSentence = entry.sentence ?? ""
+                            withAnimation {
+                                isEditing = false
+                            }
+                        }
+                    } else {
                         CloseButton {
                             dismiss()
                         }
