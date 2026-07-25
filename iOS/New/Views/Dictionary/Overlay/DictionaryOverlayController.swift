@@ -22,7 +22,7 @@ enum DictionaryOverlayInteractionMode {
 
 final class DictionaryOverlayController: NSObject {
     weak var containerView: UIView?
-    var onLookup: ((String, CGRect, [CGRect]) -> Void)?
+    var onLookup: ((String, String, CGRect, [CGRect]) -> Void)?
     var interactionMode: DictionaryOverlayInteractionMode = .none
 
     private weak var activeButton: DictionaryOverlayButton?
@@ -63,6 +63,7 @@ final class DictionaryOverlayController: NSObject {
 
     struct LookupPayload {
         let text: String
+        let contextText: String
         let rect: CGRect
         let charRects: [CGRect]
     }
@@ -79,7 +80,7 @@ final class DictionaryOverlayController: NSObject {
 
         let anchorRect = payload.localRect.offsetBy(dx: button.frame.minX, dy: button.frame.minY)
         let charRects = payload.localRects.map { $0.offsetBy(dx: button.frame.minX, dy: button.frame.minY) }
-        return .init(text: payload.text, rect: anchorRect, charRects: charRects)
+        return .init(text: payload.text, contextText: payload.contextText, rect: anchorRect, charRects: charRects)
     }
 
     @discardableResult
@@ -172,6 +173,6 @@ final class DictionaryOverlayController: NSObject {
         guard let payload = sender.lookupPayload(at: point) else { return }
         let anchorRect = payload.localRect.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY)
         let charRects = payload.localRects.map { $0.offsetBy(dx: sender.frame.minX, dy: sender.frame.minY) }
-        onLookup?(payload.text, anchorRect, charRects)
+        onLookup?(payload.text, payload.contextText, anchorRect, charRects)
     }
 }

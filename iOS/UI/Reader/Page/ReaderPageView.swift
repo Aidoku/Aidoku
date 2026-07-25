@@ -47,7 +47,7 @@ class ReaderPageView: UIView {
     private var dictionaryAnalysisTask: Task<Void, Never>?
     private let dictionaryOverlayContainerView = DictionaryOverlayPassthroughView()
     private let dictionaryOverlayController = DictionaryOverlayController()
-    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
+    var onDictionaryOverlayTap: ((String, String, CGRect, [CGRect]) -> Void)? {
         get { dictionaryOverlayController.onLookup }
         set { dictionaryOverlayController.onLookup = newValue }
     }

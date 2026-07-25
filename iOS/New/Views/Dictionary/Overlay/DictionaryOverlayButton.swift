@@ -18,6 +18,7 @@ final class DictionaryOverlayButton: UIButton {
 
     struct LookupPayload {
         let text: String
+        let contextText: String
         let localRect: CGRect
         let localRects: [CGRect]
     }
@@ -75,7 +76,7 @@ final class DictionaryOverlayButton: UIButton {
         let matchedText = resolveMatchedText(from: hit.text)
         let matchLength = max(1, matchedText.count)
         let localRects = Array(hit.localRects.prefix(matchLength))
-        return .init(text: matchedText, localRect: hit.localRect, localRects: localRects)
+        return .init(text: matchedText, contextText: overlayText, localRect: hit.localRect, localRects: localRects)
     }
 
     @available(iOS 18.0, *)

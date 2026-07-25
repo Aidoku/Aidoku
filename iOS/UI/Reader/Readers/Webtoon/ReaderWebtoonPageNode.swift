@@ -32,7 +32,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     private var shouldShowLiveTextButton = false
     private var liveTextAnalysisTask: Task<Void, Never>?
     private var dictionaryAnalysisTask: Task<Void, Never>?
-    var onDictionaryOverlayTap: ((String, CGRect, [CGRect]) -> Void)? {
+    var onDictionaryOverlayTap: ((String, String, CGRect, [CGRect]) -> Void)? {
         get { dictionaryOverlayController.onLookup }
         set { dictionaryOverlayController.onLookup = newValue }
     }

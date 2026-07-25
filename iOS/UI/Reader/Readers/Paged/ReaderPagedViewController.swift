@@ -53,7 +53,7 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var programmaticMove = false
     private var pendingSpreadRebuild = false
 
-    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayTapHandler: ((String, String, CGRect, [CGRect]) -> Void)?
     private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     private var previousChapter: AidokuRunner.Chapter?
@@ -1166,7 +1166,7 @@ extension ReaderPagedViewController: ReaderDictionaryReader {
         }
     }
 
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+    func setDictionaryOverlayTapHandler(_ handler: ((String, String, CGRect, [CGRect]) -> Void)?) {
         dictionaryOverlayTapHandler = handler
         for controller in pageViewControllers {
             bindDictionaryOverlayTap(to: controller)
@@ -1189,20 +1189,21 @@ extension ReaderPagedViewController: ReaderDictionaryReader {
 
     private func forwardDictionaryOverlayTap(
         text: String,
+        contextText: String,
         rect: CGRect,
         charRects: [CGRect],
         from imageView: UIImageView
     ) {
         let rectInReader = imageView.convert(rect, to: view)
         let charRectsInReader = charRects.map { imageView.convert($0, to: view) }
-        dictionaryOverlayTapHandler?(text, rectInReader, charRectsInReader)
+        dictionaryOverlayTapHandler?(text, contextText, rectInReader, charRectsInReader)
     }
 
     private func bindDictionaryOverlayTap(to controller: ReaderPageViewController?) {
         controller?.pageView?.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
-        controller?.pageView?.onDictionaryOverlayTap = { [weak self, weak controller] text, rect, charRects in
+        controller?.pageView?.onDictionaryOverlayTap = { [weak self, weak controller] text, contextText, rect, charRects in
             guard let self, let imageView = controller?.pageView?.imageView else { return }
-            self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
+            self.forwardDictionaryOverlayTap(text: text, contextText: contextText, rect: rect, charRects: charRects, from: imageView)
         }
     }
 }

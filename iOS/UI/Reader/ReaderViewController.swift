@@ -1070,6 +1070,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 if let selection {
                     _ = dictionaryCoordinator.performLookup(
                         text: selection.text,
+                        contextText: selection.fullText,
                         anchorRect: selection.charRect,
                         charRects: selection.charRects,
                         page: currentPage
@@ -1157,6 +1158,7 @@ extension ReaderViewController {
             if let result = reader.recognizedText(at: point) {
                 if dictionaryCoordinator.performLookup(
                     text: result.text,
+                    contextText: result.fullText,
                     anchorRect: result.charRect,
                     charRects: result.charRects,
                     page: currentPage
@@ -1311,9 +1313,15 @@ extension ReaderViewController {
 
     private func configureDictionaryOverlayTapHandler() {
         guard #available(iOS 18.0, *), let reader = reader as? ReaderDictionaryReader else { return }
-        reader.setDictionaryOverlayTapHandler { [weak self] text, rect, charRects in
+        reader.setDictionaryOverlayTapHandler { [weak self] text, contextText, rect, charRects in
             guard let self, AppSettings.dictionary.textOverlayMode.get() else { return }
-            _ = dictionaryCoordinator.performLookup(text: text, anchorRect: rect, charRects: charRects, page: currentPage)
+            _ = dictionaryCoordinator.performLookup(
+                text: text,
+                contextText: contextText,
+                anchorRect: rect,
+                charRects: charRects,
+                page: currentPage
+            )
         }
     }
 }

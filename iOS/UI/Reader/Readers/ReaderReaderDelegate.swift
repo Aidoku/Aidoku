@@ -34,7 +34,7 @@ protocol ReaderDictionaryReader: ReaderReaderDelegate {
     /// Returns recognized text at the given point (in the reader's view coordinates)
     /// along with the character rect for popup positioning and per-character rects for highlighting.
     func recognizedText(at point: CGPoint) -> TextRecognizer.Result?
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?)
+    func setDictionaryOverlayTapHandler(_ handler: ((String, String, CGRect, [CGRect]) -> Void)?)
     func setDictionaryOverlayInteractionMode(_ mode: DictionaryOverlayInteractionMode)
     func dismissActiveDictionaryOverlay() -> Bool
 }

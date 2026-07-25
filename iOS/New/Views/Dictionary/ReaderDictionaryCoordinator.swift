@@ -61,6 +61,7 @@ final class ReaderDictionaryCoordinator {
     @discardableResult
     func performLookup(
         text: String,
+        contextText: String? = nil,
         anchorRect: CGRect,
         charRects: [CGRect] = [],
         appendPopup: Bool = false,
@@ -70,6 +71,7 @@ final class ReaderDictionaryCoordinator {
 
         let entries: [LookupResult] = LookupEngine.shared.lookup(text)
         guard !entries.isEmpty else { return (false, 0) }
+        let sentence = contextText.flatMap { Self.sentence(containing: text, in: $0) } ?? text
 
         if !appendPopup {
             dismissAllPopups()
@@ -102,7 +104,7 @@ final class ReaderDictionaryCoordinator {
         )
         let popupView = PopupView(
             userConfig: userConfig,
-            selectionData: .init(text: text, sentence: text, rect: anchorRect),
+            selectionData: .init(text: text, sentence: sentence, rect: anchorRect),
             lookupResults: entries,
             dictionaryStyles: dictionaryStyles,
             availableFrame: availableFrame,
@@ -116,6 +118,7 @@ final class ReaderDictionaryCoordinator {
                 self.dismissChildPopups(parentID: popupID)
                 let (openedPopup, count) = self.performLookup(
                     text: selection.text,
+                    contextText: selection.sentence,
                     anchorRect: selection.rect,
                     appendPopup: true,
                     page: page
@@ -307,5 +310,25 @@ final class ReaderDictionaryCoordinator {
             highlight.removeFromSuperview()
         }
         lookupHighlightViews.removeAll()
+    }
+
+    private static func sentence(containing lookupText: String, in contextText: String) -> String {
+        let trimmedContext = contextText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedContext.isEmpty else { return lookupText }
+        guard let range = trimmedContext.range(of: lookupText) else { return trimmedContext }
+
+        let delimiters = CharacterSet(charactersIn: "。！？.!?\n\r")
+        let trailingCharacters = CharacterSet(charactersIn: "。、！？」』）)】〉》〕｝}］]")
+
+        let before = trimmedContext[..<range.lowerBound]
+        let start = before.rangeOfCharacter(from: delimiters, options: .backwards)?.upperBound ?? trimmedContext.startIndex
+        let after = trimmedContext[range.lowerBound...]
+        var end = after.rangeOfCharacter(from: delimiters)?.upperBound ?? trimmedContext.endIndex
+        while end < trimmedContext.endIndex {
+            let next = trimmedContext[end]
+            guard String(next).rangeOfCharacter(from: trailingCharacters) != nil else { break }
+            end = trimmedContext.index(after: end)
+        }
+        return String(trimmedContext[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }

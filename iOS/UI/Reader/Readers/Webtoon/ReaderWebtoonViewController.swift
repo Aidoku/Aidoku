@@ -35,7 +35,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var chapters: [AidokuRunner.Chapter] = []
     // The pages corresponding to the `chapters` variable
     private var pages: [[Page]] = []
-    private var dictionaryOverlayTapHandler: ((String, CGRect, [CGRect]) -> Void)?
+    private var dictionaryOverlayTapHandler: ((String, String, CGRect, [CGRect]) -> Void)?
     private var dictionaryOverlayInteractionMode: DictionaryOverlayInteractionMode = .none
 
     // Indicates if the page slider is currently in use
@@ -360,7 +360,7 @@ extension ReaderWebtoonViewController: ReaderDictionaryReader {
         return nil
     }
 
-    func setDictionaryOverlayTapHandler(_ handler: ((String, CGRect, [CGRect]) -> Void)?) {
+    func setDictionaryOverlayTapHandler(_ handler: ((String, String, CGRect, [CGRect]) -> Void)?) {
         dictionaryOverlayTapHandler = handler
     }
 
@@ -380,20 +380,21 @@ extension ReaderWebtoonViewController: ReaderDictionaryReader {
 
     private func forwardDictionaryOverlayTap(
         text: String,
+        contextText: String,
         rect: CGRect,
         charRects: [CGRect],
         from imageView: UIImageView
     ) {
         let rectInView = imageView.convert(rect, to: view)
         let rectsInView = charRects.map { imageView.convert($0, to: view) }
-        dictionaryOverlayTapHandler?(text, rectInView, rectsInView)
+        dictionaryOverlayTapHandler?(text, contextText, rectInView, rectsInView)
     }
 
     private func bindDictionaryOverlayTap(to cell: ReaderWebtoonPageNode) {
         cell.setDictionaryOverlayInteractionMode(dictionaryOverlayInteractionMode)
-        cell.onDictionaryOverlayTap = { [weak self, weak cell] text, rect, charRects in
+        cell.onDictionaryOverlayTap = { [weak self, weak cell] text, contextText, rect, charRects in
             guard let self, let imageView = cell?.imageNode.imageView else { return }
-            self.forwardDictionaryOverlayTap(text: text, rect: rect, charRects: charRects, from: imageView)
+            self.forwardDictionaryOverlayTap(text: text, contextText: contextText, rect: rect, charRects: charRects, from: imageView)
         }
     }
 }
