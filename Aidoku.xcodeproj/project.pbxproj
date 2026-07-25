@@ -1253,28 +1253,11 @@
 			path = Updates;
 			sourceTree = "<group>";
 		};
-		EE7A41B62F5CF4CE0044AF4C /* Dictionary */ = {
-			isa = PBXGroup;
-			children = (
-				EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */,
-				EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */,
-				FB39A50D30037E1C006E3289 /* LookupEngine.swift */,
-				FBF3205E300DDE8D00DD5694 /* VocabManager.swift */,
-			);
-			path = Dictionary;
-			sourceTree = "<group>";
-		};
 		EE7A41B72F5CF4CE0044AF4C /* Dictionary */ = {
 			isa = PBXGroup;
 			children = (
 				FB39A4C030033AE2006E3289 /* Popup */,
 				FB07A390300C5C2F00C5B80A /* Overlay */,
-				EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */,
-				EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */,
-				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
-				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
-				FB07A38E300C349800C5B80A /* DictionaryTextAnalysisScheduler.swift */,
-				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
 			);
 			path = Dictionary;
 			sourceTree = "<group>";
@@ -1346,6 +1329,7 @@
 				FB252DA52E8B00E10052BA68 /* ChapterTitleDisplayMode.swift */,
 				FBE975CB2EC39329008C7633 /* ComicInfo.swift */,
 				FBE7A5932DE35AB700CA5B60 /* CustomSourceConfig.swift */,
+				EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */,
 				FB63D5002E38124A004FF4DC /* EditedKeys.swift */,
 				FB0AB8A42F52046F00AF1451 /* FilterGroup.swift */,
 				FB2202132F69DE28008DD26A /* LibraryFilter.swift */,
@@ -1476,6 +1460,7 @@
 				FB4275182961203100131377 /* SemanticVersion.swift */,
 				FB14B1252DF4CFDC0067E4D4 /* UIKitShim.swift */,
 				FBE786E73014596900220CA6 /* RomajiConverter.swift */,
+				FB39A50D30037E1C006E3289 /* LookupEngine.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -1525,7 +1510,6 @@
 				FB7B7E8D27874DEB001E6EAF /* Wasm */,
 				FBD6A4062858D33A007116C9 /* Tracking */,
 				FB7984162E0CA4FA000761A9 /* Upscaling */,
-				EE7A41B62F5CF4CE0044AF4C /* Dictionary */,
 				FB716DE8283D5F2000F1BB5D /* Logging */,
 				FBD6A40128525C77007116C9 /* Localization */,
 				FB16E6262DF4D85500E09ED5 /* Utilities */,
@@ -1766,7 +1750,6 @@
 			children = (
 				FB39A4BE30033AD2006E3289 /* PopupView.swift */,
 				FB39A4C130033AEA006E3289 /* PopupWebView.swift */,
-				FBF32061300DE5C400DD5694 /* AnkiManager.swift */,
 				EE7A41C52F5CF6460044AF4C /* popup.js */,
 				EE7A41C72F5CF65B0044AF4C /* popup.css */,
 				EE7A41ED2F5D04B40044AF4C /* selection.js */,
@@ -2076,6 +2059,7 @@
 			children = (
 				FB662F032DA81B8200007514 /* ButtonStyles */,
 				FB662F052DA81B8200007514 /* Modifiers */,
+				FBF0732930147A86000ED040 /* Dictionary */,
 				FBE7A58A2DE11A5300CA5B60 /* CustomSearchable.swift */,
 				FB57A6032E7F021200C9FD40 /* LoginShimViewController.swift */,
 				FBD796692ED270B100BD05F4 /* PageBackground.swift */,
@@ -2421,7 +2405,9 @@
 			children = (
 				FB0CAA6728A9B5AC0024561A /* Manga */,
 				FB0CAA4A28A2AD2E0024561A /* CoreData */,
+				EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */,
 				56815D972FBC7078001486C8 /* NotificationManager.swift */,
+				FBF3205E300DDE8D00DD5694 /* VocabManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -2498,6 +2484,28 @@
 				FBF059BE2EF7015800907B0E /* SmallStatsData.swift */,
 			);
 			path = Insights;
+			sourceTree = "<group>";
+		};
+		FBF0732830147A57000ED040 /* TextRecognizer */ = {
+			isa = PBXGroup;
+			children = (
+				EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */,
+				EE7A420D2F5E31A10044AF4C /* TextRecognizer+Analysis.swift */,
+				EE7A420E2F5E31A10044AF4C /* TextRecognizer+Lookup.swift */,
+				EE7A420F2F5E31A10044AF4C /* TextRecognizer+Clustering.swift */,
+			);
+			path = TextRecognizer;
+			sourceTree = "<group>";
+		};
+		FBF0732930147A86000ED040 /* Dictionary */ = {
+			isa = PBXGroup;
+			children = (
+				FBF0732830147A57000ED040 /* TextRecognizer */,
+				FBF32061300DE5C400DD5694 /* AnkiManager.swift */,
+				FB07A38E300C349800C5B80A /* DictionaryTextAnalysisScheduler.swift */,
+				EE7A42252F5E90010044AF4C /* ReaderDictionaryCoordinator.swift */,
+			);
+			path = Dictionary;
 			sourceTree = "<group>";
 		};
 		FBF32063300DE90A00DD5694 /* Dictionaries */ = {
