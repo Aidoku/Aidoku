@@ -29,6 +29,9 @@ struct UserConfig {
         let height = storedValue > 0 ? storedValue : 350
         return CGFloat(height)
     }
+    var popupFullWidth: Bool {
+        AppSettings.dictionary.displayMode.get() == .fullWidth
+    }
     var popupScale: Double = 1
 
     var allowsMining = true
@@ -95,7 +98,7 @@ struct PopupLayout {
 
         if isFullWidth {
             x = width / 2 + screenBorderPadding
-            y = availableFrame.height - height / 2 - screenBorderPadding
+            y = availableFrame.maxY - height / 2 - screenBorderPadding
         } else {
             if isVertical {
                 if showOnRight {

@@ -752,8 +752,17 @@ extension Settings {
             requires: AppSettings.dictionary.enable.key,
             value: .group(.init(items: [
                 .init(
+                    key: AppSettings.dictionary.displayMode.key,
+                    title: NSLocalizedString("DISPLAY_MODE"),
+                    value: .picker(.init(
+                        values: DictionarySettings.DisplayMode.allCases.map(\.rawValue),
+                        titles: DictionarySettings.DisplayMode.allCases.map(\.title)
+                    ))
+                ),
+                .init(
                     key: AppSettings.dictionary.popupWidth.key,
                     title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                    requiresFalse: "\(AppSettings.dictionary.displayMode.key)==\(DictionarySettings.DisplayMode.fullWidth.rawValue)",
                     value: .stepper(.init(
                         minimumValue: 220,
                         maximumValue: 500,

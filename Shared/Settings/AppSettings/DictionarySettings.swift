@@ -19,6 +19,7 @@ struct DictionarySettings {
             restrictedOCRLanguages,
             overlayPadding,
             overlayTextScaleMultiplier,
+            displayMode,
             popupWidth,
             popupHeight
         ]
@@ -38,6 +39,7 @@ struct DictionarySettings {
     let restrictedOCRLanguages = SettingsKey<[String]>("Dictionary.restrictedOCRLanguages", default: [])
     let overlayPadding = SettingsKey<Double>("Dictionary.overlayPadding", default: 5)
     let overlayTextScaleMultiplier = SettingsKey<Double>("Dictionary.overlayTextScaleMultiplier", default: 1)
+    let displayMode = SettingsKey<DisplayMode>("Dictionary.displayMode", default: .default)
     let popupWidth = SettingsKey<Double>("Dictionary.popupWidth", default: 320)
     let popupHeight = SettingsKey<Double>("Dictionary.popupHeight", default: 350)
 
@@ -98,6 +100,18 @@ extension DictionarySettings {
                 case .daily: 24 * 60 * 60
                 case .weekly: 7 * 24 * 60 * 60
                 case .monthly: 30 * 24 * 60 * 60
+            }
+        }
+    }
+
+    enum DisplayMode: String, SettingsValue, CaseIterable {
+        case `default`
+        case fullWidth
+
+        var title: String {
+            switch self {
+                case .default: NSLocalizedString("DEFAULT_DISPLAY_MODE")
+                case .fullWidth: NSLocalizedString("FULL_WIDTH")
             }
         }
     }

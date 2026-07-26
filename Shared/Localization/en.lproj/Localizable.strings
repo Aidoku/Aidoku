@@ -596,6 +596,9 @@
 "DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO" = "When enabled, only chapters marked as the selected language(s) will be processed for OCR. It is recommended to select only the languages you have dictionaries imported for.";
 "DICTIONARY_OCR_LANGUAGES" = "OCR Languages";
 "DICTIONARY_POPUP" = "Dictionary Popup";
+"DISPLAY_MODE" = "Display Mode";
+"DEFAULT_DISPLAY_MODE" = "Default";
+"FULL_WIDTH" = "Full Width";
 "DICTIONARY_POPUP_WIDTH" = "Popup Width";
 "DICTIONARY_POPUP_HEIGHT" = "Popup Height";
 "TERM_DICTIONARIES" = "Term Dictionaries";

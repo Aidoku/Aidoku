@@ -84,9 +84,17 @@ final class ReaderDictionaryCoordinator {
         for style in LookupEngine.shared.getStyles() {
             dictionaryStyles[String(style.dict_name)] = String(style.styles)
         }
-        let availableFrame = owner.barsHidden
-            ? owner.view.bounds
-            : owner.view.safeAreaLayoutGuide.layoutFrame
+        let availableFrame = if owner.barsHidden {
+            // add extra padding to vertical edges to prevent device rounded corners from cutting off popup
+            owner.view.bounds.inset(by: UIEdgeInsets(
+                top: max(owner.view.safeAreaInsets.top, 12),
+                left: 0,
+                bottom: max(owner.view.safeAreaInsets.bottom, 12),
+                right: 0
+            ))
+        } else {
+            owner.view.safeAreaLayoutGuide.layoutFrame
+        }
         let isVertical = anchorRect.height > anchorRect.width * 1.15
         let layout = PopupLayout(
             selectionRect: anchorRect,
@@ -94,7 +102,7 @@ final class ReaderDictionaryCoordinator {
             maxWidth: CGFloat(userConfig.popupWidth),
             maxHeight: CGFloat(userConfig.popupHeight),
             isVertical: isVertical,
-            isFullWidth: false
+            isFullWidth: userConfig.popupFullWidth
         )
         let popupFrame = CGRect(
             x: layout.position.x - layout.width / 2,
@@ -109,7 +117,7 @@ final class ReaderDictionaryCoordinator {
             dictionaryStyles: dictionaryStyles,
             availableFrame: availableFrame,
             isVertical: isVertical,
-            isFullWidth: false,
+            isFullWidth: layout.isFullWidth,
             chapterId: .init(sourceKey: owner.manga.sourceKey, mangaKey: owner.manga.key, chapterKey: owner.chapter.key),
             page: page,
             clearSelection: false,

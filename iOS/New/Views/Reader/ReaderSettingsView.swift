@@ -539,8 +539,19 @@ extension ReaderSettingsView {
                 }
                 SettingView(
                     setting: .init(
+                        key: AppSettings.dictionary.displayMode.key,
+                        title: NSLocalizedString("DISPLAY_MODE"),
+                        value: .picker(.init(
+                            values: DictionarySettings.DisplayMode.allCases.map(\.rawValue),
+                            titles: DictionarySettings.DisplayMode.allCases.map(\.title)
+                        ))
+                    )
+                )
+                SettingView(
+                    setting: .init(
                         key: AppSettings.dictionary.popupWidth.key,
                         title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                        requiresFalse: "\(AppSettings.dictionary.displayMode.key)==\(DictionarySettings.DisplayMode.fullWidth.rawValue)",
                         value: .stepper(.init(
                             minimumValue: 100,
                             maximumValue: 700,
