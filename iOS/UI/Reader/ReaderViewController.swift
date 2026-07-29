@@ -1049,6 +1049,11 @@ extension ReaderViewController {
     func showBars() {
         guard let navigationController else { return }
 
+        if #available(iOS 27.0, *) {
+            navigationController.navigationBar.isHidden = true
+            navigationController.isNavigationBarHidden = false
+        }
+
         UIView.animate(withDuration: CATransaction.animationDuration()) {
             self.statusBarHidden = false
             self.setNeedsStatusBarAppearanceUpdate()
@@ -1121,7 +1126,11 @@ extension ReaderViewController {
                 }
                 self.node.layoutIfNeeded()
             } completion: { _ in
-                navigationController.navigationBar.isHidden = true
+                if #available(iOS 27.0, *) {
+                    navigationController.isNavigationBarHidden = true
+                } else {
+                    navigationController.navigationBar.isHidden = true
+                }
                 if #available(iOS 26.0, *) {
                     navigationController.isToolbarHidden = true
                 } else {
