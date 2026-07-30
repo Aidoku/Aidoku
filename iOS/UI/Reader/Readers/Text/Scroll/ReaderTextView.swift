@@ -44,7 +44,7 @@ struct ReaderTextView: View {
            do {
                var data = Data()
                let archive = try Archive(url: zipURL, accessMode: .read)
-               guard let entry = archive[filePath] else {
+               guard let entry = EpubParser.entry(in: archive, path: filePath) else {
                    return nil
                }
                _ = try archive.extract(

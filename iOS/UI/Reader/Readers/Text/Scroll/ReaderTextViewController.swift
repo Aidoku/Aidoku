@@ -574,7 +574,10 @@ extension ReaderTextViewController {
 
             await MainActor.run {
                 // Add an inline transition view after the last section
-                let lastSection = sections.last!
+                guard let lastSection = sections.last else {
+                    loadingNext = false
+                    return
+                }
                 let screenHeight = transitionPageHeight
                 let tv = createInlineTransitionView(
                     finishedChapter: lastSection.chapter,
