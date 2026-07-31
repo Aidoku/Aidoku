@@ -357,7 +357,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
     // MARK: - Navigation
 
-    func move(toPage index: Int, animated: Bool) {
+    func move(toPage index: Int, animated: Bool, direction explicitDirection: UIPageViewController.NavigationDirection? = nil) {
         guard !pages.isEmpty else {
             return
         }
@@ -374,8 +374,12 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
         let viewController = createPageViewController(for: targetIndex)
 
+        // Moving off a transition page can target the page we're already on,
+        // so the caller supplies the direction in that case
         let direction: UIPageViewController.NavigationDirection
-        if effectiveReadingMode == .rtl {
+        if let explicitDirection {
+            direction = explicitDirection
+        } else if effectiveReadingMode == .rtl {
             direction = targetIndex < oldIndex ? .forward : .reverse
         } else {
             direction = targetIndex > oldIndex ? .forward : .reverse
@@ -450,6 +454,37 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         delegate?.setSliderOffset(offset)
     }
 
+    /// Handle a navigation input while a chapter transition page is displayed.
+    ///
+    /// Transition pages aren't part of `pages`, and `currentPageIndex` still refers to the
+    /// page the reader came from, so the regular index arithmetic lands on the wrong page.
+    /// Returns whether the input was handled.
+    private func handleTransitionPageMove(forward: Bool) -> Bool {
+        guard let currentVC = pageViewController.viewControllers?.first else { return false }
+
+        // a chapter load is already in progress
+        if currentVC is ChapterLoadTriggerViewController {
+            return true
+        }
+
+        guard let transitionVC = currentVC as? ChapterTransitionViewController else { return false }
+
+        // moving in the direction the transition page points at loads that chapter,
+        // moving back returns to the page the transition was reached from
+        if (transitionVC.direction == .next) == forward {
+            guard transitionVC.chapter != nil else { return true }
+            transitionVC.performTransition()
+        } else {
+            guard !pages.isEmpty else { return true }
+            move(
+                toPage: transitionVC.direction == .next ? pages.count - 1 : 0,
+                animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions"),
+                direction: forward ? .forward : .reverse
+            )
+        }
+        return true
+    }
+
     // MARK: - Chapter Loading
 
     func loadChapter(_ chapter: AidokuRunner.Chapter, startPage: Int = 0) async {
@@ -497,6 +532,8 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 // MARK: - Reader Delegate
 extension ReaderPagedTextViewController: ReaderReaderDelegate {
     func moveLeft() {
+        guard !handleTransitionPageMove(forward: effectiveReadingMode == .rtl) else { return }
+
         let targetIndex: Int
         switch effectiveReadingMode {
             case .rtl:
@@ -513,6 +550,8 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
     }
 
     func moveRight() {
+        guard !handleTransitionPageMove(forward: effectiveReadingMode != .rtl) else { return }
+
         let targetIndex: Int
         switch effectiveReadingMode {
             case .rtl:
