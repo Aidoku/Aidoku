@@ -1,3 +1,10 @@
+//
+//  ClearStaleListSelection.swift
+//  Aidoku
+//
+//  Created by Amqx on 8/6/26.
+//
+
 import SwiftUI
 import SwiftUIIntrospect
 
