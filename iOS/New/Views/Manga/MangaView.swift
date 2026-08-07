@@ -247,6 +247,7 @@ struct MangaView: View {
                 .navigationTransitionZoom(sourceID: chapter, in: transitionNamespace)
             }
             .environment(\.editMode, $editMode)
+            .clearsStaleListSelection(selectedChapters)
         }
 
         if #available(iOS 26.0, *) {

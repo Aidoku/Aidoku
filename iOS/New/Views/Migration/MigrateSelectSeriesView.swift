@@ -37,6 +37,7 @@ struct MigrateSelectSeriesView: View {
             }
         }
         .environment(\.editMode, $editMode)
+        .clearsStaleListSelection(selectedKeys)
         .navigationTitle(sourceName)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
