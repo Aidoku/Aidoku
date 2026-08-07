@@ -529,21 +529,23 @@ extension MangaView {
             viewModel: viewModel,
             refreshController: refreshController,
             markAllRead: {
+                let chapters = viewModel.listedChapters
                 // only show loading indicator for a larger number of chapters
-                if viewModel.chapters.count > 100 {
+                if chapters.count > 100 {
                     showLoadingIndicator()
                 }
                 Task {
-                    await viewModel.markRead(chapters: viewModel.chapters)
+                    await viewModel.markRead(chapters: chapters)
                     hideLoadingIndicator()
                 }
             },
             markAllUnread: {
-                if viewModel.chapters.count > 100 {
+                let chapters = viewModel.listedChapters
+                if chapters.count > 100 {
                     showLoadingIndicator()
                 }
                 Task {
-                    await viewModel.markUnread(chapters: viewModel.chapters)
+                    await viewModel.markUnread(chapters: chapters)
                     hideLoadingIndicator()
                 }
             },
@@ -582,12 +584,14 @@ extension MangaView {
 
         ToolbarItem(placement: .topBarLeading) {
             if editMode == .active {
-                let allSelected = selectedChapters.count == viewModel.chapters.count
+                // the downloaded chapters section is selectable too, so it has to be counted here
+                let selectableCount = viewModel.listedChapters.count
+                let allSelected = selectedChapters.count == selectableCount
                 Button {
                     if allSelected {
                         selectedChapters = Set()
                     } else {
-                        selectedChapters = Set(viewModel.chapters.map { $0.key })
+                        selectedChapters = Set(viewModel.listedChapters.map { $0.key })
                     }
                 } label: {
                     if allSelected {
@@ -596,7 +600,7 @@ extension MangaView {
                         Text(NSLocalizedString("SELECT_ALL"))
                     }
                 }
-                .disabled(viewModel.chapters.isEmpty)
+                .disabled(selectableCount == 0)
             }
         }
     }
@@ -640,9 +644,7 @@ extension MangaView {
             }
             Section(title) {
                 Button {
-                    let markChapters = selectedChapters.compactMap { id in
-                        viewModel.chapters.first(where: { $0.key == id })
-                    }
+                    let markChapters = viewModel.chapters(forKeys: selectedChapters)
                     Task {
                         await viewModel.markUnread(chapters: markChapters)
                     }
@@ -653,9 +655,7 @@ extension MangaView {
                     Label(NSLocalizedString("UNREAD"), systemImage: "minus.circle")
                 }
                 Button {
-                    let markChapters = selectedChapters.compactMap { id in
-                        viewModel.chapters.first(where: { $0.key == id })
-                    }
+                    let markChapters = viewModel.chapters(forKeys: selectedChapters)
                     Task {
                         await viewModel.markRead(chapters: markChapters)
                     }
