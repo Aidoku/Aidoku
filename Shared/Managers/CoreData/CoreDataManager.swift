@@ -82,6 +82,11 @@ final class CoreDataManager {
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
 
+        // stores that predate the model's fetch indexes don't migrate to pick them up
+        if let cloudStoreUrl = cloudDescription.url {
+            Self.createFetchIndexes(at: cloudStoreUrl)
+        }
+
         container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 LogManager.logger.error("Error loading persistent stores \(error), \(error.userInfo)")
