@@ -29,7 +29,7 @@ private struct RestoreListSelectionOnAppearModifier<Value: Hashable>: ViewModifi
                 // look like a deselection and wipe the selection in the backing collection view
                 restoreState.isRestoring = true
                 selection.remove(value)
-                DispatchQueue.main.async {
+                Task { @MainActor in
                     selection.insert(value)
                     restoreState.isRestoring = false
                 }
