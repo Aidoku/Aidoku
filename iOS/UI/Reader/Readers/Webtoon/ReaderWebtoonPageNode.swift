@@ -443,7 +443,7 @@ extension ReaderWebtoonPageNode {
                 var imageData = Data()
                 let archive: Archive
                 archive = try Archive(url: zipURL, accessMode: .read)
-                guard let entry = EpubParser.entry(in: archive, path: filePath)
+                guard let entry = archive.entry(at: filePath)
                 else {
                     return nil
                 }
