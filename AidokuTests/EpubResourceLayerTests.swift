@@ -176,7 +176,8 @@ struct EpubResourceLayerTests {
         let report = try await Fixture.evaluate(Fixture.probeScript, in: webView) as? String
         let values = Fixture.parse(try #require(report))
 
-        // Item 6: resources internal to the ePub resolve back through the handler.
+        // Item 6: resources internal to the ePub resolve back through the handler. One linked
+        // stylesheet survives, the book's own; the remote one does not.
         #expect(values["internal"] != "0")
         #expect(values["sheets"] == "1")
         #expect(values["sheetHrefs"]?.hasSuffix("style.css") == true)
@@ -206,6 +207,55 @@ struct EpubResourceLayerTests {
 
         let width = try await Fixture.evaluate("String(window.innerWidth)", in: webView) as? String
         #expect(width == "\(Int(Fixture.viewportSize.width))")
+    }
+
+    /// A paged document occupies exactly its viewport vertically and overflows only sideways.
+    ///
+    /// readium-css sizes a column at `100vh`, which WebKit resolves against the web view's bounds
+    /// and not against the area left visible after content insets. A web view that adjusts its
+    /// insets automatically therefore lays out a column taller than the area it can show, and the
+    /// bottom of every page sits under the chrome until the reader scrolls down to it. The symptom
+    /// is a small vertical scroll whose extent is exactly the inset; the cause is the mismatch, so
+    /// the host must not add insets a second time.
+    @MainActor
+    @Test func pagedDocumentDoesNotOverflowVertically() async throws {
+        let prose = (1...80)
+            .map { "<p>Paragraph \($0). \(String(repeating: "word ", count: 40))</p>" }
+            .joined()
+        let archiveURL = try Fixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(Fixture.page(body: prose).utf8)
+        ])
+        defer { Fixture.remove(archiveURL) }
+
+        let webView = try await Fixture.load(
+            spinePath: "OEBPS/page.xhtml",
+            from: archiveURL,
+            insetBehaviour: .never
+        )
+        defer { Fixture.dismantle(webView) }
+
+        let script = """
+        (function() {
+            var d = document.documentElement;
+            return [
+                'innerHeight=' + window.innerHeight,
+                'clientHeight=' + d.clientHeight,
+                'scrollHeight=' + d.scrollHeight,
+                'scrollWidth=' + d.scrollWidth
+            ].join('\\n');
+        })();
+        """
+        let report = try await Fixture.evaluate(script, in: webView) as? String
+        let values = Fixture.parse(try #require(report))
+
+        #expect(values["scrollHeight"] == values["clientHeight"])
+        #expect(values["clientHeight"] == "\(Int(Fixture.viewportSize.height))")
+
+        // Sideways overflow is the whole point, and it lands on a whole number of pages because
+        // the column gap is zero.
+        let scrollWidth = Int(values["scrollWidth"] ?? "") ?? 0
+        #expect(scrollWidth > Int(Fixture.viewportSize.width))
+        #expect(scrollWidth % Int(Fixture.viewportSize.width) == 0)
     }
 
     /// The stopped-task guard. WebKit traps if a completion is delivered to a task it has already
@@ -337,10 +387,15 @@ private enum Fixture {
     }
 
     @MainActor
-    static func load(spinePath: String, from archiveURL: URL) async throws -> WKWebView {
+    static func load(
+        spinePath: String,
+        from archiveURL: URL,
+        insetBehaviour: UIScrollView.ContentInsetAdjustmentBehavior = .automatic
+    ) async throws -> WKWebView {
         let provider = try EpubZipResourceProvider(url: archiveURL)
         let configuration = await EpubWebViewFactory.makeConfiguration(provider: provider)
         let webView = try makeWebView(configuration: configuration)
+        webView.scrollView.contentInsetAdjustmentBehavior = insetBehaviour
 
         webView.load(URLRequest(url: try #require(EpubSchemeHandler.url(forResourcePath: spinePath))))
         try await waitForDocument(in: webView)
@@ -404,15 +459,19 @@ private enum Fixture {
             var element = document.getElementById(id);
             return element ? element.naturalWidth : -1;
         }
+        // Only stylesheets fetched from a URL are counted. The readium-css sheets are injected
+        // inline and carry no href, so what remains is what the document itself asked the network
+        // or the handler for, which is what this probes.
         var hrefs = [];
         for (var i = 0; i < document.styleSheets.length; i++) {
-            hrefs.push(document.styleSheets[i].href || '(inline)');
+            var href = document.styleSheets[i].href;
+            if (href) { hrefs.push(href); }
         }
         return [
             'internal=' + width('internal'),
             'remote=' + width('remote'),
             'local=' + width('local'),
-            'sheets=' + document.styleSheets.length,
+            'sheets=' + hrefs.length,
             'sheetHrefs=' + hrefs.join(' '),
             'innerWidth=' + window.innerWidth
         ].join('\\n');
