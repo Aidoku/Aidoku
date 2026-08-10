@@ -26,7 +26,10 @@ enum EpubWebViewFactory {
     static let contentWorld = WKContentWorld.world(name: "aidoku-epub")
 
     /// Compiling the content rule list is asynchronous, so building a configuration is too.
-    static func makeConfiguration(provider: any EpubResourceProvider) async -> WKWebViewConfiguration {
+    static func makeConfiguration(
+        provider: any EpubResourceProvider,
+        settings: EpubPaginationSettings = .default
+    ) async -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
@@ -38,7 +41,7 @@ enum EpubWebViewFactory {
         if let ruleList = await makeRemoteBlockingRuleList() {
             configuration.userContentController.add(ruleList)
         }
-        configuration.userContentController.addUserScript(makeViewportScript())
+        configuration.userContentController.addUserScript(makeInjectionScript(settings: settings))
 
         return configuration
     }
@@ -61,25 +64,15 @@ enum EpubWebViewFactory {
         }
     }
 
-    /// ePub XHTML carries no viewport meta element, causing WebKit to lay out at a 980 px desktop
-    /// viewport. Consequently the content renders at an unusable scale and every width
-    /// measurement is wrong. Omitting the injection produces no error of any kind.
-    private static func makeViewportScript() -> WKUserScript {
-        let source = """
-        (function() {
-            var head = document.head || document.getElementsByTagName('head')[0];
-            if (!head) { return; }
-            var viewport = head.querySelector('meta[name="viewport"]');
-            if (!viewport) {
-                viewport = document.createElement('meta');
-                viewport.setAttribute('name', 'viewport');
-                head.appendChild(viewport);
-            }
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1');
-        })();
-        """
-        return WKUserScript(
-            source: source,
+    /// The viewport element, the readium-css stylesheets and the reading-system variables, as one
+    /// script. `EpubPaginationSettings` owns its contents; see the injection order recorded there.
+    ///
+    /// It runs in `contentWorld`, so `allowsContentJavaScript = false` continues to hold for
+    /// scripts belonging to the book. Omitting any part of this injection produces no error of any
+    /// kind, only a document laid out at 980 px reporting a plausible and wrong page count.
+    private static func makeInjectionScript(settings: EpubPaginationSettings) -> WKUserScript {
+        WKUserScript(
+            source: settings.injectionScript(),
             injectionTime: .atDocumentEnd,
             forMainFrameOnly: true,
             in: contentWorld
