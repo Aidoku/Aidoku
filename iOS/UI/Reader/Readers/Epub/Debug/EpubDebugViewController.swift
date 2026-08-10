@@ -142,6 +142,10 @@ private class EpubDebugRenderViewController: UIViewController {
         super.viewDidLoad()
 
         title = (spinePath as NSString).lastPathComponent
+        // A large title changes height as it collapses, and the web view is sized against what
+        // the bar leaves behind. A column is `100vh` tall, so the document would re-lay out
+        // mid-scroll and the text on a page would depend on how far the title had collapsed.
+        navigationItem.largeTitleDisplayMode = .never
         view.backgroundColor = .systemBackground
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -168,6 +172,13 @@ private class EpubDebugRenderViewController: UIViewController {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
         webView.translatesAutoresizingMaskIntoConstraints = false
+        // The view is already pinned inside the safe area. Letting the scroll view inset itself
+        // again would make `100vh` exceed the visible area, leaving the foot of every page under
+        // the chrome and giving the scroll view a vertical overflow it should not have.
+        webView.scrollView.contentInsetAdjustmentBehavior = .never
+        // A paged document is exactly as tall as its viewport, so vertical movement of any kind
+        // is rubber-banding against nothing.
+        webView.scrollView.alwaysBounceVertical = false
         view.addSubview(webView)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
