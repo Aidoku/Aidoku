@@ -17,6 +17,8 @@ class TabBarController: UITabBarController {
     private var settingsPath: NavigationCoordinator?
     private var previousSelectedIndex: Int?
 
+    private weak var historyNavigationController: UINavigationController?
+
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
     private lazy var libraryRefreshAccessory: UIView = {
@@ -78,6 +80,7 @@ class TabBarController: UITabBarController {
             .environmentObject(historyPath))
         historyPath.rootViewController = historyHostingController
         let historyViewController = NavigationController(rootViewController: historyHostingController)
+        historyNavigationController = historyViewController
 
         let settingsPath = NavigationCoordinator(rootViewController: nil)
         let settingsViewController: UIViewController
@@ -291,6 +294,37 @@ extension TabBarController: UITabBarControllerDelegate {
         if #unavailable(iOS 18.0) {
             checkForSettingsPop()
         }
+    }
+
+    @available(iOS 18.0, *)
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
+        if tab === tabBarController.selectedTab {
+            checkForHistoryReselection()
+        }
+        return true
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        if viewController === selectedViewController {
+            checkForHistoryReselection()
+        }
+        return true
+    }
+
+    // when the history tab is selected while it's already showing the top of the history list,
+    // let the history view know so that it can continue reading the last opened manga
+    private func checkForHistoryReselection() {
+        guard
+            UserDefaults.standard.bool(forKey: "Library.continueReadingOnReselect"),
+            let historyNavigationController,
+            selectedViewController === historyNavigationController,
+            // if there's anything pushed on top, the default behavior pops back to the history list
+            historyNavigationController.viewControllers.count == 1,
+            // if the list isn't at the top, the default behavior scrolls it there
+            let scrollView = historyNavigationController.topViewController?.view.firstScrollView(),
+            scrollView.isScrolledToTop
+        else { return }
+        NotificationCenter.default.post(name: .historyTabReselected, object: nil)
     }
 
     private func checkForSettingsPop() {

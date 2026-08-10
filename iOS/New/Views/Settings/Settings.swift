@@ -182,6 +182,11 @@ extension Settings {
                 value: .toggle(.init())
             ),
             .init(
+                key: "Library.continueReadingOnReselect",
+                title: NSLocalizedString("CONTINUE_READING_ON_RESELECT"),
+                value: .toggle(.init())
+            ),
+            .init(
                 key: "Library.unreadChapterBadges",
                 title: NSLocalizedString("UNREAD_CHAPTER_BADGES"),
                 value: .toggle(.init())

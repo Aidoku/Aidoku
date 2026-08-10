@@ -25,6 +25,8 @@ struct HistoryView: View {
 
     @State private var listSelection: String? // fix for list highlighting being buggy
 
+    @State private var openingLastRead = false
+
     @EnvironmentObject private var path: NavigationCoordinator
 
     var body: some View {
@@ -141,6 +143,12 @@ struct HistoryView: View {
             // lock the view when the app is backgrounded
             locked = UserDefaults.standard.bool(forKey: "History.lockHistoryTab")
         }
+        .onReceive(NotificationCenter.default.publisher(for: .historyTabReselected)) { _ in
+            // the history tab was selected while already at the top of the list
+            Task {
+                await continueReading()
+            }
+        }
     }
 
     var lockedView: some View {
@@ -245,6 +253,74 @@ struct HistoryView: View {
                 await viewModel.loadMore()
             }
         }
+    }
+
+    // open the most recently read manga, resuming from the chapter it left off on
+    @MainActor
+    func continueReading() async {
+        guard !locked, !openingLastRead else { return }
+        openingLastRead = true
+        defer { openingLastRead = false }
+
+        let entry = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getRecentHistory(limit: 1, offset: 0, context: context)
+                .first
+                .map { (sourceId: $0.sourceId, mangaId: $0.mangaId) }
+        }
+        guard let entry else { return }
+
+        let mangaCacheKey = "\(entry.sourceId).\(entry.mangaId)"
+        var manga = viewModel.mangaCache[mangaCacheKey]
+        if manga == nil {
+            manga = await CoreDataManager.shared.container.performBackgroundTask { context in
+                CoreDataManager.shared.getManga(
+                    sourceId: entry.sourceId,
+                    mangaId: entry.mangaId,
+                    context: context
+                )?.toNewManga()
+            }
+        }
+
+        let (chapters, nextChapter) = await MangaManager.shared.getNextChapter(
+            sourceKey: entry.sourceId,
+            mangaKey: entry.mangaId,
+            fallbackChapters: manga?.chapters,
+            fetchIfNeeded: true
+        )
+
+        var targetManga = manga ?? AidokuRunner.Manga(sourceKey: entry.sourceId, key: entry.mangaId, title: "")
+        if !chapters.isEmpty {
+            targetManga.chapters = chapters
+        }
+
+        // the user can navigate elsewhere while the chapters are loading
+        guard
+            let rootViewController = path.rootViewController,
+            rootViewController.view.window != nil,
+            rootViewController.navigationController?.topViewController === rootViewController
+        else { return }
+
+        guard
+            let chapter = nextChapter,
+            let source = SourceManager.shared.source(for: entry.sourceId)
+        else {
+            // nothing left to read (or the source is missing), so open the manga page instead.
+            // without a source to load details from or anything stored to show, the page would be blank
+            guard
+                SourceManager.shared.hasSourceInstalled(id: entry.sourceId) || !targetManga.title.isEmpty
+            else { return }
+            path.push(MangaViewController(manga: targetManga, parent: rootViewController))
+            return
+        }
+
+        let readerController = ReaderViewController(
+            source: source,
+            manga: targetManga,
+            chapter: chapter
+        )
+        let navigationController = ReaderNavigationController(readerViewController: readerController)
+        navigationController.modalPresentationStyle = .fullScreen
+        path.present(navigationController)
     }
 
     // prompt for biometrics to unlock the view
