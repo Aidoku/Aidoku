@@ -21,15 +21,28 @@ import WebKit
 /// to one provider and therefore to one book.
 @MainActor
 enum EpubWebViewFactory {
+    /// A configuration that could not be locked down is not produced at all.
+    enum ConfigurationError: Error {
+        /// The rule list blocking remote loads could not be compiled, carrying the underlying
+        /// failure where there was one.
+        case remoteBlockingUnavailable((any Error)?)
+    }
+
     /// The world our own injected scripts run in. It is unaffected by
     /// `allowsContentJavaScript = false`, which disables only scripts belonging to the page.
     static let contentWorld = WKContentWorld.world(name: "aidoku-epub")
 
     /// Compiling the content rule list is asynchronous, so building a configuration is too.
+    ///
+    /// It throws rather than returning a configuration the rule list is missing from. A subresource
+    /// load never reaches the navigation policy delegate, so the rule list is the only thing left
+    /// between a book and the network: without it a tracking pixel fires with the reader's IP, the
+    /// page renders exactly as it would have done, and nothing downstream can tell the difference.
+    /// A caller that cannot show a book is the lesser failure.
     static func makeConfiguration(
         provider: any EpubResourceProvider,
         settings: EpubPaginationSettings = .default
-    ) async -> WKWebViewConfiguration {
+    ) async throws -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
@@ -38,9 +51,7 @@ enum EpubWebViewFactory {
             forURLScheme: EpubSchemeHandler.scheme
         )
 
-        if let ruleList = await makeRemoteBlockingRuleList() {
-            configuration.userContentController.add(ruleList)
-        }
+        configuration.userContentController.add(try await makeRemoteBlockingRuleList())
         configuration.userContentController.addUserScript(makeInjectionScript(settings: settings))
 
         return configuration
@@ -49,19 +60,31 @@ enum EpubWebViewFactory {
     /// Blocks every http and https load. Requests carrying a custom scheme never reach the
     /// content blocker, so resources belonging to the book are unaffected, while a remote image,
     /// font or stylesheet is stopped before it leaves the device.
-    private static func makeRemoteBlockingRuleList() async -> WKContentRuleList? {
+    private static func makeRemoteBlockingRuleList() async throws -> WKContentRuleList {
         let rules = """
         [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}}]
         """
+        guard let store = WKContentRuleListStore.default() else {
+            LogManager.logger.error("EpubWebViewFactory: no content rule list store is available")
+            throw ConfigurationError.remoteBlockingUnavailable(nil)
+        }
+
+        let compiled: WKContentRuleList?
         do {
-            return try await WKContentRuleListStore.default()?.compileContentRuleList(
+            compiled = try await store.compileContentRuleList(
                 forIdentifier: "aidoku-epub-block-remote",
                 encodedContentRuleList: rules
             )
         } catch {
             LogManager.logger.error("EpubWebViewFactory: failed to compile content rule list: \(error)")
-            return nil
+            throw ConfigurationError.remoteBlockingUnavailable(error)
         }
+
+        guard let compiled else {
+            LogManager.logger.error("EpubWebViewFactory: the content rule list compiled to nothing")
+            throw ConfigurationError.remoteBlockingUnavailable(nil)
+        }
+        return compiled
     }
 
     /// The viewport element, the readium-css stylesheets and the reading-system variables, as one

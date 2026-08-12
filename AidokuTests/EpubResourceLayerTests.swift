@@ -269,7 +269,7 @@ struct EpubResourceLayerTests {
         defer { EpubFixture.remove(archiveURL) }
 
         let provider = try EpubZipResourceProvider(url: archiveURL)
-        let configuration = await EpubWebViewFactory.makeConfiguration(provider: provider)
+        let configuration = try await EpubWebViewFactory.makeConfiguration(provider: provider)
         let webView = try EpubFixture.makeWebView(configuration: configuration)
         defer { EpubFixture.dismantle(webView) }
 
@@ -304,7 +304,7 @@ struct EpubResourceLayerTests {
             baseURL: URL(string: "https://example.test/")!,
             session: StubURLProtocol.session()
         )
-        let configuration = await EpubWebViewFactory.makeConfiguration(provider: provider)
+        let configuration = try await EpubWebViewFactory.makeConfiguration(provider: provider)
         let webView = try EpubFixture.makeWebView(configuration: configuration)
         defer { EpubFixture.dismantle(webView) }
 

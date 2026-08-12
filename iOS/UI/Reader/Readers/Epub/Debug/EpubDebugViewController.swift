@@ -183,7 +183,13 @@ private class EpubDebugRenderViewController: UIViewController {
             return show(title: "Provider", message: "\(error)")
         }
 
-        let renderer = await EpubSpineRenderer(provider: provider)
+        let renderer: EpubSpineRenderer
+        do {
+            renderer = try await EpubSpineRenderer(provider: provider)
+        } catch {
+            return show(title: "Renderer", message: "\(error)")
+        }
+
         // A late image or a change to the size of the web view moves every page boundary, so the
         // count displayed here is whatever the last measurement produced.
         renderer.onRepaginate = { [weak self] _ in

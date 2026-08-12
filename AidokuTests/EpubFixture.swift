@@ -98,7 +98,7 @@ enum EpubFixture {
         insetBehaviour: UIScrollView.ContentInsetAdjustmentBehavior = .automatic
     ) async throws -> WKWebView {
         let provider = try EpubZipResourceProvider(url: archiveURL)
-        let configuration = await EpubWebViewFactory.makeConfiguration(provider: provider)
+        let configuration = try await EpubWebViewFactory.makeConfiguration(provider: provider)
         let webView = try makeWebView(configuration: configuration)
         webView.scrollView.contentInsetAdjustmentBehavior = insetBehaviour
 
@@ -114,7 +114,7 @@ enum EpubFixture {
     @MainActor
     static func makeRenderer(for archiveURL: URL, size: CGSize = viewportSize) async throws -> EpubSpineRenderer {
         let provider = try EpubZipResourceProvider(url: archiveURL)
-        let renderer = await EpubSpineRenderer(provider: provider)
+        let renderer = try await EpubSpineRenderer(provider: provider)
         try install(renderer.webView, size: size)
         return renderer
     }
