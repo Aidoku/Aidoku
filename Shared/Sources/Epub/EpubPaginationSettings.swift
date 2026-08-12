@@ -19,6 +19,12 @@ import Foundation
 ///
 /// Paged mode needs no enabling. `after.css` sets `--RS__colCount` and `--RS__colWidth`
 /// unconditionally, and `readium-scroll-on` is the opt-out rather than the opt-in.
+///
+/// Every value injected here is independent of the size of the viewport. `--RS__viewportWidth` in
+/// particular is left at the `100%` readium-css gives it, since it is the width of `:root` and a
+/// pixel value measured at load survives a rotation while the `100vw` columns inside it do not:
+/// the two then disagree, every page boundary moves off the viewport, and no later measurement
+/// puts it right because the width is frozen.
 struct EpubPaginationSettings {
     var columnCount: Int = 1
 
@@ -91,7 +97,6 @@ struct EpubPaginationSettings {
             root.style.setProperty('--RS__colCount', '\(columnCount)');
             root.style.setProperty('--RS__colGap', '\(columnGapPx)px');
             root.style.setProperty('--RS__pageGutter', '\(pageGutterPx)px');
-            root.style.setProperty('--RS__viewportWidth', window.innerWidth + 'px');
             root.style.setProperty('--USER__fontSize', '\(fontSizePercent)%');
 
             // readium-css toggles are substring matches against the inline style attribute

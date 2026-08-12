@@ -122,11 +122,24 @@ private class EpubDebugSpineViewController: UITableViewController {
     }
 }
 
-/// Renders one spine document in the locked-down web view.
+/// Renders one spine document, paginated, with controls for walking its pages.
 private class EpubDebugRenderViewController: UIViewController {
     private let bookURL: URL
     private let spinePath: String
-    private var webView: WKWebView?
+    private var renderer: EpubSpineRenderer?
+
+    private lazy var previousItem = UIBarButtonItem(
+        image: UIImage(systemName: "chevron.left"),
+        style: .plain,
+        target: self,
+        action: #selector(showPreviousPage)
+    )
+    private lazy var nextItem = UIBarButtonItem(
+        image: UIImage(systemName: "chevron.right"),
+        style: .plain,
+        target: self,
+        action: #selector(showNextPage)
+    )
 
     init(bookURL: URL, spinePath: String) {
         self.bookURL = bookURL
@@ -141,19 +154,21 @@ private class EpubDebugRenderViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = (spinePath as NSString).lastPathComponent
+        updateTitle()
         // A large title changes height as it collapses, and the web view is sized against what
         // the bar leaves behind. A column is `100vh` tall, so the document would re-lay out
         // mid-scroll and the text on a page would depend on how far the title had collapsed.
         navigationItem.largeTitleDisplayMode = .never
         view.backgroundColor = .systemBackground
 
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
+        let checksItem = UIBarButtonItem(
             title: "Checks",
             style: .plain,
             target: self,
             action: #selector(runChecks)
         )
+        navigationItem.rightBarButtonItems = [nextItem, previousItem, checksItem]
+        updateControls()
 
         Task {
             await loadSpineDocument()
@@ -168,17 +183,17 @@ private class EpubDebugRenderViewController: UIViewController {
             return show(title: "Provider", message: "\(error)")
         }
 
-        let configuration = await EpubWebViewFactory.makeConfiguration(provider: provider)
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.navigationDelegate = self
+        let renderer = await EpubSpineRenderer(provider: provider)
+        // A late image or a change to the size of the web view moves every page boundary, so the
+        // count displayed here is whatever the last measurement produced.
+        renderer.onRepaginate = { [weak self] _ in
+            self?.updateTitle()
+            self?.updateControls()
+        }
+        self.renderer = renderer
+
+        let webView = renderer.webView
         webView.translatesAutoresizingMaskIntoConstraints = false
-        // The view is already pinned inside the safe area. Letting the scroll view inset itself
-        // again would make `100vh` exceed the visible area, leaving the foot of every page under
-        // the chrome and giving the scroll view a vertical overflow it should not have.
-        webView.scrollView.contentInsetAdjustmentBehavior = .never
-        // A paged document is exactly as tall as its viewport, so vertical movement of any kind
-        // is rubber-banding against nothing.
-        webView.scrollView.alwaysBounceVertical = false
         view.addSubview(webView)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -186,40 +201,73 @@ private class EpubDebugRenderViewController: UIViewController {
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        self.webView = webView
 
-        guard let url = EpubSchemeHandler.url(forResourcePath: spinePath) else {
-            return show(title: "Load", message: "could not build a url for \(spinePath)")
+        do {
+            try await renderer.load(spinePath: spinePath)
+        } catch {
+            return show(title: "Load", message: "\(error)")
         }
-        // Loading over the custom scheme means relative subresource requests resolve against it
-        // too, so they arrive back at the handler.
-        webView.load(URLRequest(url: url))
+
+        updateTitle()
+        updateControls()
     }
 
-    /// Reports whether remote resources were blocked, which is the posture this slice exists to
-    /// establish. A blocked image never decodes, so its `naturalWidth` stays at zero, and a
-    /// blocked stylesheet never enters `document.styleSheets`.
+    // MARK: - Pages
+
+    @objc private func showPreviousPage() {
+        showPage(offsetBy: -1)
+    }
+
+    @objc private func showNextPage() {
+        showPage(offsetBy: 1)
+    }
+
+    private func showPage(offsetBy offset: Int) {
+        guard let renderer else { return }
+        Task {
+            await renderer.showPage(renderer.currentPage + offset)
+            updateTitle()
+            updateControls()
+        }
+    }
+
+    /// The page comes first because the bar truncates the tail of a title to fit its buttons, and
+    /// the page is the number being read off this screen.
+    private func updateTitle() {
+        let name = (spinePath as NSString).lastPathComponent
+        guard let renderer, renderer.pageCount > 0 else {
+            title = name
+            return
+        }
+        title = "\(renderer.currentPage + 1)/\(renderer.pageCount) \(name)"
+    }
+
+    private func updateControls() {
+        previousItem.isEnabled = (renderer?.currentPage ?? 0) > 0
+        nextItem.isEnabled = renderer.map { $0.currentPage < $0.pageCount - 1 } ?? false
+    }
+
+    /// Reports whether remote resources were blocked, which is the posture slice 1 established. A
+    /// blocked image never decodes, so its `naturalWidth` stays at zero, and a blocked stylesheet
+    /// never enters `document.styleSheets`.
     @objc private func runChecks() {
+        guard let renderer else { return }
         Task {
             do {
-                let report = try await evaluate(Self.checkScript)
-                show(title: "Checks", message: (report as? String) ?? "unexpected result: \(String(describing: report))")
+                let report = try await renderer.webView.evaluateJavaScript(
+                    Self.checkScript,
+                    contentWorld: EpubWebViewFactory.contentWorld
+                )
+                // Repeated here as well as in the title, since the title is what the bar truncates.
+                let position = """
+                \(spinePath)
+                page=\(renderer.currentPage + 1)/\(renderer.pageCount) \
+                progression=\(String(format: "%.3f", renderer.progression))
+                """
+                let details = (report as? String) ?? "unexpected result: \(String(describing: report))"
+                show(title: "Checks", message: position + "\n" + details)
             } catch {
                 show(title: "Checks", message: "\(error)")
-            }
-        }
-    }
-
-    /// The completion-handler form is used deliberately. On current WebKit every content-world
-    /// variant of the `async` overload resolves to `()` regardless of what the script returns.
-    private func evaluate(_ script: String) async throws -> Any? {
-        guard let webView else { return nil }
-        return try await withCheckedThrowingContinuation { continuation in
-            webView.evaluateJavaScript(script, in: nil, in: EpubWebViewFactory.contentWorld) { result in
-                switch result {
-                    case .success(let value): continuation.resume(returning: value)
-                    case .failure(let error): continuation.resume(throwing: error)
-                }
             }
         }
     }
@@ -235,6 +283,9 @@ private class EpubDebugRenderViewController: UIViewController {
         var out = [];
         out.push('innerWidth=' + window.innerWidth);
         out.push('scrollWidth=' + document.documentElement.scrollWidth);
+        // A page begins at exactly index * innerWidth, so an offset that is not a whole multiple
+        // of the viewport means the reader is looking at two half pages.
+        out.push('pageXOffset=' + window.pageXOffset);
         var images = document.images;
         for (var i = 0; i < images.length; i++) {
             out.push(
@@ -256,29 +307,6 @@ private class EpubDebugRenderViewController: UIViewController {
         return out.join('\\n');
     })();
     """
-}
-
-extension EpubDebugRenderViewController: WKNavigationDelegate {
-    func webView(
-        _ webView: WKWebView,
-        decidePolicyFor navigationAction: WKNavigationAction
-    ) async -> WKNavigationActionPolicy {
-        // Alongside the content rule list, which is what stops subresource loads: only our own
-        // scheme is allowed to navigate.
-        navigationAction.request.url?.scheme == EpubSchemeHandler.scheme ? .allow : .cancel
-    }
-
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
-        show(title: "Navigation", message: "\(error)")
-    }
-
-    func webView(
-        _ webView: WKWebView,
-        didFailProvisionalNavigation navigation: WKNavigation!,
-        withError error: any Error
-    ) {
-        show(title: "Navigation", message: "\(error)")
-    }
 }
 
 #endif
