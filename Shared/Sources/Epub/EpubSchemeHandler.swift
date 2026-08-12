@@ -21,10 +21,20 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
 
     private let provider: any EpubResourceProvider
 
-    /// Tasks WebKit has stopped. Delivering a completion to a stopped task traps, and an
-    /// asynchronous provider widens the window in which that happens. Only touched on the main
-    /// thread, where WebKit calls this handler.
-    private var stoppedTasks = Set<ObjectIdentifier>()
+    /// The tasks still ours to complete. Delivering a completion to a task WebKit has stopped
+    /// traps, and an asynchronous provider widens the window in which that happens. Only touched
+    /// on the main thread, where WebKit calls this handler.
+    ///
+    /// A task is held by its identifier and by the object itself. `ObjectIdentifier` is an address,
+    /// and an address belongs to a later object once the one at it is released, so a record kept
+    /// under a bare identifier can be read as describing a task it has nothing to do with.
+    /// Recording only stopped tasks made that reachable: a request whose provider never returns,
+    /// which a stalled `EpubRemoteResourceProvider` fetch is, left its identifier behind for good,
+    /// and the next task allocated at that address inherited it and was answered with neither
+    /// `didFinish` nor `didFailWithError`. Retaining the object keeps the address its own for as
+    /// long as the record lasts, and recording live tasks rather than stopped ones means the record
+    /// is cleared by whichever of the two outcomes arrives.
+    private var activeTasks: [ObjectIdentifier: any WKURLSchemeTask] = [:]
 
     init(provider: any EpubResourceProvider) {
         self.provider = provider
@@ -48,12 +58,13 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         }
         let identifier = ObjectIdentifier(urlSchemeTask)
         let path = Self.resourcePath(from: url)
+        activeTasks[identifier] = urlSchemeTask
 
         Task { [weak self] in
             guard let self else { return }
             do {
                 let data = try await provider.data(at: path)
-                guard !wasStopped(identifier) else { return }
+                guard claimCompletion(of: identifier) else { return }
 
                 let response = URLResponse(
                     url: url,
@@ -65,21 +76,22 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
                 urlSchemeTask.didReceive(data)
                 urlSchemeTask.didFinish()
             } catch {
-                guard !wasStopped(identifier) else { return }
+                guard claimCompletion(of: identifier) else { return }
                 urlSchemeTask.didFailWithError(error)
             }
         }
     }
 
     func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {
-        stoppedTasks.insert(ObjectIdentifier(urlSchemeTask))
+        activeTasks.removeValue(forKey: ObjectIdentifier(urlSchemeTask))
     }
 
     // MARK: - Helpers
 
-    /// Whether WebKit stopped the task while the provider was working, clearing the record if so.
-    private func wasStopped(_ identifier: ObjectIdentifier) -> Bool {
-        stoppedTasks.remove(identifier) != nil
+    /// Whether the task is still ours to complete, giving up the claim if it is. A task WebKit has
+    /// stopped is no longer held, and so is answered by nobody.
+    private func claimCompletion(of identifier: ObjectIdentifier) -> Bool {
+        activeTasks.removeValue(forKey: identifier) != nil
     }
 
     /// URL paths are absolute and percent-encoded; ePub-internal paths are neither.
