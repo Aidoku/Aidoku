@@ -371,6 +371,132 @@ struct EpubPaginationTests {
         #expect(scrollWidth == viewportWidth * Double(renderer.pageCount))
     }
 
+    /// A count belongs to the size the document is laid out at, not to the size before it.
+    ///
+    /// The web content process is told of a new size after the view has taken it, so a measurement
+    /// made as the layout pass arrives describes the layout being replaced. On an iPad entering a
+    /// split view that left the count at the full-width 1 for a document which had already reflowed
+    /// to `innerWidth` 412 and `scrollWidth` 1236, three pages; nudging the divider then measured
+    /// that 412 layout and reported 3 for a document by then laid out at 449 and occupying 2. Each
+    /// resize reported the one before it.
+    ///
+    /// Two changes in quick succession are what expose it, since the second must not be answered
+    /// with the geometry of the first. The count is checked against the document's own measurements
+    /// rather than against a number worked out here, which is the disagreement being tested for.
+    @Test func resizingTwiceReportsTheLatestGeometry() async throws {
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(EpubFixture.page(body: EpubFixture.prose(paragraphs: 80)).utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+
+        _ = try await renderer.load(spinePath: "OEBPS/page.xhtml")
+        await renderer.settle()
+
+        let height = EpubFixture.viewportSize.height
+        for width in [EpubFixture.viewportSize.width / 2, EpubFixture.viewportSize.width * 2 / 3] {
+            renderer.webView.frame = CGRect(origin: .zero, size: CGSize(width: width, height: height))
+            renderer.webView.layoutIfNeeded()
+        }
+        await renderer.settle()
+
+        let viewportWidth = try await EpubFixture.number("window.innerWidth", in: renderer.webView)
+        let scrollWidth = try await EpubFixture.number("document.documentElement.scrollWidth", in: renderer.webView)
+
+        // Within a point rather than exactly: this width is fractional, which is the case an iPad
+        // split view produces, and `window.innerWidth` is an integer.
+        #expect(abs(viewportWidth - Double(EpubFixture.viewportSize.width * 2 / 3)) <= 1)
+        #expect(Double(renderer.pageCount) == (scrollWidth / viewportWidth).rounded())
+        // The document is on a whole page of the width it now has, rather than of the one the count
+        // was measured against.
+        #expect(EpubFixture.pageOffset(in: renderer.webView) == viewportWidth * Double(renderer.currentPage))
+    }
+
+    /// A document loaded while a resize is still settling ends up paginated as itself, from page 0.
+    ///
+    /// The window is shorter than a person can act in, so a manual pass over it shows only that
+    /// nothing gross happens. This asserts the state it settles into, not the path taken: `load`
+    /// writes the count, the page and the progression after any work the resize had in flight, so a
+    /// resize left uncancelled is corrected here rather than caught. What it would produce is a
+    /// scroll to the previous document's progression that stands until `holdCurrentPage` undoes it,
+    /// a flash of the wrong text which no assertion about the settled state can see. The
+    /// cancellation guard in `repaginate` exists for that flash and is not covered by any test.
+    @Test func loadingDuringAResizeDoesNotCarryThePreviousDocument() async throws {
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/long.xhtml": Data(EpubFixture.page(body: EpubFixture.prose(paragraphs: 80)).utf8),
+            "OEBPS/short.xhtml": Data(EpubFixture.page(body: "<p>one short page</p>").utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+
+        _ = try await renderer.load(spinePath: "OEBPS/long.xhtml")
+        await renderer.settle()
+        await renderer.showPage(renderer.pageCount - 1)
+        #expect(renderer.progression > 0)
+
+        // Resize, then replace the document before the resize has been acted on.
+        renderer.webView.frame = CGRect(
+            origin: .zero,
+            size: CGSize(width: EpubFixture.viewportSize.width / 2, height: EpubFixture.viewportSize.height)
+        )
+        renderer.webView.layoutIfNeeded()
+        // Long enough for the size change to be past its debounce and inside `repaginate`, which is
+        // the window being tested. Replacing the document sooner is caught by the check the task
+        // makes when it wakes, and so exercises nothing.
+        try? await Task.sleep(nanoseconds: 60_000_000)
+        let pages = try await renderer.load(spinePath: "OEBPS/short.xhtml")
+        await renderer.settle()
+
+        #expect(pages == 1)
+        #expect(renderer.pageCount == 1)
+        #expect(renderer.currentPage == 0)
+        #expect(renderer.progression == 0)
+        #expect(EpubFixture.pageOffset(in: renderer.webView) == 0)
+    }
+
+    /// A resize arriving while a load is still being confirmed settles on the geometry it ends at.
+    ///
+    /// The confirmation started by a load holds the document steady and re-measures it when a late
+    /// image reflows it, so a resize inside that window has the two running against each other.
+    /// This asserts the outcome that matters, a count agreeing with the document and not moving
+    /// afterwards; it does not distinguish which of the two produced it, and passes with the
+    /// confirmation left uncancelled because `waitForViewport` makes a late measurement land on the
+    /// final width anyway. What cancelling removes is two `holdCurrentPage` loops invalidating each
+    /// other's request guard, which shows as jitter rather than as a wrong number.
+    @Test func resizingDuringTheConfirmationSettlesOnOneCount() async throws {
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(EpubFixture.page(body: EpubFixture.prose(paragraphs: 80)).utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+
+        // Deliberately not settled: the confirmation is still running when the resize arrives.
+        _ = try await renderer.load(spinePath: "OEBPS/page.xhtml")
+        renderer.webView.frame = CGRect(
+            origin: .zero,
+            size: CGSize(width: EpubFixture.viewportSize.width / 2, height: EpubFixture.viewportSize.height)
+        )
+        renderer.webView.layoutIfNeeded()
+        await renderer.settle()
+
+        let settled = renderer.pageCount
+        let viewportWidth = try await EpubFixture.number("window.innerWidth", in: renderer.webView)
+        let scrollWidth = try await EpubFixture.number("document.documentElement.scrollWidth", in: renderer.webView)
+
+        #expect(viewportWidth == Double(EpubFixture.viewportSize.width) / 2)
+        #expect(Double(settled) == (scrollWidth / viewportWidth).rounded())
+
+        // Nothing left running moves it afterwards.
+        try? await Task.sleep(nanoseconds: 700_000_000)
+        #expect(renderer.pageCount == settled)
+    }
+
     /// A spine path the provider cannot satisfy fails the navigation rather than leaving the reader
     /// waiting on a page count that never arrives.
     @Test func loadingAMissingDocumentThrows() async throws {
