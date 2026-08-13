@@ -47,9 +47,35 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var openTask: Task<Void, Never>?
     private var moveTask: Task<Void, Never>?
 
+    /// The one turn held while another is in flight. See `navigate`.
+    private var pendingMove: ((ReaderEpubViewModel) async -> Void)?
+
     /// The size the book was last laid out at, so a layout pass that changes nothing does not
     /// invalidate every page count.
     private var lastViewport: CGSize = .zero
+
+    /// The web view's inset constraints, held so their constants can be updated as the device's
+    /// safe area changes without rebuilding them.
+    private struct WebViewInsets {
+        let top: NSLayoutConstraint
+        let bottom: NSLayoutConstraint
+        let leading: NSLayoutConstraint
+        let trailing: NSLayoutConstraint
+
+        var constants: UIEdgeInsets {
+            UIEdgeInsets(top: top.constant, left: leading.constant,
+                         bottom: bottom.constant, right: trailing.constant)
+        }
+
+        func apply(_ insets: UIEdgeInsets) {
+            top.constant = insets.top
+            bottom.constant = insets.bottom
+            leading.constant = insets.left
+            trailing.constant = insets.right
+        }
+    }
+
+    private var webViewInsets: WebViewInsets?
 
     /// True while the slider is being dragged, so the total firming up does not move the thumb
     /// under the finger.
@@ -77,29 +103,58 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        let size = view.bounds.size
+        applySafeArea()
+        let size = webViewSize()
         guard size != lastViewport, size.width > 0, size.height > 0 else { return }
         lastViewport = size
         book?.viewportChanged(to: size)
     }
 
-    /// Adds the web view once the book exists, pinned to the view's own edges rather than to its
-    /// safe area.
+    /// Adds the web view, inset from the device's safe area.
     ///
-    /// The chrome overlays the reader and must never resize it. A column is `100vh` by `100vw`, so
-    /// any change to the web view's height re-fragments the document and moves every page
-    /// boundary: hiding the bars against a safe-area-pinned web view would repaginate the book on
-    /// every tap. The renderer already sets `contentInsetAdjustmentBehavior = .never` for the same
-    /// reason, and `EpubPaginationSettings.pageGutterPx` is what keeps text off the edges.
+    /// Nothing about the safe area is expressed in CSS. readium-css is followed as it is, and its
+    /// own `--RS__pageGutter` continues to be the only padding inside the document. An earlier
+    /// attempt injected `env(safe-area-inset-*)` rules, which worked in the sense that they applied
+    /// to every page, and broke pagination: a web view's safe area depends on where it sits in its
+    /// window, so resizing it changes `env()`, which re-fragments the document on a different tick
+    /// from the one the renderer waits for. The count then described a layout that had already been
+    /// replaced. Insetting the view instead leaves the document with exactly one thing that decides
+    /// its layout, its own size, which is the input the renderer already handles.
     private func install(_ webView: UIView) {
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
-        NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
+        let insets = WebViewInsets(
+            top: webView.topAnchor.constraint(equalTo: view.topAnchor),
+            bottom: view.bottomAnchor.constraint(equalTo: webView.bottomAnchor),
+            leading: webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            trailing: view.trailingAnchor.constraint(equalTo: webView.trailingAnchor)
+        )
+        NSLayoutConstraint.activate([insets.top, insets.bottom, insets.leading, insets.trailing])
+        webViewInsets = insets
+        applySafeArea()
+    }
+
+    /// Insets the web view by the **window's** safe area rather than the view's.
+    ///
+    /// The window's insets are the physical notch and home indicator and do not change when the
+    /// bars are shown or hidden; the view's include the bars and do. A column is `100vh` by
+    /// `100vw`, so a web view that resized on every tap that toggled the chrome would re-fragment
+    /// the document and move every page boundary. This is the same distinction, and the same
+    /// reason, as `ReaderPagedTextViewController`'s use of `view.window?.safeAreaInsets`.
+    ///
+    /// A rotation does change these, and also changes the view's size, so the renderer re-measures
+    /// once for both rather than twice.
+    private func applySafeArea() {
+        guard let webViewInsets else { return }
+        let safeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
+        guard webViewInsets.constants != safeArea else { return }
+        webViewInsets.apply(safeArea)
+        view.layoutIfNeeded()
+    }
+
+    /// The size the document is laid out at, which is the web view's rather than the reader's.
+    private func webViewSize() -> CGSize {
+        book?.renderer?.webView.bounds.size ?? .zero
     }
 
     /// Opens the book and shows the page the reader left off at.
@@ -115,7 +170,13 @@ class ReaderEpubViewController: BaseObservingViewController {
         book.onChange = { [weak self] in self?.report() }
         self.book = book
 
-        let viewport = view.bounds.size
+        // Laid out at the size the web view will occupy once inset, rather than at the reader's
+        // full bounds, so the opening document is not paginated twice.
+        let safeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
+        let viewport = CGSize(
+            width: max(view.bounds.width - safeArea.left - safeArea.right, 0),
+            height: max(view.bounds.height - safeArea.top - safeArea.bottom, 0)
+        )
         lastViewport = viewport
         do {
             try await book.start(viewport: viewport)
@@ -168,14 +229,27 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Runs one navigation at a time. A turn arriving while another is in flight is dropped rather
-    /// than queued, since the renderer's own page turns already supersede one another and queuing
-    /// here would replay a burst of taps after the fact.
+    /// Runs one navigation at a time, holding at most one more behind it.
+    ///
+    /// A turn crossing into another spine document has to load one, which takes long enough for a
+    /// second tap to arrive during it. Dropping that tap outright makes quick paging feel broken;
+    /// queuing every tap makes a burst of ten replay as ten turns after the fact. One slot gives
+    /// the responsiveness without the replay, and a third tap replaces the one waiting rather than
+    /// joining it.
     private func navigate(_ work: @escaping (ReaderEpubViewModel) async -> Void) {
-        guard let book, moveTask == nil else { return }
+        guard book != nil else { return }
+        guard moveTask == nil else {
+            pendingMove = work
+            return
+        }
         moveTask = Task { [weak self] in
+            guard let self, let book else { return }
             await work(book)
-            self?.moveTask = nil
+            moveTask = nil
+            if let next = pendingMove {
+                pendingMove = nil
+                navigate(next)
+            }
         }
     }
 }
