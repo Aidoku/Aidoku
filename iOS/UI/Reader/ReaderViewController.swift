@@ -15,6 +15,10 @@ class ReaderViewController: BaseObservingViewController {
         case paged
         case scroll
         case text
+        /// Chosen by inference from page content, as `text` is, rather than by the reading-mode
+        /// picker. Those entries are directional layout for images and an ePub entry among them
+        /// would be selectable for manga, where it means nothing.
+        case epub
     }
 
     let source: AidokuRunner.Source?
@@ -622,6 +626,21 @@ extension ReaderViewController {
                 } else {
                     pageController = nil
                 }
+            case .epub:
+                // An ePub reads left-to-right regardless of the manga setting, as text does
+                toolbarView.sliderView.direction = .forward
+                // The archive is resolved from the pages already loaded rather than by the reader
+                // loading them again: every spine document lives inside the one epub, so the first
+                // page carrying an archive is enough to find it.
+                if
+                    !(reader is ReaderEpubViewController),
+                    let archive = pages.first(where: { $0.isEpubPage })?.zipURL,
+                    let url = URL(string: archive)
+                {
+                    pageController = ReaderEpubViewController(source: source, manga: manga, bookURL: url)
+                } else {
+                    pageController = nil
+                }
             case .text:
                 // Text always reads left-to-right, regardless of manga setting
                 toolbarView.sliderView.direction = .forward
@@ -853,6 +872,14 @@ extension ReaderViewController: ReaderHoldingDelegate {
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
+        } else if pages.contains(where: { $0.isEpubPage }) {
+            // an epub is one chapter spanning its whole spine, so the reader is handed the book
+            // and reports its own page count back through setPages once it has been laid out
+            if !(reader is ReaderEpubViewController) {
+                setReader(.epub)
+                setChapter(chapter)
+                loadCurrentChapter()
+            }
         } else if pages.count == 1 && pages[0].isTextPage {
             // single text page, should switch to text reader
             if !(reader is ReaderPagedTextViewController) && !(reader is ReaderTextViewController) {
