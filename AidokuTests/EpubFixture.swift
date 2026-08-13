@@ -66,6 +66,55 @@ enum EpubFixture {
             .joined()
     }
 
+    /// A real ePub package rather than a bare archive: `META-INF/container.xml`, an OPF whose spine
+    /// lists the documents in order, and the documents themselves under `OEBPS/`.
+    ///
+    /// `makeArchive` is enough for anything that addresses a document by path, but `EpubParser`
+    /// needs a package: it reads `container.xml`, follows the first `rootfile`, and walks the
+    /// spine. Returns the archive and the spine paths as the parser will resolve them.
+    ///
+    /// No table of contents, which is deliberate. `EpubParser` makes every spine file its own
+    /// chapter when there are no titles to group by, so `chapters.flatMap(\.hrefs)` yields the
+    /// spine unchanged and the fixture's spine is exactly what a reader enumerates.
+    static func makeBook(documents: [Int]) throws -> (url: URL, spinePaths: [String]) {
+        var entries: [String: Data] = [:]
+        var manifest = ""
+        var spine = ""
+        var spinePaths: [String] = []
+
+        for (position, paragraphs) in documents.enumerated() {
+            let name = "\(position).xhtml"
+            entries["OEBPS/\(name)"] = Data(page(body: prose(paragraphs: paragraphs)).utf8)
+            manifest += #"<item id="d\#(position)" href="\#(name)" media-type="application/xhtml+xml"/>"#
+            spine += #"<itemref idref="d\#(position)"/>"#
+            spinePaths.append("OEBPS/\(name)")
+        }
+
+        entries["META-INF/container.xml"] = Data("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">
+              <rootfiles>
+                <rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>
+              </rootfiles>
+            </container>
+            """.utf8)
+
+        entries["OEBPS/content.opf"] = Data("""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id">
+              <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+                <dc:identifier id="id">fixture</dc:identifier>
+                <dc:title>Fixture</dc:title>
+                <dc:language>en</dc:language>
+              </metadata>
+              <manifest>\(manifest)</manifest>
+              <spine>\(spine)</spine>
+            </package>
+            """.utf8)
+
+        return (try makeArchive(entries: entries), spinePaths)
+    }
+
     @MainActor
     static func makeWebView(configuration: WKWebViewConfiguration) throws -> WKWebView {
         let webView = WKWebView(frame: CGRect(origin: .zero, size: viewportSize), configuration: configuration)
