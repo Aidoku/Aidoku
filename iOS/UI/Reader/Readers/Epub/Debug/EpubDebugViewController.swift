@@ -7,6 +7,7 @@
 
 #if DEBUG
 
+import AidokuRunner
 import UIKit
 import WebKit
 
@@ -119,6 +120,156 @@ private class EpubDebugSpineViewController: UITableViewController {
             EpubDebugRenderViewController(bookURL: bookURL, spinePath: spinePaths[indexPath.row]),
             animated: true
         )
+    }
+
+    /// Opens the whole book in the real reader rather than one document in the renderer.
+    ///
+    /// Until slice 4 makes local ePubs produce ePub pages, nothing routes a chapter to
+    /// `ReaderEpubViewController`, so this is the only way to exercise it by hand.
+    override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let button = UIButton(type: .system)
+        button.setTitle("Read the whole book", for: .normal)
+        button.titleLabel?.font = .preferredFont(forTextStyle: .headline)
+        button.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            navigationController?.pushViewController(
+                EpubDebugReaderHostViewController(bookURL: bookURL),
+                animated: true
+            )
+        }, for: .touchUpInside)
+        button.backgroundColor = .secondarySystemBackground
+        return button
+    }
+
+    override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        44
+    }
+}
+
+/// Stands in for `ReaderViewController` so the ePub reader can be driven by hand before slice 4
+/// makes it reachable.
+///
+/// It implements only the parts of `ReaderHoldingDelegate` the ePub reader uses, and shows what it
+/// reports: the page and total in the title, and the slider position. Everything else is a stub.
+/// Deleted with the rest of the debug entry point.
+private class EpubDebugReaderHostViewController: UIViewController {
+    private let bookURL: URL
+    private let reader: ReaderEpubViewController
+    private let slider = UISlider()
+
+    private var totalPages = 0
+    private var currentPage = 0
+
+    init(bookURL: URL) {
+        self.bookURL = bookURL
+        let manga = AidokuRunner.Manga(sourceKey: "local", key: bookURL.lastPathComponent, title: "")
+        self.reader = ReaderEpubViewController(source: nil, manga: manga, bookURL: bookURL)
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+
+        // A collapsing large title changes the reader's height mid-scroll, which re-fragments the
+        // document and moves every page boundary. See the viewport stability trap in slice 2.
+        navigationItem.largeTitleDisplayMode = .never
+
+        reader.delegate = self
+        addChild(reader)
+        reader.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(reader.view)
+        reader.didMove(toParent: self)
+
+        slider.translatesAutoresizingMaskIntoConstraints = false
+        slider.addTarget(self, action: #selector(sliderMoved), for: .valueChanged)
+        slider.addTarget(self, action: #selector(sliderStopped), for: [.touchUpInside, .touchUpOutside])
+        view.addSubview(slider)
+
+        NSLayoutConstraint.activate([
+            reader.view.topAnchor.constraint(equalTo: view.topAnchor),
+            reader.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            reader.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            reader.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            slider.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+            slider.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            slider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8)
+        ])
+
+        let left = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
+        view.addGestureRecognizer(left)
+
+        // The chapter's identity is all the reader takes from it; the book comes from the URL.
+        reader.setChapter(AidokuRunner.Chapter(key: bookURL.lastPathComponent), startPage: 1)
+        updateTitle()
+    }
+
+    @objc private func tapped(_ gesture: UITapGestureRecognizer) {
+        let x = gesture.location(in: view).x
+        if x < view.bounds.width / 3 {
+            reader.moveLeft()
+        } else if x > view.bounds.width * 2 / 3 {
+            reader.moveRight()
+        } else {
+            navigationController?.setNavigationBarHidden(
+                !(navigationController?.isNavigationBarHidden ?? false),
+                animated: true
+            )
+        }
+    }
+
+    @objc private func sliderMoved() {
+        reader.sliderMoved(value: CGFloat(slider.value))
+    }
+
+    @objc private func sliderStopped() {
+        reader.sliderStopped(value: CGFloat(slider.value))
+    }
+
+    private func updateTitle() {
+        title = totalPages > 0 ? "\(currentPage) / \(totalPages)" : "measuring…"
+    }
+}
+
+extension EpubDebugReaderHostViewController: ReaderHoldingDelegate {
+    var barsHidden: Bool { navigationController?.isNavigationBarHidden ?? false }
+
+    func hideBars() {
+        navigationController?.setNavigationBarHidden(true, animated: true)
+    }
+
+    func getNextChapter() -> AidokuRunner.Chapter? { nil }
+    func getPreviousChapter() -> AidokuRunner.Chapter? { nil }
+    func setChapter(_ chapter: AidokuRunner.Chapter) {}
+
+    func setCurrentPage(_ page: Int, position: Double?) {
+        currentPage = page
+        updateTitle()
+        guard totalPages > 1 else { return }
+        slider.value = Float(page - 1) / Float(totalPages - 1)
+    }
+
+    func setCurrentPages(_ pages: ClosedRange<Int>) {
+        setCurrentPage(pages.lowerBound, position: nil)
+    }
+
+    func setPages(_ pages: [Page]) {
+        totalPages = pages.count
+        updateTitle()
+    }
+
+    func displayPage(_ page: Int) {
+        title = totalPages > 0 ? "→ \(page) / \(totalPages)" : "measuring…"
+    }
+
+    func setSliderOffset(_ offset: CGFloat) {}
+
+    func setCompleted() {
+        title = "\(currentPage) / \(totalPages) ✓"
     }
 }
 
