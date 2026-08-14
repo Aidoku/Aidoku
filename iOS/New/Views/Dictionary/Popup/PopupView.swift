@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Features/Popup/PopupView.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/c31c9d0ce376ff83bf6a91d908bf9f8e0fb4947b/Features/Popup/PopupView.swift
 //  Modified for use in Aidoku
 //
 
@@ -367,6 +367,14 @@ struct PopupView: View {
                         forwardCount = 0
                     }
                     return entries
+                },
+                onKanjiRedirect: { kanji in
+                    let data = LookupEngine.shared.queryKanji(kanji)
+                    if data != nil {
+                        backCount += 1
+                        forwardCount = 0
+                    }
+                    return data
                 }
             )
         }
@@ -462,13 +470,20 @@ struct PopupView: View {
 
             var pitches: [[String: Any]] = []
             for pitchEntry in result.term.pitches {
-                var pitchPositions: [Int] = []
+                var accents: [[String: Any]] = []
+                var seen: Set<String> = []
                 var transcriptions: [String] = []
-                for element in pitchEntry.pitch_positions {
-                    let position = Int(element)
-                    if !pitchPositions.contains(position) {
-                        pitchPositions.append(position)
-                    }
+                for element in pitchEntry.pitches {
+                    let pattern = String(element.pattern)
+                    guard seen.insert(pattern.isEmpty ? String(element.position) : pattern).inserted else { continue }
+                    let nasal = element.nasal.map { Int($0) }
+                    let devoice = element.devoice.map { Int($0) }
+                    let position: Any = pattern.isEmpty ? Int(element.position) : pattern
+                    accents.append([
+                        "position": position,
+                        "nasal": nasal,
+                        "devoice": devoice
+                    ])
                 }
                 for element in pitchEntry.transcriptions {
                     let transcription = String(element)
@@ -478,7 +493,7 @@ struct PopupView: View {
                 }
                 pitches.append([
                     "dictionary": String(pitchEntry.dict_name),
-                    "pitchPositions": pitchPositions,
+                    "pitches": accents,
                     "transcriptions": transcriptions
                 ])
             }

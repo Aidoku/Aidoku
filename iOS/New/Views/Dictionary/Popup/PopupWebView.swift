@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Features/Popup/PopupWebView.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/c31c9d0ce376ff83bf6a91d908bf9f8e0fb4947b/Features/Popup/PopupWebView.swift
 //  Modified for use in Aidoku
 //
 
@@ -177,6 +177,7 @@ struct PopupWebView: UIViewRepresentable {
     var onTapOutside: (() -> Void)?
     var onSwipeDismiss: (() -> Void)?
     var onRedirect: ((String) -> [[String: Any]])?
+    var onKanjiRedirect: ((String) -> [String: Any]?)?
     var scrollViewBounces: Bool = false
     var isScrollEnabled: Bool = true
     var onContentHeightChanged: ((CGFloat) -> Void)?
@@ -225,6 +226,7 @@ struct PopupWebView: UIViewRepresentable {
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "duplicateCheck")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "getEntries")
         config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "lookupRedirect")
+        config.userContentController.addScriptMessageHandler(context.coordinator, contentWorld: .page, name: "kanjiRedirect")
         config.setURLSchemeHandler(AudioHandler(), forURLScheme: "audio")
         config.setURLSchemeHandler(ImageHandler(), forURLScheme: "image")
 //        config.setURLSchemeHandler(DocumentResourceHandler(), forURLScheme: "local-resources")
@@ -287,6 +289,7 @@ struct PopupWebView: UIViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "duplicateCheck", contentWorld: .page)
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "getEntries", contentWorld: .page)
         webView.configuration.userContentController.removeScriptMessageHandler(forName: "lookupRedirect", contentWorld: .page)
+        webView.configuration.userContentController.removeScriptMessageHandler(forName: "kanjiRedirect", contentWorld: .page)
     }
 
     class Coordinator: NSObject, WKScriptMessageHandler, WKScriptMessageHandlerWithReply, WKNavigationDelegate, UIScrollViewDelegate {
@@ -465,6 +468,9 @@ struct PopupWebView: UIViewRepresentable {
             if message.name == "lookupRedirect", let query = message.body as? String {
                 entries = parent.onRedirect?(query) ?? []
                 return (entries.count, nil)
+            }
+            if message.name == "kanjiRedirect", let kanji = message.body as? String {
+                return (parent.onKanjiRedirect?(kanji) ?? nil, nil)
             }
             return (nil, nil)
         }

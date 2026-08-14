@@ -604,6 +604,7 @@
 "TERM_DICTIONARIES" = "Term Dictionaries";
 "FREQUENCY_DICTIONARIES" = "Frequency Dictionaries";
 "PITCH_DICTIONARIES" = "Pitch Dictionaries";
+"KANJI_DICTIONARIES" = "Kanji Dictionaries";
 "IMPORTING_DICTIONARY" = "Importing Dictionary…";
 "IMPORT_ERROR" = "Import Error";
 "REVISION" = "Revision";

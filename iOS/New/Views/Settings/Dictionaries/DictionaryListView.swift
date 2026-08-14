@@ -77,13 +77,14 @@ struct DictionaryListView: View {
             }
 
             let items = [
-                (DictionaryType.term, dictionaryManager.termDictionaries, NSLocalizedString("TERM_DICTIONARIES")),
-                (DictionaryType.frequency, dictionaryManager.frequencyDictionaries, NSLocalizedString("FREQUENCY_DICTIONARIES")),
-                (DictionaryType.pitch, dictionaryManager.pitchDictionaries, NSLocalizedString("PITCH_DICTIONARIES"))
+                (DictionaryType.term, dictionaryManager.termDictionaries),
+                (DictionaryType.frequency, dictionaryManager.frequencyDictionaries),
+                (DictionaryType.pitch, dictionaryManager.pitchDictionaries),
+                (DictionaryType.kanji, dictionaryManager.kanjiDictionaries)
             ]
-            ForEach(items, id: \.0) { type, dictionaries, title in
+            ForEach(items, id: \.0) { type, dictionaries in
                 if !dictionaries.isEmpty {
-                    Section(title) {
+                    Section(type.sectionTitle) {
                         ForEach(Array(dictionaries.enumerated()), id: \.element.id) { offset, dict in
                             dictRow(dict, index: .init(integer: offset), type: type)
                         }
@@ -428,6 +429,7 @@ private struct DictionaryRecommendedListView: View {
                 case .term: dictionaryManager.termDictionaries
                 case .frequency: dictionaryManager.frequencyDictionaries
                 case .pitch: dictionaryManager.pitchDictionaries
+                case .kanji: dictionaryManager.kanjiDictionaries
             }
             let installed = targetDictionaries.contains(where: { $0.index.indexUrl == dictionary.indexUrl })
             GetButton {
@@ -444,6 +446,7 @@ private extension DictionaryType {
             case .term: NSLocalizedString("TERM_DICTIONARIES")
             case .frequency: NSLocalizedString("FREQUENCY_DICTIONARIES")
             case .pitch: NSLocalizedString("PITCH_DICTIONARIES")
+            case .kanji: NSLocalizedString("KANJI_DICTIONARIES")
         }
     }
 }

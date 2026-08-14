@@ -42,6 +42,18 @@ function el(tag, props = {}, children = []) {
     return element;
 }
 
+function wrapKanji(text) {
+    const nodes = [];
+    for (const ch of text) {
+        if (KANJI_PATTERN.test(ch)) {
+            nodes.push(el('span', { className: 'kanji-char', textContent: ch }));
+        } else {
+            nodes.push(document.createTextNode(ch));
+        }
+    }
+    return nodes;
+}
+
 function toHiragana(text) {
     return text.replace(/[\u30A1-\u30F6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
 }
@@ -207,11 +219,11 @@ function buildFuriganaEl(parent, expression, reading) {
     const segments = segmentFurigana(expression, reading);
     for (const [text, furigana] of segments) {
         if (furigana) {
-            const ruby = el('ruby', {}, [text]);
+            const ruby = el('ruby', {}, wrapKanji(text));
             ruby.appendChild(el('rt', { textContent: furigana }));
             parent.appendChild(ruby);
         } else {
-            parent.appendChild(document.createTextNode(text));
+            parent.append(...wrapKanji(text));
         }
     }
     return segments.length === 1 && segments[0][1];
@@ -538,8 +550,9 @@ function constructPitchPositionHtml(pitches) {
 
     let result = '<ol>';
     pitches.forEach(pitchGroup => {
-        pitchGroup.pitchPositions.forEach(pos => {
-            result += `<li><span style="display:inline;"><span>[</span><span>${pos}</span><span>]</span></span></li>`;
+        pitchGroup.pitches.forEach(accent => {
+            const downsteps = typeof accent.position === 'string' ? getDownstepPositions(accent.position) : accent.position;
+            result += `<li><span style="display:inline;"><span>[</span><span>${downsteps}</span><span>]</span></span></li>`;
         });
     });
     result += '</ol>';
@@ -554,8 +567,8 @@ function constructPitchCategories(pitches, reading, rules) {
     const verbOrAdj = isVerbOrAdjective(rules);
     const categories = [];
     pitches.forEach(pitchGroup => {
-        pitchGroup.pitchPositions.forEach(pos => {
-            const category = getPitchCategory(reading, pos, verbOrAdj);
+        pitchGroup.pitches.forEach(accent => {
+            const category = getPitchCategory(reading, accent.position, verbOrAdj);
             if (category && !categories.includes(category)) {
                 categories.push(category);
             }
@@ -573,14 +586,15 @@ function constructPitchAccentGraphsHtml(pitches, reading) {
     const seen = new Set();
     const graphs = [];
     pitches.forEach(pitchGroup => {
-        pitchGroup.pitchPositions.forEach(pos => {
+        pitchGroup.pitches.forEach(accent => {
             if (window.deduplicatePitchAccents) {
-                if (seen.has(pos)) {
+                const pattern = pitchPattern(accent.position, morae.length);
+                if (seen.has(pattern)) {
                     return;
                 }
-                seen.add(pos);
+                seen.add(pattern);
             }
-            graphs.push(createPronunciationGraph(morae, pos).outerHTML);
+            graphs.push(createPronunciationGraph(morae, accent.position).outerHTML);
         });
     });
 
@@ -1053,8 +1067,11 @@ function createHarmonicFrequencyTag(frequencies) {
     ]);
 }
 
-// https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L350
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L350
 function isMoraPitchHigh(moraIndex, pitchAccentValue) {
+    if (typeof pitchAccentValue === 'string') {
+        return pitchAccentValue[moraIndex] === 'H';
+    }
     switch (pitchAccentValue) {
         case 0: return (moraIndex > 0);
         case 1: return (moraIndex < 1);
@@ -1062,7 +1079,55 @@ function isMoraPitchHigh(moraIndex, pitchAccentValue) {
     }
 }
 
-// https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L406
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L388
+function getDownstepPositions(pitchString) {
+    const downsteps = [];
+    const moraCount = pitchString.length;
+    for (let i = 0; i < moraCount; i++) {
+        if (i > 0 && pitchString[i - 1] === 'H' && pitchString[i] === 'L') {
+            downsteps.push(i);
+        }
+    }
+    if (downsteps.length === 0) {
+        downsteps.push(pitchString.startsWith('L') ? 0 : -1);
+    }
+    return downsteps;
+}
+
+function pitchPattern(position, moraCount) {
+    if (typeof position === 'string') {
+        return position;
+    }
+    let pattern = '';
+    for (let i = 0; i <= moraCount; i++) {
+        pattern += isMoraPitchHigh(i, position) ? 'H' : 'L';
+    }
+    return pattern;
+}
+
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L138
+const DIACRITIC_MAPPING = (() => {
+    const kana = 'うゔ-かが-きぎ-くぐ-けげ-こご-さざ-しじ-すず-せぜ-そぞ-ただ-ちぢ-つづ-てで-とど-はばぱひびぴふぶぷへべぺほぼぽワヷ-ヰヸ-ウヴ-ヱヹ-ヲヺ-カガ-キギ-クグ-ケゲ-コゴ-サザ-シジ-スズ-セゼ-ソゾ-タダ-チヂ-ツヅ-テデ-トド-ハバパヒビピフブプヘベペホボポ';
+    const mapping = new Map();
+    for (let i = 0, ii = kana.length; i < ii; i += 3) {
+        const character = kana[i];
+        const dakuten = kana[i + 1];
+        const handakuten = kana[i + 2];
+        mapping.set(dakuten, { character, type: 'dakuten' });
+        if (handakuten !== '-') {
+            mapping.set(handakuten, { character, type: 'handakuten' });
+        }
+    }
+    return mapping;
+})();
+
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L573
+function getKanaDiacriticInfo(character) {
+    const info = DIACRITIC_MAPPING.get(character);
+    return typeof info !== 'undefined' ? { character: info.character, type: info.type } : null;
+}
+
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L406
 function getKanaMorae(text) {
     const morae = [];
     let i;
@@ -1081,27 +1146,30 @@ function isVerbOrAdjective(rules) {
     return rules?.some(tag => tag.startsWith('v') || tag.startsWith('adj-i')) ?? false;
 }
 
-// https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/language/ja/japanese.js#L366
-function getPitchCategory(reading, pitchAccentValue, verbOrAdjective = false) {
-    if (pitchAccentValue === 0) {
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/language/ja/japanese.js#L367
+function getPitchCategory(text, pitchAccentValue, isVerbOrAdjective) {
+    const pitchAccentDownstepPosition = typeof pitchAccentValue === 'string' ? getDownstepPositions(pitchAccentValue)[0] : pitchAccentValue;
+    if (pitchAccentDownstepPosition === 0) {
         return 'heiban';
     }
-    if (verbOrAdjective) {
-        return pitchAccentValue > 0 ? 'kifuku' : null;
+    if (isVerbOrAdjective) {
+        return pitchAccentDownstepPosition > 0 ? 'kifuku' : null;
     }
-    if (pitchAccentValue === 1) {
+    if (pitchAccentDownstepPosition === 1) {
         return 'atamadaka';
     }
-    if (pitchAccentValue > 1) {
-        const moraCount = getKanaMorae(reading).length;
-        return pitchAccentValue >= moraCount ? 'odaka' : 'nakadaka';
+    if (pitchAccentDownstepPosition > 1) {
+        const moraCount = getKanaMorae(text).length;
+        return pitchAccentDownstepPosition >= moraCount ? 'odaka' : 'nakadaka';
     }
     return null;
 }
 
-// https://github.com/yomidevs/yomitan/blob/c24d4c9b39ceec1b5fd133df774c41972e9ebbdc/ext/js/display/pronunciation-generator.js#L38
-function createPitchHtml(reading, pitchValue) {
+// https://github.com/yomidevs/yomitan/blob/c0c3702963c22e0f39fdd2f03deef6b15558a7f5/ext/js/display/pronunciation-generator.js#L38
+function createPitchHtml(reading, pitchValue, nasalPositions = [], devoicePositions = []) {
     const morae = getKanaMorae(reading);
+    const nasalSet = new Set(nasalPositions);
+    const devoiceSet = new Set(devoicePositions);
     const container = el('span', { className: 'pronunciation-text' });
 
     for (let i = 0; i < morae.length; i++) {
@@ -1112,9 +1180,32 @@ function createPitchHtml(reading, pitchValue) {
         const moraSpan = el('span', {
             className: 'pronunciation-mora',
             'data-pitch': isHigh ? 'high' : 'low',
-            'data-pitch-next': isHighNext ? 'high' : 'low',
-            textContent: mora
+            'data-pitch-next': isHighNext ? 'high' : 'low'
         });
+
+        if (nasalSet.has(i + 1)) {
+            moraSpan.dataset.nasal = 'true';
+            const characterInfo = getKanaDiacriticInfo(mora[0]);
+            if (characterInfo !== null) {
+                moraSpan.dataset.originalText = mora;
+            }
+            const group = el('span', { className: 'pronunciation-character-group' }, [
+                el('span', { textContent: characterInfo !== null ? characterInfo.character : mora[0] }),
+                el('span', { className: 'pronunciation-nasal-diacritic', textContent: '\u309a' }),
+                el('span', { className: 'pronunciation-nasal-indicator' })
+            ]);
+            moraSpan.appendChild(group);
+            if (mora.length > 1) {
+                moraSpan.appendChild(document.createTextNode(mora.slice(1)));
+            }
+        } else {
+            moraSpan.appendChild(document.createTextNode(mora));
+        }
+
+        if (devoiceSet.has(i + 1)) {
+            moraSpan.dataset.devoice = 'true';
+            moraSpan.appendChild(el('span', { className: 'pronunciation-devoice-indicator' }));
+        }
 
         moraSpan.appendChild(el('span', { className: 'pronunciation-mora-line' }));
         container.appendChild(moraSpan);
@@ -1219,10 +1310,11 @@ function createPitchGroup(pitchData, reading) {
     ]));
 
     const list = el('ul', { className: 'pitch-entries' });
-    pitchData.pitchPositions.forEach((pitch) => {
+    pitchData.pitches.forEach((accent) => {
         const li = el('li');
-        li.appendChild(createPitchHtml(reading, pitch));
-        li.appendChild(document.createTextNode(` [${pitch}]`));
+        const downsteps = typeof accent.position === 'string' ? getDownstepPositions(accent.position) : accent.position;
+        li.appendChild(createPitchHtml(reading, accent.position, accent.nasal, accent.devoice));
+        li.appendChild(document.createTextNode(` [${downsteps}]`));
         list.appendChild(li);
     });
     pitchData.transcriptions.forEach((transcription) => {
@@ -1291,13 +1383,14 @@ function createTags(entry) {
     if (hasPitches) {
         const pitchContainer = el('div', { className: 'pitch-list' });
         if (window.deduplicatePitchAccents) {
+            const moraCount = getKanaMorae(reading).length;
             const seen = new Set();
             pitches.forEach(pitch => {
-                const unique = pitch.pitchPositions.filter(pos => !seen.has(pos));
+                const unique = pitch.pitches.filter(accent => !seen.has(pitchPattern(accent.position, moraCount)));
                 const transcriptions = pitch.transcriptions;
                 if (unique.length > 0 || transcriptions.length > 0) {
-                    unique.forEach(pos => seen.add(pos));
-                    pitchContainer.appendChild(createPitchGroup({ dictionary: pitch.dictionary, pitchPositions: unique, transcriptions }, reading));
+                    unique.forEach(accent => seen.add(pitchPattern(accent.position, moraCount)));
+                    pitchContainer.appendChild(createPitchGroup({ dictionary: pitch.dictionary, pitches: unique, transcriptions }, reading));
                 }
             });
         } else {
@@ -1476,7 +1569,7 @@ function createEntryHeader(entry, idx) {
     if (reading && reading !== expression) {
         needsScroll = buildFuriganaEl(expressionSpan, expression, reading);
     } else {
-        expressionSpan.textContent = expression;
+        expressionSpan.append(...wrapKanji(expression));
     }
 
     // empty placeholder to reserve space even when no ruby is present
@@ -1626,6 +1719,67 @@ function redirect(count) {
     document.getElementById('entries-container').innerHTML = '';
     reportButtonRects();
     window.renderPopup();
+    requestAnimationFrame(() => {
+        document.scrollingElement.scrollTop = 0;
+        requestAnimationFrame(() => {
+            document.scrollingElement.scrollTop = 0;
+        });
+    });
+}
+
+function buildKanjiEntry(data) {
+    const entry = el('div', { className: 'entry kanji-entry' });
+
+    const header = el('div', { className: 'entry-header' });
+    header.appendChild(el('span', { className: 'kanji', textContent: data.character }));
+    entry.appendChild(header);
+
+    data.entries.forEach(e => {
+        const details = el('details', { className: 'glossary-group', open: true });
+
+        const summary = el('summary', { className: 'dict-label' });
+        summary.appendChild(el('span', { className: 'dict-name', textContent: e.dictName }));
+        details.appendChild(summary);
+
+        const dictWrapper = el('div', { 'data-dictionary': e.dictName });
+        const content = el('div', { className: 'glossary-content' });
+        if (e.onyomi) {
+            content.appendChild(el('div', {}, [
+                el('span', { className: 'kanji-reading-label', textContent: '音' }),
+                document.createTextNode(e.onyomi)
+            ]));
+        }
+        if (e.kunyomi) {
+            content.appendChild(el('div', {}, [
+                el('span', { className: 'kanji-reading-label', textContent: '訓' }),
+                document.createTextNode(e.kunyomi)
+            ]));
+        }
+        if (e.meanings.length) {
+            if (e.onyomi || e.kunyomi) {
+                content.appendChild(el('hr', { className: 'kanji-separator' }));
+            }
+            content.appendChild(el('ul', {}, e.meanings.map(m => el('li', { textContent: m }))));
+        }
+        dictWrapper.appendChild(content);
+        details.appendChild(dictWrapper);
+        entry.appendChild(details);
+    });
+
+    return entry;
+}
+
+function redirectKanji(data) {
+    backStack.push(snapshot());
+    forwardStack.length = 0;
+    window.lookupEntries = undefined;
+    window.entryCount = 0;
+    audioUrls = {};
+    selectedDictionaries = {};
+    const container = document.getElementById('entries-container');
+    container.innerHTML = '';
+    container.appendChild(buildKanjiEntry(data));
+    reportButtonRects();
     requestAnimationFrame(() => {
         document.scrollingElement.scrollTop = 0;
         requestAnimationFrame(() => {
@@ -1872,6 +2026,15 @@ window.renderPopup = function() {
     container.clickAttached = true;
     container.addEventListener('click', (e) => {
         const target = e.target?.nodeType === Node.TEXT_NODE ? e.target.parentElement : e.target;
+        const kanjiTarget = target?.closest('.kanji-char');
+        if (kanjiTarget) {
+            webkit.messageHandlers.kanjiRedirect.postMessage(kanjiTarget.textContent).then(data => {
+                if (data) {
+                    redirectKanji(data);
+                }
+            });
+            return;
+        }
         if (target?.closest('summary')) {
             return;
         }

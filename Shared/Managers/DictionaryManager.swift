@@ -5,7 +5,7 @@
 //  Copyright © 2026 Manhhao.
 //  SPDX-License-Identifier: GPL-3.0-or-later
 //
-//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/89feebd40d1df87240f9f587717eab5762dbbd85/Core/DictionaryManager.swift
+//  Based on: https://github.com/Manhhao/Hoshi-Reader/blob/c31c9d0ce376ff83bf6a91d908bf9f8e0fb4947b/Core/DictionaryManager.swift
 //  Modified for use in Aidoku
 //
 
@@ -18,6 +18,7 @@ enum DictionaryType: String {
     case term = "Term"
     case frequency = "Frequency"
     case pitch = "Pitch"
+    case kanji = "Kanji"
 }
 
 @available(iOS 18.0, macOS 15.0, *)
@@ -29,8 +30,9 @@ class DictionaryManager {
     private(set) var termDictionaries: [DictionaryInfo] = []
     private(set) var frequencyDictionaries: [DictionaryInfo] = []
     private(set) var pitchDictionaries: [DictionaryInfo] = []
+    private(set) var kanjiDictionaries: [DictionaryInfo] = []
     private(set) var updatableDictionaries: [(DictionaryInfo, DictionaryType)] = []
-//    private(set) var collapsedDictionaries: Set<String> = []
+    //    private(set) var collapsedDictionaries: Set<String> = []
     private(set) var isImporting = false
     private(set) var isUpdating = false
     var shouldShowError = false
@@ -42,11 +44,11 @@ class DictionaryManager {
     }
 
     private static let configFileName = "config.json"
-//    private static let collapsedConfig = "collapsed.json"
+    //    private static let collapsedConfig = "collapsed.json"
 
     private init() {
         loadDictionaries()
-//        loadCollapsedDictionaries()
+        //        loadCollapsedDictionaries()
         rebuildLookupQuery()
     }
 
@@ -55,15 +57,18 @@ class DictionaryManager {
         let storedTermDicts = (try? getDictionariesFromStorage(type: .term)) ?? []
         let storedFreqDicts = (try? getDictionariesFromStorage(type: .frequency)) ?? []
         let storedPitchDicts = (try? getDictionariesFromStorage(type: .pitch)) ?? []
+        let storedKanjiDicts = (try? getDictionariesFromStorage(type: .kanji)) ?? []
 
         if let config = try? loadDictionaryConfig() {
             termDictionaries = collectDictionaries(storedDicts: storedTermDicts, configDicts: config.termDictionaries)
             frequencyDictionaries = collectDictionaries(storedDicts: storedFreqDicts, configDicts: config.frequencyDictionaries)
             pitchDictionaries = collectDictionaries(storedDicts: storedPitchDicts, configDicts: config.pitchDictionaries)
+            kanjiDictionaries = collectDictionaries(storedDicts: storedKanjiDicts, configDicts: config.kanjiDictionaries ?? [])
         } else {
             termDictionaries = storedTermDicts
             frequencyDictionaries = storedFreqDicts
             pitchDictionaries = storedPitchDicts
+            kanjiDictionaries = storedKanjiDicts
         }
     }
 
@@ -80,7 +85,16 @@ class DictionaryManager {
             .filter { $0.isEnabled }
             .map { $0.path }
 
-        LookupEngine.shared.buildQuery(termPaths: enabledTermPaths, freqPaths: enabledFreqPaths, pitchPaths: enabledPitchPaths)
+        let enabledKanjiPaths = kanjiDictionaries
+            .filter { $0.isEnabled }
+            .map { $0.path }
+
+        LookupEngine.shared.buildQuery(
+            termPaths: enabledTermPaths,
+            freqPaths: enabledFreqPaths,
+            pitchPaths: enabledPitchPaths,
+            kanjiPaths: enabledKanjiPaths
+        )
     }
 
     func collectDictionaries(storedDicts: [DictionaryInfo], configDicts: [DictionaryConfig.DictionaryEntry]) -> [DictionaryInfo] {
@@ -132,7 +146,7 @@ class DictionaryManager {
                 FileManager.default.fileExists(atPath: url.path(percentEncoded: false)),
                 let data = try? Data(contentsOf: url),
                 let index = try? JSONDecoder().decode(DictionaryIndex.self, from: data)
-            else {
+                    else {
                 try? FileManager.default.removeItem(at: $0)
                 return nil
             }
@@ -156,20 +170,20 @@ class DictionaryManager {
         return nil
     }
 
-//    private func loadCollapsedDictionaries() {
-//        do {
-//            let configURL = try Self.getDictionariesDirectory()
-//                .appendingPathComponent(Self.collapsedConfig)
-//
-//            if FileManager.default.fileExists(atPath: configURL.path(percentEncoded: false)) {
-//                let data = try Data(contentsOf: configURL)
-//                let decoder = JSONDecoder()
-//                collapsedDictionaries = try decoder.decode(Set<String>.self, from: data)
-//            }
-//        } catch {
-//            collapsedDictionaries = []
-//        }
-//    }
+    //    private func loadCollapsedDictionaries() {
+    //        do {
+    //            let configURL = try Self.getDictionariesDirectory()
+    //                .appendingPathComponent(Self.collapsedConfig)
+    //
+    //            if FileManager.default.fileExists(atPath: configURL.path(percentEncoded: false)) {
+    //                let data = try Data(contentsOf: configURL)
+    //                let decoder = JSONDecoder()
+    //                collapsedDictionaries = try decoder.decode(Set<String>.self, from: data)
+    //            }
+    //        } catch {
+    //            collapsedDictionaries = []
+    //        }
+    //    }
 
     private func saveDictionaryConfig() {
         let config = DictionaryConfig(
@@ -190,6 +204,14 @@ class DictionaryManager {
                 )
             },
             pitchDictionaries: pitchDictionaries.map {
+                DictionaryConfig.DictionaryEntry(
+                    fileName: $0.path.lastPathComponent,
+                    isEnabled: $0.isEnabled,
+                    order: $0.order,
+                    category: $0.category
+                )
+            },
+            kanjiDictionaries: kanjiDictionaries.map {
                 DictionaryConfig.DictionaryEntry(
                     fileName: $0.path.lastPathComponent,
                     isEnabled: $0.isEnabled,
@@ -220,27 +242,27 @@ class DictionaryManager {
         }
     }
 
-//    func saveCollapsedDictionaries() {
-//        guard let configURL = try? Self.getDictionariesDirectory()
-//            .appendingPathComponent(Self.collapsedConfig) else {
-//            return
-//        }
-//
-//        do {
-//            let encoder = JSONEncoder()
-//            encoder.outputFormatting = .prettyPrinted
-//            let data = try encoder.encode(collapsedDictionaries)
-//
-//            let directory = configURL.deletingLastPathComponent()
-//            if !FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) {
-//                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-//            }
-//
-//            try data.write(to: configURL, options: .atomic)
-//        } catch {
-//            showError("Failed to save collapsed dictionaries: \(error.localizedDescription)")
-//        }
-//    }
+    //    func saveCollapsedDictionaries() {
+    //        guard let configURL = try? Self.getDictionariesDirectory()
+    //            .appendingPathComponent(Self.collapsedConfig) else {
+    //            return
+    //        }
+    //
+    //        do {
+    //            let encoder = JSONEncoder()
+    //            encoder.outputFormatting = .prettyPrinted
+    //            let data = try encoder.encode(collapsedDictionaries)
+    //
+    //            let directory = configURL.deletingLastPathComponent()
+    //            if !FileManager.default.fileExists(atPath: directory.path(percentEncoded: false)) {
+    //                try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    //            }
+    //
+    //            try data.write(to: configURL, options: .atomic)
+    //        } catch {
+    //            showError("Failed to save collapsed dictionaries: \(error.localizedDescription)")
+    //        }
+    //    }
 
     func importDictionary(from urls: [URL]) async {
         guard let dictionariesDir = try? Self.getDictionariesDirectory() else { return }
@@ -288,6 +310,10 @@ class DictionaryManager {
                         let destination = dictionariesDir.appendingPathComponent(DictionaryType.pitch.rawValue).appendingPathComponent(title)
                         try? FileManager.default.copyItem(at: temp, to: destination)
                     }
+                    if counts.kanji.total > 0 {
+                        let destination = dictionariesDir.appendingPathComponent(DictionaryType.kanji.rawValue).appendingPathComponent(title)
+                        try? FileManager.default.copyItem(at: temp, to: destination)
+                    }
                     imported.append(current)
                 } else {
                     failed.append(current)
@@ -331,7 +357,7 @@ class DictionaryManager {
                             type: type,
                             session: session
                         )
-                    else { continue }
+                            else { continue }
 
                     let new = String(importResult.title)
                     let old = dictionary.index.title
@@ -341,7 +367,7 @@ class DictionaryManager {
                         if old != new {
                             if let currentIndex = self.getDictionaryIndex(title: old, type: type) {
                                 let wasEnabled = self.isDictionaryEnabled(at: currentIndex, type: type)
-//                                let wasCollapsed = self.collapsedDictionaries.contains(old)
+                                //                                let wasCollapsed = self.collapsedDictionaries.contains(old)
                                 let wasCategory = type == .term ? self.termDictionaries[currentIndex].category : .none
                                 self.deleteDictionary(indexSet: IndexSet(integer: currentIndex), type: type)
                                 let importedIndex = self.getDictionaryIndex(title: new, type: type)!
@@ -351,11 +377,11 @@ class DictionaryManager {
                                 if let newId, wasCategory != .none {
                                     self.setDictionaryCategory(id: newId, category: wasCategory)
                                 }
-//                                AnkiManager.shared.updateHandlebar(old: old, new: new)
-//                                if wasCollapsed {
-//                                    self.collapsedDictionaries.insert(new)
-//                                    self.saveCollapsedDictionaries()
-//                                }
+                                //                                AnkiManager.shared.updateHandlebar(old: old, new: new)
+                                //                                if wasCollapsed {
+                                //                                    self.collapsedDictionaries.insert(new)
+                                //                                    self.saveCollapsedDictionaries()
+                                //                                }
                             }
                         } else {
                             self.rebuildLookupQuery()
@@ -416,6 +442,7 @@ class DictionaryManager {
                 case .term: termDictionaries
                 case .frequency: frequencyDictionaries
                 case .pitch: pitchDictionaries
+                case .kanji: kanjiDictionaries
             }
             return targetDictionaries.first(where: { $0.index.indexUrl == indexUrl })?.index
         }.value
@@ -490,7 +517,10 @@ class DictionaryManager {
         config.allowsConstrainedNetworkAccess = false
         updateDictionaries(showErrors: false, session: URLSession(configuration: config))
     }
+}
 
+@available(iOS 18.0, *)
+extension DictionaryManager {
     func toggleDictionary(id: UUID, enabled: Bool, type: DictionaryType) {
         switch type {
             case .term:
@@ -502,6 +532,9 @@ class DictionaryManager {
             case .pitch:
                 guard let index = pitchDictionaries.firstIndex(where: { $0.id == id }) else { return }
                 pitchDictionaries[index].isEnabled = enabled
+            case .kanji:
+                guard let index = kanjiDictionaries.firstIndex(where: { $0.id == id }) else { return }
+                kanjiDictionaries[index].isEnabled = enabled
         }
         saveDictionaryConfig()
         rebuildLookupQuery()
@@ -521,6 +554,8 @@ class DictionaryManager {
                 frequencyDictionaries.move(fromOffsets: from, toOffset: to)
             case .pitch:
                 pitchDictionaries.move(fromOffsets: from, toOffset: to)
+            case .kanji:
+                kanjiDictionaries.move(fromOffsets: from, toOffset: to)
         }
         updateOrder(type: type)
         saveDictionaryConfig()
@@ -541,6 +576,10 @@ class DictionaryManager {
                 for index in pitchDictionaries.indices {
                     pitchDictionaries[index].order = index
                 }
+            case .kanji:
+                for index in kanjiDictionaries.indices {
+                    kanjiDictionaries[index].order = index
+                }
         }
     }
 
@@ -552,7 +591,6 @@ class DictionaryManager {
                     try? FileManager.default.removeItem(at: dictionary.path)
                     termDictionaries.remove(at: index)
                     updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
-//                    collapsedDictionaries.remove(dictionary.index.title)
                 }
             case .frequency:
                 for index in indexSet {
@@ -560,7 +598,6 @@ class DictionaryManager {
                     try? FileManager.default.removeItem(at: dictionary.path)
                     frequencyDictionaries.remove(at: index)
                     updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
-//                    collapsedDictionaries.remove(dictionary.index.title)
                 }
             case .pitch:
                 for index in indexSet {
@@ -568,7 +605,13 @@ class DictionaryManager {
                     try? FileManager.default.removeItem(at: dictionary.path)
                     pitchDictionaries.remove(at: index)
                     updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
-//                    collapsedDictionaries.remove(dictionary.index.title)
+                }
+            case .kanji:
+                for index in indexSet {
+                    let dictionary = kanjiDictionaries[index]
+                    try? FileManager.default.removeItem(at: dictionary.path)
+                    kanjiDictionaries.remove(at: index)
+                    updatableDictionaries.removeAll { $0.0.index.title == dictionary.index.title }
                 }
         }
         updateOrder(type: type)
@@ -594,6 +637,8 @@ class DictionaryManager {
                 frequencyDictionaries[index].isEnabled
             case .pitch:
                 pitchDictionaries[index].isEnabled
+            case .kanji:
+                kanjiDictionaries[index].isEnabled
         }
     }
 
@@ -605,6 +650,8 @@ class DictionaryManager {
                 frequencyDictionaries[index].isEnabled = enabled
             case .pitch:
                 pitchDictionaries[index].isEnabled = enabled
+            case .kanji:
+                kanjiDictionaries[index].isEnabled = enabled
         }
     }
 
@@ -616,6 +663,8 @@ class DictionaryManager {
                 frequencyDictionaries.firstIndex { $0.index.title == title }
             case .pitch:
                 pitchDictionaries.firstIndex { $0.index.title == title }
+            case .kanji:
+                kanjiDictionaries.firstIndex { $0.index.title == title }
         }
     }
 
