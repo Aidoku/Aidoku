@@ -831,7 +831,12 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let isPrePaginationPlaceholder = totalPages == 1
             && self.pages.first?.isTextPage == true
             && !(reader is ReaderPagedTextViewController && (reader as? ReaderPagedTextViewController)?.hasPaginated == true)
-        if pages.upperBound >= totalPages && !isPrePaginationPlaceholder {
+        // Exception: an epub is one chapter spanning a whole spine, and its total is a lower bound
+        // until every spine document has been counted. The last page of a provisional total is the
+        // end of the documents measured so far, not the end of the book, so completing there marks
+        // a book read from its first document and, with deleteDownloadAfterReading, deletes it.
+        let isEpubStillMeasuring = (reader as? ReaderEpubViewController)?.book.map { !$0.isMeasured } ?? false
+        if pages.upperBound >= totalPages && !isPrePaginationPlaceholder && !isEpubStillMeasuring {
             setCompleted()
         }
     }
