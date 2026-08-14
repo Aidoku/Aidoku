@@ -214,4 +214,68 @@ struct EpubSpineMeasurerTests {
         let lastPage = try #require(index.pageCount(forDocumentAt: lastDocument)) - 1
         #expect(index.progression(forDocumentAt: lastDocument, page: lastPage) == 1)
     }
+
+    /// A pass may not touch the renderer until the pass it superseded has let go of it.
+    ///
+    /// Both passes share the measurer's renderer, and a renderer follows one navigation at a time.
+    /// Cancellation is cooperative, so a superseded pass stays inside the load it was awaiting; a
+    /// successor that loaded into the same web view meanwhile made the two navigations
+    /// indistinguishable. Whichever load was resumed with `superseded` had its document recorded as
+    /// unmeasurable, and the load that survived measured whatever the web view was left holding and
+    /// filed that count under its own path. Both were seen on a real book: a total a document short,
+    /// and a total seven pages long because a one page cover was credited with a later document's
+    /// eight.
+    ///
+    /// Asserted as an ordering rather than as a count, since the corruption it produces depends on
+    /// which load wins and only some of the outcomes are wrong.
+    @Test func aPassWaitsForTheOneItSupersededBeforeMeasuring() async throws {
+        let book = try Self.makeBook()
+        defer { EpubFixture.remove(book.url) }
+
+        let expected = await measure(
+            EpubSpineMeasurer(provider: try EpubZipResourceProvider(url: book.url)),
+            paths: book.paths
+        )
+
+        let measurer = EpubSpineMeasurer(provider: try EpubZipResourceProvider(url: book.url))
+        var events: [String] = []
+        var counts: [Int: Int] = [:]
+        var restarted = false
+
+        let outcome = await withCheckedContinuation { (continuation: CheckedContinuation<Outcome, Never>) in
+            // Superseded from inside its own first count, which is as early as a pass can be caught
+            // having started work.
+            measurer.start(
+                spinePaths: book.paths,
+                viewport: Self.viewport,
+                onCount: { _, _ in
+                    guard !restarted else { return }
+                    restarted = true
+                    measurer.start(
+                        spinePaths: book.paths,
+                        viewport: Self.viewport,
+                        onCount: { position, count in
+                            events.append("second.count")
+                            counts[position] = count
+                        },
+                        onFinish: { outcome in
+                            events.append("second.finish")
+                            continuation.resume(returning: outcome)
+                        }
+                    )
+                },
+                onFinish: { _ in events.append("first.finish") }
+            )
+        }
+
+        let firstFinish = try #require(events.firstIndex(of: "first.finish"))
+        let firstSecondCount = try #require(events.firstIndex(of: "second.count"))
+        #expect(firstFinish < firstSecondCount, "the superseded pass was still loading: \(events)")
+
+        #expect(outcome.failed.isEmpty)
+        #expect(!outcome.cancelled)
+        #expect(counts == expected.counts)
+    }
 }
+
+private typealias Outcome = EpubSpineMeasurer.Outcome

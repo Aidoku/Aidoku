@@ -96,6 +96,7 @@ final class EpubSpineMeasurer {
         onCount: @escaping (Int, Int) -> Void,
         onFinish: @escaping (Outcome) -> Void
     ) {
+        let superseded = task
         cancel()
 
         guard !spinePaths.isEmpty, viewport.width > 0, viewport.height > 0 else {
@@ -104,7 +105,18 @@ final class EpubSpineMeasurer {
         }
 
         task = Task { [weak self] in
-            guard let self else { return }
+            // A cancelled pass is not a finished one. Cancellation is cooperative and the pass is
+            // suspended inside `renderer.load`, which it keeps waiting on; the renderer is reused
+            // across passes, and it tracks one navigation at a time. Loading into the same web view
+            // while the old load is still settling therefore makes the two indistinguishable: one
+            // of them is resumed with `superseded` and its document is recorded as unmeasurable,
+            // while the other measures whichever document the web view ended up holding and files
+            // that count under its own path. Both were seen on a 217 document book opened at a size
+            // that settled after the first pass had begun, as a total seven pages long and as one a
+            // document short. Waiting for the old pass to leave the renderer costs one document's
+            // load, a 9 ms median, and removes the overlap rather than detecting it.
+            await superseded?.value
+            guard let self, !Task.isCancelled else { return }
             await run(
                 spinePaths: spinePaths,
                 viewport: viewport,
