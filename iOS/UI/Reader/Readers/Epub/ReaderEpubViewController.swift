@@ -81,6 +81,16 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// under the finger.
     private var isSliding = false
 
+    /// True while a navigation is in flight, so the states it passes through are not published as
+    /// positions.
+    ///
+    /// A move that crosses into another spine document reports twice on its way: once when the
+    /// document loads, which is a real count but a position of its first page, and once when the
+    /// page asked for is shown. A reader dragging the slider across a document boundary therefore
+    /// saw the thumb land near their target, jump to the head of that document, and only then
+    /// settle, while a drag within the loaded document moved once and looked correct.
+    private var isNavigating = false
+
     /// The total last handed to the toolbar, so it is rewritten when it changes rather than on
     /// every count that lands.
     private var reportedTotal = 0
@@ -170,23 +180,39 @@ class ReaderEpubViewController: BaseObservingViewController {
         book.onChange = { [weak self] in self?.report() }
         self.book = book
 
-        // Laid out at the size the web view will occupy once inset, rather than at the reader's
-        // full bounds, so the opening document is not paginated twice.
-        let safeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
-        let viewport = CGSize(
-            width: max(view.bounds.width - safeArea.left - safeArea.right, 0),
-            height: max(view.bounds.height - safeArea.top - safeArea.bottom, 0)
-        )
-        lastViewport = viewport
+        // The web view is placed and laid out before the book is opened in it, so that the size
+        // every page count belongs to is the size the view settled at. Predicting that size and
+        // reconciling afterwards disagreed by a point or two, and any disagreement invalidates
+        // every count and restarts the measurement pass, which is visible as the counter running
+        // through the book a second time.
+        let renderer: EpubSpineRenderer
         do {
-            try await book.start(viewport: viewport)
+            renderer = try await book.prepareRenderer()
+        } catch {
+            LogManager.logger.error("ReaderEpubViewController: could not build a renderer: \(error)")
+            delegate?.setPages([])
+            return
+        }
+        guard !Task.isCancelled else { return }
+        install(renderer.webView)
+        view.layoutIfNeeded()
+
+        let viewport = renderer.webView.bounds.size
+        guard viewport.width > 0, viewport.height > 0 else {
+            LogManager.logger.error("ReaderEpubViewController: the reader has no size to lay a book out in")
+            delegate?.setPages([])
+            return
+        }
+        lastViewport = viewport
+
+        do {
+            try await book.open(viewport: viewport)
         } catch {
             LogManager.logger.error("ReaderEpubViewController: could not lay out \(bookURL.lastPathComponent): \(error)")
             delegate?.setPages([])
             return
         }
-        guard !Task.isCancelled, let renderer = book.renderer else { return }
-        install(renderer.webView)
+        guard !Task.isCancelled else { return }
 
         if startPage > 1 {
             await book.showBookPage(startPage - 1)
@@ -197,20 +223,45 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// Tells the toolbar where the reader is and how long the book is.
     ///
     /// The total grows as the measurement pass fills it in, so it is rewritten when it changes
-    /// rather than on every count, and never while the slider is being dragged: `setPages` moves
-    /// the thumb, and moving it under a finger is worse than a total that lands a moment late.
+    /// rather than on every count. It is **not** withheld while the slider is dragged. A total is a
+    /// label: `setPages` reaches `ReaderToolbarView.totalPages`, whose `didSet` updates the page
+    /// count text and nothing else. The thumb is moved by `setCurrentPage`, which is where the
+    /// guard belongs and now is. Withholding the total instead bought nothing and cost a book whose
+    /// total froze at whatever it held when a drag began, for the rest of the book, whenever the
+    /// flag outlived the drag by any route.
     private func report() {
         guard let book else { return }
 
+        // A total of zero is an index that has just been invalidated by a resize, which is a book
+        // about to be counted again rather than a book with no pages. The host reads an empty page
+        // list as a chapter that failed to load and puts an alert on top of the reader, so a
+        // rotation would announce a failure on every turn of the device. A book that genuinely
+        // cannot be read reports its emptiness from the failure paths in `open` instead.
         let total = book.bookTotal
-        if total != reportedTotal && !isSliding {
+        if total > 0 && total != reportedTotal {
             reportedTotal = total
             delegate?.setPages(placeholderPages(count: total))
+        }
+
+        // A resume that could not be placed when it was asked for is retried here, through the same
+        // queue as a page turn so that the two cannot run at once, and only once the counts it was
+        // waiting on have landed.
+        if book.canShowPendingBookPage {
+            navigate { await $0.showPendingBookPage() }
         }
 
         // A page the index cannot place yet is one in a document whose predecessors are still being
         // counted. Reporting a position then would put the reader somewhere arbitrary in the book.
         guard let page = book.bookPage else { return }
+        // Never while the thumb is held. This is the call that moves it, through
+        // `updateSliderPosition`, and the measurement pass lands counts often enough to drag it out
+        // from under the finger. A flag that outlives the drag costs a position that lands late,
+        // which the next page turn heals through `endSliding`.
+        //
+        // Never mid-navigation either, for the same reason from the other side: the states a move
+        // passes through are not places the reader is, and `navigate` reports once the move has
+        // settled.
+        guard !isSliding, !isNavigating else { return }
         delegate?.setCurrentPage(page + 1, position: book.progression)
     }
 
@@ -242,13 +293,31 @@ class ReaderEpubViewController: BaseObservingViewController {
             pendingMove = work
             return
         }
+        isNavigating = true
         moveTask = Task { [weak self] in
-            guard let self, let book else { return }
-            await work(book)
+            guard let self else { return }
+            if let book {
+                await work(book)
+            }
             moveTask = nil
             if let next = pendingMove {
+                // The queued turn continues the same navigation, so the position stays withheld
+                // until the last of them has settled rather than surfacing between them.
                 pendingMove = nil
                 navigate(next)
+            } else {
+                isNavigating = false
+                // A completed move is the definitive end of the drag that asked for it, since
+                // `sliderStopped` is what queued this work. Cleared here as well as there because a
+                // host may deliver a last value change after the touch has ended: `UISlider` does,
+                // and that arrives after `sliderStopped` has already cleared the flag, setting it
+                // again for good. The reader's position was then withheld for the rest of the book
+                // while the book itself kept working, so the counter sat at whatever it last
+                // reported. `ReaderSliderView`, which the shipping reader uses, sends
+                // `.valueChanged` only from `continueTracking` and so never does this; the reader
+                // does not depend on that being true of every host.
+                isSliding = false
+                report()
             }
         }
     }
@@ -258,11 +327,27 @@ class ReaderEpubViewController: BaseObservingViewController {
 
 extension ReaderEpubViewController: ReaderReaderDelegate {
     func moveLeft() {
+        endSliding()
         navigate { await $0.moveBackward() }
     }
 
     func moveRight() {
+        endSliding()
         navigate { await $0.moveForward() }
+    }
+
+    /// Clears the dragging flag on any interaction that cannot coexist with a held thumb.
+    ///
+    /// The reader's position is withheld while the slider is being dragged so the thumb does not
+    /// move under the finger. That makes the flag load-bearing: left set, the toolbar stops being
+    /// told where the reader is. It is cleared by `sliderStopped`, but that depends on a single
+    /// callback arriving, and a cancelled touch does not send one. A page turn proves no drag is in
+    /// progress, so it heals the state rather than trusting the host to have reported the end of
+    /// it. The book's **total** deliberately does not depend on this flag; see `report`.
+    private func endSliding() {
+        guard isSliding else { return }
+        isSliding = false
+        report()
     }
 
     /// Previews a page while the thumb is moving, without loading anything.
@@ -277,6 +362,9 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
 
     func sliderStopped(value: CGFloat) {
         isSliding = false
+        // Straight into the move, without reporting first. The position withheld for the length of
+        // the drag is the one the reader is leaving, and publishing it here put the thumb back
+        // where it started for as long as the move took. `navigate` reports once the move settles.
         let page = bookPage(for: value)
         navigate { await $0.showBookPage(page) }
     }

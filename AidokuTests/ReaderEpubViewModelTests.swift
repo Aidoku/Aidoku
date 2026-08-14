@@ -29,6 +29,16 @@ struct ReaderEpubViewModelTests {
         try ReaderEpubViewModel(bookURL: url)
     }
 
+    /// Mirrors what the view controller does: place the web view, let it settle, then open the
+    /// book at the size it settled at. A predicted size and a settled size that disagree invalidate
+    /// every page count.
+    private func start(_ viewModel: ReaderEpubViewModel, atDocument document: Int = 0) async throws {
+        let renderer = try await viewModel.prepareRenderer()
+        renderer.webView.frame = CGRect(origin: .zero, size: Self.viewport)
+        renderer.webView.layoutIfNeeded()
+        try await viewModel.open(viewport: Self.viewport, atDocument: document)
+    }
+
     private func waitUntilMeasured(_ viewModel: ReaderEpubViewModel, timeout: TimeInterval = 20) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while !viewModel.isMeasured && Date() < deadline {
@@ -42,7 +52,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         #expect(viewModel.currentDocument == 0)
@@ -58,7 +68,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
@@ -75,7 +85,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
@@ -93,7 +103,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport, atDocument: 1)
+        try await start(viewModel, atDocument: 1)
         defer { viewModel.renderer?.webView.stopLoading() }
         try #require(viewModel.currentDocument == 1)
         try #require(viewModel.pageInDocument == 0)
@@ -110,7 +120,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         await viewModel.moveBackward()
@@ -125,7 +135,7 @@ struct ReaderEpubViewModelTests {
 
         let viewModel = try makeViewModel(url)
         let last = viewModel.spinePaths.count - 1
-        try await viewModel.start(viewport: Self.viewport, atDocument: last)
+        try await start(viewModel, atDocument: last)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         let count = try #require(viewModel.index.pageCount(forDocumentAt: last))
@@ -143,7 +153,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
         try await waitUntilMeasured(viewModel)
 
@@ -161,7 +171,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
         try await waitUntilMeasured(viewModel)
 
@@ -180,7 +190,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
 
         #expect(viewModel.progression == nil, "a fraction of a lower bound must not be published")
@@ -204,7 +214,7 @@ struct ReaderEpubViewModelTests {
 
         let viewModel = try makeViewModel(url)
         let last = viewModel.spinePaths.count - 1
-        try await viewModel.start(viewport: Self.viewport, atDocument: last)
+        try await start(viewModel, atDocument: last)
         defer { viewModel.renderer?.webView.stopLoading() }
         try await waitUntilMeasured(viewModel)
 
@@ -238,7 +248,7 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await viewModel.start(viewport: Self.viewport)
+        try await start(viewModel)
         defer { viewModel.renderer?.webView.stopLoading() }
         try await waitUntilMeasured(viewModel)
         let narrow = viewModel.bookTotal
@@ -249,5 +259,87 @@ struct ReaderEpubViewModelTests {
 
         try await waitUntilMeasured(viewModel)
         #expect(viewModel.bookTotal < narrow, "a wider viewport holds more text per page")
+    }
+
+    /// A layout pass arriving before the book is opened starts nothing.
+    ///
+    /// A host places the web view and lays it out before opening the book in it, which is a size
+    /// change and reaches `viewportChanged`. Counting the spine from there measures a book that has
+    /// not been opened, and `open` then starts a second pass across the same renderer while the
+    /// first is still walking it. See `aPassWaitsForTheOneItSupersededBeforeMeasuring` for what the
+    /// overlap does to the counts.
+    @Test func aViewportChangeBeforeOpeningCountsNothing() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        viewModel.viewportChanged(to: Self.viewport)
+
+        // Long enough for a pass to have counted the fixture's four documents several times over.
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+
+        #expect(viewModel.bookTotal == 0, "a book that has not been opened was measured")
+        #expect(!viewModel.isMeasured)
+    }
+
+    /// A page asked for before the index can place it is held until it can be.
+    ///
+    /// Only the opening document is counted by the time a book is open, so a reader resuming
+    /// anywhere else asks for a page the index cannot resolve. Dropping the request leaves them at
+    /// page 1, and closing the reader then writes that 1 over the position they were resuming to.
+    @Test func aResumeBeyondTheCountedDocumentsIsHeldUntilItCanBePlaced() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        // What page the last document starts at is a property of the fixture at this size, so it is
+        // measured rather than assumed.
+        let target: Int
+        do {
+            let measured = try makeViewModel(url)
+            try await start(measured)
+            defer { measured.renderer?.webView.stopLoading() }
+            try await waitUntilMeasured(measured)
+            target = try #require(measured.index.startOfDocument(at: 3))
+        }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        // The pass checks this before each load and has not reached its first one yet, so nothing
+        // beyond the opening document is counted while it is held.
+        viewModel.pauseMeasuring()
+
+        await viewModel.showBookPage(target)
+        #expect(viewModel.pendingBookPage == target, "the request was dropped rather than held")
+        #expect(!viewModel.canShowPendingBookPage)
+        #expect(viewModel.currentDocument == 0, "the reader moved to a page the index cannot place")
+
+        viewModel.resumeMeasuring()
+        try await waitUntilMeasured(viewModel)
+
+        #expect(viewModel.canShowPendingBookPage)
+        await viewModel.showPendingBookPage()
+        #expect(viewModel.currentDocument == 3)
+        #expect(viewModel.bookPage == target)
+        #expect(viewModel.pendingBookPage == nil)
+    }
+
+    /// A reader who turns a page has taken over from the resume, so it is abandoned.
+    @Test func aPageTurnAbandonsAHeldResume() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        viewModel.pauseMeasuring()
+
+        // Beyond anything the fixture holds, so it stays unplaceable for the rest of the test.
+        await viewModel.showBookPage(10_000)
+        #expect(viewModel.pendingBookPage == 10_000)
+
+        await viewModel.moveForward()
+        #expect(viewModel.pendingBookPage == nil)
+        #expect(!viewModel.canShowPendingBookPage)
     }
 }

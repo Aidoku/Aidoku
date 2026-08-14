@@ -38,8 +38,44 @@ final class ReaderEpubViewModel {
     private let measurer: EpubSpineMeasurer
     private var viewport: CGSize = .zero
 
+    /// True once `open` has laid the book out, so that a layout pass arriving before it does not
+    /// start a measurement pass of its own.
+    ///
+    /// A host places the web view and lays it out before opening the book, which is a size change
+    /// and reaches `viewportChanged`. Measuring from there would count the whole spine once against
+    /// a book that has not been opened, and `open` would then start a second pass over the same
+    /// renderer while the first was still walking it.
+    private var isOpen = false
+
     /// Called whenever the position or the book's total moves, so a host can refresh its toolbar.
     var onChange: (() -> Void)?
+
+    /// Spine paths the measurement pass could not lay out, for the debug screen to show.
+    private(set) var unmeasurable: [String] = []
+
+    /// A book page asked for before the index could place it, held rather than dropped.
+    ///
+    /// A reader resuming partway through a book asks for a page whose document has not been
+    /// counted yet, since only the opening document is measured by the time the book is open.
+    /// Dropping the request leaves the reader at page 1, and the position they were resuming to is
+    /// then overwritten with 1 when the reader closes, so the request has to outlive the counts it
+    /// is waiting on.
+    private(set) var pendingBookPage: Int?
+
+    /// True once the page held above can be placed.
+    ///
+    /// Exposed rather than acted on here so the host asks for it through the same serialised path
+    /// its own page turns use. A resume racing a page turn is two navigations at once on one
+    /// renderer, which is the shape of defect this reader has already paid for once.
+    var canShowPendingBookPage: Bool {
+        guard let pendingBookPage else { return false }
+        return index.position(ofBookPage: pendingBookPage) != nil
+    }
+
+    /// The first spine document with no count, or `nil` once the book is complete. Debug only.
+    var firstUnmeasured: Int? {
+        (0..<spinePaths.count).first { index.pageCount(forDocumentAt: $0) == nil }
+    }
 
     /// The page shown within the current spine document, zero-based.
     var pageInDocument: Int {
@@ -82,17 +118,15 @@ final class ReaderEpubViewModel {
         self.measurer = EpubSpineMeasurer(provider: provider)
     }
 
-    /// Builds the renderer, shows the opening document, and starts counting the rest of the book.
+    /// Builds the renderer so its web view can be placed before anything is laid out in it.
     ///
-    /// The renderer is given a frame and laid out here rather than left to the host, so that the
-    /// opening document is laid out against the size it will be read at. A view still at its
-    /// default zero size reports a viewport that means nothing, and window membership is not what
-    /// decides this: a frame and a layout are.
-    func start(viewport: CGSize, atDocument document: Int = 0) async throws {
-        self.viewport = viewport
+    /// Separate from `open` because the size the book is measured at has to be the size the web
+    /// view actually ends up, not a prediction of it. Laying the opening document out against a
+    /// computed size and then letting the host place the view invites a disagreement of a point or
+    /// two, and any disagreement invalidates every page count and restarts the measurement pass.
+    func prepareRenderer() async throws -> EpubSpineRenderer {
+        if let renderer { return renderer }
         let renderer = try await EpubSpineRenderer(provider: provider)
-        renderer.webView.frame = CGRect(origin: .zero, size: viewport)
-        renderer.webView.layoutIfNeeded()
         renderer.onRepaginate = { [weak self] count in
             guard let self else { return }
             // The renderer re-measures when a late image or a size change moves the boundaries, so
@@ -101,7 +135,15 @@ final class ReaderEpubViewModel {
             onChange?()
         }
         self.renderer = renderer
+        return renderer
+    }
 
+    /// Shows the opening document and starts counting the rest of the book.
+    ///
+    /// `viewport` must be the web view's settled size. Call after the host has placed it.
+    func open(viewport: CGSize, atDocument document: Int = 0) async throws {
+        self.viewport = viewport
+        isOpen = true
         currentDocument = min(max(document, 0), max(spinePaths.count - 1, 0))
         try await loadCurrentDocument()
         startMeasuring()
@@ -109,6 +151,9 @@ final class ReaderEpubViewModel {
 
     /// Forward a page, continuing into the next spine document at its end.
     func moveForward() async {
+        // A reader who turns a page has taken over from whatever they were being resumed to, and
+        // arriving at it later would move them off the page they chose.
+        pendingBookPage = nil
         guard let renderer else { return }
         if renderer.currentPage + 1 < renderer.pageCount {
             await renderer.showPage(renderer.currentPage + 1)
@@ -120,6 +165,7 @@ final class ReaderEpubViewModel {
 
     /// Back a page, continuing into the previous spine document at its **last** page.
     func moveBackward() async {
+        pendingBookPage = nil
         guard let renderer else { return }
         if renderer.currentPage > 0 {
             await renderer.showPage(renderer.currentPage - 1)
@@ -131,11 +177,15 @@ final class ReaderEpubViewModel {
 
     /// Shows a page of the book, which is what a dragged slider asks for.
     ///
-    /// Does nothing while the page cannot be placed, which is any page beyond the run of documents
-    /// counted so far. A slider offering pages the index cannot resolve is the host's problem to
-    /// avoid, and guessing here would move the reader somewhere arbitrary.
+    /// A page that cannot be placed, which is any page beyond the run of documents counted so far,
+    /// is held until it can be rather than guessed at: guessing would move the reader somewhere
+    /// arbitrary. `canShowPendingBookPage` tells a host when to ask again.
     func showBookPage(_ page: Int) async {
-        guard let position = index.position(ofBookPage: page) else { return }
+        guard let position = index.position(ofBookPage: page) else {
+            pendingBookPage = page
+            return
+        }
+        pendingBookPage = nil
         if position.document == currentDocument {
             await renderer?.showPage(position.page)
             onChange?()
@@ -144,13 +194,19 @@ final class ReaderEpubViewModel {
         }
     }
 
+    /// Shows the page that was held, once the index can place it.
+    func showPendingBookPage() async {
+        guard let page = pendingBookPage else { return }
+        await showBookPage(page)
+    }
+
     /// Re-lays the book out at a new size.
     ///
     /// Every count belongs to a viewport, so all of them are dropped and counted again. The
     /// renderer restores its own page by progression within the current document, which is what
     /// keeps the reader on the same text rather than on the same page number.
     func viewportChanged(to size: CGSize) {
-        guard size != viewport, size.width > 0, size.height > 0 else { return }
+        guard isOpen, size != viewport, size.width > 0, size.height > 0 else { return }
         viewport = size
         index.invalidate()
         startMeasuring()
@@ -178,6 +234,24 @@ final class ReaderEpubViewModel {
         // stall; a count waiting on a reader is not.
         measurer.pause()
         defer { measurer.resume() }
+
+        // A document is shown at its first page the moment it loads, and only then scrolled to the
+        // page that was asked for. Turning back into a document therefore renders its opening, then
+        // visibly runs through it to the end. The web view is hidden across the two steps so the
+        // reader sees the page it asked for and nothing else.
+        //
+        // Landing on page 0 needs none of this, since that is where a load already leaves the
+        // document, and hiding it there would flicker for no reason.
+        let target = landingOnLastPage ? Int.max : page
+        let hides = target != 0
+        if hides {
+            renderer?.webView.alpha = 0
+        }
+        defer {
+            if hides {
+                renderer?.webView.alpha = 1
+            }
+        }
 
         currentDocument = document
         do {
@@ -210,8 +284,19 @@ final class ReaderEpubViewModel {
                 index.setPageCount(count, forDocumentAt: document)
                 onChange?()
             },
-            onFinish: { [weak self] _ in
-                self?.onChange?()
+            onFinish: { [weak self] outcome in
+                guard let self else { return }
+                // A pass that was superseded reports what it had failed on so far, which is a
+                // partial answer to a question the pass that replaced it is about to answer in
+                // full. Only a pass that reached the end of the spine describes the book.
+                guard !outcome.cancelled else { return }
+                if !outcome.failed.isEmpty {
+                    LogManager.logger.error(
+                        "ReaderEpubViewModel: \(outcome.failed.count) documents could not be laid out"
+                    )
+                }
+                unmeasurable = outcome.failed
+                onChange?()
             }
         )
     }
