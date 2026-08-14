@@ -73,7 +73,16 @@ struct EpubPaginationSettings {
                 viewport.setAttribute('name', 'viewport');
                 head.appendChild(viewport);
             }
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1');
+            // User scaling is disabled because a double tap in the reader's tap zones zooms the
+            // document, and a zoomed document no longer shows the page the offsets describe: the
+            // reader is left partway between two columns until the next page turn resets it.
+            // Scaling is a visual-viewport transform, so it corrupts neither `scrollWidth` nor the
+            // counts, only what is on screen, which is why the book survives it. `width` and
+            // `initial-scale` are unchanged, so the layout viewport is exactly what it was.
+            viewport.setAttribute(
+                'content',
+                'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+            );
 
             function makeStyle(css) {
                 var el = document.createElement('style');

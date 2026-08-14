@@ -77,6 +77,37 @@ struct EpubPaginationTests {
         #expect(try await renderer.load(spinePath: "OEBPS/page.xhtml") == 1)
     }
 
+    /// The document may not be scaled by the reader.
+    ///
+    /// A double tap inside the reader's tap zones zooms the document, which leaves the reader
+    /// partway between two columns showing neither page whole until the next turn resets it. The
+    /// counts survive it, since scaling is a visual-viewport transform and does not touch
+    /// `scrollWidth`, so nothing but the screen reports anything wrong.
+    @Test func theDocumentCannotBeScaledByTheReader() async throws {
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(EpubFixture.page(body: "<p>short</p>").utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+        _ = try await renderer.load(spinePath: "OEBPS/page.xhtml")
+
+        let content = try await EpubFixture.evaluate(
+            "document.querySelector('meta[name=\"viewport\"]').getAttribute('content')",
+            in: renderer.webView
+        ) as? String
+        let viewport = try #require(content)
+
+        #expect(viewport.contains("user-scalable=no"))
+        #expect(viewport.contains("maximum-scale=1"))
+        // The layout viewport is what every page count belongs to and is unchanged by the above.
+        #expect(viewport.contains("width=device-width"))
+        #expect(viewport.contains("initial-scale=1"))
+        #expect(try await EpubFixture.number("window.innerWidth", in: renderer.webView)
+            == Double(EpubFixture.viewportSize.width))
+    }
+
     /// Every page begins at exactly `index * viewportWidth`, and the last one is reachable.
     @Test func pagesSitAtWholeMultiplesOfTheViewport() async throws {
         let archiveURL = try EpubFixture.makeArchive(entries: [
