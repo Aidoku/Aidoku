@@ -187,7 +187,9 @@ private class EpubDebugReaderHostViewController: UIViewController {
 
         slider.translatesAutoresizingMaskIntoConstraints = false
         slider.addTarget(self, action: #selector(sliderMoved), for: .valueChanged)
-        slider.addTarget(self, action: #selector(sliderStopped), for: [.touchUpInside, .touchUpOutside])
+        // `.touchCancel` as well as the two lifts. A drag that ends without one of these leaves the
+        // reader believing the thumb is still held, and it suppresses totals while that is true.
+        slider.addTarget(self, action: #selector(sliderStopped), for: [.touchUpInside, .touchUpOutside, .touchCancel])
         view.addSubview(slider)
 
         NSLayoutConstraint.activate([
@@ -200,8 +202,18 @@ private class EpubDebugReaderHostViewController: UIViewController {
             slider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -8)
         ])
 
-        let left = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
-        view.addGestureRecognizer(left)
+        // A WKWebView installs its own recognizers on its content view, and they claim a single
+        // tap before an ancestor's recognizer sees it. Recognising simultaneously is what lets a
+        // tap reach both, and not cancelling touches leaves the web view's own handling, text
+        // selection and links, working. No reader before this one had a web view under the tap
+        // zones, so `ReaderViewController.handleTap` will need the same once slice 4 routes a
+        // chapter here.
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
+        tap.delegate = self
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+
+        becomeFirstResponder()
 
         // The chapter's identity is all the reader takes from it; the book comes from the URL.
         reader.setChapter(AidokuRunner.Chapter(key: bookURL.lastPathComponent), startPage: 1)
@@ -223,6 +235,14 @@ private class EpubDebugReaderHostViewController: UIViewController {
     }
 
     @objc private func sliderMoved() {
+        // `UISlider` sends a last `.valueChanged` after the touch has ended, so this arrives once
+        // more with tracking already over. Forwarding it tells the reader a drag has begun that is
+        // in fact finished, and the reader withholds its position for the length of a drag.
+        // `ReaderSliderView`, which the shipping reader uses, sends `.valueChanged` only from
+        // `continueTracking` and `.editingDidEnd` from `endTracking`, so this host behaves like
+        // that one rather than exercising the reader against an event sequence no shipping host
+        // produces.
+        guard slider.isTracking else { return }
         reader.sliderMoved(value: CGFloat(slider.value))
     }
 
@@ -230,8 +250,46 @@ private class EpubDebugReaderHostViewController: UIViewController {
         reader.sliderStopped(value: CGFloat(slider.value))
     }
 
+    /// Shows the measurement pass's progress alongside the page, so that a total which stops
+    /// moving can be told apart from a pass which restarted and is counting the book again.
     private func updateTitle() {
-        title = totalPages > 0 ? "\(currentPage) / \(totalPages)" : "measuring…"
+        let measured = reader.book.map { book -> String in
+            var text = "\(book.index.measuredDocumentCount)/\(book.spinePaths.count)"
+            if let missing = book.firstUnmeasured {
+                text += " ?\(missing)"
+            }
+            if !book.unmeasurable.isEmpty {
+                text += " ✗\(book.unmeasurable.count)"
+            }
+            return text
+        } ?? "–"
+        title = totalPages > 0 ? "\(currentPage) / \(totalPages) · \(measured)" : "measuring… \(measured)"
+    }
+
+    override var canBecomeFirstResponder: Bool { true }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(title: "Back a page", action: #selector(keyLeft), input: UIKeyCommand.inputLeftArrow),
+            UIKeyCommand(title: "Forward a page", action: #selector(keyRight), input: UIKeyCommand.inputRightArrow)
+        ]
+    }
+
+    @objc private func keyLeft() {
+        reader.moveLeft()
+    }
+
+    @objc private func keyRight() {
+        reader.moveRight()
+    }
+}
+
+extension EpubDebugReaderHostViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer
+    ) -> Bool {
+        true
     }
 }
 
@@ -249,7 +307,10 @@ extension EpubDebugReaderHostViewController: ReaderHoldingDelegate {
     func setCurrentPage(_ page: Int, position: Double?) {
         currentPage = page
         updateTitle()
-        guard totalPages > 1 else { return }
+        // Never while the thumb is held: the reader reports a position on every count the
+        // measurement pass lands, and writing it back would drag the thumb out from under the
+        // finger. `ReaderViewController` guards its slider the same way.
+        guard totalPages > 1, !slider.isTracking else { return }
         slider.value = Float(page - 1) / Float(totalPages - 1)
     }
 
