@@ -12,6 +12,8 @@ struct VocabEntry: Hashable {
     let word: String
     var reading: String?
     var sentence: String?
+    var clozeOffset: Int?
+    var clozeText: String?
     var localImageId: String?
     var page: Int?
     var createdDate: Date = .now

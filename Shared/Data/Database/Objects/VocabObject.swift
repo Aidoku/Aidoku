@@ -13,6 +13,8 @@ extension VocabObject {
             word: word,
             reading: reading,
             sentence: sentence,
+            clozeOffset: Int(clozeOffset),
+            clozeText: clozeText,
             localImageId: localImageId,
             page: Int(page),
             createdDate: createdDate ?? .distantPast
@@ -26,6 +28,8 @@ extension VocabObject {
         word = entry.word
         reading = entry.reading
         sentence = entry.sentence
+        clozeOffset = entry.clozeOffset.flatMap(Int16.init) ?? 0
+        clozeText = entry.clozeText
         localImageId = entry.localImageId
         page = entry.page.flatMap(Int16.init) ?? 0
         createdDate = entry.createdDate

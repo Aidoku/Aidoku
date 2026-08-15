@@ -350,7 +350,13 @@ struct PopupView: View {
                 backTrigger: backTrigger,
                 forwardTrigger: forwardTrigger,
                 onMine: { content, formatId in
-                    await mineEntry(content: content, sentence: selectionData.sentence, clozeOffset: selectionData.clozeOffset, formatId: formatId)
+                    await mineEntry(
+                        content: content,
+                        sentence: selectionData.sentence,
+                        clozeOffset: selectionData.clozeOffset,
+                        clozeText: selectionData.text,
+                        formatId: formatId
+                    )
                 },
                 onTextSelected: onTextSelected,
                 onTapOutside: onTapOutside,
@@ -408,7 +414,13 @@ struct PopupView: View {
         .ignoresSafeArea()
     }
 
-    private func mineEntry(content: [String: String], sentence: String, clozeOffset: Int?, formatId: UUID) async -> Bool {
+    private func mineEntry(
+        content: [String: String],
+        sentence: String,
+        clozeOffset: Int?,
+        clozeText: String,
+        formatId: UUID
+    ) async -> Bool {
 //        var sasayakiAudioData: Data?
 //        if AnkiManager.shared.needsSasayakiAudio, let cue = sasayakiCue, let player = sasayakiPlayer, player.hasAudio {
 //            sasayakiAudioData = await player.cueSentenceAudio(cue, sentence: sentence)
@@ -420,8 +432,9 @@ struct PopupView: View {
             context: MiningContext(
                 sentence: sentence,
                 chapterId: chapterId,
-                page: page
-//                clozeOffset: clozeOffset,
+                page: page,
+                clozeOffset: clozeOffset,
+                clozeText: clozeText
 //                documentTitle: documentTitle,
 //                coverURL: coverURL,
 //                sasayakiAudioData: sasayakiAudioData

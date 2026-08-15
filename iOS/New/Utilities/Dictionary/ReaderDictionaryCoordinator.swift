@@ -72,6 +72,8 @@ final class ReaderDictionaryCoordinator {
         let entries: [LookupResult] = LookupEngine.shared.lookup(text)
         guard !entries.isEmpty else { return (false, 0) }
         let sentence = contextText.flatMap { Self.sentence(containing: text, in: $0) } ?? text
+        let clozeText = String(entries[0].matched)
+        let clozeOffset = sentence.range(of: clozeText).map { NSRange($0, in: sentence).location }
 
         if !appendPopup {
             dismissAllPopups()
@@ -112,7 +114,7 @@ final class ReaderDictionaryCoordinator {
         )
         let popupView = PopupView(
             userConfig: userConfig,
-            selectionData: .init(text: text, sentence: sentence, rect: anchorRect),
+            selectionData: .init(text: clozeText, sentence: sentence, rect: anchorRect, clozeOffset: clozeOffset),
             lookupResults: entries,
             dictionaryStyles: dictionaryStyles,
             availableFrame: availableFrame,

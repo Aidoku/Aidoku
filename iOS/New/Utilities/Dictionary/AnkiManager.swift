@@ -30,7 +30,8 @@ struct MiningContext {
     let sentence: String
     let chapterId: ChapterIdentifier
     let page: Int
-//    var clozeOffset: Int?
+    let clozeOffset: Int?
+    let clozeText: String
 //    let documentTitle: String?
 //    let coverURL: URL?
 //    var sasayakiAudioData: Data?
@@ -73,6 +74,8 @@ class AnkiManager {
                 word: expression,
                 reading: reading,
                 sentence: context.sentence,
+                clozeOffset: context.clozeOffset,
+                clozeText: context.clozeText,
                 page: context.page
             )
         )

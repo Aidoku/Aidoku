@@ -14,6 +14,8 @@ struct BackupVocabEntry: Codable, Hashable {
     var word: String
     var reading: String?
     var sentence: String?
+    var clozeOffset: Int?
+    var clozeText: String?
     var page: Int
     var createdDate: Date
 
@@ -28,6 +30,8 @@ struct BackupVocabEntry: Codable, Hashable {
         self.word = entry.word
         self.reading = entry.reading
         self.sentence = entry.sentence
+        self.clozeOffset = entry.clozeOffset
+        self.clozeText = entry.clozeText
         self.page = entry.page ?? 0
         self.createdDate = entry.createdDate
     }
@@ -48,6 +52,8 @@ struct BackupVocabEntry: Codable, Hashable {
         self.word = word
         self.reading = object.reading
         self.sentence = object.sentence
+        self.clozeOffset = Int(object.clozeOffset)
+        self.clozeText = object.clozeText
         self.page = Int(object.page)
         self.createdDate = createdDate
     }
@@ -65,6 +71,8 @@ struct BackupVocabEntry: Codable, Hashable {
         object.word = word
         object.reading = reading
         object.sentence = sentence
+        object.clozeOffset = clozeOffset.map(Int16.init) ?? 0
+        object.clozeText = clozeText
         object.page = Int16(page)
         object.createdDate = createdDate
         return object

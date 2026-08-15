@@ -113,6 +113,8 @@
     </entity>
     <entity name="Vocab" representedClassName="VocabObject" syncable="YES" codeGenerationType="class">
         <attribute name="chapterId" attributeType="String" defaultValueString=""/>
+        <attribute name="clozeOffset" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="clozeText" optional="YES" attributeType="String"/>
         <attribute name="createdDate" attributeType="Date" defaultDateTimeInterval="-978285600" usesScalarValueType="NO"/>
         <attribute name="localImageId" optional="YES" attributeType="String"/>
         <attribute name="mangaId" attributeType="String" defaultValueString=""/>
