@@ -20,7 +20,6 @@ class ZoomableScrollView: UIScrollView {
     var zoomEnabled = true {
         didSet {
             isScrollEnabled = zoomEnabled
-            zoomingTap.isEnabled = zoomEnabled
         }
     }
 

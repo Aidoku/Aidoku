@@ -31,7 +31,8 @@ extension URLSession {
         } else {
             let data: URL = try await withCheckedThrowingContinuation({ continuation in
                 self.downloadTask(with: request) { url, _, error in
-                    if let url = url, let tmpDirectory = FileManager.default.temporaryDirectory {
+                    if let url {
+                        let tmpDirectory = FileManager.default.temporaryDirectory
                         try? FileManager.default.createDirectory(at: tmpDirectory, withIntermediateDirectories: true)
                         let destination = tmpDirectory.appendingPathComponent(url.lastPathComponent)
                         try? FileManager.default.moveItem(at: url, to: destination)
