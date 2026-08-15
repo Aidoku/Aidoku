@@ -149,6 +149,11 @@ actor BackupManager {
             } else {
                 []
             }
+            let vocabulary: [BackupVocabEntry] = if options.vocabulary {
+                CoreDataManager.shared.getVocab(context: context).compactMap(BackupVocabEntry.init)
+            } else {
+                []
+            }
             let updateItems: [BackupUpdate] = if options.updates {
                 CoreDataManager.shared.getUpdates(context: context).compactMap(BackupUpdate.init)
             } else {
@@ -175,6 +180,7 @@ actor BackupManager {
                 chapters: chapters,
                 trackItems: trackItems,
                 readingSessions: sessionItems,
+                vocabulary: vocabulary,
                 updates: updateItems,
                 categories: categories,
                 sources: sources,
