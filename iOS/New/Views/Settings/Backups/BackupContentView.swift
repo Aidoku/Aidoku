@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BackupContentView: View {
-    let backup: Backup
+    let backup: BackupInfo
 
     @State private var restoreError: String?
     @State private var missingSources: [String] = []
@@ -31,27 +31,27 @@ struct BackupContentView: View {
                 Section {
                     infoCell(
                         title: NSLocalizedString("LIBRARY_ENTRIES"),
-                        value: String(backup.library?.count ?? 0)
+                        value: String(backup.counts.library)
                     )
                     infoCell(
                         title: NSLocalizedString("HISTORY"),
-                        value: String(backup.history?.count ?? 0)
+                        value: String(backup.counts.history)
                     )
                     infoCell(
                         title: NSLocalizedString("CHAPTERS"),
-                        value: String(backup.chapters?.count ?? 0)
+                        value: String(backup.counts.chapters)
                     )
                     infoCell(
                         title: NSLocalizedString("TRACKING"),
-                        value: String(backup.trackItems?.count ?? 0)
+                        value: String(backup.counts.trackItems)
                     )
                     infoCell(
                         title: NSLocalizedString("CATEGORIES"),
-                        value: String(backup.categories?.count ?? 0)
+                        value: String(backup.counts.categories)
                     )
                     infoCell(
                         title: NSLocalizedString("SETTINGS"),
-                        value: String(backup.settings?.count ?? 0)
+                        value: String(backup.counts.settings)
                     )
                 }
 
@@ -109,7 +109,12 @@ struct BackupContentView: View {
 
     func restore() {
         Task {
-            await BackupManager.shared.restore(from: backup)
+            // the backup contents are only decoded here, when they're actually needed
+            let loaded = await BackupManager.shared.restore(from: backup.url)
+            if !loaded {
+                restoreError = NSLocalizedString("CORRUPTED_BACKUP")
+                showRestoreErrorAlert = true
+            }
         }
     }
 }
