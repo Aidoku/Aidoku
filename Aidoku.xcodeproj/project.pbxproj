@@ -38,8 +38,6 @@
 		7C63F0D92F48FD4B007D1811 /* ChapterTransitionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C63F0D42F48FD4B007D1811 /* ChapterTransitionViewController.swift */; };
 		7CF79D3D2F31E81300BF0800 /* ReaderPagedTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF79D392F31E81300BF0800 /* ReaderPagedTextViewController.swift */; };
 		7CF79D3E2F31E81300BF0800 /* TextPaginator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF79D3A2F31E81300BF0800 /* TextPaginator.swift */; };
-		831493AB7C82392E8CB6CF6A /* CoreDataManager+Indexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29273B60C046FEC60599C7 /* CoreDataManager+Indexes.swift */; };
-		A13D58D823154CB09F35A340 /* CoreDataManager+Indexes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C29273B60C046FEC60599C7 /* CoreDataManager+Indexes.swift */; };
 		EE7A41B92F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
 		EE7A41BA2F5CF4DF0044AF4C /* DictionaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */; };
 		EE7A41BF2F5CF5050044AF4C /* DictionaryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */; };
@@ -698,7 +696,6 @@
 		91D7BEF92DD7E48400898539 /* Aidoku-MACOS.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Aidoku-MACOS.xcconfig"; sourceTree = "<group>"; };
 		91D7BEFB2DD7E4BB00898539 /* Aidoku.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Aidoku.xcconfig; sourceTree = "<group>"; };
 		91D7BEFF2DD8881300898539 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9C29273B60C046FEC60599C7 /* CoreDataManager+Indexes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoreDataManager+Indexes.swift"; sourceTree = "<group>"; };
 		EE7A41B82F5CF4DF0044AF4C /* DictionaryModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryModels.swift; sourceTree = "<group>"; };
 		EE7A41BE2F5CF5050044AF4C /* DictionaryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryManager.swift; sourceTree = "<group>"; };
 		EE7A41C12F5CF5960044AF4C /* TextRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextRecognizer.swift; sourceTree = "<group>"; };
@@ -1396,7 +1393,6 @@
 				FB0CAA4F28A55BB80024561A /* CoreDataManager+Category.swift */,
 				FB0CAA5728A83F020024561A /* CoreDataManager+Chapter.swift */,
 				FB0CAA5928A93DD50024561A /* CoreDataManager+History.swift */,
-				9C29273B60C046FEC60599C7 /* CoreDataManager+Indexes.swift */,
 				FB0CAA4D28A2B9F40024561A /* CoreDataManager+LibraryManga.swift */,
 				FB0CAA4B28A2AD480024561A /* CoreDataManager+Manga.swift */,
 				48177B8F2B75C63700AD41B4 /* CoreDataManager+MangaUpdates.swift */,
@@ -3185,7 +3181,6 @@
 				FBE78129282F481A0038C0E3 /* DownloadCache.swift in Sources */,
 				FBC338032EC79A4C007465BA /* SearchContentView+ViewModel.swift in Sources */,
 				FB0CAA5828A83F020024561A /* CoreDataManager+Chapter.swift in Sources */,
-				A13D58D823154CB09F35A340 /* CoreDataManager+Indexes.swift in Sources */,
 				FB0051282FB7F926004B4A6F /* MigrateSingleSearchView.swift in Sources */,
 				FB30D582296CC0FE006B03A7 /* HistoryManager.swift in Sources */,
 				FB2BE5E629527A9E00FAD8A7 /* ReaderNavigationController.swift in Sources */,
@@ -3431,7 +3426,6 @@
 				FBFA03423008DF610008B4B6 /* AppSettings.swift in Sources */,
 				FB0CAA6328A998BD0024561A /* NSPersistentContainer.swift in Sources */,
 				FB0CAA5D28A998670024561A /* CoreDataManager+Chapter.swift in Sources */,
-				831493AB7C82392E8CB6CF6A /* CoreDataManager+Indexes.swift in Sources */,
 				FB3DDF7B2E1317AB00A64897 /* ImageModel.swift in Sources */,
 				FB82A5C92DF8786C00366BC8 /* ObjectActorSerialExecutor.swift in Sources */,
 				FBD6A417285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
