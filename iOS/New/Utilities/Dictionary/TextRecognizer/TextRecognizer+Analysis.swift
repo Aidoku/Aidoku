@@ -21,15 +21,16 @@ extension TextRecognizer {
     private func recognizeObservations(in cgImage: CGImage, language: String?) async -> [OCRObservation] {
         var request = RecognizeTextRequest()
         request.recognitionLevel = .accurate
-        if let language {
+        let restrictOCRLanguages = AppSettings.dictionary.restrictOCRLanguages.get()
+        if restrictOCRLanguages, let language {
             request.recognitionLanguages = [Locale.Language(identifier: language)]
         }
-        let restrictOCRLanguages = AppSettings.dictionary.restrictOCRLanguages.get()
         request.automaticallyDetectsLanguage = !restrictOCRLanguages
         request.usesLanguageCorrection = true
 
-        let results = (try? await request.perform(on: cgImage)) ?? []
-        return results.compactMap { observation in
+        do {
+            let results = try await request.perform(on: cgImage)
+            return results.compactMap { observation in
             guard
                 let candidate = observation.topCandidates(1).first,
                 case let characters = recognizedCharacters(from: candidate),
@@ -38,25 +39,29 @@ extension TextRecognizer {
             else {
                 return nil
             }
-            return .init(
-                text: text,
-                boundingRect: observation.boundingBox.cgRect,
-                direction: {
-                    if #available(iOS 26.0, *) {
-                        switch observation.textDirection {
-                            case .topToBottom: return .topToBottom
-                            case .leftToRight: return .leftToRight
-                            case .rightToLeft: return .rightToLeft
-                            case .none: return .unknown
-                            @unknown default: return .unknown
+                return .init(
+                    text: text,
+                    boundingRect: observation.boundingBox.cgRect,
+                    direction: {
+                        if #available(iOS 26.0, *) {
+                            switch observation.textDirection {
+                                case .topToBottom: return .topToBottom
+                                case .leftToRight: return .leftToRight
+                                case .rightToLeft: return .rightToLeft
+                                case .none: return .unknown
+                                @unknown default: return .unknown
+                            }
+                        } else {
+                            return .unknown
                         }
-                    } else {
-                        return .unknown
-                    }
-                }(),
-                confidence: candidate.confidence,
-                characters: characters
-            )
+                    }(),
+                    confidence: candidate.confidence,
+                    characters: characters
+                )
+            }
+        } catch {
+            LogManager.logger.error("OCR Failed: \(error)")
+            return []
         }
     }
 

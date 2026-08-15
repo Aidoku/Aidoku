@@ -147,7 +147,7 @@ extension TextRecognizer {
             if
                 let rowIndex = rows
                     .enumerated()
-                    .min(by: { ($0.element.centerY - y) < abs($1.element.centerY - y) })
+                    .min(by: { abs($0.element.centerY - y) < abs($1.element.centerY - y) })
                     .map(\.offset),
                 abs(rows[rowIndex].centerY - y) <= rowBand
             {
