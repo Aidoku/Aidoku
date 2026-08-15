@@ -50,6 +50,10 @@ struct BackupContentView: View {
                         value: String(backup.counts.categories)
                     )
                     infoCell(
+                        title: NSLocalizedString("VOCABULARY"),
+                        value: String(backup.counts.vocabulary)
+                    )
+                    infoCell(
                         title: NSLocalizedString("SETTINGS"),
                         value: String(backup.counts.settings)
                     )

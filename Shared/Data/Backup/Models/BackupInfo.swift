@@ -20,6 +20,7 @@ struct BackupInfo: Hashable, Identifiable, Sendable {
         var chapters = 0
         var trackItems = 0
         var readingSessions = 0
+        var vocabulary = 0
         var updates = 0
         var categories = 0
         var sources = 0
@@ -60,6 +61,7 @@ struct BackupInfo: Hashable, Identifiable, Sendable {
             chapters: backup.chapters?.count ?? 0,
             trackItems: backup.trackItems?.count ?? 0,
             readingSessions: backup.readingSessions?.count ?? 0,
+            vocabulary: backup.vocabulary?.count ?? 0,
             updates: backup.updates?.count ?? 0,
             categories: backup.categories?.count ?? 0,
             sources: backup.sources?.count ?? 0,
@@ -110,6 +112,7 @@ struct BackupInfo: Hashable, Identifiable, Sendable {
                 case "chapters": if case let .container(count) = value { counts.chapters = count }
                 case "trackItems": if case let .container(count) = value { counts.trackItems = count }
                 case "readingSessions": if case let .container(count) = value { counts.readingSessions = count }
+                case "vocabulary": if case let .container(count) = value { counts.vocabulary = count }
                 case "updates": if case let .container(count) = value { counts.updates = count }
                 case "categories": if case let .container(count) = value { counts.categories = count }
                 case "sources": if case let .container(count) = value { counts.sources = count }

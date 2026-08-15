@@ -192,6 +192,7 @@ struct BinaryPlistScanner {
         let size = 1 << Int(countMarker & 0x0f)
         guard
             let count = Self.readUInt(in: data, at: offset + 2, size: size).flatMap({ Int(exactly: $0) }),
+            // swiftlint:disable:next empty_count
             count >= 0,
             offset + 2 + size <= offsetTableOffset
         else {
