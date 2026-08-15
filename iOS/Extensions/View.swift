@@ -308,6 +308,12 @@ extension View {
 }
 
 extension View {
+    @ViewBuilder func modifier<Content: View>(@ViewBuilder _ transform: (Self) -> Content) -> some View {
+        transform(self)
+    }
+}
+
+extension View {
     @ViewBuilder
     func confirmationDialogOrAlert<S, A, M>(
         _ title: S,

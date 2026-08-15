@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ReaderDoublePageViewController: BaseViewController {
+class ReaderDoublePageViewController: BaseObservingViewController {
 
     enum Direction {
         case rtl
@@ -46,6 +46,7 @@ class ReaderDoublePageViewController: BaseViewController {
     }
 
     override func configure() {
+        updateDoubleTapZoomSetting()
         zoomView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(zoomView)
 
@@ -105,6 +106,20 @@ class ReaderDoublePageViewController: BaseViewController {
             secondReloadButton.centerXAnchor.constraint(equalTo: secondPageView.centerXAnchor),
             secondReloadButton.centerYAnchor.constraint(equalTo: secondPageView.centerYAnchor)
         ]
+    }
+
+    override func observe() {
+        for key in [
+            "Reader.disableDoubleTap",
+            AppSettings.dictionary.enable.key,
+            AppSettings.dictionary.lookupGesture.key,
+            AppSettings.dictionary.restrictOCRLanguages.key,
+            AppSettings.dictionary.restrictedOCRLanguages.key
+        ] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.updateDoubleTapZoomSetting()
+            }
+        }
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -187,6 +202,7 @@ class ReaderDoublePageViewController: BaseViewController {
         guard let pageView = pageView else {
             return
         }
+        updateDoubleTapZoomSetting()
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId)
             if !result {
@@ -220,5 +236,11 @@ class ReaderDoublePageViewController: BaseViewController {
                 setPage(secondPage, for: .second)
             }
         }
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        let disabled = AppSettings.dictionary.isReaderDoubleTapDisabled(language: firstPage?.language)
+            && AppSettings.dictionary.isReaderDoubleTapDisabled(language: secondPage?.language)
+        zoomView.doubleTapEnabled = !disabled
     }
 }

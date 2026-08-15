@@ -161,8 +161,7 @@ actor DownloadManager {
             return chapterFile
         }
         // otherwise we can compress it ourselves
-        let tmpFile = FileManager.default.temporaryDirectory?.appendingPathComponent(chapterFile.lastPathComponent)
-        guard let tmpFile else { return nil }
+        let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(chapterFile.lastPathComponent)
         do {
             try FileManager.default.zipItem(at: chapterDirectory, to: tmpFile, shouldKeepParent: false)
             return tmpFile
