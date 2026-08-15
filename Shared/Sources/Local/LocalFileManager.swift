@@ -345,9 +345,7 @@ extension LocalFileManager {
             }
 
             // create a temporary url to copy file to
-            guard let tempUrl = FileManager.default.temporaryDirectory?.appendingPathComponent(url.lastPathComponent) else {
-                throw LocalFileManagerError.tempDirectoryUnavailable
-            }
+            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent(url.lastPathComponent)
             // copy url to temp folder
             do {
                 try FileManager.default.copyItem(at: url, to: tempUrl)
