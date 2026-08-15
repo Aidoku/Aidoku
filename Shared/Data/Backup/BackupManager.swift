@@ -149,6 +149,11 @@ actor BackupManager {
             } else {
                 []
             }
+            let vocabulary: [BackupVocabEntry] = if options.vocabulary {
+                CoreDataManager.shared.getVocab(context: context).compactMap(BackupVocabEntry.init)
+            } else {
+                []
+            }
             let updateItems: [BackupUpdate] = if options.updates {
                 CoreDataManager.shared.getUpdates(context: context).compactMap(BackupUpdate.init)
             } else {
@@ -175,6 +180,7 @@ actor BackupManager {
                 chapters: chapters,
                 trackItems: trackItems,
                 readingSessions: sessionItems,
+                vocabulary: vocabulary,
                 updates: updateItems,
                 categories: categories,
                 sources: sources,
@@ -225,10 +231,11 @@ actor BackupManager {
         return convertedSettings
     }
 
-    func renameBackup(url: URL, name: String?) {
-        guard var backup = Backup.load(from: url) else { return }
+    func renameBackup(url: URL, name: String?) -> Bool {
+        guard var backup = Backup.load(from: url) else { return false }
         backup.name = name?.isEmpty ?? true ? nil : name
         save(backup: backup, url: url)
+        return true
     }
 
     func removeBackup(url: URL) {
@@ -266,8 +273,10 @@ extension BackupManager {
         }
     }
 
-    func restore(from backup: Backup) async {
+    func restore(from url: URL) async -> Bool {
+        guard let backup = Backup.load(from: url) else { return false }
         await doRestore(from: backup)
+        return true
     }
 
     @discardableResult
@@ -715,19 +724,19 @@ extension BackupManager {
 
     // ensure we keep only the latest maxAutoBackups automatic backups
     private func cleanUpAutoBackups() {
-        var autoBackups: [(URL, Backup)] = []
+        var autoBackups: [BackupInfo] = []
         for backupUrl in Self.backupUrls {
-            let backup = Backup.load(from: backupUrl)
-            if let backup, backup.automatic ?? false {
-                autoBackups.append((backupUrl, backup))
+            let backup = BackupInfo.load(from: backupUrl)
+            if let backup, backup.automatic {
+                autoBackups.append(backup)
             }
         }
         while autoBackups.count > Self.maxAutoBackups {
             let oldestBackup = autoBackups
-                .min { $0.1.date < $1.1.date }
+                .min { $0.date < $1.date }
             if let oldestBackup {
-                removeBackup(url: oldestBackup.0)
-                autoBackups.removeAll { $0.0 == oldestBackup.0 }
+                removeBackup(url: oldestBackup.url)
+                autoBackups.removeAll { $0.url == oldestBackup.url }
             } else {
                 break
             }
