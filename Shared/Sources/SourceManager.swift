@@ -147,12 +147,12 @@ extension SourceManager {
         Self.directory.createDirectory()
 
         // download and unzip source aix
-        let temporaryDirectory = FileManager.default.temporaryDirectory
+        guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }
         var secured = false
         var fileUrl = url
         if fileUrl.scheme != "file" {
             do {
-                let (location, _) = try await URLSession.shared.download(for: URLRequest.from(url), delegate: nil)
+                let (location, _) = try await URLSession.shared.download(for: URLRequest.from(url))
                 fileUrl = location
             } catch {
                 LogManager.logger.error("Failed to download source from \(url.absoluteString): \(error)")

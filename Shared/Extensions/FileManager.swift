@@ -121,6 +121,20 @@ extension FileManager {
         }
         return size
     }
+
+    func createTemporaryDirectory() -> URL? {
+        let temporaryDirectory = self.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(
+                at: temporaryDirectory,
+                withIntermediateDirectories: true
+            )
+            return temporaryDirectory
+        } catch {
+            LogManager.logger.error("Failed to create temporary source directory: \(error)")
+            return nil
+        }
+    }
 }
 
 extension String {
