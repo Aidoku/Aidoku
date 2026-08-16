@@ -193,7 +193,7 @@ struct ReaderSettingsView: View {
                     Text(NSLocalizedString("TAP_ZONES"))
                 }
 
-                if reader == .text {
+                if reader != .paged || reader != .scroll {
                     // Text Reader Settings
                     Section(String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER"))) {
                         SettingView(

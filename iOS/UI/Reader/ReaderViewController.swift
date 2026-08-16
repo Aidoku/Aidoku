@@ -86,6 +86,7 @@ class ReaderViewController: BaseObservingViewController {
     private lazy var fakeZoomTapGesture: UITapGestureRecognizer = {
         let doubleTap = UITapGestureRecognizer(target: self, action: nil)
         doubleTap.numberOfTapsRequired = 2
+        doubleTap.delegate = self
         return doubleTap
     }()
 
@@ -93,6 +94,9 @@ class ReaderViewController: BaseObservingViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
         tap.require(toFail: fakeZoomTapGesture)
+        tap.delegate = self
+        // leave the epub web view's own touch handling (text selection, links) intact
+        tap.cancelsTouchesInView = false
         return tap
     }()
 
@@ -1179,6 +1183,18 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
         guard let pan = gestureRecognizer as? UIPanGestureRecognizer else { return true }
         let velocity = pan.velocity(in: pan.view)
         return velocity.y > velocity.x && (abs(velocity.x) < 40 || abs(velocity.y) > abs(velocity.x) * 3)
+    }
+
+    // A WKWebView installs its own recognizers on its content view, and they claim a single tap
+    // before an ancestor's recognizer sees it. Recognising simultaneously is what lets a tap reach
+    // the tap zones while an epub's web view sits under them; no other reader puts a web view there,
+    // so everything else keeps the default exclusivity.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        (gestureRecognizer == barToggleTapGesture || gestureRecognizer == fakeZoomTapGesture)
+            && reader is ReaderEpubViewController
     }
 }
 
