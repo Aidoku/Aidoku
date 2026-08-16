@@ -461,7 +461,7 @@
 "READER" = "Reader";
 "OPEN_READER_VIEW" = "Open Reader View";
 "RESUME_LAST_OPENED_CHAPTER" = "Resume Last Opened Chapter";
-"CONTINUE_READING_ON_RESELECT" = "History Doubleclick Resumes";
+"CONTINUE_READING_ON_RESELECT" = "History Tab Double Tap Resumes";
 "UNREAD_CHAPTER_BADGES" = "Unread Chapter Badges";
 "DOWNLOADED_CHAPTER_BADGES" = "Downloaded Chapter Badges";
 "PIN_TITLES" = "Pin Titles";
