@@ -117,9 +117,35 @@ actor CloudflareHandler: NSObject {
         } else {
             request
         }
-        return try await URLSession.shared.data(for: newRequest)
-    }
 
+        // Belt and braces: attach the web view's cookies directly to the
+        // retry request. Even if the HTTPCookieStorage bridge above drops a
+        // partitioned cf_clearance, the retry still carries it explicitly.
+        var retryRequest = newRequest
+        if let host = request.url?.host {
+            let storeCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
+            let relevant = storeCookies.filter {
+                $0.domain.contains(host) || host.contains($0.domain)
+            }
+            if !relevant.isEmpty {
+                var pairs: [(String, String)] = relevant.map { ($0.name, $0.value) }
+                let webviewNames = Set(pairs.map(\.0))
+                if let existing = retryRequest.value(forHTTPHeaderField: "Cookie") {
+                    for part in existing.split(separator: ";") {
+                        let kv = part.split(separator: "=", maxSplits: 1).map {
+                            $0.trimmingCharacters(in: .whitespaces)
+                        }
+                        guard kv.count == 2, !webviewNames.contains(kv[0]) else { continue }
+                        pairs.append((kv[0], kv[1]))
+                    }
+                }
+                let header = pairs.map { "\($0.0)=\($0.1)" }.joined(separator: "; ")
+                retryRequest.setValue(header, forHTTPHeaderField: "Cookie")
+            }
+        }
+
+        return try await URLSession.shared.data(for: retryRequest)
+    }
     private func finish() {
         guard let continuation = finishContinuation else { return }
 
@@ -317,7 +343,28 @@ extension CloudflareHandler {
                 webViewCookies.remove(at: idx)
             }
         }
-        HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
+        // Cloudflare sets cf_clearance with the `Partitioned` attribute (CHIPS).
+        // Cookies returned by WKWebsiteDataStore carry a partition key which
+        // HTTPCookieStorage does not preserve: the cookie is silently dropped
+        // and never attached to URLSession requests, so every retry is
+        // challenged again and the captcha popup loops forever (#527).
+        // Rebuild plain cookies so the shared cookie storage accepts them.
+        let plainCookies: [HTTPCookie] = webViewCookies.map { cookie in
+            var properties: [HTTPCookiePropertyKey: Any] = [
+                .name: cookie.name,
+                .value: cookie.value,
+                .domain: cookie.domain,
+                .path: cookie.path,
+            ]
+            if cookie.isSecure {
+                properties[.secure] = "TRUE"
+            }
+            if let expiresDate = cookie.expiresDate {
+                properties[.expires] = expiresDate
+            }
+            return HTTPCookie(properties: properties) ?? cookie
+        }
+        HTTPCookieStorage.shared.setCookies(plainCookies, for: url, mainDocumentURL: url)
 
         // ensure we're no longer blocked by cloudflare status or captcha
         if let statusCode = await self.lastMainFrameStatusCode, blockedStatusCodes.contains(statusCode) {
