@@ -43,6 +43,28 @@ extension UIView {
 }
 
 extension UIView {
+    /// Finds the first scroll view in the view hierarchy, searching depth-first.
+    func firstScrollView() -> UIScrollView? {
+        if let scrollView = self as? UIScrollView {
+            return scrollView
+        }
+        for subview in subviews {
+            if let scrollView = subview.firstScrollView() {
+                return scrollView
+            }
+        }
+        return nil
+    }
+}
+
+extension UIScrollView {
+    /// Whether the scroll view is scrolled to the top of its content.
+    var isScrolledToTop: Bool {
+        contentOffset.y <= -adjustedContentInset.top + 1
+    }
+}
+
+extension UIView {
     func forceNoClip() {
         let originalClass: AnyClass = object_getClass(self)!
         let subclassName = "\(originalClass)_ClipsToBoundsSwizzled_\(UUID().uuidString.replacingOccurrences(of: "-", with: ""))"

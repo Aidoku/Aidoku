@@ -127,6 +127,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
                 "Library.opensReaderView": false,
                 "Library.resumeLastOpenedChapter": false,
+                "Library.continueReadingOnReselect": true,
                 "Library.unreadChapterBadges": true,
                 "Library.downloadedChapterBadges": true,
                 "Library.pinTitles": LibraryViewModel.PinType.none.rawValue,

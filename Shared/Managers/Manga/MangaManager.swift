@@ -75,6 +75,73 @@ actor MangaManager {
             return isUnlocked && !isCompleted
         })
     }
+
+    /// Fetches the stored chapters for a manga in the user's sort order, along with the next chapter to read.
+    nonisolated func getNextChapter(
+        sourceKey: String,
+        mangaKey: String,
+        fallbackChapters: [AidokuRunner.Chapter]? = nil,
+        fetchIfNeeded: Bool = false
+    ) async -> (chapters: [AidokuRunner.Chapter], nextChapter: AidokuRunner.Chapter?) {
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(
+            sourceId: sourceKey,
+            mangaId: mangaKey
+        )
+        var chapters = await CoreDataManager.shared.getChapters(sourceId: sourceKey, mangaId: mangaKey)
+            .map { $0.toNew() }
+
+        // chapters are only stored for manga in the library, so fall back to the ones we have loaded
+        if chapters.isEmpty {
+            if let fallbackChapters, !fallbackChapters.isEmpty {
+                chapters = fallbackChapters
+            } else if fetchIfNeeded, let source = SourceManager.shared.source(for: sourceKey) {
+                let manga = AidokuRunner.Manga(sourceKey: sourceKey, key: mangaKey, title: "")
+                let updatedManga = try? await source.getMangaUpdate(
+                    manga: manga,
+                    needsDetails: false,
+                    needsChapters: true
+                )
+                chapters = updatedManga?.chapters ?? []
+            }
+        }
+
+        let filters = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getMangaChapterFilters(
+                sourceId: sourceKey,
+                mangaId: mangaKey,
+                context: context
+            )
+        }
+        let sortOption = ChapterSortOption(flags: filters.flags)
+        let sortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
+
+        let sortedChapters: [AidokuRunner.Chapter] = switch sortOption {
+            case .sourceOrder:
+                sortAscending ? chapters.reversed() : chapters
+            case .chapter:
+                chapters.sorted {
+                    let lhs = $0.chapterNumber ?? -1
+                    let rhs = $1.chapterNumber ?? -1
+                    return sortAscending ? lhs < rhs : lhs > rhs
+                }
+            case .uploadDate:
+                chapters.sorted {
+                    let lhs = $0.dateUploaded ?? .distantPast
+                    let rhs = $1.dateUploaded ?? .distantPast
+                    return sortAscending ? lhs < rhs : lhs > rhs
+                }
+        }
+
+        let manga = AidokuRunner.Manga(sourceKey: sourceKey, key: mangaKey, title: "")
+        let nextChapter = getNextChapter(
+            manga: manga,
+            chapters: sortedChapters,
+            readingHistory: readingHistory,
+            sortAscending: sortAscending
+        )
+
+        return (sortedChapters, nextChapter)
+    }
 }
 
 // MARK: - Library Managing
