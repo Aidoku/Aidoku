@@ -85,10 +85,9 @@ extension AniListApi {
 
         let response: GraphQLResponse<T>? = try? await URLSession.shared.object(from: request)
         // check if token is invalid
-        if response.map({ $0.errors?.contains(where: { $0.status == 400 }) ?? false }) ?? true {
+        if let response, response.errors?.contains(where: { $0.status == 400 }) ?? false {
             // don't show the relogin alert if we're not logged in in the first place
-            let isLoggedIn = UserDefaults.standard.string(forKey: "Tracker.anilist.token") != nil
-            if isLoggedIn {
+            if TrackerManager.anilist.isLoggedIn {
                 await oauth.showReloginAlert(trackerName: "AniList")
             }
         }
