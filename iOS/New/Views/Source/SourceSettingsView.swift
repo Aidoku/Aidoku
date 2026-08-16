@@ -105,7 +105,9 @@ struct SourceSettingsView: View {
         }
         .confirmationDialogOrAlert(NSLocalizedString("CLEAR_SOURCE_CACHE"), isPresented: $showingClearCacheConfirm, titleVisibility: .visible) {
             Button(NSLocalizedString("CLEAR"), role: .destructive) {
-                clearCache()
+                Task {
+                    await clearCache()
+                }
             }
         } message: {
             Text(NSLocalizedString("CLEAR_SOURCE_CACHE_TEXT"))
@@ -138,7 +140,7 @@ struct SourceSettingsView: View {
         }
     }
 
-    func clearCache() {
+    func clearCache() async {
         // remove cookies
         for url in source.urls {
             if let cookies = HTTPCookieStorage.shared.allCookies(for: url) {
@@ -149,11 +151,18 @@ struct SourceSettingsView: View {
         }
 
         // remove wkwebview data
-        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            for record in records where source.urls.contains(where: { $0.domain == record.displayName }) {
-                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+        await withCheckedContinuation { continuation in
+            let store = WKWebsiteDataStore.default()
+            store.fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+                for record in records where source.urls.contains(where: { $0.domain == record.displayName }) {
+                    store.removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                }
+                continuation.resume()
             }
         }
+
+        // clear source web view cache
+        await source.clearCache()
 
         // remove cached home layout
         UserDefaults.standard.removeObject(forKey: "\(source.key).homeComponents")

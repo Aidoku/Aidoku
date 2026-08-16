@@ -11,6 +11,7 @@ import CommonCrypto
 import LocalAuthentication
 import SafariServices
 import SwiftUI
+import WebKit
 
 /// View for a given AidokuRunner Setting.
 struct SettingView: View {
@@ -868,6 +869,11 @@ extension SettingView {
                 SettingsStore.shared.remove(key: key)
                 username = ""
                 password = ""
+                if value.clearCookiesOnLogOut ?? false, let key = source?.key {
+                    Task {
+                        await WKWebsiteDataStore.forSource(key: key).clearRecords()
+                    }
+                }
             }
         } message: {
             Text(NSLocalizedString("LOGOUT_CONFIRM"))
@@ -971,6 +977,7 @@ extension SettingView {
                 if let url = value.url.flatMap({ URL(string: $0) }) {
                     WebView(
                         url,
+                        key: source?.key,
                         localStorageKeys: value.localStorageKeys ?? [],
                         cookies: $loginCookies,
                         localStorage: $loginLocalStorage,
