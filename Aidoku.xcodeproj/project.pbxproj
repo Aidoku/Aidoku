@@ -368,6 +368,8 @@
 		FB662EEF2DA81A5C00007514 /* MangaCoverPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EE62DA81A5C00007514 /* MangaCoverPageView.swift */; };
 		FB662EF02DA81A5C00007514 /* CloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EE12DA81A5C00007514 /* CloseButton.swift */; };
 		FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662F042DA81B8200007514 /* Shimmer.swift */; };
+		FBA1D0C012340000000000B2 /* RestoreListSelectionOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */; };
+		FBA1D0C012340000000000A2 /* ClearStaleListSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */; };
 		FB662F0D2DA81B8200007514 /* MangaGridButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662F012DA81B8200007514 /* MangaGridButtonStyle.swift */; };
 		FB662F0E2DA81B8200007514 /* AidokuRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EF22DA81B8200007514 /* AidokuRunner.swift */; };
 		FB662F102DA81B8200007514 /* EdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EF42DA81B8200007514 /* EdgeInsets.swift */; };
@@ -968,6 +970,8 @@
 		FB662F002DA81B8200007514 /* ListButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListButtonStyle.swift; sourceTree = "<group>"; };
 		FB662F012DA81B8200007514 /* MangaGridButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridButtonStyle.swift; sourceTree = "<group>"; };
 		FB662F042DA81B8200007514 /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
+		FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreListSelectionOnAppear.swift; sourceTree = "<group>"; };
+		FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearStaleListSelection.swift; sourceTree = "<group>"; };
 		FB662F072DA81B8200007514 /* DownsampleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownsampleProcessor.swift; sourceTree = "<group>"; };
 		FB67EE5F27F3708400C468EA /* WasmImports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmImports.swift; sourceTree = "<group>"; };
 		FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmAidoku.swift; sourceTree = "<group>"; };
@@ -2057,6 +2061,8 @@
 			children = (
 				FB261ED22ECA63DA00743F56 /* KeyboardOffsetDetector.swift */,
 				FBAED40D2E3AE5C000B81E74 /* OnReportScrollVisibilityChange.swift */,
+				FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */,
+				FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */,
 				FB662F042DA81B8200007514 /* Shimmer.swift */,
 				FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */,
 			);
@@ -2838,6 +2844,8 @@
 				0C807DDD27D47C2D0042EE7B /* CircularProgressView.swift in Sources */,
 				FB0E1CD4288AEA8A00B67BA9 /* AniListQueries.swift in Sources */,
 				FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */,
+				FBA1D0C012340000000000A2 /* ClearStaleListSelection.swift in Sources */,
+				FBA1D0C012340000000000B2 /* RestoreListSelectionOnAppear.swift in Sources */,
 				FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */,
 				FBF925B82F4F79750049CB43 /* LibraryCategorySelectionHeader.swift in Sources */,
 				FBFA03433008DF610008B4B6 /* SettingsValue.swift in Sources */,
