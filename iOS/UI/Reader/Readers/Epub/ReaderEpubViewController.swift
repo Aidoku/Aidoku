@@ -121,7 +121,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         // rebuilding through `open` reuses the path a fresh open already exercises. Debounced
         // because the steppers in the settings sheet post once per tick.
         for key in [
-            "Reader.textFontFamily", "Reader.textFontSize",
+            "Reader.textReaderStyle", "Reader.textFontFamily", "Reader.textFontSize",
             "Reader.textLineSpacing", "Reader.textHorizontalPadding"
         ] {
             addObserver(forName: key) { [weak self] _ in
@@ -309,6 +309,15 @@ class ReaderEpubViewController: BaseObservingViewController {
             return
         }
         book.onChange = { [weak self] in self?.report() }
+        book.onOverscroll = { [weak self] forward in
+            self?.navigate { book in
+                if forward {
+                    await book.moveForward()
+                } else {
+                    await book.moveBackward()
+                }
+            }
+        }
         self.book = book
 
         // The web view is placed and laid out before the book is opened in it, so that the size

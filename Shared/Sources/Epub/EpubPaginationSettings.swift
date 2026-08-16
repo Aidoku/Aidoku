@@ -89,6 +89,9 @@ struct EpubPaginationSettings {
         settings.lineHeight = ((fontSize + lineSpacing) / fontSize * 100).rounded() / 100
         let padding = defaults.object(forKey: "Reader.textHorizontalPadding") as? Double ?? 24
         settings.pageGutterPx = Int(padding)
+        // In readium's scroll mode a document is one column of natural height, read by scrolling
+        // vertically; the renderer counts its pages in viewport heights instead of columns.
+        settings.paged = defaults.string(forKey: "Reader.textReaderStyle") != "scroll"
         return settings
     }
 
