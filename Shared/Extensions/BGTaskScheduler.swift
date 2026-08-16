@@ -9,10 +9,10 @@ import BackgroundTasks
 
 extension BGTaskScheduler {
     func submit(request: BGTaskRequest) async throws {
-        if #available(iOS 27.0, *) {
-            try await submitTaskRequest(request)
-        } else {
+//        if #available(iOS 27.0, *) {
+//            try await submitTaskRequest(request)
+//        } else {
             try submit(request)
-        }
+//        }
     }
 }
