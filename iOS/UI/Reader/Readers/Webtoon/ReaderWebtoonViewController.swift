@@ -79,7 +79,9 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
         if #available(iOS 27.0, *) {
             scrollView.topEdgeEffect.style = .soft
-            collectionNode.view.topEdgeEffect.style = .soft
+            scrollView.bottomEdgeEffect.style = .soft
+            collectionNode.view.topEdgeEffect.isHidden = true
+            collectionNode.view.bottomEdgeEffect.isHidden = true
         }
 
         collectionNode.contentInset = .zero
