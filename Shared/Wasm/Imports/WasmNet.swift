@@ -139,7 +139,7 @@ extension WasmNet {
         }
 
         // add stored cookies
-        if let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
+        if let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.allCookies(for: url) ?? [])["Cookie"] {
             var cookieString = cookies
             // keep cookies in original request
             if let oldCookie = request.value(forHTTPHeaderField: "Cookie") {

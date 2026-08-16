@@ -280,7 +280,7 @@ extension CloudflareHandler {
 
     // handle web view reload/redirect
     nonisolated func navigated(webView: WKWebView, for request: URLRequest) async {
-        guard let url = request.url else { return }
+        guard let url = request.url, let host = url.host?.lowercased() else { return }
 
 #if !os(macOS)
         await MainActor.run {
@@ -300,7 +300,7 @@ extension CloudflareHandler {
         var webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
 
         // check for old (expired) clearance cookie
-        let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
+        let oldCookie = HTTPCookieStorage.shared.allCookies(for: url)?.first { $0.name == "cf_clearance" }
 
         // check for clearance cookie
         let hasClearance = webViewCookies.contains(where: {
@@ -337,5 +337,17 @@ extension CloudflareHandler {
     // handle user popover dismiss
     nonisolated func canceled(request: URLRequest) async {
         await finish()
+    }
+}
+
+extension HTTPCookieStorage {
+    func allCookies(for url: URL) -> [HTTPCookie]? {
+        guard let host = url.host else { return nil }
+        return cookies?.filter { cookie in
+            let domain = cookie.domain
+                .lowercased()
+                .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+            return host == domain || host.hasSuffix("." + domain)
+        }
     }
 }

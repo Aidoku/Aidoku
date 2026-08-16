@@ -141,7 +141,7 @@ struct SourceSettingsView: View {
     func clearCache() {
         // remove cookies
         for url in source.urls {
-            if let cookies = HTTPCookieStorage.shared.cookies(for: url) {
+            if let cookies = HTTPCookieStorage.shared.allCookies(for: url) {
                 for cookie in cookies {
                     HTTPCookieStorage.shared.deleteCookie(cookie)
                 }
