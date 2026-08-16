@@ -24,7 +24,7 @@ actor BackupManager {
     private static let backupTaskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
     private static let maxAutoBackups = 4
 
-    private static let excludedSettings = [
+    private static let excludedSettings: Set<String> = [
         "Browse.sourceLists", // stored separately
         "General.icloudSync"
     ]
@@ -45,7 +45,8 @@ actor BackupManager {
         "Manga",
         "Logs",
         "Search",
-        "Token"
+        "Token",
+        "Dictionary"
     ]
 
     func save(backup: Backup, url: URL? = nil) {
@@ -297,6 +298,7 @@ extension BackupManager {
                 for additionalSource in backup.sources ?? [] where additionalSource.config != nil {
                     sourceKeyPrefixes.append("\(additionalSource.id).")
                 }
+                var needsMigrate = false
                 for (key, value) in settings {
                     let hasAllowedPrefix = Self.allowedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
                         || sourceKeyPrefixes.contains(where: { key.hasPrefix($0) })
@@ -308,6 +310,13 @@ extension BackupManager {
                         continue
                     }
                     UserDefaults.standard.set(value.toRaw(), forKey: key)
+                    if AppDelegate.legacySettingKeys.contains(key) {
+                        needsMigrate = true
+                    }
+                }
+
+                if needsMigrate {
+                    await (UIApplication.shared.delegate as? AppDelegate)?.migrateSettings()
                 }
             }
 
@@ -316,7 +325,7 @@ extension BackupManager {
             SourceManager.shared.clearSourceLists()
             for sourceList in sourceLists {
                 guard let sourceListURL = URL(string: sourceList) else { continue }
-                _ = await SourceManager.shared.addSourceList(url: sourceListURL)
+                _ = await SourceManager.shared.addSourceList(url: sourceListURL, allowUnavailable: true)
             }
         }
 

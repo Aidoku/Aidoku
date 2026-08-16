@@ -493,25 +493,29 @@ extension SourceManager {
 
 // MARK: - Source List Management
 extension SourceManager {
-    func addSourceList(url: URL) async -> Bool {
+    func addSourceList(url: URL, allowUnavailable: Bool = false) async -> Bool {
         guard !sourceListURLs.contains(url) else {
             return false
         }
 
         let result = await loadSourceList(url: url)
-        guard let result else {
+        if !allowUnavailable && result == nil {
             return false
         }
 
-        sourceLists.append(result)
         sourceListURLs.append(url)
-        for source in result.sources {
-            if let sourceLanguages = source.languages {
-                sourceListLanguages.formUnion(sourceLanguages)
-            } else if let sourceLang = source.lang {
-                sourceListLanguages.insert(sourceLang)
+
+        if let result {
+            sourceLists.append(result)
+            for source in result.sources {
+                if let sourceLanguages = source.languages {
+                    sourceListLanguages.formUnion(sourceLanguages)
+                } else if let sourceLang = source.lang {
+                    sourceListLanguages.insert(sourceLang)
+                }
             }
         }
+
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
         return true

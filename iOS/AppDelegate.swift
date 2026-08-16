@@ -355,6 +355,31 @@ extension AppDelegate {
             }
         }
 
+        // migration for 0.8.2
+        if SourceManager.oldDirectory.exists {
+            Task.detached {
+                await self.migrateSources()
+            }
+        }
+
+        migrateSettings()
+
+        UserDefaults.standard.set(currentVersion, forKey: "Flag.currentVersion")
+    }
+
+    static nonisolated let legacySettingKeys: Set<String> = [
+        "Browse.showNsfwSources",
+        "Library.pinManga",
+        // this is used for checking old backup settings, which won't restore unprefixed settings
+//        "downloadChapterSortAscending",
+//        "enabledModelFile",
+//        "downloadQueueState",
+//        "chaptersToBeDeleted",
+        "General.portraitRows",
+        "General.landscapeRows"
+    ]
+
+    func migrateSettings() {
         // migrate showNsfwSources setting
         if UserDefaults.standard.bool(forKey: "Browse.showNsfwSources") {
             UserDefaults.standard.setValue(["safe", "containsNsfw", "primarilyNsfw"], forKey: "Browse.contentRatings")
@@ -371,13 +396,6 @@ extension AppDelegate {
             UserDefaults.standard.set(newValue, forKey: "Library.pinTitles")
             UserDefaults.standard.removeObject(forKey: "Library.pinManga")
             UserDefaults.standard.removeObject(forKey: "Library.pinMangaType")
-        }
-
-        // migration for 0.8.2
-        if SourceManager.oldDirectory.exists {
-            Task.detached {
-                await self.migrateSources()
-            }
         }
 
         // migrate unprefixed settings
@@ -413,8 +431,6 @@ extension AppDelegate {
             UserDefaults.standard.set(landscapeRows, forKey: "Appearance.customLandscapeRows")
             UserDefaults.standard.removeObject(forKey: "General.landscapeRows")
         }
-
-        UserDefaults.standard.set(currentVersion, forKey: "Flag.currentVersion")
     }
 
     private func migrateHistory() async {
