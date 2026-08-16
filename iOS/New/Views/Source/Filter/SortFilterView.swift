@@ -103,11 +103,18 @@ struct SortFilterView: View {
     }
 
     func updateFilter() {
+        var newEnabledFilters = enabledFilters
         if let index = enabledFilters.firstIndex(where: { $0.id == filter.id }) {
-            enabledFilters.remove(at: index)
+            guard
+                case let .sort(filter) = enabledFilters[index],
+                filter.index != selectedOption || filter.ascending != ascending
+            else {
+                return
+            }
+            newEnabledFilters.remove(at: index)
         }
         if active {
-            enabledFilters.append(
+            newEnabledFilters.append(
                 FilterValue.sort(.init(
                     id: filter.id,
                     index: selectedOption,
@@ -115,6 +122,7 @@ struct SortFilterView: View {
                 ))
             )
         }
+        enabledFilters = newEnabledFilters
     }
 }
 
