@@ -152,10 +152,10 @@ extension SourceManager {
         var fileUrl = url
         if fileUrl.scheme != "file" {
             do {
-                let location = try await URLSession.shared.download(for: URLRequest.from(url))
+                let (location, _) = try await URLSession.shared.download(for: URLRequest.from(url), delegate: nil)
                 fileUrl = location
             } catch {
-                LogManager.logger.error("Failed to download source from \(url)")
+                LogManager.logger.error("Failed to download source from \(url.absoluteString): \(error)")
                 return nil
             }
         } else {
