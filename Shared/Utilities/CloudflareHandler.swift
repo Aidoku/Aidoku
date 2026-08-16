@@ -186,6 +186,11 @@ actor CloudflareHandler: NSObject {
         // todo
         await finish()
 #else
+        guard let parent else {
+            await finish()
+            return
+        }
+
         popupController?.dismiss(animated: true)
         let popup = WebViewViewController(request: request, handler: await proxy(for: request))
         popupController = popup
@@ -201,7 +206,7 @@ actor CloudflareHandler: NSObject {
             webView.centerYAnchor.constraint(equalTo: popup.view.centerYAnchor)
         ])
 
-        parent?.present(popup, animated: true)
+        parent.present(popup, animated: true)
 #endif
     }
 
@@ -319,10 +324,6 @@ extension CloudflareHandler {
         }
         HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
 
-        // ensure we're no longer blocked by cloudflare status or captcha
-        if let statusCode = await self.lastMainFrameStatusCode, blockedStatusCodes.contains(statusCode) {
-            return
-        }
         let isCaptcha = await isCaptchaPage()
         guard !isCaptcha else { return }
 
