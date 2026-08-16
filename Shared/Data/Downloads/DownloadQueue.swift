@@ -58,7 +58,7 @@ actor DownloadQueue {
                 subtitle: NSLocalizedString("PROCESSING_QUEUE")
             )
             do {
-                try BGTaskScheduler.shared.submit(request)
+                try await BGTaskScheduler.shared.submit(request: request)
                 return
             } catch {
                 LogManager.logger.error("Failed to start background downloading: \(error)")

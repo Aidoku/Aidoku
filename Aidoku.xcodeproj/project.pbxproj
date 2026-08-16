@@ -221,6 +221,8 @@
 		FB31647A2FFCD16B004037C2 /* SuwayomiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB3164782FFCD168004037C2 /* SuwayomiModels.swift */; };
 		FB31AD0B27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
 		FB31AD0C27AE180300D50410 /* WasmHtml.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB31AD0A27AE180300D50410 /* WasmHtml.swift */; };
+		FB32A3FE303149C1005BDB51 /* BGTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */; };
+		FB32A3FF303149C1005BDB51 /* BGTaskScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */; };
 		FB3737D12D17458400AB1551 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FB3737D02D17458400AB1551 /* AidokuRunner */; };
 		FB39A4BF30033AD5006E3289 /* PopupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB39A4BE30033AD2006E3289 /* PopupView.swift */; };
 		FB39A4C230033AED006E3289 /* PopupWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB39A4C130033AEA006E3289 /* PopupWebView.swift */; };
@@ -368,8 +370,6 @@
 		FB662EEF2DA81A5C00007514 /* MangaCoverPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EE62DA81A5C00007514 /* MangaCoverPageView.swift */; };
 		FB662EF02DA81A5C00007514 /* CloseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EE12DA81A5C00007514 /* CloseButton.swift */; };
 		FB662F0A2DA81B8200007514 /* Shimmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662F042DA81B8200007514 /* Shimmer.swift */; };
-		FBA1D0C012340000000000B2 /* RestoreListSelectionOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */; };
-		FBA1D0C012340000000000A2 /* ClearStaleListSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */; };
 		FB662F0D2DA81B8200007514 /* MangaGridButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662F012DA81B8200007514 /* MangaGridButtonStyle.swift */; };
 		FB662F0E2DA81B8200007514 /* AidokuRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EF22DA81B8200007514 /* AidokuRunner.swift */; };
 		FB662F102DA81B8200007514 /* EdgeInsets.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB662EF42DA81B8200007514 /* EdgeInsets.swift */; };
@@ -499,6 +499,8 @@
 		FB9B9EAE27F5DF87009ED073 /* SourceActor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBED233727C3D0E30095D0C0 /* SourceActor.swift */; };
 		FB9B9EB027F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
 		FB9B9EB127F6559D009ED073 /* WasmStd.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB9B9EAF27F6559D009ED073 /* WasmStd.swift */; };
+		FBA1D0C012340000000000A2 /* ClearStaleListSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */; };
+		FBA1D0C012340000000000B2 /* RestoreListSelectionOnAppear.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */; };
 		FBA36E712F55D3D700597190 /* SavedSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA36E702F55D3D500597190 /* SavedSearch.swift */; };
 		FBA36E722F55D3D700597190 /* SavedSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA36E702F55D3D500597190 /* SavedSearch.swift */; };
 		FBA748A12E81C0D200D9BE86 /* BangumiTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBA748A02E81C0CD00D9BE86 /* BangumiTracker.swift */; };
@@ -832,6 +834,7 @@
 		FB3164752FFCD061004037C2 /* SuwayomiHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiHelper.swift; sourceTree = "<group>"; };
 		FB3164782FFCD168004037C2 /* SuwayomiModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiModels.swift; sourceTree = "<group>"; };
 		FB31AD0A27AE180300D50410 /* WasmHtml.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmHtml.swift; sourceTree = "<group>"; };
+		FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BGTaskScheduler.swift; sourceTree = "<group>"; };
 		FB3796A02B1416F8005E6264 /* bg */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bg; path = bg.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A12B141726005E6264 /* hu */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = hu; path = hu.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FB3796A22B1417BD005E6264 /* el */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = el; path = el.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -970,8 +973,6 @@
 		FB662F002DA81B8200007514 /* ListButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListButtonStyle.swift; sourceTree = "<group>"; };
 		FB662F012DA81B8200007514 /* MangaGridButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MangaGridButtonStyle.swift; sourceTree = "<group>"; };
 		FB662F042DA81B8200007514 /* Shimmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shimmer.swift; sourceTree = "<group>"; };
-		FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreListSelectionOnAppear.swift; sourceTree = "<group>"; };
-		FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearStaleListSelection.swift; sourceTree = "<group>"; };
 		FB662F072DA81B8200007514 /* DownsampleProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownsampleProcessor.swift; sourceTree = "<group>"; };
 		FB67EE5F27F3708400C468EA /* WasmImports.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmImports.swift; sourceTree = "<group>"; };
 		FB67EE6227F3D2E200C468EA /* WasmAidoku.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmAidoku.swift; sourceTree = "<group>"; };
@@ -1061,6 +1062,8 @@
 		FB9A48412968943400FFC414 /* SwiftUINavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUINavigationViewController.swift; sourceTree = "<group>"; };
 		FB9A65922781F8B10071F1A2 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		FB9B9EAF27F6559D009ED073 /* WasmStd.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmStd.swift; sourceTree = "<group>"; };
+		FBA1D0C012340000000000A1 /* ClearStaleListSelection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClearStaleListSelection.swift; sourceTree = "<group>"; };
+		FBA1D0C012340000000000B1 /* RestoreListSelectionOnAppear.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreListSelectionOnAppear.swift; sourceTree = "<group>"; };
 		FBA36E702F55D3D500597190 /* SavedSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedSearch.swift; sourceTree = "<group>"; };
 		FBA748A02E81C0CD00D9BE86 /* BangumiTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BangumiTracker.swift; sourceTree = "<group>"; };
 		FBA748A32E81C11800D9BE86 /* BangumiApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BangumiApi.swift; sourceTree = "<group>"; };
@@ -1667,6 +1670,7 @@
 				FB4ADCA32814E5E700F6D7FB /* NSLocalizedString.swift */,
 				FB8E48E02DC15DCD002A3621 /* NotificationName.swift */,
 				002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */,
+				FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2936,6 +2940,7 @@
 				FB30958829CB3EEF00EF2B0A /* ReaderTransitionNode.swift in Sources */,
 				FBED232B27BEAC980095D0C0 /* SettingItem.swift in Sources */,
 				FB1A4E642E78A831006F4BA8 /* EnhancedTracker.swift in Sources */,
+				FB32A3FF303149C1005BDB51 /* BGTaskScheduler.swift in Sources */,
 				487484DB2A4112DD007DF0DF /* CropBordersProcessor.swift in Sources */,
 				FB7F05FC2DDE77B50036B116 /* WebView.swift in Sources */,
 				FB8E48D32DBD8E07002A3621 /* SourceImageView.swift in Sources */,
@@ -3313,6 +3318,7 @@
 				FB7983A22E0074B90044BC71 /* PopupWebViewHandler.swift in Sources */,
 				FB79841C2E0DD183000761A9 /* TapZone.swift in Sources */,
 				FB94E3152DF9DE9E00784556 /* SourceList.swift in Sources */,
+				FB32A3FE303149C1005BDB51 /* BGTaskScheduler.swift in Sources */,
 				FB034E9A2EAAFA850072EEEB /* KavitaApi.swift in Sources */,
 				FB79839E2DFF773A0044BC71 /* CloudflareHandler.swift in Sources */,
 				FB6340B72791DA130072A2A2 /* KVCObject.swift in Sources */,

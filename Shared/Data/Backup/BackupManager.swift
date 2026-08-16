@@ -674,10 +674,12 @@ extension BackupManager {
             request.requiresExternalPower = false
             request.requiresNetworkConnectivity = false
 
-            do {
-                try BGTaskScheduler.shared.submit(request)
-            } catch {
-                LogManager.logger.error("Could not schedule automatic backup: \(error)")
+            Task {
+                do {
+                    try await BGTaskScheduler.shared.submit(request: request)
+                } catch {
+                    LogManager.logger.error("Could not schedule automatic backup: \(error)")
+                }
             }
 #endif
         }

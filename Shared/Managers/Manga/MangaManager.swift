@@ -311,10 +311,12 @@ extension MangaManager {
             request.requiresExternalPower = false
             request.requiresNetworkConnectivity = true
 
-            do {
-                try BGTaskScheduler.shared.submit(request)
-            } catch {
-                LogManager.logger.error("Could not schedule library refresh: \(error)")
+            Task {
+                do {
+                    try await BGTaskScheduler.shared.submit(request: request)
+                } catch {
+                    LogManager.logger.error("Could not schedule library refresh: \(error)")
+                }
             }
 #endif
         }
@@ -332,7 +334,7 @@ extension MangaManager {
                 subtitle: NSLocalizedString("PROCESSING_ENTRIES")
             )
             do {
-                try BGTaskScheduler.shared.submit(request)
+                try await BGTaskScheduler.shared.submit(request: request)
                 return
             } catch {
                 LogManager.logger.error("Failed to start background library refresh: \(error)")
