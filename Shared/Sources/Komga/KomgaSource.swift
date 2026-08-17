@@ -180,7 +180,6 @@ actor KomgaSourceRunner: Runner {
             )
 
             manga.chapters = chapters.content
-                .filter { $0.media.mediaProfile != "EPUB" || $0.media.epubDivinaCompatible } // can't read epubs (yet?)
                 .map {
                     $0.intoChapter(
                         baseUrl: lastWorkingMirrorCopy ?? baseUrl,
@@ -197,6 +196,31 @@ actor KomgaSourceRunner: Runner {
         defer {
             lastWorkingMirror = lastWorkingMirrorCopy
         }
+
+        let book: KomgaBook = try await helper.request(
+            path: "api/v1/books/\(chapter.id)",
+            lastWorkingMirror: &lastWorkingMirrorCopy
+        )
+
+        // epubs komga can't serve as image pages are downloaded whole and read by the epub reader
+        if book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible {
+            guard let auth = helper.getAuthorizationHeader() else {
+                throw SourceError.message("NOT_LOGGED_IN")
+            }
+            let baseUrl = if let lastWorkingMirrorCopy {
+                lastWorkingMirrorCopy
+            } else {
+                try helper.getConfiguredServer()
+            }
+            guard let url = URL(string: "api/v1/books/\(chapter.id)/file", relativeTo: baseUrl) else {
+                throw SourceError.message("INVALID_SERVER_URL")
+            }
+            var request = URLRequest(url: url)
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            let file = try await EpubChapterCache.fetch(request: request, sourceKey: sourceKey, chapterId: chapter.id)
+            return LocalFileManager.shared.readEpubPages(from: file)
+        }
+
         let pages: [KomgaPage] = try await helper.request(
             path: "api/v1/books/\(chapter.id)/pages",
             lastWorkingMirror: &lastWorkingMirrorCopy

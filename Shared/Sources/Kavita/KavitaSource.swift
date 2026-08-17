@@ -225,12 +225,42 @@ actor KavitaSourceRunner: Runner {
 
         baseUrl = lastWorkingMirrorCopy ?? baseUrl
 
+        // epub chapters are downloaded whole and read by the epub reader
+        if chapter.files.contains(where: { $0.format == 3 }) {
+            return try await getEpubPages(chapterId: chapter.id, baseUrl: baseUrl)
+        }
+
         return (0..<chapter.pages).compactMap { page in
             let path = "api/Reader/image?chapterId=\(chapter.id)&page=\(page)&apiKey=\(apiKey)&extractPdf=true"
             return URL(string: path, relativeTo: baseUrl).flatMap {
                 .init(content: .url(url: $0))
             }
         }
+    }
+
+    // downloads an epub chapter into the cache and returns its spine pages.
+    // kavita gates the download endpoint behind the download role, so an account
+    // without it gets an http error here rather than a page list.
+    private func getEpubPages(chapterId: Int, baseUrl: URL) async throws -> [AidokuRunner.Page] {
+        guard let url = URL(string: "api/download/chapter?chapterId=\(chapterId)", relativeTo: baseUrl) else {
+            throw SourceError.message("INVALID_SERVER_URL")
+        }
+        func makeRequest() throws(SourceError) -> URLRequest {
+            var request = URLRequest(url: url)
+            guard helper.authorize(request: &request) else {
+                throw SourceError.message("NOT_LOGGED_IN")
+            }
+            return request
+        }
+        let file: URL
+        do {
+            file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
+        } catch {
+            // the token may have expired; retry once after refreshing it
+            guard try await helper.refreshToken() else { throw error }
+            file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
+        }
+        return LocalFileManager.shared.readEpubPages(from: file)
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {

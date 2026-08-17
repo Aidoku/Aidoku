@@ -249,8 +249,6 @@ struct KavitaVolume: Codable, Sendable {
 extension KavitaVolume {
     func intoChapters(baseUrl: URL, apiKey: String) -> [AidokuRunner.Chapter] {
         chapters.compactMap { chapter -> AidokuRunner.Chapter? in
-            let isEpub = chapter.files.contains(where: { $0.format == 3 })
-            guard !isEpub else { return nil }
             let chapterNumber = Float(chapter.number) ?? 0
             let noVolume = number < 0 || number >= 100000
             let noChapter = chapterNumber < 0 || chapterNumber >= 100000
