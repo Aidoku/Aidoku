@@ -312,11 +312,13 @@ final class EpubSpineRenderer: NSObject {
     /// document, and within a single round trip after that. The offset is therefore read back
     /// rather than assumed, since a caller that samples the document immediately after paging would
     /// otherwise be told about the page it has just left.
-    func showPage(_ index: Int, timeout: TimeInterval = 1) async {
+    /// `animated` slides to the page instead of jumping, for a page turn the reader performed;
+    /// restores, slider jumps and layout corrections stay instant.
+    func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
         // A superseded turn writes nothing. Its `currentPage` belongs to whoever overtook it, which
         // during a rotation is `repaginate` restoring a rounded page, and recording the fraction
         // from that would snap the saved position onto a boundary of the new layout.
-        guard await goToPage(index, timeout: timeout) else { return }
+        guard await goToPage(index, animated: animated, timeout: timeout) else { return }
         // Recorded from the reader's own page turns only. A page laid out again is restored from
         // this fraction, and restoring must not then rewrite it: rounding to the nearest page each
         // time would let the position wander across repeated rotations.
@@ -326,7 +328,7 @@ final class EpubSpineRenderer: NSObject {
     /// Scrolls to a page, returning whether this request saw itself through. A request overtaken by
     /// a newer one, or cancelled, returns false and leaves the document to whoever overtook it.
     @discardableResult
-    private func goToPage(_ index: Int, timeout: TimeInterval = 1) async -> Bool {
+    private func goToPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async -> Bool {
         pageRequests += 1
         pagesInFlight += 1
         defer { pagesInFlight -= 1 }
@@ -339,16 +341,20 @@ final class EpubSpineRenderer: NSObject {
         // performed rather than one recomputed from a size this side believes in. A paged
         // document's pages are column offsets along x; a scroll-mode document's are viewport
         // heights along y.
+        //
+        // An animated turn asks WebKit itself to slide (`behavior: 'smooth'`); the offset check
+        // below simply confirms later, once the slide lands.
+        let behavior = animated ? "smooth" : "auto"
         let script = settings.paged ? """
         var offset = \(currentPage) * (window.innerWidth + \(settings.columnGapPx));
-        window.scrollTo(offset, 0);
+        window.scrollTo({left: offset, top: 0, behavior: '\(behavior)'});
         String(offset);
         """ : """
         var offset = Math.max(0, Math.min(
             \(currentPage) * window.innerHeight,
             document.documentElement.scrollHeight - window.innerHeight
         ));
-        window.scrollTo(0, offset);
+        window.scrollTo({left: 0, top: offset, behavior: '\(behavior)'});
         String(offset);
         """
         let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)

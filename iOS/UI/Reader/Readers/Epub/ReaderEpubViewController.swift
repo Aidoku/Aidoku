@@ -606,12 +606,14 @@ extension ReaderEpubViewController: UIGestureRecognizerDelegate {
 extension ReaderEpubViewController: ReaderReaderDelegate {
     func moveLeft() {
         endSliding()
-        navigate { await $0.moveBackward() }
+        let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        navigate { await $0.moveBackward(animated: animated) }
     }
 
     func moveRight() {
         endSliding()
-        navigate { await $0.moveForward() }
+        let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        navigate { await $0.moveForward(animated: animated) }
     }
 
     /// Clears the dragging flag on any interaction that cannot coexist with a held thumb.

@@ -162,13 +162,16 @@ final class ReaderEpubViewModel {
     }
 
     /// Forward a page, continuing into the next spine document at its end.
-    func moveForward() async {
+    ///
+    /// `animated` slides within the loaded document; a turn that crosses into another spine
+    /// document loads it and appears, as the paged text reader's chapter transitions do.
+    func moveForward(animated: Bool = false) async {
         // A reader who turns a page has taken over from whatever they were being resumed to, and
         // arriving at it later would move them off the page they chose.
         pendingBookPage = nil
         guard let renderer else { return }
         if renderer.currentPage + 1 < renderer.pageCount {
-            await renderer.showPage(renderer.currentPage + 1)
+            await renderer.showPage(renderer.currentPage + 1, animated: animated)
             onChange?()
         } else {
             await move(toDocument: currentDocument + 1, landingOnLastPage: false)
@@ -176,11 +179,11 @@ final class ReaderEpubViewModel {
     }
 
     /// Back a page, continuing into the previous spine document at its **last** page.
-    func moveBackward() async {
+    func moveBackward(animated: Bool = false) async {
         pendingBookPage = nil
         guard let renderer else { return }
         if renderer.currentPage > 0 {
-            await renderer.showPage(renderer.currentPage - 1)
+            await renderer.showPage(renderer.currentPage - 1, animated: animated)
             onChange?()
         } else {
             await move(toDocument: currentDocument - 1, landingOnLastPage: true)
