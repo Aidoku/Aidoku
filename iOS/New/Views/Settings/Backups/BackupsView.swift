@@ -226,6 +226,7 @@ struct BackupsView: View {
                     .onChange(of: targetExportBackup) { newValue in
                         if newValue == backup {
                             export(url: url, sourceRect: geo.frame(in: .global))
+                            targetExportBackup = nil
                         }
                     }
             }
