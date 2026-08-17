@@ -197,7 +197,9 @@ extension SettingsView {
                     title: NSLocalizedString("CLEAR_NETWORK_CACHE"),
                     message: message
                 ) {
-                    self.clearNetworkCache()
+                    Task {
+                        await self.clearNetworkCache()
+                    }
                 }
             case "Advanced.clearReadHistory":
                 confirmAction(
@@ -255,9 +257,9 @@ extension SettingsView {
                     message: NSLocalizedString("RESET_TEXT")
                 ) {
                     (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
-                    clearNetworkCache()
-                    resetSettings()
                     Task {
+                        resetSettings()
+                        await clearNetworkCache()
                         await CoreDataManager.shared.container.performBackgroundTask { context in
                             CoreDataManager.shared.clearLibrary(context: context)
                             CoreDataManager.shared.clearManga(context: context)
@@ -296,6 +298,14 @@ extension SettingsView {
             TapZonesSelectView()
         } else if key == "Reader.upscalingModels" {
             UpscaleModelListView()
+        } else if key == "Dictionary.dictionaries" {
+            if #available(iOS 18.0, *) {
+                DictionaryListView()
+            }
+        } else if key == "Dictionary.vocabulary" {
+            if #available(iOS 18.0, *) {
+                DictionaryVocabListView().environmentObject(path)
+            }
         } else if key == "Tracking" {
             SettingsTrackingView()
         } else if key == "About" {
@@ -366,14 +376,11 @@ extension SettingsView {
         path.present(alertView, animated: true)
     }
 
-    func clearNetworkCache() {
+    func clearNetworkCache() async {
         URLCache.shared.removeAllCachedResponses()
         HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
-        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            for record in records {
-                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
-            }
-        }
+        await WKWebsiteDataStore.default().clearRecords()
+
         // clear disk cache
         if let dataCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
             dataCache.removeAll()

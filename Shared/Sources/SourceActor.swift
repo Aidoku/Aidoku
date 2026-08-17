@@ -97,6 +97,7 @@ actor SourceActor {
 
         for i in 0..<pages.count {
             pages[i].chapterId = chapter.id
+            pages[i].language = chapter.lang.isEmpty ? source.languages.first?.code : chapter.lang
         }
 
         return pages
@@ -112,7 +113,7 @@ actor SourceActor {
         // add cloudflare headers
         request.headers["User-Agent"] = await UserAgentProvider.shared.getUserAgent()
         if let url = URL(string: url),
-           let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.cookies(for: url) ?? [])["Cookie"] {
+           let cookies = HTTPCookie.requestHeaderFields(with: HTTPCookieStorage.shared.allCookies(for: url) ?? [])["Cookie"] {
             request.headers["Cookie"] = cookies
         }
         source.globalStore.requests[request.id] = request

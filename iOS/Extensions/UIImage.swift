@@ -14,9 +14,9 @@ extension UIImage {
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
         guard status != .restricted && status != .denied else {
             let alertController = confirmAction(
-                title: NSLocalizedString("ENABLE_PERMISSION", comment: ""),
-                message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT", comment: ""),
-                continueActionName: NSLocalizedString("SETTINGS", comment: "")
+                title: NSLocalizedString("ENABLE_PERMISSION"),
+                message: NSLocalizedString("PHOTOS_ACCESS_DENIED_TEXT"),
+                continueActionName: NSLocalizedString("SETTINGS")
             ) {
                 if let settings = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(settings)
@@ -29,15 +29,22 @@ extension UIImage {
         let albumName =
             name ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
             ?? "Aidoku"
-        guard let album = fetchAlbum(albumName) else {
+        func fallback() {
             UIImageWriteToSavedPhotosAlbum(self, nil, nil, nil)
+            LogManager.logger.error("Failed to save image to album: \(albumName)")
+        }
+        guard let album = fetchAlbum(albumName) else {
+            fallback()
             return
         }
 
         PHPhotoLibrary.shared().performChanges {
             let request = PHAssetChangeRequest.creationRequestForAsset(from: self)
-            guard let placeholder = request.placeholderForCreatedAsset else { return }
-            guard let albumChangeRequest = PHAssetCollectionChangeRequest(for: album) else {
+            guard
+                let placeholder = request.placeholderForCreatedAsset,
+                let albumChangeRequest = PHAssetCollectionChangeRequest(for: album)
+            else {
+                fallback()
                 return
             }
             albumChangeRequest.addAssets([placeholder] as NSFastEnumeration)
@@ -50,7 +57,7 @@ private func confirmAction(
     title: String? = nil,
     message: String? = nil,
     actions: [UIAlertAction] = [],
-    continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
+    continueActionName: String = NSLocalizedString("CONTINUE"),
     destructive: Bool = true,
     proceed: @escaping () -> Void
 ) -> UIAlertController {
@@ -71,7 +78,7 @@ private func confirmAction(
     }
     alertView.addAction(action)
 
-    alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+    alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel))
 
     return alertView
 }

@@ -20,7 +20,6 @@ class ZoomableScrollView: UIScrollView {
     var zoomEnabled = true {
         didSet {
             isScrollEnabled = zoomEnabled
-            zoomingTap.isEnabled = zoomEnabled
         }
     }
 
@@ -48,6 +47,11 @@ class ZoomableScrollView: UIScrollView {
         showsHorizontalScrollIndicator = false
         insetsLayoutMarginsFromSafeArea = false
         contentInsetAdjustmentBehavior = .never
+
+        if #available(iOS 27.0, *) {
+            topEdgeEffect.style = .soft
+            bottomEdgeEffect.style = .soft
+        }
     }
 
     required init?(coder aDecoder: NSCoder) {

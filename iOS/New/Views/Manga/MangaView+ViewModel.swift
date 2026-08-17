@@ -638,6 +638,17 @@ extension MangaView.ViewModel {
 }
 
 extension MangaView.ViewModel {
+    // every chapter row shown in the list, across both sections
+    var listedChapters: [AidokuRunner.Chapter] {
+        chapters + otherDownloadedChapters
+    }
+
+    // resolve selected chapter keys, which can come from either the chapter list
+    // or the separate downloaded chapters section
+    func chapters(forKeys keys: Set<String>) -> [AidokuRunner.Chapter] {
+        listedChapters.filter { keys.contains($0.key) }
+    }
+
     // mark given chapters as read in coredata
     func markRead(chapters: [AidokuRunner.Chapter]) async {
         // only mark chapters that are readable as read

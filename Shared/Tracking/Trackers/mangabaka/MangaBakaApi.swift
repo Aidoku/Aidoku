@@ -8,7 +8,7 @@
 import Foundation
 
 actor MangaBakaApi {
-    let baseApiUrl = URL(string: "https://api.mangabaka.dev")!
+    let baseApiUrl = URL(string: "https://api.mangabaka.org")!
 
     // registered under skitty's MangaBaka account
     nonisolated let oauth = OAuthClient(

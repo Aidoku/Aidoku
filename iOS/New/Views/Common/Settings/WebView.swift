@@ -11,15 +11,15 @@ import WebKit
 struct WebView: UIViewRepresentable {
     let url: URL
     let localStorageKeys: [String]
+    let webView: WKWebView
 
     @Binding var cookies: [String: String]
     @Binding var localStorage: [String: String]
     @Binding var reloadToggle: Bool
 
-    private let webView = WKWebView()
-
     init(
         _ url: URL,
+        key: String? = nil,
         localStorageKeys: [String] = [],
         cookies: Binding<[String: String]> = .constant([:]),
         localStorage: Binding<[String: String]> = .constant([:]),
@@ -30,6 +30,11 @@ struct WebView: UIViewRepresentable {
         self._cookies = cookies
         self._localStorage = localStorage
         self._reloadToggle = reloadToggle
+        let config = WKWebViewConfiguration()
+        if let key {
+            config.websiteDataStore = .forSource(key: key)
+        }
+        webView = WKWebView(frame: .zero, configuration: config)
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -55,11 +60,11 @@ struct WebView: UIViewRepresentable {
         init(parent: WebView) {
             self.parent = parent
             super.init()
-            WKWebsiteDataStore.default().httpCookieStore.add(self)
+            parent.webView.configuration.websiteDataStore.httpCookieStore.add(self)
         }
 
         deinit {
-            WKWebsiteDataStore.default().httpCookieStore.remove(self)
+            parent.webView.configuration.websiteDataStore.httpCookieStore.remove(self)
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

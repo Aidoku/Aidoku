@@ -531,6 +531,15 @@ actor TrackerManager {
     func bindEnhancedTrackers(manga: AidokuRunner.Manga) async {
         for tracker in Self.trackers where tracker is EnhancedTracker {
             if tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key) {
+                let isTracking = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.hasTrack(
+                        trackerId: tracker.id,
+                        sourceId: manga.sourceKey,
+                        mangaId: manga.key,
+                        context: context
+                    )
+                }
+                guard !isTracking else { continue }
                 do {
                     let items = try await tracker.search(for: manga, includeNsfw: true)
                     guard let item = items.first else {

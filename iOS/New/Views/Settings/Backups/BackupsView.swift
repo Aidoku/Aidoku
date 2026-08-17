@@ -9,12 +9,12 @@ import SwiftUI
 
 struct BackupsView: View {
     @State private var backupUrls: [URL] = []
-    @State private var backups: [URL: Backup] = [:]
+    @State private var backups: [URL: BackupInfo] = [:]
     @State private var invalidBackups: Set<URL> = []
 
     @State private var loadedInitialBackupInfo = false
-    @State private var targetRestoreBackup: Backup?
-    @State private var targetExportBackup: Backup?
+    @State private var targetRestoreBackup: BackupInfo?
+    @State private var targetExportBackup: BackupInfo?
     @State private var showCreateSheet = false
     @State private var showImportSheet = false
     @State private var showAutoBackupsSheet = false
@@ -39,7 +39,7 @@ struct BackupsView: View {
                     let backup = backups[url]
 
                     if let backup {
-                        backupCell(url: url, backup: backup)
+                        backupCell(backup: backup)
                     } else if invalidBackups.contains(url) {
                         Text(NSLocalizedString("CORRUPTED_BACKUP"))
                     } else {
@@ -163,8 +163,9 @@ struct BackupsView: View {
         }
     }
 
-    func backupCell(url: URL, backup: Backup) -> some View {
-        Button {
+    func backupCell(backup: BackupInfo) -> some View {
+        let url = backup.url
+        return Button {
             targetRestoreBackup = backup
         } label: {
             HStack {
@@ -174,7 +175,7 @@ struct BackupsView: View {
                         HStack {
                             Text(name)
                                 .lineLimit(1)
-                            if backup.automatic ?? false {
+                            if backup.automatic {
                                 automaticBadge
                             }
                         }
@@ -185,16 +186,13 @@ struct BackupsView: View {
                     HStack {
                         Text(String(format: NSLocalizedString("BACKUP_%@"), date))
                             .lineLimit(1)
-                        if backup.automatic ?? false {
+                        if backup.automatic {
                             automaticBadge
                         }
                     }
                 }
                 Spacer()
-                if
-                    let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
-                    let size = attributes[FileAttributeKey.size] as? Int64
-                {
+                if let size = backup.size {
                     Text(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
                         .foregroundStyle(.secondary)
                         .font(.footnote)
@@ -228,6 +226,7 @@ struct BackupsView: View {
                     .onChange(of: targetExportBackup) { newValue in
                         if newValue == backup {
                             export(url: url, sourceRect: geo.frame(in: .global))
+                            targetExportBackup = nil
                         }
                     }
             }
@@ -286,10 +285,11 @@ extension BackupsView {
     func loadBackupInfo() {
         Task.detached { [backupUrls] in
             for backupUrl in backupUrls {
-                let backup = Backup.load(from: backupUrl)
+                let backup = BackupInfo.load(from: backupUrl)
                 await MainActor.run {
                     if let backup {
                         self.backups[backupUrl] = backup
+                        self.invalidBackups.remove(backupUrl)
                     } else {
                         self.invalidBackups.insert(backupUrl)
                     }
@@ -300,7 +300,14 @@ extension BackupsView {
 
     func renameBackup(url: URL, name: String) {
         Task {
-            await BackupManager.shared.renameBackup(url: url, name: name)
+            // renaming requires re-encoding the backup, so it can fail even though the info loaded fine
+            let renamed = await BackupManager.shared.renameBackup(url: url, name: name)
+            if !renamed {
+                (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+                    title: NSLocalizedString("CORRUPTED_BACKUP"),
+                    message: NSLocalizedString("CORRUPTED_BACKUP_TEXT")
+                )
+            }
         }
     }
 

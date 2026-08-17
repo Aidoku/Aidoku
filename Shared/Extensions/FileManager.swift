@@ -76,10 +76,6 @@ extension FileManager {
         urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     }
 
-    var temporaryDirectory: URL? {
-        try? url(for: .itemReplacementDirectory, in: .userDomainMask, appropriateFor: documentDirectory, create: true)
-    }
-
     func moveFiles(in sourceDirectory: URL, to destinationDirectory: URL) {
         if !destinationDirectory.exists {
             destinationDirectory.createDirectory()
@@ -90,6 +86,53 @@ extension FileManager {
         for fileURL in oldFileURLs ?? [] {
             let destinationURL = destinationDirectory.appendingPathComponent(fileURL.lastPathComponent)
             try? moveItem(at: fileURL, to: destinationURL)
+        }
+    }
+
+    func folderSize(at url: URL) -> Int64 {
+        let keys: [URLResourceKey] = [
+            .isRegularFileKey,
+            .totalFileAllocatedSizeKey,
+            .fileAllocatedSizeKey,
+            .totalFileSizeKey,
+            .fileSizeKey
+        ]
+        guard let enumerator = self.enumerator(
+            at: url,
+            includingPropertiesForKeys: keys,
+            options: [],
+            errorHandler: nil
+        ) else {
+            return 0
+        }
+
+        var size: Int64 = 0
+        for case let fileURL as URL in enumerator {
+            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)), values.isRegularFile == true else {
+                continue
+            }
+            size += Int64(
+                values.totalFileAllocatedSize
+                    ?? values.fileAllocatedSize
+                    ?? values.totalFileSize
+                    ?? values.fileSize
+                    ?? 0
+            )
+        }
+        return size
+    }
+
+    func createTemporaryDirectory() -> URL? {
+        let temporaryDirectory = self.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        do {
+            try FileManager.default.createDirectory(
+                at: temporaryDirectory,
+                withIntermediateDirectories: true
+            )
+            return temporaryDirectory
+        } catch {
+            LogManager.logger.error("Failed to create temporary source directory: \(error)")
+            return nil
         }
     }
 }

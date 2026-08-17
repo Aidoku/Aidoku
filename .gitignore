@@ -13,6 +13,7 @@
 
 # Other
 .DS_Store
+build/
 
 # Zed
 .zed

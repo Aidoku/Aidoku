@@ -207,11 +207,16 @@ extension DownloadTask {
         tmpDirectory.createDirectory()
 
         if pages.isEmpty {
+            let language = download.chapter.language ?? source.languages.first
             pages = ((try? await source.getPageList(
                 manga: download.manga,
                 chapter: download.chapter
             )) ?? []).map {
-                $0.toOld(sourceId: source.key, chapterId: download.chapterIdentifier.chapterKey)
+                $0.toOld(
+                    sourceId: source.key,
+                    chapterId: download.chapterIdentifier.chapterKey,
+                    language: language
+                )
             }
             guard running && downloads.first == download else { return }
             downloads[0].total = pages.count

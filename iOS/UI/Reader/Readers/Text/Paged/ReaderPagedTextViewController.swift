@@ -240,10 +240,15 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         if !pages.isEmpty {
             let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
             let chapterId = chapter?.key ?? ""
+            let language = chapter?.language ?? viewModel.source?.languages.first
             // Check if any source page has a description
             let sourceHasDescription = viewModel.pages.contains { $0.hasDescription }
             let placeholderPages: [Page] = pages.map { textPage in
-                var page = Page(sourceId: sourceId, chapterId: chapterId)
+                var page = Page(
+                    sourceId: sourceId,
+                    chapterId: chapterId,
+                    language: language
+                )
                 page.index = textPage.id
                 page.text = "page"  // Mark as text page
                 // Carry description info so the info button appears on every page
