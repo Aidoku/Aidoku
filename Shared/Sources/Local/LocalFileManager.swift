@@ -169,25 +169,6 @@ extension LocalFileManager {
         }
     }
 
-    // cache directory for extracted images of a given epub archive
-    nonisolated static func epubImageCacheDirectory(for archiveURL: URL) -> URL? {
-        guard let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
-        else { return nil }
-
-        // stable per-book folder name (fnv-1a hash)
-        func hash(_ string: String) -> String {
-            var hash: UInt64 = 0xcbf29ce484222325
-            for byte in string.utf8 {
-                hash = (hash ^ UInt64(byte)) &* 0x100000001b3
-            }
-            return String(hash, radix: 16)
-        }
-
-        return cachesDir
-            .appendingPathComponent("EpubImages", isDirectory: true)
-            .appendingPathComponent(hash(archiveURL.path), isDirectory: true)
-    }
-
     // read pages from an archive file
     nonisolated func readPages(from archiveURL: URL) -> [AidokuRunner.Page] {
         let archive: Archive
@@ -652,7 +633,6 @@ extension LocalFileManager {
         if fileURL.exists {
             try? FileManager.default.removeItem(at: fileURL)
         }
-        Self.removeEpubImageCache(for: fileURL)
     }
 
     // remove a chapter from a given local manga
@@ -670,21 +650,12 @@ extension LocalFileManager {
             if fileURL.exists {
                 try? FileManager.default.removeItem(at: fileURL)
             }
-            Self.removeEpubImageCache(for: fileURL)
         }
 
         // remove the manga entry once no chapters remain
         if await LocalFileDataManager.shared.fetchChapters(mangaId: mangaId).isEmpty {
             await removeManga(with: mangaId)
         }
-    }
-
-    // remove cached extracted images for a given epub archive
-    nonisolated static func removeEpubImageCache(for archiveURL: URL) {
-        guard archiveURL.pathExtension.lowercased() == "epub",
-              let bookDir = epubImageCacheDirectory(for: archiveURL)
-        else { return }
-        try? FileManager.default.removeItem(at: bookDir)
     }
 
     // remove all local source files and db objects
@@ -699,11 +670,6 @@ extension LocalFileManager {
             try fileManager.removeItem(at: localFolder)
         } catch {
             LogManager.logger.error("Failed to remove Local folder: \(error)")
-        }
-
-        // clear extracted epub images
-        if let cachesDir = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
-            try? fileManager.removeItem(at: cachesDir.appendingPathComponent("EpubImages", isDirectory: true))
         }
 
         // update database
