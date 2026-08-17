@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 /// The readium-css injection and the reading-system variables that drive pagination.
 ///
@@ -28,16 +29,32 @@ import Foundation
 struct EpubPaginationSettings {
     var columnCount: Int = 1
 
+    /// Two columns on an iPad in landscape, one column everywhere else.
+    ///
+    /// Derived from the viewport rather than from `UIDevice.current.orientation`, which is
+    /// `.unknown` until the device has physically moved and so cannot answer at init time.
+    static func columnCount(for viewport: CGSize) -> Int {
+        UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
+    }
+
     /// Held at zero so that the scroll offset of a page is exactly `index * viewportWidth`.
     ///
     /// Visual separation comes from `pageGutterPx`, which is padding inside the body. A non-zero
     /// gap makes every page count and every offset gap-aware, and the error accumulates across a
     /// long document, for no benefit the gutter does not already provide.
-    var columnGapPx: Int = 0
+    var columnGapPx: Int = 10
 
     var pageGutterPx: Int = 20
 
+    var fontFamily: String = "System"
+
     var fontSizePercent: Int = 100
+
+    /// A unitless `line-height` multiple, injected only when set so the publication's own leading
+    /// wins by default.
+    var lineHeight: Double?
+
+    var paged: Bool = true
 
     /// Applies `--USER__fontSize` through `-webkit-text-size-adjust` rather than `zoom`.
     ///
@@ -46,9 +63,37 @@ struct EpubPaginationSettings {
     /// and leaves layout alone. The rule fires only when `--USER__fontSize` is present, and at
     /// 100% neither mechanism does anything, so this changes nothing until font size becomes a
     /// user setting. Its absence at that point would break pagination rather than the font size.
-    var applyIOSPatch: Bool = true
+    /// For whatever reason Readium made two different settings  for iOS and iPadOS
+    var applyIOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? false : true
+
+    var applyIPadOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? true : false
 
     static let `default` = EpubPaginationSettings()
+
+    /// The text readers' settings, mapped onto readium-css user variables, so an epub follows the
+    /// same reader settings the text readers already follow. `viewport` decides the column count;
+    /// pass the reader's size.
+    static func fromUserDefaults(for viewport: CGSize) -> EpubPaginationSettings {
+        var settings = EpubPaginationSettings()
+        settings.columnCount = columnCount(for: viewport)
+        let defaults = UserDefaults.standard
+        if let family = defaults.string(forKey: "Reader.textFontFamily") {
+            // "System" is the SF font the text readers use for that value
+            settings.fontFamily = family == "System" ? "-apple-system" : family
+        }
+        // the text readers store points; readium-css takes a percentage of the css 16px default
+        let fontSize = defaults.object(forKey: "Reader.textFontSize") as? Double ?? 18
+        settings.fontSizePercent = Int((fontSize / 16 * 100).rounded())
+        // points between lines become a unitless line-height multiple of the font size
+        let lineSpacing = defaults.object(forKey: "Reader.textLineSpacing") as? Double ?? 8
+        settings.lineHeight = ((fontSize + lineSpacing) / fontSize * 100).rounded() / 100
+        let padding = defaults.object(forKey: "Reader.textHorizontalPadding") as? Double ?? 24
+        settings.pageGutterPx = Int(padding)
+        // In readium's scroll mode a document is one column of natural height, read by scrolling
+        // vertically; the renderer counts its pages in viewport heights instead of columns.
+        settings.paged = defaults.string(forKey: "Reader.textReaderStyle") != "scroll"
+        return settings
+    }
 
     /// The single script injected into every spine document.
     ///
@@ -103,16 +148,23 @@ struct EpubPaginationSettings {
             head.appendChild(makeStyle(\(after)));
 
             var root = document.documentElement;
-            root.style.setProperty('--RS__colCount', '\(columnCount)');
+            root.style.setProperty('--USER__colCount', '\(columnCount)');
             root.style.setProperty('--RS__colGap', '\(columnGapPx)px');
             root.style.setProperty('--RS__pageGutter', '\(pageGutterPx)px');
+            root.style.setProperty('--USER__fontFamily', '\(fontFamily)');
             root.style.setProperty('--USER__fontSize', '\(fontSizePercent)%');
+            \(lineHeight.map { "root.style.setProperty('--USER__lineHeight', '\($0)');" } ?? "")
+            \(paged ? "root.style.setProperty('--USER__View', 'readium-paged-on');" : "root.style.setProperty('--USER__View', 'readium-scroll-on');")
+            root.style.setProperty('color-scheme', 'light dark');
+            root.style.setProperty('--USER__backgroundColor', 'light-dark(#FFFFFF, #000000)');
+            root.style.setProperty('--USER__textColor', 'light-dark(#000000, #FFFFFF)');
 
             // readium-css toggles are substring matches against the inline style attribute
             // (`:root[style*="readium-…-on"]`) rather than classes, so `classList.add` does
             // nothing. A flag is activated by setting a custom property whose value is the flag.
             root.style.setProperty('--USER__noOverflow', 'readium-noOverflow-on');
             \(applyIOSPatch ? "root.style.setProperty('--USER__iOSPatch', 'readium-iOSPatch-on');" : "")
+            \(applyIPadOSPatch ? "root.style.setProperty('--USER__iPadOSPatch', 'readium-iPadOSPatch-on');" : "")
         })();
         """
     }

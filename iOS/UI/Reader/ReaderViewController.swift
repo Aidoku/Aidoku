@@ -1002,6 +1002,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
+        tap.delegate = self
+        // leave the epub web view's own touch handling (text selection, links) intact
+        tap.cancelsTouchesInView = false
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
 
@@ -1011,6 +1014,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 action: nil
             )
             doubleTap.numberOfTapsRequired = 2
+            doubleTap.delegate = self
             view.addGestureRecognizer(doubleTap)
             tap.require(toFail: doubleTap)
             barToggleSecondaryTapGesture = doubleTap
@@ -1484,6 +1488,18 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
             view = currentView.superview
         }
         return true
+    }
+
+    // A WKWebView installs its own recognizers on its content view, and they claim a single tap
+    // before an ancestor's recognizer sees it. Recognising simultaneously is what lets a tap reach
+    // the tap zones while an epub's web view sits under them; no other reader puts a web view there,
+    // so everything else keeps the default exclusivity.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        (gestureRecognizer === barToggleTapGesture || gestureRecognizer === barToggleSecondaryTapGesture)
+            && reader is ReaderEpubViewController
     }
 }
 

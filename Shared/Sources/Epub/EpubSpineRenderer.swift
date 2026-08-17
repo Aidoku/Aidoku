@@ -139,14 +139,97 @@ final class EpubSpineRenderer: NSObject {
         // every page under the chrome.
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         // A paged document is exactly as tall as its viewport, so vertical movement of any kind is
-        // rubber-banding against nothing.
-        webView.scrollView.alwaysBounceVertical = false
-        // Pages are reached through `showPage`. Free scrolling would leave a column boundary in
+        // rubber-banding against nothing. Free scrolling would also leave a column boundary in
         // the middle of the viewport, at which point the offsets computed here no longer describe
-        // what is on screen. Gestures belong to the reader that hosts this.
-        webView.scrollView.isScrollEnabled = false
+        // what is on screen; pages are reached through `showPage` and gestures belong to the
+        // reader that hosts this.
+        //
+        // A scroll-mode document is the opposite: one column of natural height, read by scrolling
+        // it vertically. Its pages are viewport heights along y, and a free scroll is adopted
+        // into the current page by `handleScroll` rather than corrected away.
+        webView.scrollView.alwaysBounceVertical = !settings.paged
+        webView.scrollView.isScrollEnabled = !settings.paged
+
+        // In scroll mode the reading position is the vertical scroll offset, which no page turn
+        // ever reports, so it is observed directly and published through `progression` — the same
+        // field a paged document's turns fill. Reported at 1% steps: every offset change would
+        // rewrite the toolbar once per frame while a finger drags.
+        if !settings.paged {
+            scrollObservation = webView.scrollView.observe(\.contentOffset) { [weak self] _, _ in
+                Task { @MainActor in self?.handleScroll() }
+            }
+        }
         #endif
     }
+
+    #if !os(macOS)
+    private var scrollObservation: NSKeyValueObservation?
+
+    private func handleScroll() {
+        // Offsets seen while a document is loading belong to the document being replaced — its
+        // geometry, its bounce animation — and adopting them would hand the new document a page
+        // and an overscroll it never had.
+        guard navigationContinuation == nil else { return }
+        let scrollView = webView.scrollView
+        let viewportHeight = Double(scrollView.bounds.height)
+        let offsetY = Double(scrollView.contentOffset.y)
+        let maxOffset = Double(scrollView.contentSize.height) - viewportHeight
+        let fraction = maxOffset > 0 ? min(max(offsetY / maxOffset, 0), 1) : 0
+
+        // A free scroll moves the page under the reader, so the page follows the offset — that is
+        // what keeps the book page and the slider moving while they read. Also adopted as the
+        // current target so `holdCurrentPage` never scrolls the reader back to where they were.
+        // Not while a programmatic turn is in flight: its target is the authority then.
+        //
+        // The bottom of the document is the last page even though that page's grid offset sits
+        // past the scrollable range: content is rarely an exact multiple of the viewport, so
+        // without the clamp the final page could never be reached by scrolling and the counter
+        // dead-ended one short of the document's total.
+        if pagesInFlight == 0, viewportHeight > 0, pageCount > 0 {
+            // Within a line's height of the bottom counts as the bottom: the scroll view can come
+            // to rest a few points short of its computed maximum, and a 1pt tolerance left the
+            // counter one page shy at the end of a fully scrolled document.
+            currentPage = offsetY >= maxOffset - 24
+                ? pageCount - 1
+                : min(max(Int((offsetY / viewportHeight).rounded()), 0), pageCount - 1)
+            currentPageOffset = min(max(offsetY, 0), max(maxOffset, 0))
+        }
+
+        // A pull past either end is the reader asking to continue: vertical scrolling cannot
+        // cross a spine boundary, and dead-ending against the last line of a document while the
+        // book's slider sits mid-track reads as a broken book. Fired once per pull, re-armed only
+        // once the offset is back inside the scrollable range, so the bounce-back cannot repeat it.
+        if offsetY > maxOffset + Self.overscrollThreshold || offsetY < -Self.overscrollThreshold {
+            if !overscrollTriggered {
+                overscrollTriggered = true
+                onOverscroll?(offsetY > 0)
+            }
+        } else if offsetY >= 0 && offsetY <= max(maxOffset, 0) {
+            overscrollTriggered = false
+        }
+
+        guard abs(fraction - progression) >= 0.01 else { return }
+        progression = fraction
+        onScroll?()
+    }
+
+    /// How far past the end of the scrollable range a pull must go before it counts as asking for
+    /// the neighbouring document. Set above the overshoot a normal flick's bounce reaches on an
+    /// iPad, so merely arriving at the bottom with momentum does not cross into the next chapter;
+    /// a deliberate pull travels well past this.
+    // fixed threshold, tuned on an iPad sim; make it velocity-aware if flicks still
+    // cross documents accidentally on device.
+    private static let overscrollThreshold: Double = 120
+
+    private var overscrollTriggered = false
+    #endif
+
+    /// Called when the reader scrolls a scroll-mode document, after `progression` has moved.
+    var onScroll: (() -> Void)?
+
+    /// Called when the reader pulls past the end (`true`) or the start (`false`) of a scroll-mode
+    /// document, which is the gesture that continues into the neighbouring spine document.
+    var onOverscroll: ((Bool) -> Void)?
 
     deinit {
         confirmationTask?.cancel()
@@ -167,6 +250,19 @@ final class EpubSpineRenderer: NSObject {
         }
 
         cancelPendingWork()
+
+        #if !os(macOS)
+        // A document swap must not inherit the gesture that caused it. A fling's remaining
+        // momentum keeps scrolling after the next document has loaded, washing away the page the
+        // move asked to land on: entering a document showed its bottom instead of its start, and
+        // a backward landing fell pages short of the end. Toggling the pan recognizer cancels a
+        // drag that is still in the reader's finger — killing the offset alone does not, and the
+        // fling it releases into leaked through — and re-setting the offset without animation
+        // kills a deceleration already running.
+        webView.scrollView.panGestureRecognizer.isEnabled = false
+        webView.scrollView.panGestureRecognizer.isEnabled = true
+        webView.scrollView.setContentOffset(webView.scrollView.contentOffset, animated: false)
+        #endif
 
         // Loading over the custom scheme means relative subresource requests resolve against it
         // too, so they arrive back at the handler.
@@ -237,12 +333,21 @@ final class EpubSpineRenderer: NSObject {
         let request = pageRequests
         currentPage = min(max(index, 0), max(pageCount - 1, 0))
 
-        // The offset is computed inside the document, from the width the document is laid out
+        // The offset is computed inside the document, from the size the document is laid out
         // against, and returned so that the check below verifies the scroll that was actually
-        // performed rather than one recomputed from a width this side believes in.
-        let script = """
+        // performed rather than one recomputed from a size this side believes in. A paged
+        // document's pages are column offsets along x; a scroll-mode document's are viewport
+        // heights along y.
+        let script = settings.paged ? """
         var offset = \(currentPage) * (window.innerWidth + \(settings.columnGapPx));
         window.scrollTo(offset, 0);
+        String(offset);
+        """ : """
+        var offset = Math.max(0, Math.min(
+            \(currentPage) * window.innerHeight,
+            document.documentElement.scrollHeight - window.innerHeight
+        ));
+        window.scrollTo(0, offset);
         String(offset);
         """
         let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
@@ -274,13 +379,16 @@ final class EpubSpineRenderer: NSObject {
         #if !os(macOS)
         // Points and CSS pixels are the same size here: the injected viewport element maps the
         // document to the device width at a scale of one.
-        return abs(Double(webView.scrollView.contentOffset.x) - target) < Self.pageOffsetTolerance
+        let offset = settings.paged
+            ? Double(webView.scrollView.contentOffset.x)
+            : Double(webView.scrollView.contentOffset.y)
+        return abs(offset - target) < Self.pageOffsetTolerance
         #else
         // Compared within a tolerance rather than for equality. These are floating-point offsets,
         // and one that lands on a device-pixel-snapped value would never satisfy an exact check,
         // leaving every page turn to wait out its timeout while `holdCurrentPage` re-scrolls.
         let script = """
-        String(Math.abs(window.pageXOffset - \(target)) < \(Self.pageOffsetTolerance))
+        String(Math.abs(\(settings.paged ? "window.pageXOffset" : "window.pageYOffset") - \(target)) < \(Self.pageOffsetTolerance))
         """
         let showing = try? await webView.evaluateJavaScript(
             script,
@@ -293,20 +401,29 @@ final class EpubSpineRenderer: NSObject {
     // MARK: - Measurement
 
     private struct Metrics {
-        let scrollWidth: Double
-        let viewportWidth: Double
+        let scrollExtent: Double
+        let viewportExtent: Double
     }
 
-    /// `n` columns span `n * width + (n - 1) * gap`, so the gap belongs in the expression even
-    /// while it is zero: without it the count drifts low as the error accumulates across a long
-    /// document.
+    /// Paged: `n` columns span `n * width + (n - 1) * gap`, so the gap belongs in the expression
+    /// even while it is zero: without it the count drifts low as the error accumulates across a
+    /// long document.
+    ///
+    /// Scroll mode: a "page" is one viewport height of the document, so the counter and the
+    /// slider stay meaningful — counting spine documents instead reported "1 of 1" for the many
+    /// books whose whole text is a single document. Rounded up, since a trailing partial screen
+    /// is still text to be read (with a small epsilon against float fuzz at exact multiples).
     private func measurePageCount() async throws -> Int {
         let metrics = try await readMetrics()
-        guard metrics.viewportWidth > 0 else {
-            throw RenderError.measurementFailed("the web view has no width")
+        guard metrics.viewportExtent > 0 else {
+            throw RenderError.measurementFailed("the web view has no size")
         }
-        let gap = Double(settings.columnGapPx)
-        return max(1, Int(((metrics.scrollWidth + gap) / (metrics.viewportWidth + gap)).rounded()))
+        if settings.paged {
+            let gap = Double(settings.columnGapPx)
+            return max(1, Int(((metrics.scrollExtent + gap) / (metrics.viewportExtent + gap)).rounded()))
+        } else {
+            return max(1, Int((metrics.scrollExtent / metrics.viewportExtent - 0.01).rounded(.up)))
+        }
     }
 
     /// Waits for the document to be laid out against the width the web view now has.
@@ -343,8 +460,11 @@ final class EpubSpineRenderer: NSObject {
 
     private func readMetrics() async throws -> Metrics {
         // Returned as one string and parsed here: passing structured values across the JavaScript
-        // boundary is less predictable than parsing a known format.
-        let script = "String(document.documentElement.scrollWidth) + ',' + String(window.innerWidth)"
+        // boundary is less predictable than parsing a known format. Paged documents extend along
+        // x, scroll-mode documents along y.
+        let script = settings.paged
+            ? "String(document.documentElement.scrollWidth) + ',' + String(window.innerWidth)"
+            : "String(document.documentElement.scrollHeight) + ',' + String(window.innerHeight)"
         let result = try await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
 
         guard let report = result as? String else {
@@ -356,7 +476,7 @@ final class EpubSpineRenderer: NSObject {
         guard values.count == 2 else {
             throw RenderError.measurementFailed("could not parse '\(report)'")
         }
-        return Metrics(scrollWidth: values[0], viewportWidth: values[1])
+        return Metrics(scrollExtent: values[0], viewportExtent: values[1])
     }
 
     /// Re-measures the loaded document and returns the reader to where they had read to.

@@ -50,6 +50,11 @@ final class ReaderEpubViewModel {
     /// Called whenever the position or the book's total moves, so a host can refresh its toolbar.
     var onChange: (() -> Void)?
 
+    /// Called when a scroll-mode pull runs past the end (`true`) or start (`false`) of the
+    /// current document. The host routes it through the same queue as its page turns, since it is
+    /// one: a move into the neighbouring spine document.
+    var onOverscroll: ((Bool) -> Void)?
+
     /// Spine paths the measurement pass could not lay out, for the debug screen to show.
     private(set) var unmeasurable: [String] = []
 
@@ -107,15 +112,20 @@ final class ReaderEpubViewModel {
         index.progression(forDocumentAt: currentDocument, page: pageInDocument)
     }
 
-    init(bookURL: URL) throws {
+    /// Pagination settings for the reading renderer and the measurement pass alike: a count is
+    /// only meaningful when it was measured with the settings the document is shown with.
+    private let settings: EpubPaginationSettings
+
+    init(bookURL: URL, settings: EpubPaginationSettings = .default) throws {
         guard let book = EpubParser.parse(url: bookURL) else {
             throw LoadError.unreadableBook(bookURL)
         }
         self.bookURL = bookURL
+        self.settings = settings
         self.spinePaths = book.chapters.flatMap(\.hrefs)
         self.index = EpubPageIndex(spinePaths: spinePaths)
         self.provider = try EpubZipResourceProvider(url: bookURL)
-        self.measurer = EpubSpineMeasurer(provider: provider)
+        self.measurer = EpubSpineMeasurer(provider: provider, settings: settings)
     }
 
     /// Builds the renderer so its web view can be placed before anything is laid out in it.
@@ -126,7 +136,9 @@ final class ReaderEpubViewModel {
     /// two, and any disagreement invalidates every page count and restarts the measurement pass.
     func prepareRenderer() async throws -> EpubSpineRenderer {
         if let renderer { return renderer }
-        let renderer = try await EpubSpineRenderer(provider: provider)
+        let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
+        renderer.onScroll = { [weak self] in self?.onChange?() }
+        renderer.onOverscroll = { [weak self] forward in self?.onOverscroll?(forward) }
         renderer.onRepaginate = { [weak self] count in
             guard let self else { return }
             // The renderer re-measures when a late image or a size change moves the boundaries, so

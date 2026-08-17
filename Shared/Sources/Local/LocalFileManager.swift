@@ -151,48 +151,21 @@ extension LocalFileManager {
         let documentsDir = FileManager.default.documentDirectory
         let archiveURL = documentsDir.appendingPathComponent(cbzPath)
         if archiveURL.pathExtension.lowercased() == "epub" {
-            return readEpubPages(from: archiveURL, chapterId: chapterId)
+            return readEpubPages(from: archiveURL)
         }
         return readPages(from: archiveURL)
     }
 
-    // read the pages for an epub chapter
-    // the chapter id has the format "<epub file name>/<content file path>"
-    nonisolated func readEpubPages(from archiveURL: URL, chapterId: String) -> [AidokuRunner.Page] {
-        let prefix = archiveURL.lastPathComponent + "/"
-        let href = chapterId.hasPrefix(prefix) ? String(chapterId.dropFirst(prefix.count)) : chapterId
-        let segments = EpubParser.chapterSegments(url: archiveURL, href: href)
-        guard !segments.isEmpty else {
-            LogManager.logger.error("Failed to read epub chapter \(chapterId) from \(archiveURL.lastPathComponent)")
+    // read the pages for an epub, which is a single chapter spanning the whole book:
+    // one page per spine document, so the epub reader can resolve the archive from
+    // the first page and paginate across the spine itself
+    nonisolated func readEpubPages(from archiveURL: URL) -> [AidokuRunner.Page] {
+        guard let book = EpubParser.parse(url: archiveURL) else {
+            LogManager.logger.error("Failed to read epub \(archiveURL.lastPathComponent)")
             return []
         }
-
-        let hasText = segments.contains {
-            if case .text = $0 { return true }
-            return false
-        }
-
-        if hasText {
-            // build a single markdown page with inline image references so the
-            // whole chapter stays in the text reader
-            let parts: [String] = segments.compactMap { segment in
-                switch segment {
-                    case .text(let text):
-                        return text
-                    case .image(let path):
-                        guard let cachedURL = Self.cacheEpubImage(archiveURL: archiveURL, path: path) else {
-                            return nil
-                        }
-                        return "![image](\(cachedURL.absoluteString))"
-                }
-            }
-            return [AidokuRunner.Page(content: .text(parts.joined(separator: "\n\n")))]
-        }
-
-        // image-only chapter (cover, illustration pages)
-        return segments.compactMap { segment in
-            guard case let .image(path) = segment else { return nil }
-            return AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: path))
+        return book.chapters.flatMap(\.hrefs).map {
+            AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: $0))
         }
     }
 
@@ -213,28 +186,6 @@ extension LocalFileManager {
         return cachesDir
             .appendingPathComponent("EpubImages", isDirectory: true)
             .appendingPathComponent(hash(archiveURL.path), isDirectory: true)
-    }
-
-    // extract an image from an epub archive into the cache directory so it can
-    // be referenced with a file url from markdown text
-    nonisolated static func cacheEpubImage(archiveURL: URL, path: String) -> URL? {
-        guard let bookDir = epubImageCacheDirectory(for: archiveURL) else { return nil }
-        let fileURL = bookDir.appendingPathComponent(path.replacingOccurrences(of: "/", with: "_"))
-
-        if fileURL.exists {
-            return fileURL
-        }
-
-        bookDir.createDirectory()
-        do {
-            let archive = try Archive(url: archiveURL, accessMode: .read)
-            guard let entry = EpubParser.entry(in: archive, path: path) else { return nil }
-            _ = try archive.extract(entry, to: fileURL)
-            return fileURL
-        } catch {
-            LogManager.logger.error("Failed to extract epub image \(path): \(error)")
-            return nil
-        }
     }
 
     // read pages from an archive file
@@ -362,7 +313,7 @@ extension LocalFileManager {
             }
         }
 
-        // epub files create a chapter per spine item instead of image pages
+        // epub files are added as a single chapter spanning the whole book
         if url.pathExtension.lowercased() == "epub" {
             try await uploadEpub(
                 from: url,
@@ -554,7 +505,7 @@ extension LocalFileManager {
         )
     }
 
-    // add an epub file to the local files source, creating a chapter per spine item
+    // add an epub file to the local files source as a single chapter
     // swiftlint:disable:next function_parameter_count
     private func uploadEpub(
         from url: URL,
@@ -639,18 +590,14 @@ extension LocalFileManager {
             )
         }
 
-        // create a chapter for each spine item
-        // the chapter id encodes the content file path so pages can be fetched later
-        let fileName = destURL.lastPathComponent
-        for (index, chapter) in book.chapters.enumerated() {
-            await LocalFileDataManager.shared.createChapter(
-                mangaId: resolvedMangaId,
-                url: destURL,
-                id: "\(fileName)/\(chapter.href)",
-                title: chapter.title,
-                chapter: Float(index + 1)
-            )
-        }
+        // the whole book is one chapter; the epub reader paginates across the spine itself
+        await LocalFileDataManager.shared.createChapter(
+            mangaId: resolvedMangaId,
+            url: destURL,
+            id: destURL.lastPathComponent,
+            title: book.title,
+            chapter: -1
+        )
     }
 }
 

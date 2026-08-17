@@ -109,7 +109,110 @@ class ReaderEpubViewController: BaseObservingViewController {
     deinit {
         openTask?.cancel()
         moveTask?.cancel()
+        settingsReloadTask?.cancel()
     }
+
+    /// The debounced rebuild a settings change schedules; see `scheduleSettingsReload`.
+    private var settingsReloadTask: Task<Void, Never>?
+
+    override func observe() {
+        // The text readers' settings apply to epubs too. They are baked into the renderer's
+        // injection script and into every measured page count, so a change invalidates all of it;
+        // rebuilding through `open` reuses the path a fresh open already exercises. Debounced
+        // because the steppers in the settings sheet post once per tick.
+        for key in [
+            "Reader.textReaderStyle", "Reader.textFontFamily", "Reader.textFontSize",
+            "Reader.textLineSpacing", "Reader.textHorizontalPadding"
+        ] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.scheduleSettingsReload()
+            }
+        }
+    }
+
+    /// The reader's place, captured before the first rebuild of a run and held until the reader
+    /// navigates somewhere themselves.
+    ///
+    /// Held across the whole run rather than per rebuild: a second settings change arrives while
+    /// the rebuild for the first is still opening the book, and a mid-open book reports the start
+    /// of the book rather than the place the reader was. Clearing this after one rebuild let the
+    /// second capture that start, which put a reader who tapped a stepper twice back on page one.
+    /// Only a navigation the reader performs makes the captured place stale, so only `navigate`
+    /// and a chapter change clear it.
+    // ponytail: restores by page number of the old layout, so a font change lands within a
+    // page or so of the exact text; anchoring by book fraction would need the new total first.
+    private var settingsReloadPage: Int?
+
+    private func scheduleSettingsReload() {
+        if settingsReloadPage == nil {
+            settingsReloadPage = (book?.bookPage).map { $0 + 1 }
+        }
+        settingsReloadTask?.cancel()
+        settingsReloadTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard let self, !Task.isCancelled else { return }
+            rebuildBook()
+        }
+    }
+
+    /// Tears the book down and opens it again at the same place, picking up the current settings.
+    private func rebuildBook() {
+        guard book != nil else { return }
+        // The page numbers of the old layout are the best available guess at a place in the
+        // new one; `open` holds it as a pending page until the new counts can place it.
+        let page = settingsReloadPage ?? (book?.bookPage).map { $0 + 1 } ?? 1
+        openTask?.cancel()
+        moveTask?.cancel()
+        moveTask = nil
+        pendingMove = nil
+        isNavigating = false
+        isSliding = false
+        reportedTotal = 0
+        lastViewport = .zero
+        insetsAppliedForSize = .zero
+        book?.renderer?.webView.removeFromSuperview()
+        webViewInsets = nil
+        book = nil
+        openTask = Task { [weak self] in
+            await self?.open(startPage: page)
+        }
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Opaque, so the host's `Reader.backgroundColor` — a manga/webtoon setting it applies to
+        // its own background whenever the bars hide — never shows in the safe-area and chrome
+        // strips around the web view. `.systemBackground` is white/black by appearance, which is
+        // exactly what the injected `light-dark()` gives the page itself.
+        view.backgroundColor = .systemBackground
+
+        // The default tap zone setting is "disabled" and the web view's own scrolling is off, so
+        // without these there is no touch gesture at all that turns a page. Every other reader
+        // pages by swipe; this one does the same, on top of whatever tap zones are enabled.
+        for direction in [UISwipeGestureRecognizer.Direction.left, .right] {
+            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
+            swipe.direction = direction
+            // A WKWebView's internal recognizers claim touches before an ancestor's recognizer
+            // sees them; recognising simultaneously is what lets the swipe through.
+            swipe.delegate = self
+            view.addGestureRecognizer(swipe)
+        }
+    }
+
+    @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
+        // ePub text reads left to right, so swiping the content left goes forward.
+        switch gesture.direction {
+            case .left: moveRight()
+            case .right: moveLeft()
+            default: break
+        }
+    }
+
+    /// The column count the open book was laid out with, so a rotation that changes it rebuilds
+    /// the book. The count is baked into the renderer's injection script, so a re-measure alone
+    /// cannot change it.
+    private var appliedColumnCount = 1
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -117,7 +220,13 @@ class ReaderEpubViewController: BaseObservingViewController {
         let size = webViewSize()
         guard size != lastViewport, size.width > 0, size.height > 0 else { return }
         lastViewport = size
-        book?.viewportChanged(to: size)
+        if book != nil, EpubPaginationSettings.columnCount(for: view.bounds.size) != appliedColumnCount {
+            // An iPad rotating between one column (portrait) and two (landscape). Debounced with
+            // the settings path so the rebuild sees the size the rotation settles at.
+            scheduleSettingsReload()
+        } else {
+            book?.viewportChanged(to: size)
+        }
     }
 
     /// Adds the web view, inset from the device's safe area.
@@ -154,11 +263,31 @@ class ReaderEpubViewController: BaseObservingViewController {
     ///
     /// A rotation does change these, and also changes the view's size, so the renderer re-measures
     /// once for both rather than twice.
+    /// Fixed space reserved above and below the document for the translucent nav bar and toolbar,
+    /// as `ReaderPagedTextViewController`'s `toolbarBuffer` reserves. The bars overlay the reader,
+    /// so without it the first and last lines of every page sit behind them whenever they are
+    /// shown; a constant reservation keeps the text clear of them without the viewport changing
+    /// when they are toggled, which is what would re-fragment the document.
+    private static let chromeBuffer: CGFloat = 50
+
+    /// The view size the insets were last read for, so they are re-read only when it changes.
+    ///
+    /// On an iPhone the window's insets are the notch and stay put when the bars toggle, but an
+    /// iPad has no notch: its top window inset is the status bar, which hides with the bars. Read
+    /// on every layout pass, that resized the web view on every toggle, and every resize
+    /// re-fragments the document — the text visibly jumped. A rotation or split-view change is
+    /// the case the insets genuinely have to follow, and both change the view's size.
+    private var insetsAppliedForSize: CGSize = .zero
+
     private func applySafeArea() {
-        guard let webViewInsets else { return }
-        let safeArea = view.window?.safeAreaInsets ?? view.safeAreaInsets
-        guard webViewInsets.constants != safeArea else { return }
-        webViewInsets.apply(safeArea)
+        guard let webViewInsets, let window = view.window else { return }
+        guard view.bounds.size != insetsAppliedForSize else { return }
+        insetsAppliedForSize = view.bounds.size
+        var insets = window.safeAreaInsets
+        insets.top += Self.chromeBuffer
+        insets.bottom += Self.chromeBuffer
+        guard webViewInsets.constants != insets else { return }
+        webViewInsets.apply(insets)
         view.layoutIfNeeded()
     }
 
@@ -169,15 +298,26 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     /// Opens the book and shows the page the reader left off at.
     private func open(startPage: Int) async {
+        let settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
+        appliedColumnCount = settings.columnCount
         let book: ReaderEpubViewModel
         do {
-            book = try ReaderEpubViewModel(bookURL: bookURL)
+            book = try ReaderEpubViewModel(bookURL: bookURL, settings: settings)
         } catch {
             LogManager.logger.error("ReaderEpubViewController: could not open \(bookURL.lastPathComponent): \(error)")
             delegate?.setPages([])
             return
         }
         book.onChange = { [weak self] in self?.report() }
+        book.onOverscroll = { [weak self] forward in
+            self?.navigate { book in
+                if forward {
+                    await book.moveForward()
+                } else {
+                    await book.moveBackward()
+                }
+            }
+        }
         self.book = book
 
         // The web view is placed and laid out before the book is opened in it, so that the size
@@ -288,6 +428,8 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// the responsiveness without the replay, and a third tap replaces the one waiting rather than
     /// joining it.
     private func navigate(_ work: @escaping (ReaderEpubViewModel) async -> Void) {
+        // The reader has taken over from wherever a rebuild was restoring them to.
+        settingsReloadPage = nil
         guard book != nil else { return }
         guard moveTask == nil else {
             pendingMove = work
@@ -320,6 +462,18 @@ class ReaderEpubViewController: BaseObservingViewController {
                 report()
             }
         }
+    }
+}
+
+// MARK: - UIGestureRecognizerDelegate
+
+extension ReaderEpubViewController: UIGestureRecognizerDelegate {
+    // Only the reader's own swipes carry this delegate, so nothing else is affected.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        true
     }
 }
 
@@ -372,6 +526,7 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         guard self.chapter?.id != chapter.id else { return }
         self.chapter = chapter
+        settingsReloadPage = nil
         openTask?.cancel()
         openTask = Task { [weak self] in
             await self?.open(startPage: startPage)
