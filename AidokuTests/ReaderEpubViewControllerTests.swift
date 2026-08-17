@@ -132,6 +132,75 @@ struct ReaderEpubViewControllerTests {
         #expect(model.bookTotal == expected)
     }
 
+    /// A settings change puts the reader back at the same text, not at the same page number.
+    ///
+    /// A font size change re-fragments the whole book, so the page the reader was on names a
+    /// different place in the new layout, further off the deeper in they were. The reader is restored
+    /// by the fraction of the book they had read, which is the anchor a rotation already used.
+    ///
+    /// This failed silently once: the rebuild's anchor was dropped by the pending-page retry in
+    /// `report`, which runs through `navigate` and so looked like the reader taking over. The restore
+    /// still happened and still landed on the old page number, so nothing errored and only the text
+    /// on screen was wrong.
+    @Test func aSettingsChangeKeepsTheReaderOnTheSameText() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 1, 40, 6, 25])
+        defer { EpubFixture.remove(book.url) }
+
+        let defaults = UserDefaults.standard
+        let original = defaults.object(forKey: "Reader.textFontSize")
+        defer {
+            if let original {
+                defaults.set(original, forKey: "Reader.textFontSize")
+            } else {
+                defaults.removeObject(forKey: "Reader.textFontSize")
+            }
+        }
+        defaults.set(18 as Double, forKey: "Reader.textFontSize")
+
+        let (reader, _) = try open(bookURL: book.url)
+        defer { dismantle(reader) }
+        try await waitUntilMeasured(reader)
+
+        // Deep enough in that restoring the page number lands visibly early: the error is
+        // proportional to how far in the reader is.
+        let before = try #require(reader.book)
+        let totalBefore = before.bookTotal
+        let pageBefore = Int(Double(totalBefore) * 0.4)
+        await before.showBookPage(pageBefore)
+        let fractionBefore = Double(pageBefore) / Double(totalBefore - 1)
+
+        // The reader observes the key rather than reading it at draw time, so the notification is
+        // what starts the rebuild. `scheduleSettingsReload` debounces it.
+        defaults.set(24 as Double, forKey: "Reader.textFontSize")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.textFontSize"), object: nil)
+
+        try await EpubFixture.waitUntil(timeout: 30) {
+            reader.book?.isMeasured == true && reader.book?.bookTotal != totalBefore
+        }
+        // The refinement happens on the report that observes the last count, and moves through the
+        // navigation queue, so it settles a moment after the book is measured.
+        try await EpubFixture.waitUntil(timeout: 10) {
+            reader.book.map { $0.bookPage != nil && $0.bookPage != pageBefore } ?? false
+        }
+
+        let after = try #require(reader.book)
+        let totalAfter = after.bookTotal
+        let pageAfter = try #require(after.bookPage)
+        #expect(totalAfter != totalBefore, "the layout did not change, so the test proves nothing")
+
+        // Against the fraction rather than against a page number: what has to survive is the place
+        // in the text, and the two layouts have no page numbering in common.
+        let fractionAfter = Double(pageAfter) / Double(totalAfter - 1)
+        let tolerance = 2 / Double(totalAfter - 1)
+        #expect(
+            abs(fractionAfter - fractionBefore) <= tolerance,
+            "landed at \(fractionAfter) of the book, having left from \(fractionBefore)"
+        )
+        // The old behaviour: the page number was restored verbatim, which the fraction check above
+        // would also catch, but this says which mistake was made.
+        #expect(pageAfter != pageBefore, "the page number was restored rather than the position")
+    }
+
     /// A resize never reports an empty page list.
     ///
     /// Every count belongs to a viewport, so a resize drops all of them and the total is momentarily

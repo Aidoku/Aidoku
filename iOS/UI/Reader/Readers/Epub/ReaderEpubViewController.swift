@@ -414,21 +414,22 @@ class ReaderEpubViewController: BaseObservingViewController {
 
         // A resume that could not be placed when it was asked for is retried here, through the same
         // queue as a page turn so that the two cannot run at once, and only once the counts it was
-        // waiting on have landed.
+        // waiting on have landed. A restore, so it does not count as the reader taking over: this
+        // fires during the very rebuild whose anchor is still waiting to be refined below.
         if book.canShowPendingBookPage {
-            navigate { await $0.showPendingBookPage() }
+            navigate(isRestore: true) { await $0.showPendingBookPage() }
         }
 
         // A rebuild's page-number landing is refined onto the place the reader actually left once the
         // new layout is finished being counted, which is the first moment the fraction can be turned
-        // back into a page. Cleared first, so the navigation below does not see it as still pending,
-        // and only while the reader has not moved themselves: `navigate` drops it precisely then.
+        // back into a page. Cleared first, so nothing downstream sees it as still pending, and only
+        // while the reader has not moved themselves: `navigate` drops it precisely then.
         if book.isMeasured, let position = settingsReloadPosition, book.bookTotal > 1 {
             settingsReloadPosition = nil
             settingsReloadPage = nil
             let target = Int((position * Double(book.bookTotal - 1)).rounded())
             if target != book.bookPage {
-                navigate { await $0.showBookPage(target) }
+                navigate(isRestore: true) { await $0.showBookPage(target) }
                 return
             }
         }
@@ -470,10 +471,16 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// queuing every tap makes a burst of ten replay as ten turns after the fact. One slot gives
     /// the responsiveness without the replay, and a third tap replaces the one waiting rather than
     /// joining it.
-    private func navigate(_ work: @escaping (ReaderEpubViewModel) async -> Void) {
-        // The reader has taken over from wherever a rebuild was restoring them to.
-        settingsReloadPage = nil
-        settingsReloadPosition = nil
+    /// `isRestore` distinguishes a move the reader asked for from one made on their behalf while a
+    /// book is being reopened. Only the former means they have taken over from where a rebuild was
+    /// putting them, and only the former may therefore drop the anchor the rebuild is restoring to.
+    /// Getting this wrong is silent: the restore still runs, and still lands on the wrong page.
+    private func navigate(isRestore: Bool = false, _ work: @escaping (ReaderEpubViewModel) async -> Void) {
+        if !isRestore {
+            // The reader has taken over from wherever a rebuild was restoring them to.
+            settingsReloadPage = nil
+            settingsReloadPosition = nil
+        }
         guard book != nil else { return }
         guard moveTask == nil else {
             pendingMove = work
