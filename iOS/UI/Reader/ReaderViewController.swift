@@ -559,6 +559,8 @@ class ReaderViewController: BaseObservingViewController {
                 currentReader = .paged
             case is ReaderWebtoonViewController:
                 currentReader = .scroll
+            case is ReaderEpubViewController:
+                currentReader = .epub
             default:
                 currentReader = .paged
         }
