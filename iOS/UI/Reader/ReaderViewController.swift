@@ -945,15 +945,16 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     func setCompleted() {
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-            Task {
-                await HistoryManager.shared.addHistory(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
-                    chapters: chaptersToMark
-                )
-            }
+        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+
+        Task { [chaptersToMark] in
+            await HistoryManager.shared.addHistory(
+                sourceId: manga.sourceKey,
+                mangaId: manga.key,
+                chapters: chaptersToMark
+            )
         }
+
         if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
             chaptersToRemoveDownload.append(chapter)
         }
