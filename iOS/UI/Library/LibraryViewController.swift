@@ -430,7 +430,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .historySet) { [weak self] notification in
             guard let self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
             Task { @MainActor in
-                self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
+                await self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
                 self.updateDataSource()
             }
         }

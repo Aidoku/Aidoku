@@ -192,23 +192,41 @@ extension MigrateSingleSearchView {
             } else {
                 searchText = query
             }
+
+            // sources freeze if we run too many tasks concurrently, so we limit it
+            let maxConcurrentTasks = 3
+
             await withTaskGroup(of: (AidokuRunner.Source, AidokuRunner.MangaPageResult?).self) { group in
-                for source in targetSources {
+                // add the initial tasks to the group
+                for i in 0..<min(targetSources.count, maxConcurrentTasks) {
+                    let source = targetSources[i]
                     group.addTask {
                         let result = try? await source.getSearchMangaList(query: searchText, page: 1, filters: [])
                         return (source, result)
                     }
                 }
+                var index = maxConcurrentTasks
                 for await (source, result) in group {
-                    guard let result else { continue }
-                    withAnimation {
-                        results.append(.init(source: source, result: result))
+                    if index < targetSources.count {
+                        // once a task completes, we can start a new one if there are still sources left
+                        let source = targetSources[index]
+                        group.addTask {
+                            let result = try? await source.getSearchMangaList(query: searchText, page: 1, filters: [])
+                            return (source, result)
+                        }
+                        index += 1
+                    }
+
+                    if let result {
+                        withAnimation {
+                            results.append(.init(source: source, result: result))
+                        }
                     }
                 }
             }
-            guard !Task.isCancelled else {
-                return
-            }
+
+            guard !Task.isCancelled else { return }
+
             withAnimation {
                 isLoading = false
             }
