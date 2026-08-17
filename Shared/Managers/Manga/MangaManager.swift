@@ -1051,7 +1051,7 @@ extension MangaManager {
             of: (String, AidokuRunner.Manga, [AidokuRunner.Chapter])?.self,
             returning: [String: (AidokuRunner.Manga, [AidokuRunner.Chapter])].self
         ) { group in
-            let batchSize = 10
+            let batchSize = 5
             var ret: [String: (AidokuRunner.Manga, [AidokuRunner.Chapter])] = [:]
             var counter = 0
 

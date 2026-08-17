@@ -144,22 +144,42 @@ extension MigrateResultsView {
             states[$0.identifier] = .running
         }
 
+        // sources freeze if we run too many tasks concurrently, so we limit it
+        let maxConcurrentTasks = 3
+
+        nonisolated func search(for manga: AidokuRunner.Manga) async -> (MangaIdentifier, AidokuRunner.Manga?) {
+            // check sources until a manga is found
+            for source in targetSources {
+                let search = try? await source.getSearchMangaList(query: manga.title, page: 1, filters: [])
+                if let newManga = search?.entries.first {
+                    return (manga.identifier, newManga)
+                }
+            }
+            // didn't find a manga in any of the sources
+            return (manga.identifier, nil)
+        }
+
         await withTaskGroup(of: (MangaIdentifier, AidokuRunner.Manga?).self) { group in
-            for manga in selectedSeries {
+            // add the initial tasks to the group
+            for i in 0..<min(selectedSeries.count, maxConcurrentTasks) {
+                let manga = selectedSeries[i]
                 group.addTask {
-                    // check sources until a manga is found
-                    for source in targetSources {
-                        let search = try? await source.getSearchMangaList(query: manga.title, page: 1, filters: [])
-                        if let newManga = search?.entries.first {
-                            return (manga.identifier, newManga)
-                        }
-                    }
-                    // didn't find a manga in any of the sources
-                    return (manga.identifier, nil)
+                    await search(for: manga)
                 }
             }
 
-            for await (key, result) in group {
+            var index = maxConcurrentTasks
+            while let (key, result) = await group.next() {
+                if index < selectedSeries.count {
+                    // once a task completes, we can start a new one if there are still series left
+                    let manga = selectedSeries[index]
+                    group.addTask {
+                        await search(for: manga)
+                    }
+                    index += 1
+                }
+
+                // handle result
                 await MainActor.run {
                     if let result {
                         withAnimation {
