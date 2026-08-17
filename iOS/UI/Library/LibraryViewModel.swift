@@ -131,6 +131,13 @@ class LibraryViewModel {
             saveFilters()
         }
     }
+    var activeFilters: [LibraryFilter] {
+        if let currentCategory, let group = filterGroups.first(where: { $0.title == currentCategory }) {
+            group.filters + self.filters
+        } else {
+            self.filters
+        }
+    }
 
     var categories: [String] = []
     var filterGroups: [FilterGroup] = []
@@ -199,11 +206,7 @@ extension LibraryViewModel {
     // swiftlint:disable:next cyclomatic_complexity
     func loadLibrary() async {
         // handle filter groups
-        let filters = if let currentCategory, let group = filterGroups.first(where: { $0.title == currentCategory }) {
-            group.filters + self.filters
-        } else {
-            self.filters
-        }
+        let filters = self.activeFilters
         let currentCategory = (isInUncategorizedCategory || isInRealCategory) ? self.currentCategory : nil
 
         let (
@@ -465,7 +468,7 @@ extension LibraryViewModel {
                 }
             }
         }
-        if pinType == .unread {
+        if pinType == .unread || activeFilters.contains(where: { $0.type == .hasUnread }) {
             await loadLibrary()
         } else if sortMethod == .unreadChapters {
             await sortLibrary()
@@ -733,8 +736,15 @@ extension LibraryViewModel {
         return libraryReloaded
     }
 
-    func mangaRead(sourceId: String, mangaId: String) {
+    func mangaRead(sourceId: String, mangaId: String) async {
+        if activeFilters.contains(where: { $0.type == .hasUnread }) {
+            // reload library in case all chapters were read and the manga should be filtered
+            await loadLibrary()
+            return
+        }
+
         guard sortMethod == .lastRead else { return }
+
         if let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId }) {
             let manga = pinnedManga.remove(at: pinnedIndex)
             self.manga.insert(manga, at: 0)
