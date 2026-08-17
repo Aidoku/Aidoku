@@ -160,12 +160,37 @@ enum EpubFixture {
 
     /// A renderer whose web view is installed at a known size. A page count belongs to a viewport,
     /// so a renderer measured outside a window would be measuring nothing.
+    ///
+    /// `settings` is taken rather than assumed, because the geometry a count belongs to is decided
+    /// by the settings as much as by the size: a comparison against a renderer built with different
+    /// settings measures a different layout and disagrees for no reason worth reporting.
     @MainActor
-    static func makeRenderer(for archiveURL: URL, size: CGSize = viewportSize) async throws -> EpubSpineRenderer {
+    static func makeRenderer(
+        for archiveURL: URL,
+        size: CGSize = viewportSize,
+        settings: EpubPaginationSettings = .default
+    ) async throws -> EpubSpineRenderer {
         let provider = try EpubZipResourceProvider(url: archiveURL)
-        let renderer = try await EpubSpineRenderer(provider: provider)
+        let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
         try install(renderer.webView, size: size)
         return renderer
+    }
+
+    /// The distance between the left edges of two consecutive pages.
+    ///
+    /// A single column is the viewport wide and the gap sits between columns, so a page begins every
+    /// `width + gap` rather than every `width`. `n` pages therefore span `n * (width + gap) - gap`:
+    /// the last page carries no gap after it.
+    ///
+    /// Only correct for a one-column layout, which is every size the suite renders at. Two columns
+    /// put the gap inside the viewport instead, so a page begins every `width`.
+    static func pagePitch(width: Double, settings: EpubPaginationSettings = .default) -> Double {
+        width + Double(settings.columnGapPx)
+    }
+
+    /// What a document of `count` pages measures across, in its own `scrollWidth` terms.
+    static func scrollExtent(pages count: Int, width: Double, settings: EpubPaginationSettings = .default) -> Double {
+        pagePitch(width: width, settings: settings) * Double(count) - Double(settings.columnGapPx)
     }
 
     /// Polls rather than waiting on the navigation delegate, which keeps the fixture free of a

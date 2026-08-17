@@ -116,8 +116,14 @@ struct ReaderEpubViewControllerTests {
         //
         // Measured at the web view's bounds rather than the reader's, since the reader insets its
         // web view by the window's safe area and a count belongs to the size it was laid out at.
+        //
+        // With the reader's own settings, derived from the reader's bounds the way the controller
+        // derives them: a count belongs to its settings as much as to its size, so a renderer built
+        // with the defaults would lay the same text out at a different font size and disagree for a
+        // reason that says nothing about attribution.
         let size = try #require(model.renderer?.webView.bounds.size)
-        let renderer = try await EpubFixture.makeRenderer(for: book.url, size: size)
+        let settings = EpubPaginationSettings.fromUserDefaults(for: reader.view.bounds.size)
+        let renderer = try await EpubFixture.makeRenderer(for: book.url, size: size, settings: settings)
         defer { EpubFixture.dismantle(renderer.webView) }
         var expected = 0
         for path in book.spinePaths {

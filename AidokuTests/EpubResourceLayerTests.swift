@@ -251,11 +251,14 @@ struct EpubResourceLayerTests {
         #expect(values["scrollHeight"] == values["clientHeight"])
         #expect(values["clientHeight"] == "\(Int(EpubFixture.viewportSize.height))")
 
-        // Sideways overflow is the whole point, and it lands on a whole number of pages because
-        // the column gap is zero.
-        let scrollWidth = Int(values["scrollWidth"] ?? "") ?? 0
-        #expect(scrollWidth > Int(EpubFixture.viewportSize.width))
-        #expect(scrollWidth % Int(EpubFixture.viewportSize.width) == 0)
+        // Sideways overflow is the whole point, and it lands on a whole number of pages: pages sit
+        // at multiples of the pitch, and the last one carries no gap after it.
+        let width = Double(EpubFixture.viewportSize.width)
+        let scrollWidth = Double(Int(values["scrollWidth"] ?? "") ?? 0)
+        let pages = Int(((scrollWidth + Double(EpubPaginationSettings.default.columnGapPx))
+            / EpubFixture.pagePitch(width: width)).rounded())
+        #expect(scrollWidth > width)
+        #expect(scrollWidth == EpubFixture.scrollExtent(pages: pages, width: width))
     }
 
     /// The stopped-task guard. WebKit traps if a completion is delivered to a task it has already

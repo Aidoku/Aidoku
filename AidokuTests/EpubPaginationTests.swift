@@ -34,14 +34,15 @@ struct EpubPaginationTests {
         let scrollWidth = try await EpubFixture.number("document.documentElement.scrollWidth", in: renderer.webView)
         let viewportWidth = try await EpubFixture.number("window.innerWidth", in: renderer.webView)
 
+        let gap = Double(EpubPaginationSettings.default.columnGapPx)
         #expect(viewportWidth == Double(EpubFixture.viewportSize.width))
         #expect(count > 1)
-        #expect(count == Int((scrollWidth / viewportWidth).rounded()))
+        #expect(count == Int(((scrollWidth + gap) / (viewportWidth + gap)).rounded()))
         #expect(renderer.pageCount == count)
 
-        // The column gap is zero, so the document ends on a page boundary and no partial column
-        // trails the last page.
-        #expect(scrollWidth == viewportWidth * Double(count))
+        // The document ends on a page boundary and no partial column trails the last page: the
+        // pages span the gaps between them, and the last page carries no gap after it.
+        #expect(scrollWidth == EpubFixture.scrollExtent(pages: count, width: viewportWidth))
     }
 
     /// A count that does not depend on measuring anything: three blocks separated by two forced
@@ -131,7 +132,8 @@ struct EpubPaginationTests {
 
         // Compared as a whole so that a failure shows where in the document the offsets stopped
         // following the viewport rather than only that one of them did.
-        #expect(offsets == (0..<count).map { viewportWidth * Double($0) })
+        let pitch = EpubFixture.pagePitch(width: viewportWidth)
+        #expect(offsets == (0..<count).map { pitch * Double($0) })
         #expect(renderer.currentPage == count - 1)
 
         // The end of a document is 1, which is what `HistoryObject.scrollPosition` already means
@@ -158,7 +160,7 @@ struct EpubPaginationTests {
         await renderer.showPage(count + 10)
         #expect(renderer.currentPage == count - 1)
         var offset = EpubFixture.pageOffset(in: renderer.webView)
-        #expect(offset == viewportWidth * Double(count - 1))
+        #expect(offset == EpubFixture.pagePitch(width: viewportWidth) * Double(count - 1))
 
         await renderer.showPage(-5)
         #expect(renderer.currentPage == 0)
@@ -263,7 +265,7 @@ struct EpubPaginationTests {
         let offset = EpubFixture.pageOffset(in: renderer.webView)
         #expect(viewportWidth == Double(EpubFixture.viewportSize.width) / 2)
         #expect(renderer.currentPage > 0)
-        #expect(offset == viewportWidth * Double(renderer.currentPage))
+        #expect(offset == EpubFixture.pagePitch(width: viewportWidth) * Double(renderer.currentPage))
     }
 
     /// A rotation re-fragments the document, and rotating back returns it to what it was.
@@ -357,13 +359,17 @@ struct EpubPaginationTests {
     """
 
     /// Which page a paragraph now falls on, in the document's own coordinates.
+    ///
+    /// Divided by the page pitch rather than by the viewport: a page begins every `width + gap`, so
+    /// dividing by the width alone drifts by a page every `width / gap` pages.
     private static func pageOfParagraph(_ index: Int) -> String {
-        """
+        let gap = EpubPaginationSettings.default.columnGapPx
+        return """
         (function() {
             var paragraph = document.getElementsByTagName('p')[\(index)];
             if (!paragraph) { return -1; }
             var left = paragraph.getBoundingClientRect().left + window.pageXOffset;
-            return Math.floor((left + 1) / window.innerWidth);
+            return Math.floor((left + 1) / (window.innerWidth + \(gap)));
         })()
         """
     }
@@ -380,7 +386,7 @@ struct EpubPaginationTests {
             let width = try? await EpubFixture.number("window.innerWidth", in: renderer.webView)
             guard width == Double(size.width), renderer.pageCount != before else { return false }
             return EpubFixture.pageOffset(in: renderer.webView)
-                == Double(renderer.currentPage) * Double(size.width)
+                == EpubFixture.pagePitch(width: Double(size.width)) * Double(renderer.currentPage)
         }
         return renderer.pageCount
     }
@@ -399,7 +405,7 @@ struct EpubPaginationTests {
 
         #expect(viewportWidth == Double(width))
         #expect(bodyWidth == viewportWidth)
-        #expect(scrollWidth == viewportWidth * Double(renderer.pageCount))
+        #expect(scrollWidth == EpubFixture.scrollExtent(pages: renderer.pageCount, width: viewportWidth))
     }
 
     /// A count belongs to the size the document is laid out at, not to the size before it.
@@ -438,11 +444,15 @@ struct EpubPaginationTests {
 
         // Within a point rather than exactly: this width is fractional, which is the case an iPad
         // split view produces, and `window.innerWidth` is an integer.
+        let gap = Double(EpubPaginationSettings.default.columnGapPx)
         #expect(abs(viewportWidth - Double(EpubFixture.viewportSize.width * 2 / 3)) <= 1)
-        #expect(Double(renderer.pageCount) == (scrollWidth / viewportWidth).rounded())
+        #expect(Double(renderer.pageCount) == ((scrollWidth + gap) / (viewportWidth + gap)).rounded())
         // The document is on a whole page of the width it now has, rather than of the one the count
         // was measured against.
-        #expect(EpubFixture.pageOffset(in: renderer.webView) == viewportWidth * Double(renderer.currentPage))
+        #expect(
+            EpubFixture.pageOffset(in: renderer.webView)
+                == EpubFixture.pagePitch(width: viewportWidth) * Double(renderer.currentPage)
+        )
     }
 
     /// A document loaded while a resize is still settling ends up paginated as itself, from page 0.
@@ -520,8 +530,9 @@ struct EpubPaginationTests {
         let viewportWidth = try await EpubFixture.number("window.innerWidth", in: renderer.webView)
         let scrollWidth = try await EpubFixture.number("document.documentElement.scrollWidth", in: renderer.webView)
 
+        let gap = Double(EpubPaginationSettings.default.columnGapPx)
         #expect(viewportWidth == Double(EpubFixture.viewportSize.width) / 2)
-        #expect(Double(settled) == (scrollWidth / viewportWidth).rounded())
+        #expect(Double(settled) == ((scrollWidth + gap) / (viewportWidth + gap)).rounded())
 
         // Nothing left running moves it afterwards.
         try? await Task.sleep(nanoseconds: 700_000_000)
