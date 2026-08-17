@@ -39,12 +39,18 @@ struct ReaderEpubViewControllerTests {
         /// Every position handed over, in order, so a correct one followed by a stale one is
         /// visible as a sequence rather than as a final value.
         var reportedPages: [Int] = []
+        /// Every page list handed over, in order, since what a list says about itself is how the
+        /// host decides which reader shows it.
+        var reportedPageLists: [[Aidoku.Page]] = []
         func setCurrentPage(_ page: Int, position: Double?) {
             currentPage = page
             reportedPages.append(page)
         }
         func setCurrentPages(_ pages: ClosedRange<Int>) { currentPage = pages.lowerBound }
-        func setPages(_ pages: [Aidoku.Page]) { reportedTotals.append(pages.count) }
+        func setPages(_ pages: [Aidoku.Page]) {
+            reportedTotals.append(pages.count)
+            reportedPageLists.append(pages)
+        }
         func displayPage(_ page: Int) {}
         func setSliderOffset(_ offset: CGFloat) {}
         func setCompleted() {}
@@ -72,6 +78,79 @@ struct ReaderEpubViewControllerTests {
         reader.view.layoutIfNeeded()
 
         reader.setChapter(AidokuRunner.Chapter(key: bookURL.lastPathComponent), startPage: startPage)
+        return (reader, delegate)
+    }
+
+    /// A source that hands back a fixed page list per chapter key.
+    ///
+    /// Which archive a chapter lives in is known only to the source, so a reader that resolves its
+    /// own archive can only be driven through one. Every method of `Runner` but these three has a
+    /// default implementation.
+    private struct StubRunner: AidokuRunner.Runner {
+        let features = AidokuRunner.SourceFeatures()
+        let pages: [String: [AidokuRunner.Page]]
+
+        func getSearchMangaList(
+            query: String?,
+            page: Int,
+            filters: [AidokuRunner.FilterValue]
+        ) async throws -> AidokuRunner.MangaPageResult {
+            .init(entries: [], hasNextPage: false)
+        }
+
+        func getMangaUpdate(
+            manga: AidokuRunner.Manga,
+            needsDetails: Bool,
+            needsChapters: Bool
+        ) async throws -> AidokuRunner.Manga {
+            manga
+        }
+
+        func getPageList(
+            manga: AidokuRunner.Manga,
+            chapter: AidokuRunner.Chapter
+        ) async throws -> [AidokuRunner.Page] {
+            pages[chapter.key] ?? []
+        }
+    }
+
+    private func stubSource(pages: [String: [AidokuRunner.Page]]) -> AidokuRunner.Source {
+        .init(
+            key: "epub-test",
+            name: "ePub Test",
+            version: 1,
+            contentRating: .safe,
+            runner: StubRunner(pages: pages)
+        )
+    }
+
+    /// The pages a source reports for an ePub chapter, one per spine document, as
+    /// `LocalFileManager.readEpubPages` builds them.
+    private func epubPages(for book: (url: URL, spinePaths: [String])) -> [AidokuRunner.Page] {
+        book.spinePaths.map { .init(content: .zipFile(url: book.url, filePath: $0)) }
+    }
+
+    /// The reader opened the way the shipping host opens it: given a source and a chapter, and left
+    /// to find the archive that chapter lives in for itself.
+    private func openThroughSource(
+        chapter: AidokuRunner.Chapter,
+        source: AidokuRunner.Source,
+        startPage: Int = 1,
+        size: CGSize = ReaderEpubViewControllerTests.viewport
+    ) throws -> (reader: ReaderEpubViewController, delegate: RecordingDelegate) {
+        let manga = AidokuRunner.Manga(sourceKey: source.key, key: "folder", title: "")
+        let reader = ReaderEpubViewController(source: source, manga: manga)
+        let delegate = RecordingDelegate()
+        reader.delegate = delegate
+
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first
+        try #require(window).addSubview(reader.view)
+        reader.view.frame = CGRect(origin: .zero, size: size)
+        reader.view.layoutIfNeeded()
+
+        reader.setChapter(chapter, startPage: startPage)
         return (reader, delegate)
     }
 
@@ -130,6 +209,95 @@ struct ReaderEpubViewControllerTests {
             expected += try await renderer.load(spinePath: path)
         }
         #expect(model.bookTotal == expected)
+    }
+
+    /// A chapter change opens the archive the new chapter lives in.
+    ///
+    /// A manga folder holding two epubs is one manga with two chapters carrying two different
+    /// archives, since `scanLocalFiles` walks every allowed file in the folder under one id. The
+    /// archive used to be resolved once, by the host, from whichever pages it happened to hold when
+    /// the reader was built, so moving to the second book reopened the first at page 1 while the
+    /// host marked the second read and, with `Library.deleteDownloadAfterReading`, deleted it.
+    @Test func aChapterChangeOpensTheNewChaptersArchive() async throws {
+        let first = try EpubFixture.makeBook(documents: [1, 40])
+        defer { EpubFixture.remove(first.url) }
+        let second = try EpubFixture.makeBook(documents: [1, 6, 25, 30])
+        defer { EpubFixture.remove(second.url) }
+
+        let firstChapter = AidokuRunner.Chapter(key: "first.epub")
+        let secondChapter = AidokuRunner.Chapter(key: "second.epub")
+        let source = stubSource(pages: [
+            firstChapter.key: epubPages(for: first),
+            secondChapter.key: epubPages(for: second)
+        ])
+
+        let (reader, delegate) = try openThroughSource(chapter: firstChapter, source: source)
+        defer { dismantle(reader) }
+        try await waitUntilMeasured(reader)
+        #expect(reader.book?.bookURL == first.url)
+        let firstTotal = try #require(reader.book?.bookTotal)
+
+        reader.setChapter(secondChapter, startPage: 1)
+        // The book is taken down as the chapter changes, so what this waits for is a new one.
+        #expect(reader.book == nil, "the book being left was not taken down")
+        try await waitUntilMeasured(reader)
+
+        #expect(reader.book?.bookURL == second.url, "the reader reopened the book it was born with")
+        let secondTotal = try #require(reader.book?.bookTotal)
+        #expect(secondTotal != firstTotal, "the two books are the same length, so this proves nothing")
+        #expect(delegate.reportedTotals.last == secondTotal, "the host was left holding the first book's length")
+    }
+
+    /// A chapter that is not an ePub is reported as a chapter that failed to load.
+    ///
+    /// The same folder walk that produces two ePub chapters produces an epub beside a cbz. What the
+    /// reader must not do is keep showing the book it had open: the chapter has changed, and the
+    /// content on screen would belong to the previous one. Routing such a chapter to the reader it
+    /// does belong to needs the host to replace an ePub reader, which it does not yet do.
+    @Test func aChapterThatIsNotAnEpubIsReportedAsAFailure() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 6])
+        defer { EpubFixture.remove(book.url) }
+
+        let epubChapter = AidokuRunner.Chapter(key: "book.epub")
+        let imageChapter = AidokuRunner.Chapter(key: "images.cbz")
+        let imagePages: [AidokuRunner.Page] = (0..<3).map {
+            .init(content: .url(url: URL(string: "https://example.invalid/\($0).png")!))
+        }
+        let source = stubSource(pages: [
+            epubChapter.key: epubPages(for: book),
+            imageChapter.key: imagePages
+        ])
+
+        let (reader, delegate) = try openThroughSource(chapter: epubChapter, source: source)
+        defer { dismantle(reader) }
+        try await waitUntilMeasured(reader)
+
+        reader.setChapter(imageChapter, startPage: 1)
+        try await EpubFixture.waitUntil(timeout: 10) {
+            delegate.reportedPageLists.last?.isEmpty == true
+        }
+
+        #expect(delegate.reportedPageLists.last?.isEmpty == true, "the host was not told the chapter failed")
+        #expect(reader.book == nil, "an ePub was left open under a chapter that is not one")
+    }
+
+    /// The pages the reader reports say which archive they came out of.
+    ///
+    /// They are placeholders standing for the book's length, but the host routes a page list by its
+    /// content: a list that does not say it is an ePub takes a branch meant for something else, and
+    /// none of the host's own corrections can fire on it.
+    @Test func theReportedPagesCarryTheArchive() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 6, 25])
+        defer { EpubFixture.remove(book.url) }
+
+        let (reader, delegate) = try open(bookURL: book.url)
+        defer { dismantle(reader) }
+        try await waitUntilMeasured(reader)
+
+        let reported = try #require(delegate.reportedPageLists.last)
+        #expect(!reported.isEmpty)
+        #expect(reported.allSatisfy { $0.isEpubPage }, "the host cannot tell these came out of an ePub")
+        #expect(reported.allSatisfy { $0.zipURL == book.url.absoluteString })
     }
 
     /// A settings change puts the reader back at the same text, not at the same page number.

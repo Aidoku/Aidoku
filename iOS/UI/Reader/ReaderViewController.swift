@@ -682,15 +682,11 @@ extension ReaderViewController {
             case .epub:
                 // An ePub reads left-to-right regardless of the manga setting, as text does
                 toolbarView.sliderView.direction = .forward
-                // The archive is resolved from the pages already loaded rather than by the reader
-                // loading them again: every spine document lives inside the one epub, so the first
-                // page carrying an archive is enough to find it.
-                if
-                    !(reader is ReaderEpubViewController),
-                    let archive = pages.first(where: { $0.isEpubPage })?.zipURL,
-                    let url = URL(string: archive)
-                {
-                    pageController = ReaderEpubViewController(source: source, manga: manga, bookURL: url)
+                // Which archive to open is the reader's to resolve, from the chapter it is given:
+                // the archive belongs to the chapter rather than to the reader, and a manga folder
+                // may hold several epubs, one chapter each.
+                if !(reader is ReaderEpubViewController) {
+                    pageController = ReaderEpubViewController(source: source, manga: manga)
                 } else {
                     pageController = nil
                 }

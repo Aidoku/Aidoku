@@ -36,12 +36,23 @@ class ReaderEpubViewController: BaseObservingViewController {
     private let source: AidokuRunner.Source?
     private let manga: AidokuRunner.Manga
 
-    /// The `.epub` every spine document of this chapter lives inside.
+    /// The `.epub` every spine document of the open chapter lives inside.
     ///
-    /// Resolved by the host from the pages it has already loaded rather than loaded again here. A
-    /// reader that fetched the chapter's pages a second time only to read one archive URL out of
-    /// them would repeat the whole download or zip read for a value the host already holds.
-    private let bookURL: URL
+    /// Resolved from the chapter's own page list rather than fixed when the reader is built, and
+    /// held only until the chapter changes. A manga folder may hold several epubs, one chapter
+    /// each, so the archive belongs to the chapter rather than to the reader: a reader that kept
+    /// the archive it was born with reopened the first book on a chapter change while the host
+    /// marked the second read and, with `Library.deleteDownloadAfterReading`, deleted it.
+    ///
+    /// Cached so that reopening the same chapter, which a settings change does, costs no fetch.
+    private var bookURL: URL?
+
+    /// An archive supplied by the host instead of one resolved from the chapter's pages.
+    ///
+    /// For a host that has a file and no source to ask for a page list, which is the debug host
+    /// opening a book straight from the documents directory. Used for every chapter, which is
+    /// correct only because such a host never changes chapter. The shipping host leaves it nil.
+    private let providedBookURL: URL?
 
     private(set) var book: ReaderEpubViewModel?
     private var openTask: Task<Void, Never>?
@@ -95,10 +106,10 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// every count that lands.
     private var reportedTotal = 0
 
-    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, bookURL: URL) {
+    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, bookURL: URL? = nil) {
         self.source = source
         self.manga = manga
-        self.bookURL = bookURL
+        self.providedBookURL = bookURL
         super.init()
     }
 
@@ -178,6 +189,18 @@ class ReaderEpubViewController: BaseObservingViewController {
         // The page numbers of the old layout are the best available guess at a place in the
         // new one; `open` holds it as a pending page until the new counts can place it.
         let page = settingsReloadPage ?? (book?.bookPage).map { $0 + 1 } ?? 1
+        tearDownBook()
+        openTask = Task { [weak self] in
+            await self?.open(startPage: page)
+        }
+    }
+
+    /// Takes the open book out of the reader, leaving it ready for `open` to build another.
+    ///
+    /// The web view is a subview and the counts it produced are in the toolbar, so a book that is
+    /// being replaced has to be removed rather than merely dropped: `install` adds a web view
+    /// without taking the previous one out, and a total is only rewritten when it changes.
+    private func tearDownBook() {
         openTask?.cancel()
         moveTask?.cancel()
         moveTask = nil
@@ -190,9 +213,6 @@ class ReaderEpubViewController: BaseObservingViewController {
         book?.renderer?.webView.removeFromSuperview()
         webViewInsets = nil
         book = nil
-        openTask = Task { [weak self] in
-            await self?.open(startPage: page)
-        }
     }
 
     override func viewDidLoad() {
@@ -324,8 +344,47 @@ class ReaderEpubViewController: BaseObservingViewController {
         book?.renderer?.webView.bounds.size ?? .zero
     }
 
+    /// The archive the open chapter lives in, loaded once per chapter.
+    ///
+    /// The page list is asked for the way every other reader asks for it, since the archive is
+    /// known only to the source: the ePub reader differs from its siblings in showing a whole book
+    /// rather than those pages, not in where it learns what the chapter is.
+    ///
+    /// A chapter whose pages carry no archive is one this reader cannot show, which a folder
+    /// holding an epub beside a cbz produces. It is reported as a chapter that failed to load
+    /// rather than handed back for the host to route elsewhere: the host only replaces a text
+    /// reader on that path, so a page list offered from here would be read and dropped.
+    private func resolveBookURL() async -> URL? {
+        if let bookURL {
+            return bookURL
+        }
+        if let providedBookURL {
+            bookURL = providedBookURL
+            return providedBookURL
+        }
+        guard let chapter else { return nil }
+        let pages = await ReaderPagedViewModel.getPages(source: source, manga: manga, chapter: chapter)
+        guard
+            let archive = pages.first(where: { $0.isEpubPage })?.zipURL,
+            let url = URL(string: archive)
+        else {
+            return nil
+        }
+        bookURL = url
+        return url
+    }
+
     /// Opens the book and shows the page the reader left off at.
     private func open(startPage: Int) async {
+        guard let bookURL = await resolveBookURL() else {
+            LogManager.logger.error(
+                "ReaderEpubViewController: no epub to open for \(self.chapter?.key ?? "no chapter")"
+            )
+            delegate?.setPages([])
+            return
+        }
+        guard !Task.isCancelled else { return }
+
         let settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
         appliedColumnCount = settings.columnCount
         appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
@@ -455,12 +514,16 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// The paged text reader does the same once it has paginated, for the same reason: a reflowable
     /// document's page count is not known until it has been laid out, so the reader supplies it
     /// rather than the source.
+    /// They carry the archive they came out of, so `isEpubPage` is true of what the reader reports.
+    /// The host routes a page list by its content, and a page list that does not say it is an ePub
+    /// takes a branch meant for something else.
     private func placeholderPages(count: Int) -> [Page] {
         guard count > 0 else { return [] }
         let sourceId = source?.key ?? manga.sourceKey
         let chapterId = chapter?.key ?? ""
+        let archive = bookURL?.absoluteString
         return (0..<count).map { index in
-            Page(sourceId: sourceId, chapterId: chapterId, index: index)
+            Page(sourceId: sourceId, chapterId: chapterId, index: index, zipURL: archive)
         }
     }
 
@@ -577,9 +640,12 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         guard self.chapter?.id != chapter.id else { return }
         self.chapter = chapter
+        // The archive belonged to the chapter being left, so it is resolved again for this one.
+        bookURL = nil
         settingsReloadPage = nil
         settingsReloadPosition = nil
-        openTask?.cancel()
+        // The book being left goes with the chapter it belonged to.
+        tearDownBook()
         openTask = Task { [weak self] in
             await self?.open(startPage: startPage)
         }
