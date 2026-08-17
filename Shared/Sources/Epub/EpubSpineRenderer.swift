@@ -217,8 +217,9 @@ final class EpubSpineRenderer: NSObject {
     /// the neighbouring document. Set above the overshoot a normal flick's bounce reaches on an
     /// iPad, so merely arriving at the bottom with momentum does not cross into the next chapter;
     /// a deliberate pull travels well past this.
-    // fixed threshold, tuned on an iPad sim; make it velocity-aware if flicks still
-    // cross documents accidentally on device.
+    ///
+    /// A fixed threshold, tuned on an iPad simulator. Make it velocity-aware if flicks still cross
+    /// documents accidentally on a device.
     private static let overscrollThreshold: Double = 120
 
     private var overscrollTriggered = false

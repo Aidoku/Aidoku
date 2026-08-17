@@ -719,6 +719,9 @@ extension ReaderViewController {
             pageController.delegate = self
             reader = pageController
             add(child: pageController, below: descriptionButtonController.view)
+            // The bar toggle tap is built differently for a reader hosting a web view, so it is
+            // rebuilt whenever which reader is hosted changes rather than only on a chapter change.
+            configureBarToggleTapGestures()
         }
         reader?.readingMode = readingMode
         configureDictionaryOverlayInteractionMode()
@@ -1002,9 +1005,15 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
-        tap.delegate = self
-        // leave the epub web view's own touch handling (text selection, links) intact
-        tap.cancelsTouchesInView = false
+        // Only the epub reader puts a web view under the tap zones, and only it needs the two
+        // concessions that go with one: a delegate, so the tap may recognise alongside the web
+        // view's own recognisers, and no cancellation, so the web view keeps text selection and
+        // links. Every other reader keeps the recogniser exactly as it is without an epub.
+        let isEpub = reader is ReaderEpubViewController
+        if isEpub {
+            tap.delegate = self
+            tap.cancelsTouchesInView = false
+        }
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
 
@@ -1014,7 +1023,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
                 action: nil
             )
             doubleTap.numberOfTapsRequired = 2
-            doubleTap.delegate = self
+            if isEpub {
+                doubleTap.delegate = self
+            }
             view.addGestureRecognizer(doubleTap)
             tap.require(toFail: doubleTap)
             barToggleSecondaryTapGesture = doubleTap

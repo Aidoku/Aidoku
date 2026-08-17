@@ -37,11 +37,17 @@ struct EpubPaginationSettings {
         UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
     }
 
-    /// Held at zero so that the scroll offset of a page is exactly `index * viewportWidth`.
+    /// The space between two columns, which is what separates the two pages an iPad shows in
+    /// landscape. A gutter alone cannot do that: it pads the body, so it sits outside both columns
+    /// rather than between them.
     ///
-    /// Visual separation comes from `pageGutterPx`, which is padding inside the body. A non-zero
-    /// gap makes every page count and every offset gap-aware, and the error accumulates across a
-    /// long document, for no benefit the gutter does not already provide.
+    /// A page therefore begins every `viewportWidth + columnGapPx` rather than every
+    /// `viewportWidth`, and `n` pages span `n * (viewportWidth + gap) - gap`, the last page
+    /// carrying no gap after it. Every count and every offset here is written that way; nothing
+    /// may divide a scroll offset by the viewport width alone.
+    ///
+    /// This was held at zero while a page was always one column, to keep that arithmetic trivial.
+    /// Two columns is what changed the answer.
     var columnGapPx: Int = 10
 
     var pageGutterPx: Int = 20

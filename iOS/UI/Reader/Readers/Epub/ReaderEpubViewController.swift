@@ -139,8 +139,9 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// second capture that start, which put a reader who tapped a stepper twice back on page one.
     /// Only a navigation the reader performs makes the captured place stale, so only `navigate`
     /// and a chapter change clear it.
-    // ponytail: restores by page number of the old layout, so a font change lands within a
-    // page or so of the exact text; anchoring by book fraction would need the new total first.
+    ///
+    /// Restores by the page number of the old layout, so a font change lands within a page or so of
+    /// the exact text. Anchoring by book fraction instead would need the new total first.
     private var settingsReloadPage: Int?
 
     private func scheduleSettingsReload() {
