@@ -248,13 +248,13 @@ struct ReaderEpubViewControllerTests {
         #expect(delegate.reportedTotals.last == secondTotal, "the host was left holding the first book's length")
     }
 
-    /// A chapter that is not an ePub is reported as a chapter that failed to load.
+    /// A chapter that is not an ePub is handed to the host rather than opened.
     ///
-    /// The same folder walk that produces two ePub chapters produces an epub beside a cbz. What the
-    /// reader must not do is keep showing the book it had open: the chapter has changed, and the
-    /// content on screen would belong to the previous one. Routing such a chapter to the reader it
-    /// does belong to needs the host to replace an ePub reader, which it does not yet do.
-    @Test func aChapterThatIsNotAnEpubIsReportedAsAFailure() async throws {
+    /// The same folder walk that produces two ePub chapters produces an epub beside a cbz. The host
+    /// decides which reader shows a chapter by reading its page list, so handing that list over is
+    /// how the ePub reader is replaced by the one the chapter belongs to. Reporting an empty list
+    /// instead put the host's failure alert on top of a chapter that reads perfectly well.
+    @Test func aChapterThatIsNotAnEpubIsHandedToTheHost() async throws {
         let book = try EpubFixture.makeBook(documents: [1, 6])
         defer { EpubFixture.remove(book.url) }
 
@@ -274,10 +274,12 @@ struct ReaderEpubViewControllerTests {
 
         reader.setChapter(imageChapter, startPage: 1)
         try await EpubFixture.waitUntil(timeout: 10) {
-            delegate.reportedPageLists.last?.isEmpty == true
+            delegate.reportedPageLists.last?.count == imagePages.count
         }
 
-        #expect(delegate.reportedPageLists.last?.isEmpty == true, "the host was not told the chapter failed")
+        let handed = try #require(delegate.reportedPageLists.last)
+        #expect(handed.count == imagePages.count, "the host was told the chapter failed to load")
+        #expect(!handed.contains(where: { $0.isEpubPage }))
         #expect(reader.book == nil, "an ePub was left open under a chapter that is not one")
     }
 

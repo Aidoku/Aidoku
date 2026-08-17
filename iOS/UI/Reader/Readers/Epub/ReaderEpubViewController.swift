@@ -350,38 +350,48 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// known only to the source: the ePub reader differs from its siblings in showing a whole book
     /// rather than those pages, not in where it learns what the chapter is.
     ///
-    /// A chapter whose pages carry no archive is one this reader cannot show, which a folder
-    /// holding an epub beside a cbz produces. It is reported as a chapter that failed to load
-    /// rather than handed back for the host to route elsewhere: the host only replaces a text
-    /// reader on that path, so a page list offered from here would be read and dropped.
-    private func resolveBookURL() async -> URL? {
+    /// What the chapter being opened turned out to hold.
+    private enum ChapterContent {
+        /// The `.epub` every spine document of the chapter lives inside.
+        case epub(URL)
+        /// A chapter that is not an ePub at all, carrying its pages for the host to route.
+        case pages([Page])
+    }
+
+    private func chapterContent() async -> ChapterContent {
         if let bookURL {
-            return bookURL
+            return .epub(bookURL)
         }
         if let providedBookURL {
             bookURL = providedBookURL
-            return providedBookURL
+            return .epub(providedBookURL)
         }
-        guard let chapter else { return nil }
+        guard let chapter else { return .pages([]) }
         let pages = await ReaderPagedViewModel.getPages(source: source, manga: manga, chapter: chapter)
         guard
             let archive = pages.first(where: { $0.isEpubPage })?.zipURL,
             let url = URL(string: archive)
         else {
-            return nil
+            return .pages(pages)
         }
         bookURL = url
-        return url
+        return .epub(url)
     }
 
     /// Opens the book and shows the page the reader left off at.
     private func open(startPage: Int) async {
-        guard let bookURL = await resolveBookURL() else {
-            LogManager.logger.error(
-                "ReaderEpubViewController: no epub to open for \(self.chapter?.key ?? "no chapter")"
-            )
-            delegate?.setPages([])
-            return
+        let bookURL: URL
+        switch await chapterContent() {
+            case let .epub(url):
+                bookURL = url
+            case let .pages(pages):
+                // A chapter whose content is not an ePub is handed over as it stands rather than
+                // reported as a failure: the host reads a page list to decide which reader shows a
+                // chapter, so this is how the ePub reader is replaced by the one the new chapter
+                // belongs to. An empty list is a chapter that could not be read at all, which the
+                // host shows its failure alert for.
+                delegate?.setPages(pages)
+                return
         }
         guard !Task.isCancelled else { return }
 

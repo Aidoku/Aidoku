@@ -955,8 +955,12 @@ extension ReaderViewController: ReaderHoldingDelegate {
             // Don't switch away - this is our internal page count update
             // Just update the toolbar, don't reload
         } else {
-            // otherwise, make sure we're not in the text reader
-            if reader is ReaderTextViewController || reader is ReaderPagedTextViewController {
+            // otherwise, make sure we're not in the text or epub reader.
+            // an epub reader reaches this by handing over a chapter that turned out not to be an
+            // epub, which a folder holding an epub beside a cbz produces.
+            if reader is ReaderTextViewController
+                || reader is ReaderPagedTextViewController
+                || reader is ReaderEpubViewController {
                 switch readingMode {
                     case .ltr, .rtl, .vertical:
                         setReader(.paged)
