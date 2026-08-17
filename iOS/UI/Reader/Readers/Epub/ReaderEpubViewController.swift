@@ -140,13 +140,29 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// Only a navigation the reader performs makes the captured place stale, so only `navigate`
     /// and a chapter change clear it.
     ///
-    /// Restores by the page number of the old layout, so a font change lands within a page or so of
-    /// the exact text. Anchoring by book fraction instead would need the new total first.
+    /// The page number is the immediate landing, since it is the only anchor available before the
+    /// new layout has been counted. It is not where the reader belongs: a page number means a
+    /// different place in a layout of a different length, and the error grows with depth. Changing
+    /// 18pt to 20pt took a 456 page book to 520, which puts page 27 about four pages of text early
+    /// and page 400 about fifty-six.
     private var settingsReloadPage: Int?
+
+    /// Where the reader belongs, as a fraction of the whole book, refined onto a page once the new
+    /// layout has been measured.
+    ///
+    /// The same anchor a rotation uses, and for the same reason: re-fragmenting moves text between
+    /// pages, so a fraction survives it and an index does not. Only captured from a book that has
+    /// been measured, since an unmeasured total is a lower bound and would place the fraction too
+    /// far in; the page number carries those alone.
+    private var settingsReloadPosition: Double?
 
     private func scheduleSettingsReload() {
         if settingsReloadPage == nil {
             settingsReloadPage = (book?.bookPage).map { $0 + 1 }
+            settingsReloadPosition = book.flatMap { book in
+                guard book.isMeasured, book.bookTotal > 1, let page = book.bookPage else { return nil }
+                return Double(page) / Double(book.bookTotal - 1)
+            }
         }
         settingsReloadTask?.cancel()
         settingsReloadTask = Task { [weak self] in
@@ -214,6 +230,15 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// the book. The count is baked into the renderer's injection script, so a re-measure alone
     /// cannot change it.
     private var appliedColumnCount = 1
+
+    /// The horizontal margin the view supplies because the stylesheet does not.
+    ///
+    /// readium-css scopes its page gutter to a paged document — `:root:not([style*="readium-scroll-on"])
+    /// body { padding: 0 var(--RS__pageGutter) }` — so a scrolling document has no horizontal padding
+    /// at all and its text runs to both edges of the screen. Answered by insetting the view, not by
+    /// adding a rule to the injection: a scrolling document's length is measured in viewport heights,
+    /// and the view's own size is the one input the renderer already re-measures against.
+    private var appliedHorizontalGutter: CGFloat = 0
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
@@ -287,6 +312,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         var insets = window.safeAreaInsets
         insets.top += Self.chromeBuffer
         insets.bottom += Self.chromeBuffer
+        insets.left += appliedHorizontalGutter
+        insets.right += appliedHorizontalGutter
         guard webViewInsets.constants != insets else { return }
         webViewInsets.apply(insets)
         view.layoutIfNeeded()
@@ -301,6 +328,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     private func open(startPage: Int) async {
         let settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
         appliedColumnCount = settings.columnCount
+        appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
         let book: ReaderEpubViewModel
         do {
             book = try ReaderEpubViewModel(bookURL: bookURL, settings: settings)
@@ -391,6 +419,20 @@ class ReaderEpubViewController: BaseObservingViewController {
             navigate { await $0.showPendingBookPage() }
         }
 
+        // A rebuild's page-number landing is refined onto the place the reader actually left once the
+        // new layout is finished being counted, which is the first moment the fraction can be turned
+        // back into a page. Cleared first, so the navigation below does not see it as still pending,
+        // and only while the reader has not moved themselves: `navigate` drops it precisely then.
+        if book.isMeasured, let position = settingsReloadPosition, book.bookTotal > 1 {
+            settingsReloadPosition = nil
+            settingsReloadPage = nil
+            let target = Int((position * Double(book.bookTotal - 1)).rounded())
+            if target != book.bookPage {
+                navigate { await $0.showBookPage(target) }
+                return
+            }
+        }
+
         // A page the index cannot place yet is one in a document whose predecessors are still being
         // counted. Reporting a position then would put the reader somewhere arbitrary in the book.
         guard let page = book.bookPage else { return }
@@ -431,6 +473,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     private func navigate(_ work: @escaping (ReaderEpubViewModel) async -> Void) {
         // The reader has taken over from wherever a rebuild was restoring them to.
         settingsReloadPage = nil
+        settingsReloadPosition = nil
         guard book != nil else { return }
         guard moveTask == nil else {
             pendingMove = work
@@ -528,6 +571,7 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
         guard self.chapter?.id != chapter.id else { return }
         self.chapter = chapter
         settingsReloadPage = nil
+        settingsReloadPosition = nil
         openTask?.cancel()
         openTask = Task { [weak self] in
             await self?.open(startPage: startPage)
