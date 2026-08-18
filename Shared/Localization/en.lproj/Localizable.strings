@@ -289,6 +289,8 @@
 "NOT_LOGGED_IN" = "Not logged in";
 "NO_SERVER_CONFIGURED" = "No server configured";
 "INVALID_SERVER_URL" = "Invalid server URL";
+"EPUB_DOWNLOAD_FAILED" = "Unable to download this book";
+"EPUB_DOWNLOAD_FORBIDDEN" = "This account is not allowed to download books from this server";
 
 // Kavita
 "KAVITA" = "Kavita";

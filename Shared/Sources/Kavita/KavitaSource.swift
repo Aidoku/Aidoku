@@ -255,9 +255,11 @@ actor KavitaSourceRunner: Runner {
         let file: URL
         do {
             file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
-        } catch {
-            // the token may have expired; retry once after refreshing it
-            guard try await helper.refreshToken() else { throw error }
+        } catch SourceError.message("NOT_LOGGED_IN") {
+            // an expired token is the one failure a second attempt can resolve. an account without
+            // the download role answers 403 however often it is asked, and refreshing its token
+            // only spends another request to be told the same thing.
+            guard try await helper.refreshToken() else { throw SourceError.message("NOT_LOGGED_IN") }
             file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
         }
         return LocalFileManager.shared.readEpubPages(from: file)
