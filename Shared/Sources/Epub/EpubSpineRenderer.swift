@@ -235,6 +235,33 @@ final class EpubSpineRenderer: NSObject {
     private var overscrollTriggered = false
     #endif
 
+    /// The absolute source URL of the image element at a point in the web view's coordinate
+    /// space, or nil when the point hits no image. Walks up from the element under the point, so
+    /// a tap on an element nested inside a linked or captioned image still finds it. Covers
+    /// `<img>` and svg `<image xlink:href>`; an inline svg with no source has no resource to show.
+    func imageSource(at point: CGPoint) async -> String? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            while (el) {
+                var tag = (el.tagName || '').toLowerCase();
+                if (tag === 'img') {
+                    return el.currentSrc || el.src || '';
+                }
+                if (tag === 'image') {
+                    var href = el.getAttribute('xlink:href') || el.getAttribute('href');
+                    return href ? new URL(href, document.baseURI).href : '';
+                }
+                el = el.parentElement;
+            }
+            return '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let source = result as? String, !source.isEmpty else { return nil }
+        return source
+    }
+
     /// Called when the reader scrolls a scroll-mode document, after `progression` has moved.
     var onScroll: (() -> Void)?
 

@@ -224,6 +224,19 @@ final class ReaderEpubViewModel {
         }
     }
 
+    /// The bytes of the image at a point in the web view's coordinate space, or nil when the
+    /// point hits no image the book carries. Resolved through the provider rather than the web
+    /// view, so the preview shows the resource itself at full resolution.
+    func imageData(at point: CGPoint) async -> Data? {
+        guard
+            let source = await renderer?.imageSource(at: point),
+            let url = URL(string: source),
+            // Only the book's own scheme: a data: or remote URL has no resource to read.
+            url.scheme == EpubSchemeHandler.scheme
+        else { return nil }
+        return try? await provider.data(at: EpubSchemeHandler.resourcePath(from: url))
+    }
+
     /// Shows the page that was held, once the index can place it.
     func showPendingBookPage() async {
         guard let page = pendingBookPage else { return }

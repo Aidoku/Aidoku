@@ -265,6 +265,22 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
+    /// Shows a fullscreen preview when a tap landed on an image of the book, and reports whether
+    /// it did, so the host runs its tap zones only for taps that hit no image.
+    ///
+    /// `point` is in this controller's view coordinates.
+    func presentImagePreview(forTapAt point: CGPoint) async -> Bool {
+        guard let book, let webView = book.renderer?.webView else { return false }
+        let clientPoint = view.convert(point, to: webView)
+        guard
+            webView.bounds.contains(clientPoint),
+            let data = await book.imageData(at: clientPoint),
+            let image = UIImage(data: data)
+        else { return false }
+        present(EpubImagePreviewController(image: image), animated: true)
+        return true
+    }
+
     /// Tears the book down and opens it again at the same place, picking up the current settings.
     private func rebuildBook() {
         guard book != nil else { return }
@@ -913,5 +929,83 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     private func bookPage(for value: CGFloat) -> Int {
         let last = max(reportedTotal - 1, 0)
         return min(max(Int((value * CGFloat(last)).rounded()), 0), last)
+    }
+}
+
+// MARK: - Image Preview
+
+/// Fullscreen viewer for one image of the book: pinch and double-tap zoom via
+/// `ZoomableScrollView`, a single tap or the close button dismisses.
+private final class EpubImagePreviewController: UIViewController {
+    private let image: UIImage
+    private let scrollView = ZoomableScrollView()
+    private let imageView: UIImageView
+
+    init(image: UIImage) {
+        self.image = image
+        self.imageView = UIImageView(image: image)
+        super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .fullScreen
+        modalTransitionStyle = .crossDissolve
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+
+        scrollView.frame = view.bounds
+        scrollView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(scrollView)
+        // `zoomView` only wires the zoom target; adding it to the hierarchy is the caller's job.
+        scrollView.addSubview(imageView)
+        scrollView.zoomView = imageView
+
+        let closeButton = UIButton(type: .close)
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
+        view.addSubview(closeButton)
+        NSLayoutConstraint.activate([
+            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            closeButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
+        ])
+
+        // The same trick the reader's own gestures use: the dismissing tap waits for a double tap
+        // to fail, so the first tap of `ZoomableScrollView`'s double-tap zoom cannot dismiss.
+        let doubleTap = UITapGestureRecognizer(target: self, action: nil)
+        doubleTap.numberOfTapsRequired = 2
+        view.addGestureRecognizer(doubleTap)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(didTap))
+        tap.require(toFail: doubleTap)
+        view.addGestureRecognizer(tap)
+    }
+
+    /// The size the image was last fitted to, so only a genuine size change (a rotation) re-fits
+    /// and resets the zoom — not a layout pass that fires while the reader is pinching.
+    private var fittedSize: CGSize = .zero
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        let bounds = scrollView.bounds.size
+        guard bounds != fittedSize else { return }
+        fittedSize = bounds
+        // Reset to an aspect fit of the current bounds; a rotation re-fits rather than keeping a
+        // zoom that belonged to the old size.
+        scrollView.zoomScale = 1
+        guard image.size.width > 0, image.size.height > 0, bounds.width > 0, bounds.height > 0 else { return }
+        let scale = min(bounds.width / image.size.width, bounds.height / image.size.height, 1)
+        imageView.frame = CGRect(
+            origin: .zero,
+            size: CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        )
+        scrollView.contentSize = imageView.frame.size
+        scrollView.centerView()
+    }
+
+    @objc private func didTap() {
+        dismiss(animated: true)
     }
 }

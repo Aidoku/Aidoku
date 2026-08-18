@@ -1233,6 +1233,24 @@ extension ReaderViewController {
             }
         }
 
+        // A tap on an image inside an ePub shows a fullscreen preview of it, the way the readium
+        // toolkit's image previews behave. Asked before the zones so a page cannot also turn out
+        // from under the preview; taps that hit no image fall through unchanged.
+        if let epub = reader as? ReaderEpubViewController {
+            let location = view.convert(point, to: epub.view)
+            Task { [weak self] in
+                guard let self else { return }
+                if await epub.presentImagePreview(forTapAt: location) { return }
+                self.handleZoneTap(at: point)
+            }
+            return
+        }
+
+        handleZoneTap(at: point)
+    }
+
+    /// The tap-zone half of `handleTap`: turn a page or toggle the bars.
+    private func handleZoneTap(at point: CGPoint) {
         guard let reader, let tapZone else {
             toggleBarVisibility()
             return
