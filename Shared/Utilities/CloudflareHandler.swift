@@ -154,9 +154,27 @@ actor CloudflareHandler: NSObject {
     private func addWebView(for request: URLRequest) async -> Bool {
         guard let parentView else { return false }
 
-        webView = WKWebView(frame: .zero)
+        // Keep the rendering mode CONSISTENT with the user agent this view is about to claim.
+        //
+        // On iPad the default (.recommended) renders desktop-class, so navigator.platform reports
+        // "MacIntel" while customUserAgent below still says "iPad ... Mobile/15E148". No real
+        // browser emits that pair: iPad Safari is either a Macintosh UA with MacIntel (its default)
+        // or an iPad UA with iPad ("Request Mobile Website"). Turnstile fingerprints exactly this
+        // kind of contradiction, so iPad always drew the interactive challenge and solving it never
+        // produced a usable clearance.
+        //
+        // Scoped to a mobile user agent rather than forced unconditionally: Aidoku also builds for
+        // macOS and visionOS, where the claimed UA is a desktop one and .recommended is already the
+        // consistent choice. Forcing .mobile there would introduce the mirror image of this bug.
+        // iPhone already reports platform "iPhone", so this is a no-op there too.
+        let userAgent = request.value(forHTTPHeaderField: "User-Agent")
+        let config = WKWebViewConfiguration()
+        if let userAgent, userAgent.contains("iPhone") || userAgent.contains("iPad") {
+            config.defaultWebpagePreferences.preferredContentMode = .mobile
+        }
+        webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = await proxy(for: request)
-        webView.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
+        webView.customUserAgent = userAgent
         webView.translatesAutoresizingMaskIntoConstraints = false
         parentView.addSubview(webView)
 
