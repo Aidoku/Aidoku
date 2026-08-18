@@ -179,7 +179,7 @@ final class ReaderEpubViewModel {
     /// Forward a page, continuing into the next spine document at its end.
     ///
     /// `animated` slides within the loaded document; a turn that crosses into another spine
-    /// document loads it and appears, as the paged text reader's chapter transitions do.
+    /// document slides too, via a snapshot of the outgoing page (see `move`).
     func moveForward(animated: Bool = false) async {
         // A reader who turns a page has taken over from whatever they were being resumed to, and
         // arriving at it later would move them off the page they chose.
@@ -189,7 +189,7 @@ final class ReaderEpubViewModel {
             await renderer.showPage(renderer.currentPage + 1, animated: animated)
             onChange?()
         } else {
-            await move(toDocument: currentDocument + 1, landingOnLastPage: false)
+            await move(toDocument: currentDocument + 1, landingOnLastPage: false, animated: animated)
         }
     }
 
@@ -201,7 +201,7 @@ final class ReaderEpubViewModel {
             await renderer.showPage(renderer.currentPage - 1, animated: animated)
             onChange?()
         } else {
-            await move(toDocument: currentDocument - 1, landingOnLastPage: true)
+            await move(toDocument: currentDocument - 1, landingOnLastPage: true, animated: animated)
         }
     }
 
@@ -331,9 +331,23 @@ final class ReaderEpubViewModel {
         toDocument document: Int,
         landingOnLastPage: Bool,
         page: Int = 0,
-        fragment: String? = nil
+        fragment: String? = nil,
+        animated: Bool = false
     ) async {
         guard spinePaths.indices.contains(document) else { return }
+        let forward = document > currentDocument
+
+        // A slide across a spine boundary cannot come from the web view: the turn replaces the
+        // document inside it. A snapshot of the outgoing page stands in for it instead — covering
+        // the load exactly as the alpha-hide below does — and once the incoming document is
+        // showing its landing page, the two slide together like an in-document turn.
+        var snapshot: UIView?
+        if animated, let webView = renderer?.webView, webView.window != nil,
+           let cover = webView.snapshotView(afterScreenUpdates: false) {
+            cover.frame = webView.frame
+            webView.superview?.addSubview(cover)
+            snapshot = cover
+        }
 
         // Provider reads serialise onto one file handle, so a load that crosses into another spine
         // document contends with the pass. A reader waiting on a background count is a visible
@@ -352,7 +366,8 @@ final class ReaderEpubViewModel {
         // A fragment hides the document for the same reason a page other than the first does: the
         // page it sits on is only known once the document is laid out, so the reader would
         // otherwise see the document open at its head and then run to the place they asked for.
-        let hides = target != 0 || fragment != nil
+        // The snapshot already covers the web view, so the alpha-hide is only needed without one.
+        let hides = (target != 0 || fragment != nil) && snapshot == nil
         if hides {
             renderer?.webView.alpha = 0
         }
@@ -363,6 +378,7 @@ final class ReaderEpubViewModel {
         }
 
         currentDocument = document
+        var loaded = false
         do {
             let count = try await loadCurrentDocument()
             var landing = landingOnLastPage ? count - 1 : page
@@ -370,8 +386,31 @@ final class ReaderEpubViewModel {
                 landing = resolved
             }
             await renderer?.showPage(landing)
+            loaded = true
         } catch {
             LogManager.logger.error("ReaderEpubViewModel: could not load \(spinePaths[document]): \(error)")
+        }
+
+        if let snapshot {
+            if loaded, let webView = renderer?.webView {
+                // The new document slides in behind the outgoing snapshot, in the direction the
+                // turn was going, matching the smooth in-document turns.
+                let width = webView.bounds.width
+                let direction: CGFloat = forward ? 1 : -1
+                webView.transform = CGAffineTransform(translationX: direction * width, y: 0)
+                await withCheckedContinuation { continuation in
+                    UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut]) {
+                        webView.transform = .identity
+                        snapshot.transform = CGAffineTransform(translationX: -direction * width, y: 0)
+                    } completion: { _ in
+                        snapshot.removeFromSuperview()
+                        continuation.resume()
+                    }
+                }
+            } else {
+                // A document that could not be loaded has nothing to slide to.
+                snapshot.removeFromSuperview()
+            }
         }
         onChange?()
     }
