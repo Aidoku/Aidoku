@@ -191,6 +191,8 @@
 "UNIMPLEMENTED" = "Unimplemented";
 "NETWORK_ERROR" = "Network Error";
 "DECODING_ERROR" = "Decoding Error";
+"HTML_ERROR" = "HTML Error";
+"JSON_ERROR" = "JSON Error";
 "UNKNOWN_ERROR" = "Unknown Error";
 "SOURCE_CRASHED" = "Source Crashed";
 "ADD_SOURCE" = "Add Source";

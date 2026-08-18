@@ -20,6 +20,14 @@ extension Error {
                     NSLocalizedString("NETWORK_ERROR")
                 case .message(let string):
                     NSLocalizedString(string)
+                case .htmlError:
+                    NSLocalizedString("HTML_ERROR")
+                case .jsonParseError:
+                    NSLocalizedString("JSON_ERROR")
+                case .deserializeError:
+                    NSLocalizedString("DECODING_ERROR")
+                default:
+                    NSLocalizedString("UNKNOWN_ERROR")
             }
         } else if let error = self as? Wasm3Error {
             switch error {
