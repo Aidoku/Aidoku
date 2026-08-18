@@ -25,22 +25,7 @@ struct ListingsHeaderView: View {
                         .foregroundStyle(.secondary)
 
                     Group {
-                        let text = if let error = error as? SourceError {
-                            switch error {
-                                case .missingResult:
-                                    NSLocalizedString("NO_RESULT")
-                                case .unimplemented:
-                                    NSLocalizedString("UNIMPLEMENTED")
-                                case .networkError:
-                                    NSLocalizedString("NETWORK_ERROR")
-                                case .message(let string):
-                                    NSLocalizedString(string)
-                            }
-                        } else if error is DecodingError {
-                            NSLocalizedString("DECODING_ERROR")
-                        } else {
-                            NSLocalizedString("UNKNOWN_ERROR")
-                        }
+                        let text = error.aidokuDescription()
                         Text(text)
                     }
                     .foregroundStyle(.secondary)

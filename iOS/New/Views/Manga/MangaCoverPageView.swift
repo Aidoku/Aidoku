@@ -39,9 +39,11 @@ struct MangaCoverPageView: View {
                 TabView {
                     view(coverImage: manga.cover ?? "")
                     if let error {
-                        ErrorView(error: error) {
-                            await loadCovers()
-                        }
+                        ErrorView(
+                            error: error,
+                            restart: { try await source?.restart() },
+                            retry: loadCovers
+                        )
                     } else {
                         ForEach(alternateCovers, id: \.self) { cover in
                             if cover != manga.cover {

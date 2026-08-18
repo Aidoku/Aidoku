@@ -51,10 +51,14 @@ struct PageDescriptionView: View {
         PlatformNavigationStack {
             Group {
                 if let error {
-                    ErrorView(error: error) {
-                        self.error = nil
-                        await loadDescription()
-                    }
+                    ErrorView(
+                        error: error,
+                        restart: { try await source?.restart() },
+                        retry: {
+                            self.error = nil
+                            await loadDescription()
+                        }
+                    )
                 } else {
                     ScrollView(.vertical) {
                         if let description {

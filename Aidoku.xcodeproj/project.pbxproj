@@ -463,6 +463,10 @@
 		FB7C288E2E84420F009FF6AF /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C288D2E84420D009FF6AF /* LargeButton.swift */; };
 		FB7C28912E898D95009FF6AF /* BackupContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28902E898D94009FF6AF /* BackupContentView.swift */; };
 		FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */; };
+		FB7D99CC3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
+		FB7D99CD3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
+		FB7D99CF303452F5005C7583 /* FlagSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CE303452F3005C7583 /* FlagSettings.swift */; };
+		FB7D99D0303452F5005C7583 /* FlagSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CE303452F3005C7583 /* FlagSettings.swift */; };
 		FB7E441D2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */; };
 		FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */; };
 		FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F52DDCDC900036B116 /* HostingNode.swift */; };
@@ -1051,6 +1055,8 @@
 		FB7C288D2E84420D009FF6AF /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
 		FB7C28902E898D94009FF6AF /* BackupContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupContentView.swift; sourceTree = "<group>"; };
 		FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCreateView.swift; sourceTree = "<group>"; };
+		FB7D99CB30345047005C7583 /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		FB7D99CE303452F3005C7583 /* FlagSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagSettings.swift; sourceTree = "<group>"; };
 		FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceOrientationsViewModifier.swift; sourceTree = "<group>"; };
 		FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageDescriptionButtonView.swift; sourceTree = "<group>"; };
 		FB7F05F52DDCDC900036B116 /* HostingNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingNode.swift; sourceTree = "<group>"; };
@@ -1750,6 +1756,7 @@
 				002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */,
 				FBC7A1132F0A00010012C013 /* WKWebView+ContentWorld.swift */,
 				FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */,
+				FB7D99CB30345047005C7583 /* Error.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -2173,6 +2180,7 @@
 			children = (
 				FBFA033A3008DF610008B4B6 /* AppSettings.swift */,
 				FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */,
+				FB7D99CE303452F3005C7583 /* FlagSettings.swift */,
 			);
 			path = AppSettings;
 			sourceTree = "<group>";
@@ -3211,6 +3219,7 @@
 				FBD6A411285B7789007116C9 /* TrackItem.swift in Sources */,
 				FBD6A416285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB7F05F82DDD6CA60036B116 /* MarkdownView.swift in Sources */,
+				FB7D99D0303452F5005C7583 /* FlagSettings.swift in Sources */,
 				FB3DDA112ECEACE20081232F /* MangaListViewController.swift in Sources */,
 				FB72501627CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB8E48E12DC15DCF002A3621 /* NotificationName.swift in Sources */,
@@ -3365,6 +3374,7 @@
 				FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB0AB8A52F52047100AF1451 /* FilterGroup.swift in Sources */,
+				FB7D99CC3034504A005C7583 /* Error.swift in Sources */,
 				FBF32062300DE5C600DD5694 /* AnkiManager.swift in Sources */,
 				FB07A394300C5CA000C5B80A /* DictionaryOverlayPassthroughView.swift in Sources */,
 				FB9A48422968943400FFC414 /* SwiftUINavigationViewController.swift in Sources */,
@@ -3493,6 +3503,7 @@
 				FB1B486B277CE76B0056D02C /* Page.swift in Sources */,
 				FBE7812D282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FB55C0B82DF32BA20019A551 /* LocalFileManager.swift in Sources */,
+				FB7D99CF303452F5005C7583 /* FlagSettings.swift in Sources */,
 				FBE9B0022E0000010019A551 /* EpubParser.swift in Sources */,
 				FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */,
 				FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */,
@@ -3540,6 +3551,7 @@
 				04B48CFE2CD6B3B000F719D0 /* ShikimoriQueries.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
 				FBE786E53014351900220CA6 /* BackupVocabEntry.swift in Sources */,
+				FB7D99CD3034504A005C7583 /* Error.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB261ED62ECB8B8400743F56 /* LogEntry.swift in Sources */,
 				FB14B12A2DF4D20F0067E4D4 /* AidokuRunner.swift in Sources */,

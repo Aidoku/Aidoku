@@ -124,9 +124,11 @@ struct SourceHomeContentView: View {
             }
             .overlay {
                 if let error {
-                    ErrorView(error: error) {
-                        await reload()
-                    }
+                    ErrorView(
+                        error: error,
+                        restart: { try await source.restart() },
+                        retry: { await reload() }
+                    )
                     .transition(.opacity)
                     .padding()
                 }

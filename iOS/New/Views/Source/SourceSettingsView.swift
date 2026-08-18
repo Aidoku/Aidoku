@@ -41,11 +41,11 @@ struct SourceSettingsView: View {
             // source settings
             if let error {
                 Section {
-                    ErrorView(error: error) {
-                        Task {
-                            await loadSettings()
-                        }
-                    }
+                    ErrorView(
+                        error: error,
+                        restart: { try await source.restart() },
+                        retry: loadSettings
+                    )
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
                 }

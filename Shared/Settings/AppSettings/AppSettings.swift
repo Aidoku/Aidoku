@@ -9,9 +9,10 @@ import Foundation
 
 struct AppSettings {
     static let dictionary = DictionarySettings()
+    static let flags = FlagSettings()
 
     private static var keys: [any SettingsDefault] {
-        dictionary.keys
+        dictionary.keys + flags.keys
     }
 
     static func registerDefaults() {

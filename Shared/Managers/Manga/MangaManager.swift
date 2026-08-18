@@ -366,6 +366,7 @@ extension MangaManager {
         let nextUpdateTime = lastUpdated + interval
 
         if nextUpdateTime < Date.now {
+            guard !AppSettings.flags.libraryRefreshInProgress.get() else { return }
             // interval time has passed, refresh now
             Task {
                 await refreshLibrary()
@@ -427,6 +428,7 @@ extension MangaManager {
             await libraryRefreshTask?.value
         } else {
             // spawn new library refresh
+            AppSettings.flags.libraryRefreshInProgress.set(true)
             libraryRefreshTask = Task {
                 await doLibraryRefresh(
                     category: category,
@@ -452,6 +454,7 @@ extension MangaManager {
                     }
                 )
                 libraryRefreshTask = nil
+                AppSettings.flags.libraryRefreshInProgress.reset()
             }
             await libraryRefreshTask?.value
         }

@@ -23,22 +23,7 @@ struct SearchFilterHeaderView: View {
     var body: some View {
         Group {
             if let error {
-                let text = if let error = error as? SourceError {
-                    switch error {
-                        case .missingResult:
-                            NSLocalizedString("NO_RESULT")
-                        case .unimplemented:
-                            NSLocalizedString("UNIMPLEMENTED")
-                        case .networkError:
-                            NSLocalizedString("NETWORK_ERROR")
-                        case .message(let string):
-                            NSLocalizedString(string)
-                    }
-                } else if error is DecodingError {
-                    NSLocalizedString("DECODING_ERROR")
-                } else {
-                    NSLocalizedString("UNKNOWN_ERROR")
-                }
+                let text = error.aidokuDescription()
                 Label(text, systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
