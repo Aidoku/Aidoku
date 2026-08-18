@@ -451,6 +451,8 @@
 		FB7C288E2E84420F009FF6AF /* LargeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C288D2E84420D009FF6AF /* LargeButton.swift */; };
 		FB7C28912E898D95009FF6AF /* BackupContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28902E898D94009FF6AF /* BackupContentView.swift */; };
 		FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */; };
+		FB7D99CC3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
+		FB7D99CD3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
 		FB7E441D2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */; };
 		FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */; };
 		FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F52DDCDC900036B116 /* HostingNode.swift */; };
@@ -1018,6 +1020,7 @@
 		FB7C288D2E84420D009FF6AF /* LargeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeButton.swift; sourceTree = "<group>"; };
 		FB7C28902E898D94009FF6AF /* BackupContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupContentView.swift; sourceTree = "<group>"; };
 		FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCreateView.swift; sourceTree = "<group>"; };
+		FB7D99CB30345047005C7583 /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceOrientationsViewModifier.swift; sourceTree = "<group>"; };
 		FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageDescriptionButtonView.swift; sourceTree = "<group>"; };
 		FB7F05F52DDCDC900036B116 /* HostingNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingNode.swift; sourceTree = "<group>"; };
@@ -1671,6 +1674,7 @@
 				FB8E48E02DC15DCD002A3621 /* NotificationName.swift */,
 				002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */,
 				FB32A3FD303149BE005BDB51 /* BGTaskScheduler.swift */,
+				FB7D99CB30345047005C7583 /* Error.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -3261,6 +3265,7 @@
 				FB1BEF8C2E3BFFF000098D21 /* HistorySection.swift in Sources */,
 				FBE781342830A34B0038C0E3 /* DownloadTask.swift in Sources */,
 				FB0AB8A52F52047100AF1451 /* FilterGroup.swift in Sources */,
+				FB7D99CC3034504A005C7583 /* Error.swift in Sources */,
 				FBF32062300DE5C600DD5694 /* AnkiManager.swift in Sources */,
 				FB07A394300C5CA000C5B80A /* DictionaryOverlayPassthroughView.swift in Sources */,
 				FB9A48422968943400FFC414 /* SwiftUINavigationViewController.swift in Sources */,
@@ -3426,6 +3431,7 @@
 				04B48CFE2CD6B3B000F719D0 /* ShikimoriQueries.swift in Sources */,
 				FB7B7ED5278CE692001E6EAF /* Source.swift in Sources */,
 				FBE786E53014351900220CA6 /* BackupVocabEntry.swift in Sources */,
+				FB7D99CD3034504A005C7583 /* Error.swift in Sources */,
 				FB1B4867277CE76B0056D02C /* Chapter.swift in Sources */,
 				FB261ED62ECB8B8400743F56 /* LogEntry.swift in Sources */,
 				FB14B12A2DF4D20F0067E4D4 /* AidokuRunner.swift in Sources */,

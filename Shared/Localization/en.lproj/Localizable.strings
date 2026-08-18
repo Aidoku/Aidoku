@@ -184,11 +184,13 @@
 "INVALID_URL_TEXT" = "The URL for this source is invalid.";
 "MORE_BARBUTTON" = "More";
 "RETRY" = "Retry";
+"RESTART" = "Restart";
 "NO_RESULT" = "No Result";
 "UNIMPLEMENTED" = "Unimplemented";
 "NETWORK_ERROR" = "Network Error";
 "DECODING_ERROR" = "Decoding Error";
 "UNKNOWN_ERROR" = "Unknown Error";
+"SOURCE_CRASHED" = "Source Crashed";
 "ADD_SOURCE" = "Add Source";
 "IMPORT_SOURCE" = "Import Source";
 "BUILT_IN_SOURCES" = "Built-in Sources";

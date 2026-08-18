@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "23c76607bbb3fb90331f127cbdbf1158f8bdd6a2"
+        "revision" : "06e530f35724e5777bd26436e550727f8289bba5"
       }
     },
     {
@@ -105,7 +105,7 @@
       "location" : "https://github.com/Skittyblock/Wasm3",
       "state" : {
         "branch" : "main",
-        "revision" : "8c0e4ef3dec8e88a94c19959c3fe100cf50c548b"
+        "revision" : "6a64d8bfc6a235f1ee3f8b57f692494fbf72ed19"
       }
     },
     {

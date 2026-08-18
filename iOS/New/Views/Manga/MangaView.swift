@@ -62,10 +62,14 @@ struct MangaView: View {
                 headerView
 
                 if let error = viewModel.error {
-                    ErrorView(error: error) {
-                        viewModel.error = nil
-                        await viewModel.fetchData()
-                    }
+                    ErrorView(
+                        error: error,
+                        restart: { try await viewModel.source?.restart() },
+                        retry: {
+                            viewModel.error = nil
+                            await viewModel.fetchData()
+                        }
+                    )
                     .frame(maxWidth: .infinity)
                     .listRowBackground(Color.clear)
                     .listRowSeparator(.hidden)
