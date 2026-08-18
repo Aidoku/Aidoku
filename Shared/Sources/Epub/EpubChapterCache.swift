@@ -20,8 +20,8 @@ enum EpubChapterCache {
         }
         let directory = cachesDirectory
             .appendingPathComponent("EpubCache", isDirectory: true)
-            .appendingPathComponent(sourceKey, isDirectory: true)
-        let file = directory.appendingPathComponent("\(chapterId).epub")
+            .appendingPathComponent(sanitized(sourceKey), isDirectory: true)
+        let file = directory.appendingPathComponent("\(sanitized(chapterId)).epub")
         if FileManager.default.fileExists(atPath: file.path) {
             return file
         }
@@ -43,5 +43,14 @@ enum EpubChapterCache {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: file)
         return file
+    }
+
+    /// A source key and a chapter id both become one path component, and neither is ours to trust:
+    /// a separator in either would place the file outside the cache directory it belongs to.
+    private static func sanitized(_ component: String) -> String {
+        let allowed = CharacterSet.alphanumerics.union(.init(charactersIn: "-_."))
+        let cleaned = String(component.unicodeScalars.map { allowed.contains($0) ? Character($0) : "_" })
+        // A name of dots alone still traverses, and an empty one is not a name at all.
+        return cleaned.allSatisfy({ $0 == "." }) ? "_\(cleaned)" : cleaned
     }
 }
