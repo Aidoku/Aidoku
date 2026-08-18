@@ -553,6 +553,8 @@
 		FBC7A1052F0A00010012C005 /* EpubPaginationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1042F0A00010012C006 /* EpubPaginationSettings.swift */; };
 		FBC7A1062F0A00010012C007 /* EpubPaginationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1042F0A00010012C006 /* EpubPaginationSettings.swift */; };
 		FBC7A1082F0A00010012C011 /* EpubPageIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1072F0A00010012C010 /* EpubPageIndex.swift */; };
+		FBC7A1112F0A00010012C021 /* EpubTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1102F0A00010012C020 /* EpubTableOfContents.swift */; };
+		FBC7A1122F0A00010012C022 /* EpubTableOfContents.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1102F0A00010012C020 /* EpubTableOfContents.swift */; };
 		FBC7A1092F0A00010012C012 /* EpubPageIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A1072F0A00010012C010 /* EpubPageIndex.swift */; };
 		FBC7A10B2F0A00010012C014 /* EpubSpineMeasurer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A10A2F0A00010012C013 /* EpubSpineMeasurer.swift */; };
 		FBC7A10C2F0A00010012C015 /* EpubSpineMeasurer.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBC7A10A2F0A00010012C013 /* EpubSpineMeasurer.swift */; };
@@ -1129,6 +1131,7 @@
 		FBC7A1012F0A00010012C002 /* readium-css */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "readium-css"; sourceTree = "<group>"; };
 		FBC7A1042F0A00010012C006 /* EpubPaginationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpubPaginationSettings.swift; sourceTree = "<group>"; };
 		FBC7A1072F0A00010012C010 /* EpubPageIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpubPageIndex.swift; sourceTree = "<group>"; };
+		FBC7A1102F0A00010012C020 /* EpubTableOfContents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpubTableOfContents.swift; sourceTree = "<group>"; };
 		FBC7A10A2F0A00010012C013 /* EpubSpineMeasurer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpubSpineMeasurer.swift; sourceTree = "<group>"; };
 		FBC7A10D2F0A00010012C016 /* ReaderEpubViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderEpubViewModel.swift; sourceTree = "<group>"; };
 		FBC7A10F2F0A00010012C018 /* ReaderEpubViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderEpubViewController.swift; sourceTree = "<group>"; };
@@ -1337,6 +1340,7 @@
 				5FD6946FE2293A533D365661 /* EpubWebViewFactory.swift */,
 				FBC7A1042F0A00010012C006 /* EpubPaginationSettings.swift */,
 				FBC7A1072F0A00010012C010 /* EpubPageIndex.swift */,
+				FBC7A1102F0A00010012C020 /* EpubTableOfContents.swift */,
 				FBC7A10A2F0A00010012C013 /* EpubSpineMeasurer.swift */,
 				FBC7A1102F0A00010012C010 /* EpubSpineRenderer.swift */,
 			);
@@ -2934,6 +2938,7 @@
 				0BA8714CFDF5F68027BC7B81 /* EpubWebViewFactory.swift in Sources */,
 				FBC7A1052F0A00010012C005 /* EpubPaginationSettings.swift in Sources */,
 				FBC7A1082F0A00010012C011 /* EpubPageIndex.swift in Sources */,
+				FBC7A1112F0A00010012C021 /* EpubTableOfContents.swift in Sources */,
 				FBC7A10B2F0A00010012C014 /* EpubSpineMeasurer.swift in Sources */,
 				FBC7A1112F0A00010012C011 /* EpubSpineRenderer.swift in Sources */,
 				FBC7A1142F0A00010012C014 /* WKWebView+ContentWorld.swift in Sources */,
@@ -3404,6 +3409,7 @@
 				614F4BF56FA7FFFE8A9DC34D /* EpubWebViewFactory.swift in Sources */,
 				FBC7A1062F0A00010012C007 /* EpubPaginationSettings.swift in Sources */,
 				FBC7A1092F0A00010012C012 /* EpubPageIndex.swift in Sources */,
+				FBC7A1122F0A00010012C022 /* EpubTableOfContents.swift in Sources */,
 				FBC7A10C2F0A00010012C015 /* EpubSpineMeasurer.swift in Sources */,
 				FBC7A1122F0A00010012C012 /* EpubSpineRenderer.swift in Sources */,
 				FBC7A1152F0A00010012C015 /* WKWebView+ContentWorld.swift in Sources */,
