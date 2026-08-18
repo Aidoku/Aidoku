@@ -101,6 +101,21 @@ class ReaderViewController: BaseObservingViewController {
             }()
         )
 
+    /// What the right-hand bar items were last built for, so they are rebuilt only when one of
+    /// those answers changes.
+    ///
+    /// The ePub reader reports a new total for every spine document the measurement pass counts,
+    /// which is 217 calls in five seconds on the largest book in the corpus. Rebuilding the items
+    /// each time replaced the very `UIBarButtonItem` a finger was resting on, so its action never
+    /// fired: the contents button read as dead for the whole of pagination.
+    private struct BarButtonState: Equatable {
+        let contents: Bool
+        let contentsEnabled: Bool
+        let web: Bool
+    }
+
+    private var builtBarState: BarButtonState?
+
     private var barToggleTapGesture: UITapGestureRecognizer?
     private var barToggleSecondaryTapGesture: UITapGestureRecognizer?
     private var barDismissNavigationBarTapGesture: UITapGestureRecognizer?
@@ -158,22 +173,7 @@ class ReaderViewController: BaseObservingViewController {
                 action: #selector(openChapterList)
             )
         ]
-        let moreButton = UIBarButtonItem(
-            image: UIImage(systemName: "safari"),
-            style: .plain,
-            target: self,
-            action: #selector(openWebView)
-        )
-        moreButton.isEnabled = chapter.url != nil
-        navigationItem.rightBarButtonItems = [
-            moreButton,
-            UIBarButtonItem(
-                image: UIImage(systemName: "textformat.size"),
-                style: .plain,
-                target: self,
-                action: #selector(openReaderSettings)
-            )
-        ]
+        updateRightBarButtonItems()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -518,6 +518,10 @@ class ReaderViewController: BaseObservingViewController {
             }
         }
         reader?.setChapter(chapter, startPage: currentPage)
+        // The contents belong to the chapter being left. Refreshed here so the button goes with it
+        // rather than standing over the next chapter's load, where it opens nothing; `setPages`
+        // brings it back once the new chapter has contents of its own.
+        updateRightBarButtonItems()
     }
 
     func loadNavbarTitle() {
@@ -720,6 +724,7 @@ extension ReaderViewController {
             // The bar toggle tap is built differently for a reader hosting a web view, so it is
             // rebuilt whenever which reader is hosted changes rather than only on a chapter change.
             configureBarToggleTapGestures()
+            updateRightBarButtonItems()
         }
         reader?.readingMode = readingMode
         configureDictionaryOverlayInteractionMode()
@@ -931,6 +936,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         self.pages = pages
         toolbarView.totalPages = pages.count
         activityIndicator.stopAnimating()
+        // A reader with contents of its own only has them once it has opened what it was given, and
+        // this is the call it makes when it has.
+        updateRightBarButtonItems()
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
@@ -1189,6 +1197,13 @@ extension ReaderViewController {
             let reader = reader as? ReaderDictionaryReader,
             reader.dismissActiveDictionaryOverlay()
         {
+            return
+        }
+
+        // a tap the reader has already answered for itself, such as a link inside an ePub. Asked
+        // before anything here acts on it, because the alternative is undoing what was done: the
+        // bars were toggled and a page turned by the same tap that followed a footnote.
+        if reader?.consumesTap() == true {
             return
         }
 
@@ -1491,7 +1506,19 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
     }
 
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        guard gestureRecognizer === barDismissNavigationBarTapGesture else { return true }
+        // The bar toggle joins this for an ePub, whose reader puts controls of its own over the page.
+        // It does not cancel touches in its view, which is what lets the web view keep text selection
+        // and links, but it still acts on every tap it sees: a tap on the reader's return button both
+        // pressed the button and toggled the bars, and toggling the bars resizes the reader under the
+        // finger, which cancelled the press before it could end. The button read as dead.
+        //
+        // Gated on the ePub reader rather than applied to every one of them. Nothing else puts a
+        // control over its content today, and a shared gesture quietly changing behaviour for the
+        // image readers is a mistake this branch has already made once.
+        let isEpubBarToggle = (gestureRecognizer === barToggleTapGesture
+            || gestureRecognizer === barToggleSecondaryTapGesture)
+            && reader is ReaderEpubViewController
+        guard gestureRecognizer === barDismissNavigationBarTapGesture || isEpubBarToggle else { return true }
 
         var view: UIView? = touch.view
         while let currentView = view {
@@ -1514,6 +1541,7 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
         (gestureRecognizer === barToggleTapGesture || gestureRecognizer === barToggleSecondaryTapGesture)
             && reader is ReaderEpubViewController
     }
+
 }
 
 // MARK: - Keyboard Shortcuts
@@ -1591,5 +1619,77 @@ extension ReaderViewController {
             reader?.setChapter(previousChaoter, startPage: 1)
             setChapter(previousChaoter)
         }
+    }
+}
+
+// MARK: - Table of Contents
+
+extension ReaderViewController {
+    /// Rebuilds the right-hand bar items, which differ by whether the hosted reader has contents of
+    /// its own to offer.
+    ///
+    /// Rebuilt rather than hidden: `UIBarButtonItem.isHidden` is iOS 16 and the reader deploys to
+    /// 15. Which reader is hosted, and whether it has read a table of contents yet, are both known
+    /// only after a chapter has been loaded, so this is called again whenever either can have moved.
+    func updateRightBarButtonItems() {
+        let contentsReader = reader as? ReaderTableOfContentsReader
+        let state = BarButtonState(
+            contents: contentsReader != nil,
+            contentsEnabled: !(contentsReader?.tableOfContents.isEmpty ?? true),
+            web: chapter.url != nil
+        )
+        guard state != builtBarState else { return }
+        builtBarState = state
+
+        let moreButton = UIBarButtonItem(
+            image: UIImage(systemName: "safari"),
+            style: .plain,
+            target: self,
+            action: #selector(openWebView)
+        )
+        moreButton.isEnabled = state.web
+
+        var items = [moreButton]
+        // Present for any reader that can have contents, and disabled until it has read them, rather
+        // than added and removed. Removing it reflowed the items either side, so the buttons moved
+        // between chapters and a tap aimed at one landed on another; a disabled item holds its place
+        // and says plainly that it is not ready yet.
+        if state.contents {
+            let contentsButton = UIBarButtonItem(
+                image: UIImage(systemName: "list.bullet.indent"),
+                style: .plain,
+                target: self,
+                action: #selector(openTableOfContents)
+            )
+            contentsButton.isEnabled = state.contentsEnabled
+            items.append(contentsButton)
+        }
+        items.append(
+            UIBarButtonItem(
+                image: UIImage(systemName: "textformat.size"),
+                style: .plain,
+                target: self,
+                action: #selector(openReaderSettings)
+            )
+        )
+        navigationItem.rightBarButtonItems = items
+    }
+
+    /// Shows the contents of what is open, so the reader can move about inside it.
+    ///
+    /// The sibling of `openChapterList`, which moves between chapters. One ePub is one chapter, so
+    /// the two lists answer different questions and both are offered.
+    @objc func openTableOfContents() {
+        guard let reader = reader as? ReaderTableOfContentsReader, !reader.tableOfContents.isEmpty else { return }
+        let view = ReaderEpubContentsView(
+            contents: reader.tableOfContents,
+            currentEntry: { await reader.currentTableOfContentsEntry() },
+            bookPage: { reader.bookPage(ofTableOfContentsEntry: $0) },
+            entrySet: { [weak self] entry in
+                self?.dismiss(animated: true)
+                reader.goToTableOfContentsEntry(entry)
+            }
+        )
+        present(UIHostingController(rootView: view), animated: true)
     }
 }

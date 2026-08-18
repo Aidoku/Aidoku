@@ -106,6 +106,87 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// every count that lands.
     private var reportedTotal = 0
 
+    /// When something in the reader last handled a tap itself, so the page turn the same tap
+    /// produces in the host is not also performed.
+    ///
+    /// The tap zones sit over the web view and do not cancel its touches, which is what lets the
+    /// document keep text selection and links at all. One tap therefore reaches both: WebKit
+    /// activates a link, or the return button fires, and the host's tap zone asks for a page turn
+    /// besides. The reader's own handling is the earlier of the two, since the host's single tap
+    /// waits for its double tap to fail, so the turn is the one that can be suppressed.
+    private var suppressedPageTurnAt: Date?
+
+    /// How long after that a page turn is taken to belong to the same tap.
+    ///
+    /// Longer than the double-tap failure the host's single tap waits on, and short enough that a
+    /// reader who follows a link and then deliberately taps to turn is not ignored.
+    private static let suppressedPageTurnWindow: TimeInterval = 0.75
+
+    /// The book page a jump left, offered back to the reader while `returnButton` is showing.
+    private var returnBookPage: Int?
+
+    /// The same place as a fraction of the whole book, which is what survives the book being laid
+    /// out again.
+    ///
+    /// A page index is not a position: re-fragmenting moves text between pages, so the page number
+    /// captured before a jump names somewhere else entirely after a rotation or a change of font
+    /// size, by a margin that grows with depth. The fraction is only available once the book has
+    /// been measured, since a total that is still a lower bound would place it too far in, so the
+    /// page number carries the offer until then and `withdrawUnanchoredReturnOffer` takes it away
+    /// if the layout changes first.
+    private var returnPosition: Double?
+
+    /// The offer to go back to where a jump was made from.
+    ///
+    /// A footnote is the case that needs it: the link takes the reader across the book, and the only
+    /// other way back is the slider, which does not know where they were.
+    ///
+    /// Shaped after the readers that have solved this. Apple Books and Play Books both show a small
+    /// opaque circle in a bottom corner and leave it there until it is used; Kindle shows a pill
+    /// with the page number in it. Three properties are common to all of them and each was got wrong
+    /// first time: it is **opaque**, so it is legible over text rather than showing it through; it
+    /// is **cornered**, so it covers as little of the page as possible; and it is **persistent**,
+    /// because a reader who has just arrived somewhere unexpected is reading, not watching for a
+    /// control to expire.
+    private lazy var returnButton: UIButton = {
+        var configuration = UIButton.Configuration.plain()
+        configuration.image = UIImage(
+            systemName: "arrow.uturn.backward",
+            withConfiguration: UIImage.SymbolConfiguration(textStyle: .body)
+        )
+        configuration.contentInsets = .zero
+        let button = UIButton(configuration: configuration)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.tintColor = .label
+        // Opaque rather than a material or a translucent fill. The page behind it is text, and a
+        // fill that lets text through is what made the first version unreadable.
+        button.backgroundColor = .systemBackground
+        button.layer.cornerRadius = Self.returnButtonDiameter / 2
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.separator.cgColor
+        button.layer.shadowColor = UIColor.black.cgColor
+        button.layer.shadowOpacity = 0.15
+        button.layer.shadowRadius = 6
+        button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        button.alpha = 0
+        button.isHidden = true
+        button.addTarget(self, action: #selector(returnToJumpOrigin), for: .touchUpInside)
+        return button
+    }()
+
+    /// A full touch target, which the icon alone is not.
+    private static let returnButtonDiameter: CGFloat = 44
+
+    /// The return button's distance from the bottom of the view.
+    ///
+    /// Held so it can be kept at the **window's** safe area rather than the view's. The view's
+    /// insets include the bars and change when they toggle, and a control that moves between a
+    /// touch going down and coming up never reports the touch at all: the first version was pinned
+    /// to `view.safeAreaLayoutGuide` and every tap on it toggled the bars, which relaid it out from
+    /// under the finger. It read as a button that did nothing. `applySafeArea` already avoids this
+    /// for the web view and for the same reason.
+    private var returnButtonBottom: NSLayoutConstraint?
+
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, bookURL: URL? = nil) {
         self.source = source
         self.manga = manga
@@ -168,6 +249,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var settingsReloadPosition: Double?
 
     private func scheduleSettingsReload() {
+        withdrawUnanchoredReturnOffer()
         if settingsReloadPage == nil {
             settingsReloadPage = (book?.bookPage).map { $0 + 1 }
             settingsReloadPosition = book.flatMap { book in
@@ -235,13 +317,42 @@ class ReaderEpubViewController: BaseObservingViewController {
             swipe.delegate = self
             view.addGestureRecognizer(swipe)
         }
+
+        installReturnButton()
     }
+
+    /// Places the return button in the leading bottom corner, where it covers the least text.
+    ///
+    /// Its distance from the bottom is set in `applySafeArea`, from the window's insets, so that
+    /// showing or hiding the bars does not move it.
+    private func installReturnButton() {
+        view.addSubview(returnButton)
+        let bottom = returnButton.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        returnButtonBottom = bottom
+        NSLayoutConstraint.activate([
+            returnButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.returnButtonMargin),
+            returnButton.widthAnchor.constraint(equalToConstant: Self.returnButtonDiameter),
+            returnButton.heightAnchor.constraint(equalToConstant: Self.returnButtonDiameter),
+            bottom
+        ])
+    }
+
+    /// How far the return button sits from the leading edge and from the safe area below it.
+    ///
+    /// Clear of the toolbar in both bar states, since the button appears in both: from the contents
+    /// sheet, which is opened from a visible bar, and from a link tapped while reading with the bars
+    /// hidden. Overlapping the toolbar would be cosmetic; moving to avoid it would not be.
+    private static let returnButtonMargin: CGFloat = 16
+    private static let returnButtonToolbarClearance: CGFloat = 60
 
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         // ePub text reads left to right, so swiping the content left goes forward.
+        //
+        // Turned directly rather than through `moveRight`/`moveLeft`: those suppress the turn that
+        // a tap on a link produces alongside it, and a swipe is never that tap.
         switch gesture.direction {
-            case .left: moveRight()
-            case .right: moveLeft()
+            case .left: turn(forward: true)
+            case .right: turn(forward: false)
             default: break
         }
     }
@@ -266,6 +377,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         let size = webViewSize()
         guard size != lastViewport, size.width > 0, size.height > 0 else { return }
         lastViewport = size
+        // Either branch lays the book out again, which moves every page boundary.
+        withdrawUnanchoredReturnOffer()
         if book != nil, EpubPaginationSettings.columnCount(for: view.bounds.size) != appliedColumnCount {
             // An iPad rotating between one column (portrait) and two (landscape). Debounced with
             // the settings path so the rebuild sees the size the rotation settles at.
@@ -326,7 +439,11 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var insetsAppliedForSize: CGSize = .zero
 
     private func applySafeArea() {
-        guard let webViewInsets, let window = view.window else { return }
+        guard let window = view.window else { return }
+        returnButtonBottom?.constant = -(
+            window.safeAreaInsets.bottom + Self.returnButtonMargin + Self.returnButtonToolbarClearance
+        )
+        guard let webViewInsets else { return }
         guard view.bounds.size != insetsAppliedForSize else { return }
         insetsAppliedForSize = view.bounds.size
         var insets = window.safeAreaInsets
@@ -407,6 +524,14 @@ class ReaderEpubViewController: BaseObservingViewController {
             return
         }
         book.onChange = { [weak self] in self?.report() }
+        book.onLink = { [weak self] path, fragment in
+            guard let self else { return }
+            // Recorded before the jump rather than after it: the host's tap zone fires a few
+            // hundred milliseconds later and would otherwise turn a page on top of the jump.
+            suppressedPageTurnAt = Date()
+            offerReturn()
+            navigate { await $0.showLocation(path: path, fragment: fragment) }
+        }
         book.onOverscroll = { [weak self] forward in
             self?.navigate { book in
                 if forward {
@@ -589,6 +714,98 @@ class ReaderEpubViewController: BaseObservingViewController {
     }
 }
 
+// MARK: - Returning from a jump
+
+extension ReaderEpubViewController {
+    /// Remembers where the reader is and offers to bring them back.
+    ///
+    /// Called before the jump, since afterwards the page it would return to is the destination. A
+    /// place the index cannot name yet is not offered: the offer is a book page, and one that
+    /// cannot be named cannot be returned to either.
+    ///
+    /// The page number reaches the reader as the button's accessibility label rather than as a
+    /// title. An icon alone is what the readers that solved this show, and a corner button that
+    /// grows with the page number would cover a different amount of text at each end of a book.
+    func offerReturn() {
+        guard let book, let page = book.bookPage else { return }
+        returnBookPage = page
+        returnPosition = book.isMeasured && book.bookTotal > 1
+            ? Double(page) / Double(book.bookTotal - 1)
+            : nil
+        returnButton.accessibilityLabel = String(
+            format: NSLocalizedString("BACK_TO_PAGE_X", comment: ""),
+            page + 1
+        )
+        // The web view is added when a book opens, which is after this button, so it would
+        // otherwise sit above it.
+        view.bringSubviewToFront(returnButton)
+        guard returnButton.isHidden else { return }
+        returnButton.isHidden = false
+        UIView.animate(withDuration: 0.2) {
+            self.returnButton.alpha = 1
+        }
+    }
+
+    @objc func returnToJumpOrigin() {
+        guard let target = returnTarget else { return }
+        hideReturnOffer()
+        navigate { await $0.showBookPage(target) }
+    }
+
+    /// The book page to return to, resolved against the layout as it stands now rather than the one
+    /// the offer was made in.
+    private var returnTarget: Int? {
+        if let returnPosition, let book, book.isMeasured, book.bookTotal > 1 {
+            return Int((returnPosition * Double(book.bookTotal - 1)).rounded())
+        }
+        return returnBookPage
+    }
+
+    /// Withdraws an offer that the book being laid out again has invalidated.
+    ///
+    /// Only one held as a bare page number, which is an offer made before the book finished being
+    /// measured. Taking the reader to a page of a layout that no longer exists is worse than not
+    /// offering to take them anywhere.
+    func withdrawUnanchoredReturnOffer() {
+        guard returnBookPage != nil, returnPosition == nil else { return }
+        hideReturnOffer()
+    }
+
+    /// Withdraws the offer, which nothing does on a timer: a reader who has just been taken
+    /// somewhere unexpected is reading rather than watching for a control to expire.
+    func hideReturnOffer() {
+        returnBookPage = nil
+        returnPosition = nil
+        guard !returnButton.isHidden else { return }
+        UIView.animate(withDuration: 0.2) {
+            self.returnButton.alpha = 0
+        } completion: { _ in
+            self.returnButton.isHidden = true
+        }
+    }
+}
+
+// MARK: - Table of contents
+
+extension ReaderEpubViewController: ReaderTableOfContentsReader {
+    var tableOfContents: EpubTableOfContents {
+        book?.toc ?? EpubTableOfContents(entries: [])
+    }
+
+    func currentTableOfContentsEntry() async -> EpubTableOfContents.Entry? {
+        await book?.currentEntry()
+    }
+
+    func bookPage(ofTableOfContentsEntry entry: EpubTableOfContents.Entry) -> Int? {
+        book?.bookPage(ofEntry: entry)
+    }
+
+    func goToTableOfContentsEntry(_ entry: EpubTableOfContents.Entry) {
+        offerReturn()
+        navigate { await $0.showEntry(entry) }
+    }
+}
+
 // MARK: - UIGestureRecognizerDelegate
 
 extension ReaderEpubViewController: UIGestureRecognizerDelegate {
@@ -605,15 +822,39 @@ extension ReaderEpubViewController: UIGestureRecognizerDelegate {
 
 extension ReaderEpubViewController: ReaderReaderDelegate {
     func moveLeft() {
-        endSliding()
-        let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
-        navigate { await $0.moveBackward(animated: animated) }
+        turn(forward: false)
     }
 
     func moveRight() {
+        turn(forward: true)
+    }
+
+    /// True when the tap arriving now is the one that just followed a link.
+    ///
+    /// Consumed either way: a tap that arrives late enough to be an intent of its own has also
+    /// proved that the link before it is no longer the last thing that happened.
+    ///
+    /// Asked by the host rather than acted on inside `moveLeft`/`moveRight`, so that it covers
+    /// everything one tap would otherwise do — the bars toggling as well as the page turning — and
+    /// so that it covers nothing else: a keypress and a swipe do not pass through the host's tap
+    /// handling and are never suppressed by it.
+    func consumesTap() -> Bool {
+        guard let suppressedPageTurnAt else { return false }
+        self.suppressedPageTurnAt = nil
+        return Date().timeIntervalSince(suppressedPageTurnAt) < Self.suppressedPageTurnWindow
+    }
+
+    /// A page turn, whichever gesture or key asked for it.
+    private func turn(forward: Bool) {
         endSliding()
         let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
-        navigate { await $0.moveForward(animated: animated) }
+        navigate { book in
+            if forward {
+                await book.moveForward(animated: animated)
+            } else {
+                await book.moveBackward(animated: animated)
+            }
+        }
     }
 
     /// Clears the dragging flag on any interaction that cannot coexist with a held thumb.
@@ -652,6 +893,8 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         guard self.chapter?.id != chapter.id else { return }
         self.chapter = chapter
+        // The page the offer names belongs to the book being left.
+        hideReturnOffer()
         // The archive belonged to the chapter being left, so it is resolved again for this one.
         bookURL = nil
         settingsReloadPage = nil

@@ -359,6 +359,8 @@
 "VOLUME" = "Volume";
 "CHAPTER" = "Chapter";
 "CHAPTERS" = "Chapters";
+"CONTENTS" = "Contents";
+"BACK_TO_PAGE_X" = "Back to page %i";
 "VOLUME_X" = "Volume %g";
 "CHAPTER_X" = "Chapter %g";
 "VOL_X" = "Vol.%g";
