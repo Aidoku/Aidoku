@@ -108,6 +108,8 @@
 "REFRESH_ANYWAYS" = "Refresh Anyways";
 "REMOVE_FROM_LIBRARY_CONFIRM" = "Remove from Library?";
 "REMOVE_FROM_LIBRARY_CONFIRM_TEXT" = "Removing this series from your library will also remove all linked trackers. Are you sure you want to proceed?";
+"LIBRARY_REFRESH_INTERRUPTED" = "Library Refresh Interrupted";
+"LIBRARY_REFRESH_INTERRUPTED_TEXT" = "The last library refresh was interrupted before it was completed. Would you like to resume?";
 
 // Categories
 "ALL" = "All";

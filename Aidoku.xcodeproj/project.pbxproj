@@ -453,6 +453,8 @@
 		FB7C28932E898DD9009FF6AF /* BackupCreateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */; };
 		FB7D99CC3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
 		FB7D99CD3034504A005C7583 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CB30345047005C7583 /* Error.swift */; };
+		FB7D99CF303452F5005C7583 /* FlagSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CE303452F3005C7583 /* FlagSettings.swift */; };
+		FB7D99D0303452F5005C7583 /* FlagSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7D99CE303452F3005C7583 /* FlagSettings.swift */; };
 		FB7E441D2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */; };
 		FB7F05F42DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */; };
 		FB7F05F62DDCDC910036B116 /* HostingNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7F05F52DDCDC900036B116 /* HostingNode.swift */; };
@@ -1021,6 +1023,7 @@
 		FB7C28902E898D94009FF6AF /* BackupContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupContentView.swift; sourceTree = "<group>"; };
 		FB7C28922E898DD8009FF6AF /* BackupCreateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupCreateView.swift; sourceTree = "<group>"; };
 		FB7D99CB30345047005C7583 /* Error.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
+		FB7D99CE303452F3005C7583 /* FlagSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlagSettings.swift; sourceTree = "<group>"; };
 		FB7E441C2F0AB02B005EBCA0 /* InterfaceOrientationsViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceOrientationsViewModifier.swift; sourceTree = "<group>"; };
 		FB7F05F32DDCCF4A0036B116 /* ReaderPageDescriptionButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPageDescriptionButtonView.swift; sourceTree = "<group>"; };
 		FB7F05F52DDCDC900036B116 /* HostingNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingNode.swift; sourceTree = "<group>"; };
@@ -2097,6 +2100,7 @@
 			children = (
 				FBFA033A3008DF610008B4B6 /* AppSettings.swift */,
 				FB6F3AA330147D9F00CB64C4 /* DictionarySettings.swift */,
+				FB7D99CE303452F3005C7583 /* FlagSettings.swift */,
 			);
 			path = AppSettings;
 			sourceTree = "<group>";
@@ -3111,6 +3115,7 @@
 				FBD6A411285B7789007116C9 /* TrackItem.swift in Sources */,
 				FBD6A416285B7CC3007116C9 /* MyAnimeListTracker.swift in Sources */,
 				FB7F05F82DDD6CA60036B116 /* MarkdownView.swift in Sources */,
+				FB7D99D0303452F5005C7583 /* FlagSettings.swift in Sources */,
 				FB3DDA112ECEACE20081232F /* MangaListViewController.swift in Sources */,
 				FB72501627CAACAB0037F1C9 /* BackupManga.swift in Sources */,
 				FB8E48E12DC15DCF002A3621 /* NotificationName.swift in Sources */,
@@ -3384,6 +3389,7 @@
 				FB1B486B277CE76B0056D02C /* Page.swift in Sources */,
 				FBE7812D282F533C0038C0E3 /* DownloadQueue.swift in Sources */,
 				FB55C0B82DF32BA20019A551 /* LocalFileManager.swift in Sources */,
+				FB7D99CF303452F5005C7583 /* FlagSettings.swift in Sources */,
 				FBE9B0022E0000010019A551 /* EpubParser.swift in Sources */,
 				FBF9DC0628205FCE0056FA9A /* DownloadManager.swift in Sources */,
 				FBCA1B252888A910007149C5 /* TrackObject.swift in Sources */,
