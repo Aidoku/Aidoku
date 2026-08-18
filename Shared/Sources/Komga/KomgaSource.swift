@@ -106,6 +106,10 @@ actor KomgaSourceRunner: Runner {
     private var storedTags: [String] = []
     private var lastWorkingMirror: URL?
 
+    /// Whether a book is an ePub the reader has to download whole, remembered as the chapter list
+    /// is read so that opening an ordinary chapter needs no request of its own to find out.
+    private var epubChapters: [String: Bool] = [:]
+
     init(sourceKey: String, name: String, server: String) {
         self.sourceKey = sourceKey
         self.helper = KomgaHelper(sourceKey: sourceKey)
@@ -179,6 +183,10 @@ actor KomgaSourceRunner: Runner {
                 lastWorkingMirror: &lastWorkingMirrorCopy
             )
 
+            for book in chapters.content {
+                epubChapters[book.id] = book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible
+            }
+
             manga.chapters = chapters.content
                 .map {
                     $0.intoChapter(
@@ -197,13 +205,21 @@ actor KomgaSourceRunner: Runner {
             lastWorkingMirror = lastWorkingMirrorCopy
         }
 
-        let book: KomgaBook = try await helper.request(
-            path: "api/v1/books/\(chapter.id)",
-            lastWorkingMirror: &lastWorkingMirrorCopy
-        )
+        // The chapter list already carries every book's media profile, so the common path costs no
+        // request of its own. Only a chapter this source has not listed this launch, reached by
+        // resuming straight into the reader, has to ask.
+        let isEpub: Bool
+        if let known = epubChapters[chapter.id] {
+            isEpub = known
+        } else {
+            let path = "api/v1/books/\(chapter.id)"
+            let book: KomgaBook = try await helper.request(path: path, lastWorkingMirror: &lastWorkingMirrorCopy)
+            isEpub = book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible
+            epubChapters[chapter.id] = isEpub
+        }
 
         // epubs komga can't serve as image pages are downloaded whole and read by the epub reader
-        if book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible {
+        if isEpub {
             guard let auth = helper.getAuthorizationHeader() else {
                 throw SourceError.message("NOT_LOGGED_IN")
             }
