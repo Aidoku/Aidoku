@@ -311,7 +311,7 @@ extension CloudflareHandler {
         let hasClearance = webViewCookies.contains(where: {
             $0.name == "cf_clearance" &&
             $0.value != oldCookie?.value ?? "" &&
-            ($0.domain.contains(url.host ?? "") || (url.host?.contains($0.domain) ?? false))
+            ($0.domain.contains(host) || host.contains($0.domain))
         })
         guard hasClearance else { return }
 
