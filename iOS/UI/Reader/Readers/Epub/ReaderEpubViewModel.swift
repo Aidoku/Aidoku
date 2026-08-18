@@ -30,6 +30,11 @@ final class ReaderEpubViewModel {
     /// OPF spine and `EpubParser` were reconciled across the corpus and agree.
     let spinePaths: [String]
 
+    /// The book's table of contents, resolved onto the spine above.
+    ///
+    /// Empty for a book that declares none, which is what the reader shows no contents button for.
+    let toc: EpubTableOfContents
+
     private(set) var index: EpubPageIndex
     private(set) var currentDocument = 0
     private(set) var renderer: EpubSpineRenderer?
@@ -49,6 +54,14 @@ final class ReaderEpubViewModel {
 
     /// Called whenever the position or the book's total moves, so a host can refresh its toolbar.
     var onChange: (() -> Void)?
+
+    /// Called when the reader follows a link inside the book, carrying the spine path it addresses
+    /// and the fragment within it, if any.
+    ///
+    /// Reported rather than acted on, for the reason `moveForward` and `moveBackward` are: a jump
+    /// is a navigation, and the host runs one of those at a time. Following it here would put a
+    /// link and a page turn on one renderer at once.
+    var onLink: ((String, String?) -> Void)?
 
     /// Called when a scroll-mode pull runs past the end (`true`) or start (`false`) of the
     /// current document. The host routes it through the same queue as its page turns, since it is
@@ -123,6 +136,7 @@ final class ReaderEpubViewModel {
         self.bookURL = bookURL
         self.settings = settings
         self.spinePaths = book.chapters.flatMap(\.hrefs)
+        self.toc = EpubTableOfContents(toc: book.toc, spinePaths: spinePaths)
         self.index = EpubPageIndex(spinePaths: spinePaths)
         self.provider = try EpubZipResourceProvider(url: bookURL)
         self.measurer = EpubSpineMeasurer(provider: provider, settings: settings)
@@ -139,6 +153,7 @@ final class ReaderEpubViewModel {
         let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
         renderer.onScroll = { [weak self] in self?.onChange?() }
         renderer.onOverscroll = { [weak self] forward in self?.onOverscroll?(forward) }
+        renderer.onLinkActivated = { [weak self] path, fragment in self?.onLink?(path, fragment) }
         renderer.onRepaginate = { [weak self] count in
             guard let self else { return }
             // The renderer re-measures when a late image or a size change moves the boundaries, so
@@ -236,12 +251,88 @@ final class ReaderEpubViewModel {
         measurer.resume()
     }
 
+    /// Shows a place in the book's table of contents.
+    ///
+    /// An entry addresses a document and, where the book's contents are finer than its spine, an
+    /// element inside it. Both are resolved here so a host has one call to make whichever it is.
+    func showEntry(_ entry: EpubTableOfContents.Entry) async {
+        // A reader who chose a place in the contents has taken over from whatever they were being
+        // resumed to, exactly as a page turn does.
+        pendingBookPage = nil
+        await show(document: entry.document, fragment: entry.fragment)
+    }
+
+    /// Shows the place a link inside the book addresses.
+    ///
+    /// A path outside the spine is not navigated to and is logged: it is a link into a document the
+    /// publication does not offer for reading, such as a landmark the spine marks `linear="no"`, or
+    /// a broken href. Leaving the reader where they are is the honest answer, since there is no
+    /// page in the book that corresponds to it.
+    func showLocation(path: String, fragment: String?) async {
+        guard let document = spinePaths.firstIndex(of: path) else {
+            LogManager.logger.warn("ReaderEpubViewModel: link to \(path) is not in the spine")
+            return
+        }
+        pendingBookPage = nil
+        await show(document: document, fragment: fragment)
+    }
+
+    /// The entry of the table of contents the reader is currently inside, or nil where the contents
+    /// begin after them.
+    ///
+    /// Asked of the loaded document rather than computed from the spine alone, because a book
+    /// converted from a single file addresses its whole contents by fragment and every one of those
+    /// entries shares a spine index. Answering that case needs the page each fragment begins on,
+    /// which only the laid-out document knows.
+    func currentEntry() async -> EpubTableOfContents.Entry? {
+        let fragments = toc.entries(inDocument: currentDocument).compactMap(\.fragment)
+        guard !fragments.isEmpty, let renderer else {
+            return toc.entry(inDocument: currentDocument)
+        }
+        let pages = await renderer.fragmentPages(fragments)
+        return toc.entry(inDocument: currentDocument, atOrBefore: pageInDocument, fragmentPages: pages)
+    }
+
+    /// The book page an entry begins at, one-based, or nil while the documents before it are still
+    /// being counted.
+    ///
+    /// The page of the entry's **document**, not of the element inside it: locating an element costs
+    /// a load and a layout, and a contents list asks for every entry it shows at once. It is
+    /// therefore exact for a book whose contents follow its spine, which is most of them, and reads
+    /// as the head of the document for the entries that share one.
+    func bookPage(ofEntry entry: EpubTableOfContents.Entry) -> Int? {
+        index.startOfDocument(at: entry.document).map { $0 + 1 }
+    }
+
+    /// Moves to a document and, if asked, to a place inside it.
+    private func show(document: Int, fragment: String?) async {
+        guard document != currentDocument else {
+            guard
+                let fragment,
+                let page = await renderer?.fragmentPages([fragment])[fragment]
+            else {
+                await renderer?.showPage(0)
+                onChange?()
+                return
+            }
+            await renderer?.showPage(page)
+            onChange?()
+            return
+        }
+        await move(toDocument: document, landingOnLastPage: false, fragment: fragment)
+    }
+
     /// Loads a spine document and shows a page of it.
     ///
     /// `load` returns the document's count, so the last page is known by the time there is a
     /// document to show it in. A count already held for this document does not shorten the path:
     /// nothing can be shown before the document is loaded either way.
-    private func move(toDocument document: Int, landingOnLastPage: Bool, page: Int = 0) async {
+    private func move(
+        toDocument document: Int,
+        landingOnLastPage: Bool,
+        page: Int = 0,
+        fragment: String? = nil
+    ) async {
         guard spinePaths.indices.contains(document) else { return }
 
         // Provider reads serialise onto one file handle, so a load that crosses into another spine
@@ -258,7 +349,10 @@ final class ReaderEpubViewModel {
         // Landing on page 0 needs none of this, since that is where a load already leaves the
         // document, and hiding it there would flicker for no reason.
         let target = landingOnLastPage ? Int.max : page
-        let hides = target != 0
+        // A fragment hides the document for the same reason a page other than the first does: the
+        // page it sits on is only known once the document is laid out, so the reader would
+        // otherwise see the document open at its head and then run to the place they asked for.
+        let hides = target != 0 || fragment != nil
         if hides {
             renderer?.webView.alpha = 0
         }
@@ -271,7 +365,11 @@ final class ReaderEpubViewModel {
         currentDocument = document
         do {
             let count = try await loadCurrentDocument()
-            await renderer?.showPage(landingOnLastPage ? count - 1 : page)
+            var landing = landingOnLastPage ? count - 1 : page
+            if let fragment, let resolved = await renderer?.fragmentPages([fragment])[fragment] {
+                landing = resolved
+            }
+            await renderer?.showPage(landing)
         } catch {
             LogManager.logger.error("ReaderEpubViewModel: could not load \(spinePaths[document]): \(error)")
         }

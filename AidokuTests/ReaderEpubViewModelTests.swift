@@ -342,4 +342,110 @@ struct ReaderEpubViewModelTests {
         #expect(viewModel.pendingBookPage == nil)
         #expect(!viewModel.canShowPendingBookPage)
     }
+
+    // MARK: - Table of contents
+
+    private static func entry(document: Int, fragment: String? = nil) -> EpubTableOfContents.Entry {
+        EpubTableOfContents.Entry(id: 0, title: "Somewhere", document: document, fragment: fragment, depth: 0)
+    }
+
+    @Test func showingAnEntryMovesToItsDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showEntry(Self.entry(document: 2))
+
+        #expect(viewModel.currentDocument == 2)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    /// A fragment the document does not contain leaves the reader at the head of it, which is where
+    /// the entry points even when the element it names has gone.
+    @Test func anEntryWhoseAnchorIsMissingLandsOnItsDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showEntry(Self.entry(document: 3, fragment: "nowhere"))
+
+        #expect(viewModel.currentDocument == 3)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    @Test func followingALinkMovesToTheDocumentItAddresses() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showLocation(path: viewModel.spinePaths[2], fragment: nil)
+
+        #expect(viewModel.currentDocument == 2)
+    }
+
+    /// A link into a document the spine does not offer has no page in the book, so the reader stays
+    /// where they are rather than being taken somewhere arbitrary.
+    @Test func aLinkOutsideTheSpineLeavesTheReaderWhereTheyAre() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showLocation(path: "OEBPS/not-in-the-spine.xhtml", fragment: nil)
+
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    /// The return offer survives the book being laid out again, which is the whole reason it is
+    /// anchored on a fraction rather than on the page number it was made at.
+    ///
+    /// Driven through the view model rather than the button: what has to hold is that the same
+    /// fraction still names the same place once every page boundary has moved.
+    @Test func aFractionNamesTheSamePlaceAcrossARelayout() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+
+        let total = viewModel.bookTotal
+        try #require(total > 4, "the fixture must be long enough for a fraction to be meaningful")
+        await viewModel.showBookPage(total / 2)
+        let page = try #require(viewModel.bookPage)
+        let fraction = Double(page) / Double(total - 1)
+
+        // The same width the reader would be at after a rotation, which re-fragments every document.
+        viewModel.viewportChanged(to: CGSize(width: Self.viewport.height, height: Self.viewport.width))
+        try await waitUntilMeasured(viewModel)
+
+        let resolved = Int((fraction * Double(viewModel.bookTotal - 1)).rounded())
+        #expect(viewModel.bookTotal != total, "the relayout must actually have moved the boundaries")
+        #expect(resolved >= 0 && resolved < viewModel.bookTotal)
+        await viewModel.showBookPage(resolved)
+        #expect(viewModel.bookPage == resolved)
+    }
+
+    /// A book with no contents offers none, rather than one entry per spine document.
+    @Test func aBookWithoutATocHasNoContents() throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+
+        #expect(viewModel.toc.isEmpty)
+    }
 }
