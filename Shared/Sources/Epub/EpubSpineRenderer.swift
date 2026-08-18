@@ -83,6 +83,16 @@ final class EpubSpineRenderer: NSObject {
     /// a host that displays the count is all this needs to reach.
     var onRepaginate: ((Int) -> Void)?
 
+    /// Called when the reader follows a link inside the book, carrying the spine path it addresses
+    /// and the fragment within it, if any.
+    ///
+    /// The navigation itself is cancelled. A link that loaded itself would put a document into this
+    /// renderer without the book knowing which one it was showing, leaving the page counts, the
+    /// spine position and everything derived from them describing a document that is no longer on
+    /// screen. A move between spine documents is the book's to make, so a link is reported as a
+    /// request rather than performed as a navigation.
+    var onLinkActivated: ((String, String?) -> Void)?
+
     private let settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
     private var confirmationTask: Task<Void, Never>?
@@ -323,6 +333,59 @@ final class EpubSpineRenderer: NSObject {
         // this fraction, and restoring must not then rewrite it: rounding to the nearest page each
         // time would let the position wander across repeated rotations.
         progression = Double(currentPage) / Double(max(pageCount - 1, 1))
+    }
+
+    /// Which page of the loaded document each of `fragments` begins on.
+    ///
+    /// A TOC entry and an internal link both address a place inside a document rather than the
+    /// document itself, so the page they mean is a property of the layout and can only be asked of
+    /// a document that has one. Fragments are answered in a batch because a book converted from a
+    /// single file addresses its whole contents this way, and one round trip through the web view
+    /// per entry would be paid every time the contents are shown.
+    ///
+    /// A fragment the document does not contain is absent from the result rather than defaulted to
+    /// its first page: an entry that cannot be located is one the reader should be taken to the
+    /// head of the document for, and that is the caller's decision to make.
+    ///
+    /// The page is computed inside the document, from the width the document is laid out at, for
+    /// the reason recorded on `currentPageOffset`. The scroll offset it is measured from is this
+    /// renderer's own, which `goToPage` has confirmed against the scroll view: the document's
+    /// `pageXOffset` lags what is on screen, so asking the document where it is scrolled to would
+    /// answer for the page before the one being read.
+    func fragmentPages(_ fragments: [String]) async -> [String: Int] {
+        guard !fragments.isEmpty, pageCount > 0 else { return [:] }
+        guard
+            let data = try? JSONSerialization.data(withJSONObject: Array(Set(fragments))),
+            let list = String(data: data, encoding: .utf8)
+        else { return [:] }
+
+        let extent = settings.paged
+            ? "window.innerWidth + \(settings.columnGapPx)"
+            : "window.innerHeight"
+        let start = settings.paged ? "rect.left" : "rect.top"
+        let script = """
+        var ids = \(list);
+        var pitch = \(extent);
+        var out = {};
+        for (var i = 0; i < ids.length; i++) {
+            var el = document.getElementById(ids[i]);
+            if (!el && window.CSS && CSS.escape) {
+                el = document.querySelector('[name=' + CSS.escape(ids[i]) + ']');
+            }
+            if (!el || pitch <= 0) { continue; }
+            var rect = el.getBoundingClientRect();
+            out[ids[i]] = Math.max(0, Math.floor((\(start) + \(currentPageOffset)) / pitch));
+        }
+        JSON.stringify(out);
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard
+            let json = (result as? String)?.data(using: .utf8),
+            let pages = try? JSONSerialization.jsonObject(with: json) as? [String: Int]
+        else { return [:] }
+        // A page past the end of the document is a measurement taken while it was being laid out
+        // again, which is a page the reader can still be sent to the last of.
+        return pages.mapValues { min(max($0, 0), max(pageCount - 1, 0)) }
     }
 
     /// Scrolls to a page, returning whether this request saw itself through. A request overtaken by
@@ -641,7 +704,18 @@ extension EpubSpineRenderer: WKNavigationDelegate {
     ) async -> WKNavigationActionPolicy {
         // Alongside the content rule list, which is what stops subresource loads: only our own
         // scheme is allowed to navigate.
-        navigationAction.request.url?.scheme == EpubSchemeHandler.scheme ? .allow : .cancel
+        guard let url = navigationAction.request.url, url.scheme == EpubSchemeHandler.scheme else {
+            return .cancel
+        }
+        // A link the reader followed, rather than the load this renderer asked for. Both arrive
+        // here over the same scheme and only the navigation type tells them apart. It is handed to
+        // the book and cancelled here: even a link into the document already loaded would restart
+        // it, discarding the count and the page that belong to it.
+        guard navigationAction.navigationType != .linkActivated else {
+            onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), url.fragment)
+            return .cancel
+        }
+        return .allow
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

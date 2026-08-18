@@ -95,7 +95,7 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
     }
 
     /// URL paths are absolute and percent-encoded; ePub-internal paths are neither.
-    nonisolated private static func resourcePath(from url: URL) -> String {
+    nonisolated static func resourcePath(from url: URL) -> String {
         var path = url.path
         if path.hasPrefix("/") {
             path = String(path.dropFirst())
