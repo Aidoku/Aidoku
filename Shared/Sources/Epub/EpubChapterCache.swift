@@ -26,22 +26,24 @@ enum EpubChapterCache {
             return file
         }
 
-        let (data, response) = try await URLSession.shared.data(for: request)
-        if let response = response as? HTTPURLResponse, !(200..<300).contains(response.statusCode) {
-            LogManager.logger.error("Failed to download epub (HTTP \(response.statusCode)): \(request)")
+        // A book arrives whole or not at all. A part of one left at `file` would be served from
+        // then on as though it were the book: `EpubParser` would fail to read it, the reader would
+        // report a chapter that cannot be loaded, and no retry would ever get past the cache.
+        do {
+            try await URLSession.shared.download(for: request, to: file)
+        } catch let error as URLSession.URLSessionError {
+            guard case .httpError(let statusCode) = error else { throw error }
+            LogManager.logger.error("Failed to download epub (HTTP \(statusCode)): \(request)")
             // Kavita gates its download endpoint behind the download role, and Komga behind the
             // file-download permission, so a forbidden response is a lasting property of the
             // account rather than something a retry or a fresh token can resolve.
-            let error = switch response.statusCode {
+            let sourceError = switch statusCode {
                 case 401: SourceError.message("NOT_LOGGED_IN")
                 case 403: SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")
                 default: SourceError.message("EPUB_DOWNLOAD_FAILED")
             }
-            throw error
+            throw sourceError
         }
-
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try data.write(to: file)
         return file
     }
 
