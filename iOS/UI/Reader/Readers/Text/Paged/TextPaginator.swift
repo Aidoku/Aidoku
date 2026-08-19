@@ -473,8 +473,10 @@ class TextPaginator {
             // only if it's whitespace so we never split a word across pages.
             var breakEnd = sentenceBreak.location + 1
             if breakEnd < text.length {
+                // UnicodeScalar(_: UInt16) is nil for surrogate halves (e.g. emoji);
+                // those are never whitespace, so skip extending the break past them
                 let nextChar = text.character(at: breakEnd)
-                if CharacterSet.whitespacesAndNewlines.contains(UnicodeScalar(nextChar)!) {
+                if let scalar = UnicodeScalar(nextChar), CharacterSet.whitespacesAndNewlines.contains(scalar) {
                     breakEnd += 1
                 }
             }

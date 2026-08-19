@@ -44,7 +44,7 @@ struct ReaderTextView: View {
            do {
                var data = Data()
                let archive = try Archive(url: zipURL, accessMode: .read)
-               guard let entry = archive[filePath] else {
+               guard let entry = archive.entry(at: filePath) else {
                    return nil
                }
                _ = try archive.extract(

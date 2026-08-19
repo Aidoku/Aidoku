@@ -24,7 +24,7 @@ final actor EpubZipResourceProvider: EpubResourceProvider {
     }
 
     func data(at path: String) throws -> Data {
-        guard let entry = EpubParser.entry(in: archive, path: path) else {
+        guard let entry = archive.entry(at: path) else {
             throw EpubResourceError.notFound(path)
         }
         var data = Data()

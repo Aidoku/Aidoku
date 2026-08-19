@@ -307,22 +307,8 @@ enum EpubParser {
 
     // MARK: - Archive Helpers
 
-    /// Look up an archive entry, tolerating "./" prefixes, percent-encoding, and case differences.
-    static func entry(in archive: Archive, path: String) -> Entry? {
-        if let entry = archive[path] { return entry }
-        let target = path.lowercased()
-        return archive.first { entry in
-            var entryPath = entry.path
-            if entryPath.hasPrefix("./") {
-                entryPath = String(entryPath.dropFirst(2))
-            }
-            return entryPath.lowercased() == target
-                || (entryPath.removingPercentEncoding ?? entryPath).lowercased() == target
-        }
-    }
-
     private static func extractData(from archive: Archive, path: String) -> Data? {
-        guard let entry = entry(in: archive, path: path) else { return nil }
+        guard let entry = archive.entry(at: path) else { return nil }
         var data = Data()
         do {
             _ = try archive.extract(entry) { data.append($0) }

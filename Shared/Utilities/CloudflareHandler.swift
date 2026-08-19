@@ -154,9 +154,15 @@ actor CloudflareHandler: NSObject {
     private func addWebView(for request: URLRequest) async -> Bool {
         guard let parentView else { return false }
 
-        webView = WKWebView(frame: .zero)
+        // match web view rendering mode with user agent
+        let userAgent = request.value(forHTTPHeaderField: "User-Agent")
+        let config = WKWebViewConfiguration()
+        if let userAgent, userAgent.contains("iPhone") || userAgent.contains("iPad") {
+            config.defaultWebpagePreferences.preferredContentMode = .mobile
+        }
+        webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = await proxy(for: request)
-        webView.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
+        webView.customUserAgent = userAgent
         webView.translatesAutoresizingMaskIntoConstraints = false
         parentView.addSubview(webView)
 
