@@ -142,12 +142,13 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// other way back is the slider, which does not know where they were.
     ///
     /// Shaped after the readers that have solved this. Apple Books and Play Books both show a small
-    /// opaque circle in a bottom corner and leave it there until it is used; Kindle shows a pill
-    /// with the page number in it. Three properties are common to all of them and each was got wrong
-    /// first time: it is **opaque**, so it is legible over text rather than showing it through; it
-    /// is **cornered**, so it covers as little of the page as possible; and it is **persistent**,
-    /// because a reader who has just arrived somewhere unexpected is reading, not watching for a
-    /// control to expire.
+    /// opaque circle in a bottom corner; Kindle shows a pill with the page number in it. Two
+    /// properties are common to all of them and each was got wrong first time: it is **opaque**, so
+    /// it is legible over text rather than showing it through, and it is **cornered**, so it covers
+    /// as little of the page as possible.
+    ///
+    /// Where they were followed and should not have been is how long it stays: they leave it until
+    /// it is used, and in use here that was intrusive, so it expires. See `returnOfferLifetime`.
     private lazy var returnButton: UIButton = {
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(
@@ -155,19 +156,28 @@ class ReaderEpubViewController: BaseObservingViewController {
             withConfiguration: UIImage.SymbolConfiguration(textStyle: .body)
         )
         configuration.contentInsets = .zero
+        // A capsule around a square is a circle, which is the shape iOS gives a floating control of
+        // this size. The fill and the stroke belong to the configuration rather than to the layer:
+        // a configured button draws its own background, so styling the layer instead left the
+        // configuration's rounded rectangle sitting on top of the circle the layer had drawn.
+        configuration.cornerStyle = .capsule
+        // Opaque rather than a material or a translucent fill. The page behind it is text, and a
+        // fill that lets text through is what made the first version unreadable.
+        configuration.background.backgroundColor = .systemBackground
+        configuration.background.strokeColor = .separator
+        configuration.background.strokeWidth = 1
         let button = UIButton(configuration: configuration)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tintColor = .label
-        // Opaque rather than a material or a translucent fill. The page behind it is text, and a
-        // fill that lets text through is what made the first version unreadable.
-        button.backgroundColor = .systemBackground
-        button.layer.cornerRadius = Self.returnButtonDiameter / 2
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.separator.cgColor
         button.layer.shadowColor = UIColor.black.cgColor
         button.layer.shadowOpacity = 0.15
         button.layer.shadowRadius = 6
         button.layer.shadowOffset = CGSize(width: 0, height: 2)
+        // The layer has no background to cast a shadow from, and the size is a constant, so the
+        // path is given rather than derived.
+        button.layer.shadowPath = UIBezierPath(
+            ovalIn: CGRect(x: 0, y: 0, width: Self.returnButtonDiameter, height: Self.returnButtonDiameter)
+        ).cgPath
         button.alpha = 0
         button.isHidden = true
         button.addTarget(self, action: #selector(returnToJumpOrigin), for: .touchUpInside)
@@ -176,6 +186,17 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     /// A full touch target, which the icon alone is not.
     private static let returnButtonDiameter: CGFloat = 44
+
+    /// How long the offer stands before it withdraws itself.
+    ///
+    /// The readers this was shaped after leave it until it is used, and that is what shipped first.
+    /// Measured against the real thing that was wrong: a jump is a moment, and a control that
+    /// outlives it by the rest of the chapter is in the corner of every page the reader turns. Five
+    /// seconds covers the glance that follows an unexpected arrival without becoming furniture.
+    private static let returnOfferLifetime: TimeInterval = 5
+
+    /// The withdrawal `returnOfferLifetime` schedules, cancelled if the offer goes before it fires.
+    private var returnOfferTask: Task<Void, Never>?
 
     /// The return button's distance from the bottom of the view.
     ///
@@ -202,6 +223,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         openTask?.cancel()
         moveTask?.cancel()
         settingsReloadTask?.cancel()
+        returnOfferTask?.cancel()
     }
 
     /// The debounced rebuild a settings change schedules; see `scheduleSettingsReload`.
@@ -755,6 +777,14 @@ extension ReaderEpubViewController {
         // The web view is added when a book opens, which is after this button, so it would
         // otherwise sit above it.
         view.bringSubviewToFront(returnButton)
+        // Ahead of the guard below: a second jump while the offer is up replaces where it leads,
+        // so it restarts the countdown rather than inheriting what is left of the first one.
+        returnOfferTask?.cancel()
+        returnOfferTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.returnOfferLifetime * 1_000_000_000))
+            guard let self, !Task.isCancelled else { return }
+            hideReturnOffer()
+        }
         guard returnButton.isHidden else { return }
         returnButton.isHidden = false
         UIView.animate(withDuration: 0.2) {
@@ -787,9 +817,10 @@ extension ReaderEpubViewController {
         hideReturnOffer()
     }
 
-    /// Withdraws the offer, which nothing does on a timer: a reader who has just been taken
-    /// somewhere unexpected is reading rather than watching for a control to expire.
+    /// Withdraws the offer, whether it was taken, invalidated, or simply ran out.
     func hideReturnOffer() {
+        returnOfferTask?.cancel()
+        returnOfferTask = nil
         returnBookPage = nil
         returnPosition = nil
         guard !returnButton.isHidden else { return }
