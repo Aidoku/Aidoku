@@ -450,11 +450,6 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         delegate?.setSliderOffset(offset)
     }
 
-    /// Navigate to the view controller the data source supplies in the given direction.
-    ///
-    /// The data source already accounts for transition pages, which are not part of
-    /// `pages`, so this avoids computing a target from `currentPageIndex`. Bookkeeping
-    /// runs through the same delegate callback a swipe would trigger.
     private func move(direction: UIPageViewController.NavigationDirection) {
         guard let currentViewController = pageViewController.viewControllers?.first else { return }
 
@@ -485,7 +480,6 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     // MARK: - Chapter Loading
 
     func loadChapter(_ chapter: AidokuRunner.Chapter, startPage: Int = 0) async {
-
         isLoadingChapter = true
         hasPaginated = false
         self.chapter = chapter
