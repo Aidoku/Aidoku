@@ -228,7 +228,7 @@ extension LocalFileManager {
         bookDir.createDirectory()
         do {
             let archive = try Archive(url: archiveURL, accessMode: .read)
-            guard let entry = EpubParser.entry(in: archive, path: path) else { return nil }
+            guard let entry = archive.entry(at: path) else { return nil }
             _ = try archive.extract(entry, to: fileURL)
             return fileURL
         } catch {

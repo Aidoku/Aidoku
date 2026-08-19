@@ -234,6 +234,10 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         pages = paginator.paginate(markdown: text, pageSize: pageSize)
         hasPaginated = true
 
+        // Pagination can produce no pages (e.g. a chapter whose only content is a
+        // failed image reference); bail out before any indexing below
+        guard !pages.isEmpty else { return }
+
         // Update toolbar with our paginated page count
         // ReaderViewController now knows to not switch away when we're already
         // in the paginated text reader with text pages
@@ -340,7 +344,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         do {
             var data = Data()
             let archive = try Archive(url: zipURL, accessMode: .read)
-            guard let entry = archive[filePath] else {
+            guard let entry = archive.entry(at: filePath) else {
                 return nil
             }
             _ = try archive.extract(
@@ -423,7 +427,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         guard index >= 0 && index < pages.count else {
             // Return empty view controller as fallback
             let vc = UIViewController()
-            vc.view.backgroundColor = .systemRed
+            vc.view.backgroundColor = .systemBackground
             return vc
         }
 
