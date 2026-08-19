@@ -94,12 +94,16 @@ struct EpubTableOfContents: Equatable {
     /// `pages` maps a fragment to the page of the document it begins on, which is what the renderer
     /// can answer for a document it has laid out. A fragment missing from the map is one the
     /// document does not contain, and is passed over rather than assumed to be at its head.
+    ///
+    /// When none of the document's entries qualifies the answer lies behind it, never back among
+    /// them: a book converted from a single file addresses its whole contents by fragment, and a
+    /// reader in its front matter is ahead of every one of them.
     func entry(inDocument document: Int, atOrBefore page: Int, fragmentPages pages: [String: Int]) -> Entry? {
         let inside = entries(inDocument: document).filter { entry in
             guard let fragment = entry.fragment else { return true }
             guard let start = pages[fragment] else { return false }
             return start <= page
         }
-        return inside.last ?? entry(inDocument: document)
+        return inside.last ?? entries.last { $0.document < document }
     }
 }

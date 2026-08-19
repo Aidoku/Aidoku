@@ -306,4 +306,38 @@ struct EpubTableOfContentsTests {
 
         #expect(entry?.title == "Second")
     }
+
+    /// A book converted from a single file addresses its whole contents by fragment, so a reader in
+    /// its front matter is ahead of every entry the document holds. Falling back to those entries
+    /// would report the last of them, which is the end of the book.
+    @Test func aReaderAheadOfEveryFragmentBelongsToNoEntry() {
+        let contents = EpubTableOfContents(
+            toc: [
+                Self.entry("all.xhtml", "Chapter One", fragment: "ch1"),
+                Self.entry("all.xhtml", "Chapter Two", fragment: "ch2")
+            ],
+            spinePaths: ["all.xhtml"]
+        )
+        let pages = ["ch1": 5, "ch2": 10]
+
+        #expect(contents.entry(inDocument: 0, atOrBefore: 0, fragmentPages: pages) == nil)
+        #expect(
+            contents.entry(inDocument: 0, atOrBefore: 5, fragmentPages: pages)?.title == "Chapter One"
+        )
+    }
+
+    /// Where the fallback has somewhere to go it is the entry before the document, not one inside it.
+    @Test func aReaderAheadOfItsFragmentsFallsBackBehindTheDocument() {
+        let contents = EpubTableOfContents(
+            toc: [
+                Self.entry("a.xhtml", "First"),
+                Self.entry("b.xhtml", "Second", fragment: "later")
+            ],
+            spinePaths: ["a.xhtml", "b.xhtml"]
+        )
+
+        let entry = contents.entry(inDocument: 1, atOrBefore: 0, fragmentPages: ["later": 4])
+
+        #expect(entry?.title == "First")
+    }
 }
