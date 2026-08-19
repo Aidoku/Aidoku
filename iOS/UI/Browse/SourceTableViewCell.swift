@@ -156,6 +156,7 @@ class SourceTableViewCell: UITableViewCell {
 
     override func prepareForReuse() {
         super.prepareForReuse()
+        imageTask?.cancel()
         info = nil
         iconView.image = UIImage(named: "MangaPlaceholder")
     }
@@ -171,6 +172,8 @@ class SourceTableViewCell: UITableViewCell {
 
         warningButton.isHidden = !info.external || info.externalInfo != nil
         getButton.isHidden = !showButton
+
+        imageTask?.cancel()
 
         // load icon
         if let iconUrl = info.iconUrl {
@@ -194,10 +197,6 @@ class SourceTableViewCell: UITableViewCell {
     }
 
     private func loadIcon(url: URL) async {
-        if imageTask != nil {
-            imageTask?.cancel()
-            imageTask = nil
-        }
         let request = ImageRequest(
             url: url,
             processors: [DownsampleProcessor(width: bounds.width)]

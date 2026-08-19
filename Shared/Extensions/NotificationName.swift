@@ -40,6 +40,8 @@ extension Notification.Name {
     static let historyAdded = Self("historyAdded")
     static let historyRemoved = Self("historyRemoved")
     static let historySet = Self("historySet")
+    // posted when the history tab is selected while already at the top of the history list
+    static let historyTabReselected = Self("historyTabReselected")
 
     // trackers
     static let updateTrackers = Self("updateTrackers")
@@ -66,6 +68,8 @@ extension Notification.Name {
     static let readerReadingMode = Self("Reader.readingMode")
     static let readerTapZones = Self("Reader.tapZones")
     static let readerOrientation = Self("Reader.orientation")
+    static let dictionaryDictionariesChanged = Self("Dictionary.dictionariesChanged")
+    static let dictionaryVocabChanged = Self("Dictionary.vocabChanged")
 
     // settings
     static let layoutSetting = Self("Appearance.layout")

@@ -154,9 +154,15 @@ actor CloudflareHandler: NSObject {
     private func addWebView(for request: URLRequest) async -> Bool {
         guard let parentView else { return false }
 
-        webView = WKWebView(frame: .zero)
+        // match web view rendering mode with user agent
+        let userAgent = request.value(forHTTPHeaderField: "User-Agent")
+        let config = WKWebViewConfiguration()
+        if let userAgent, userAgent.contains("iPhone") || userAgent.contains("iPad") {
+            config.defaultWebpagePreferences.preferredContentMode = .mobile
+        }
+        webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = await proxy(for: request)
-        webView.customUserAgent = request.value(forHTTPHeaderField: "User-Agent")
+        webView.customUserAgent = userAgent
         webView.translatesAutoresizingMaskIntoConstraints = false
         parentView.addSubview(webView)
 
@@ -186,6 +192,11 @@ actor CloudflareHandler: NSObject {
         // todo
         await finish()
 #else
+        guard let parent else {
+            await finish()
+            return
+        }
+
         popupController?.dismiss(animated: true)
         let popup = WebViewViewController(request: request, handler: await proxy(for: request))
         popupController = popup
@@ -201,7 +212,7 @@ actor CloudflareHandler: NSObject {
             webView.centerYAnchor.constraint(equalTo: popup.view.centerYAnchor)
         ])
 
-        parent?.present(popup, animated: true)
+        parent.present(popup, animated: true)
 #endif
     }
 
@@ -280,7 +291,7 @@ extension CloudflareHandler {
 
     // handle web view reload/redirect
     nonisolated func navigated(webView: WKWebView, for request: URLRequest) async {
-        guard let url = request.url else { return }
+        guard let url = request.url, let host = url.host?.lowercased() else { return }
 
 #if !os(macOS)
         await MainActor.run {
@@ -300,13 +311,13 @@ extension CloudflareHandler {
         var webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
 
         // check for old (expired) clearance cookie
-        let oldCookie = HTTPCookieStorage.shared.cookies(for: url)?.first { $0.name == "cf_clearance" }
+        let oldCookie = HTTPCookieStorage.shared.allCookies(for: url)?.first { $0.name == "cf_clearance" }
 
         // check for clearance cookie
         let hasClearance = webViewCookies.contains(where: {
             $0.name == "cf_clearance" &&
             $0.value != oldCookie?.value ?? "" &&
-            ($0.domain.contains(url.host ?? "") || (url.host?.contains($0.domain) ?? false))
+            ($0.domain.contains(host) || host.contains($0.domain))
         })
         guard hasClearance else { return }
 
@@ -319,10 +330,6 @@ extension CloudflareHandler {
         }
         HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
 
-        // ensure we're no longer blocked by cloudflare status or captcha
-        if let statusCode = await self.lastMainFrameStatusCode, blockedStatusCodes.contains(statusCode) {
-            return
-        }
         let isCaptcha = await isCaptchaPage()
         guard !isCaptcha else { return }
 
@@ -337,5 +344,17 @@ extension CloudflareHandler {
     // handle user popover dismiss
     nonisolated func canceled(request: URLRequest) async {
         await finish()
+    }
+}
+
+extension HTTPCookieStorage {
+    func allCookies(for url: URL) -> [HTTPCookie]? {
+        guard let host = url.host else { return nil }
+        return cookies?.filter { cookie in
+            let domain = cookie.domain
+                .lowercased()
+                .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+            return host == domain || host.hasSuffix("." + domain)
+        }
     }
 }

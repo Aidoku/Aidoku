@@ -186,6 +186,7 @@ struct SettingsTrackingView: View {
 
             for tracker in trackers {
                 guard let oauthTracker = tracker as? OAuthTracker else { return }
+                await oauthTracker.oauthClient.loadTokens()
                 let needsRelogin = await oauthTracker.oauthClient.tokens?.askedForRefresh == true
                 if needsRelogin {
                     trackersNeedingRelogin.insert(tracker.id)

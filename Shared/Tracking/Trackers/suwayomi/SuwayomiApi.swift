@@ -127,11 +127,9 @@ actor SuwayomiApi {
         }
 
         let lastPageRead = max(progress.page - 1, 0)
-        let isMarkUnread = !progress.completed && lastPageRead == 0
-
         let patch = SuwayomiChapterProgressPatch(
             isRead: progress.completed,
-            lastPageRead: isMarkUnread ? nil : lastPageRead
+            lastPageRead: lastPageRead
         )
         let helper = SuwayomiHelper(sourceKey: sourceKey)
         let _: SuwayomiUpdateChapterResponse = try await helper.request(body: Payload(variables: .init(chapterId: chapterId, patch: patch)))

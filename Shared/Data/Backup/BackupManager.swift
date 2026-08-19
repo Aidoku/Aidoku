@@ -24,7 +24,7 @@ actor BackupManager {
     private static let backupTaskIdentifier = (Bundle.main.bundleIdentifier ?? "") + ".backup"
     private static let maxAutoBackups = 4
 
-    private static let excludedSettings = [
+    private static let excludedSettings: Set<String> = [
         "Browse.sourceLists", // stored separately
         "General.icloudSync"
     ]
@@ -45,7 +45,8 @@ actor BackupManager {
         "Manga",
         "Logs",
         "Search",
-        "Token"
+        "Token",
+        "Dictionary"
     ]
 
     func save(backup: Backup, url: URL? = nil) {
@@ -53,15 +54,15 @@ actor BackupManager {
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary
         if let plist = try? encoder.encode(backup) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
             if let url = url {
                 try? plist.write(to: url)
             } else {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
                 let path = Self.directory.appendingPathComponent("aidoku_\(dateFormatter.string(from: backup.date)).aib")
                 try? plist.write(to: path)
             }
-            NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
+            NotificationCenter.default.post(name: .updateBackupList, object: nil)
         }
     }
 
@@ -99,6 +100,7 @@ actor BackupManager {
         let chapters: Bool
         let tracking: Bool
         let readingSessions: Bool
+        let vocabulary: Bool
         let updates: Bool
         let categories: Bool
         let settings: Bool
@@ -148,6 +150,11 @@ actor BackupManager {
             } else {
                 []
             }
+            let vocabulary: [BackupVocabEntry] = if options.vocabulary {
+                CoreDataManager.shared.getVocab(context: context).compactMap(BackupVocabEntry.init)
+            } else {
+                []
+            }
             let updateItems: [BackupUpdate] = if options.updates {
                 CoreDataManager.shared.getUpdates(context: context).compactMap(BackupUpdate.init)
             } else {
@@ -174,6 +181,7 @@ actor BackupManager {
                 chapters: chapters,
                 trackItems: trackItems,
                 readingSessions: sessionItems,
+                vocabulary: vocabulary,
                 updates: updateItems,
                 categories: categories,
                 sources: sources,
@@ -224,10 +232,11 @@ actor BackupManager {
         return convertedSettings
     }
 
-    func renameBackup(url: URL, name: String?) {
-        guard var backup = Backup.load(from: url) else { return }
+    func renameBackup(url: URL, name: String?) -> Bool {
+        guard var backup = Backup.load(from: url) else { return false }
         backup.name = name?.isEmpty ?? true ? nil : name
         save(backup: backup, url: url)
+        return true
     }
 
     func removeBackup(url: URL) {
@@ -244,6 +253,7 @@ extension BackupManager {
         case history
         case chapters
         case sessions
+        case vocabulary
         case updates
         case track
         case sources
@@ -256,6 +266,7 @@ extension BackupManager {
                 case .history: NSLocalizedString("HISTORY")
                 case .chapters: NSLocalizedString("CHAPTERS")
                 case .sessions: NSLocalizedString("READING_SESSIONS")
+                case .vocabulary: NSLocalizedString("VOCABULARY")
                 case .updates: NSLocalizedString("UPDATES")
                 case .track: NSLocalizedString("TRACKERS")
                 case .sources: NSLocalizedString("SOURCES")
@@ -263,8 +274,10 @@ extension BackupManager {
         }
     }
 
-    func restore(from backup: Backup) async {
+    func restore(from url: URL) async -> Bool {
+        guard let backup = Backup.load(from: url) else { return false }
         await doRestore(from: backup)
+        return true
     }
 
     @discardableResult
@@ -285,6 +298,7 @@ extension BackupManager {
                 for additionalSource in backup.sources ?? [] where additionalSource.config != nil {
                     sourceKeyPrefixes.append("\(additionalSource.id).")
                 }
+                var needsMigrate = false
                 for (key, value) in settings {
                     let hasAllowedPrefix = Self.allowedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
                         || sourceKeyPrefixes.contains(where: { key.hasPrefix($0) })
@@ -296,6 +310,13 @@ extension BackupManager {
                         continue
                     }
                     UserDefaults.standard.set(value.toRaw(), forKey: key)
+                    if AppDelegate.legacySettingKeys.contains(key) {
+                        needsMigrate = true
+                    }
+                }
+
+                if needsMigrate {
+                    await (UIApplication.shared.delegate as? AppDelegate)?.migrateSettings()
                 }
             }
 
@@ -304,7 +325,7 @@ extension BackupManager {
             SourceManager.shared.clearSourceLists()
             for sourceList in sourceLists {
                 guard let sourceListURL = URL(string: sourceList) else { continue }
-                _ = await SourceManager.shared.addSourceList(url: sourceListURL)
+                _ = await SourceManager.shared.addSourceList(url: sourceListURL, allowUnavailable: true)
             }
         }
 
@@ -497,6 +518,25 @@ extension BackupManager {
                 }
             }
         }
+        let vocabTask = Task {
+            if let vocabItems = backup.vocabulary {
+                let result = await CoreDataManager.shared.container.performBackgroundTask { context in
+                    CoreDataManager.shared.clearVocab(context: context)
+                    for item in vocabItems {
+                        _ = item.toObject(context: context)
+                    }
+                    do {
+                        try context.save()
+                        return true
+                    } catch {
+                        return false
+                    }
+                }
+                if !result {
+                    throw BackupError.vocabulary
+                }
+            }
+        }
         let trackTask = Task {
             if let backupTrackItems = backup.trackItems {
                 let result = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -548,6 +588,7 @@ extension BackupManager {
         do {
             try await updatesTask.value
             try await sessionsTask.value
+            try await vocabTask.value
             try await trackTask.value
             try await sourceTask.value
         } catch {
@@ -642,10 +683,12 @@ extension BackupManager {
             request.requiresExternalPower = false
             request.requiresNetworkConnectivity = false
 
-            do {
-                try BGTaskScheduler.shared.submit(request)
-            } catch {
-                LogManager.logger.error("Could not schedule automatic backup: \(error)")
+            Task {
+                do {
+                    try await BGTaskScheduler.shared.submit(request: request)
+                } catch {
+                    LogManager.logger.error("Could not schedule automatic backup: \(error)")
+                }
             }
 #endif
         }
@@ -659,6 +702,7 @@ extension BackupManager {
         let chapters = UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters")
         let tracking = UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking")
         let readingSessions = UserDefaults.standard.bool(forKey: "AutomaticBackups.readingSessions")
+        let vocabulary = UserDefaults.standard.bool(forKey: "AutomaticBackups.vocabulary")
         let updates = UserDefaults.standard.bool(forKey: "AutomaticBackups.updates")
         let categories = UserDefaults.standard.bool(forKey: "AutomaticBackups.categories")
         let settings = UserDefaults.standard.bool(forKey: "AutomaticBackups.settings")
@@ -673,6 +717,7 @@ extension BackupManager {
                 chapters: chapters,
                 tracking: tracking,
                 readingSessions: readingSessions,
+                vocabulary: vocabulary,
                 updates: updates,
                 categories: categories,
                 settings: settings,
@@ -690,19 +735,19 @@ extension BackupManager {
 
     // ensure we keep only the latest maxAutoBackups automatic backups
     private func cleanUpAutoBackups() {
-        var autoBackups: [(URL, Backup)] = []
+        var autoBackups: [BackupInfo] = []
         for backupUrl in Self.backupUrls {
-            let backup = Backup.load(from: backupUrl)
-            if let backup, backup.automatic ?? false {
-                autoBackups.append((backupUrl, backup))
+            let backup = BackupInfo.load(from: backupUrl)
+            if let backup, backup.automatic {
+                autoBackups.append(backup)
             }
         }
         while autoBackups.count > Self.maxAutoBackups {
             let oldestBackup = autoBackups
-                .min { $0.1.date < $1.1.date }
+                .min { $0.date < $1.date }
             if let oldestBackup {
-                removeBackup(url: oldestBackup.0)
-                autoBackups.removeAll { $0.0 == oldestBackup.0 }
+                removeBackup(url: oldestBackup.url)
+                autoBackups.removeAll { $0.url == oldestBackup.url }
             } else {
                 break
             }

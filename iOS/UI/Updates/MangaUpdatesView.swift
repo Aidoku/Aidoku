@@ -162,6 +162,9 @@ extension MangaUpdatesView {
         guard !newUpdates.isEmpty else {
             reachedEnd = true
             loadingMore = false
+            withAnimation {
+                hasNoUpdates = entries.isEmpty
+            }
             return
         }
 

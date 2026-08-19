@@ -50,8 +50,8 @@ class ReaderPageViewController: BaseObservingViewController {
         set { infoView?.nextChapter = newValue }
     }
 
+    var page: Page?
     private var pageSet = false
-    private var page: Page?
     private var sourceId: String?
     private var imageAspectRatio: CGFloat? // Aspect ratio of the image, > 1 means wide image
     private var pageBackground: PageBackground?
@@ -101,6 +101,8 @@ class ReaderPageViewController: BaseObservingViewController {
                 // zoom view
                 let zoomView = ZoomableScrollView(frame: view.bounds)
                 zoomView.translatesAutoresizingMaskIntoConstraints = false
+                self.zoomView = zoomView
+                updateDoubleTapZoomSetting()
                 view.addSubview(zoomView)
 
                 // page view
@@ -112,10 +114,7 @@ class ReaderPageViewController: BaseObservingViewController {
                 zoomView.onZoomScaleChanged = { [weak self] scale in
                     self?.pageView?.setLiveTextHidden(scale != 1 || (self?.delegate?.barsHidden ?? false))
                 }
-                zoomView.doubleTapEnabled = !UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap")
                 view.addSubview(reloadButton)
-
-                self.zoomView = zoomView
         }
     }
 
@@ -147,12 +146,19 @@ class ReaderPageViewController: BaseObservingViewController {
         addObserver(forName: "Reader.backgroundColor") { [weak self] _ in
             self?.loadPageBackground()
         }
-        addObserver(forName: "Reader.disableDoubleTap") { [weak self] notification in
-            self?.zoomView?.doubleTapEnabled = !(notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.disableDoubleTap"))
-        }
-
         addObserver(forName: .orientationDidChange) { [weak self] _ in
             self?.loadPageBackground(forceReload: true)
+        }
+        for key in [
+            "Reader.disableDoubleTap",
+            AppSettings.dictionary.enable.key,
+            AppSettings.dictionary.lookupGesture.key,
+            AppSettings.dictionary.restrictOCRLanguages.key,
+            AppSettings.dictionary.restrictedOCRLanguages.key
+        ] {
+            addObserver(forName: key) { [weak self] _ in
+                self?.updateDoubleTapZoomSetting()
+            }
         }
     }
 
@@ -166,6 +172,7 @@ class ReaderPageViewController: BaseObservingViewController {
         pageSet = true
         self.page = page
         self.sourceId = sourceId
+        updateDoubleTapZoomSetting()
         reloadButton.isHidden = true
         zoomView?.zoomEnabled = false
         Task {
@@ -194,7 +201,7 @@ class ReaderPageViewController: BaseObservingViewController {
         }
     }
 
-    func loadPageBackground(forceReload: Bool = false) {
+    private func loadPageBackground(forceReload: Bool = false) {
         // ensure no old gradients are left
         view.layer.sublayers?.removeAll(where: { $0 is CAGradientLayer })
 
@@ -251,5 +258,9 @@ class ReaderPageViewController: BaseObservingViewController {
     var isWideImage: Bool {
         guard let imageAspectRatio else { return false }
         return imageAspectRatio > 1
+    }
+
+    private func updateDoubleTapZoomSetting() {
+        zoomView?.doubleTapEnabled = !AppSettings.dictionary.isReaderDoubleTapDisabled(language: page?.language)
     }
 }

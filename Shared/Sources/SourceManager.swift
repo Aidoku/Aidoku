@@ -23,6 +23,7 @@ class SourceManager {
     var sourceLists: [SourceList] = []
     var sourceListURLs: [URL]
     var sourceListLanguages: Set<String> = []
+    var sourceLanguages: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
@@ -56,6 +57,7 @@ class SourceManager {
         // load installed sources
         sources = await getInstalledSources()
         sortSources()
+        loadSourceLanguages()
         await MainActor.run {
             for source in sources {
                 NotificationCenter.default.post(name: .sourceLoaded, object: source.key)
@@ -145,15 +147,15 @@ extension SourceManager {
         Self.directory.createDirectory()
 
         // download and unzip source aix
-        guard let temporaryDirectory = FileManager.default.temporaryDirectory else { return nil }
+        guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }
         var secured = false
         var fileUrl = url
         if fileUrl.scheme != "file" {
             do {
-                let location = try await URLSession.shared.download(for: URLRequest.from(url))
+                let (location, _) = try await URLSession.shared.download(for: URLRequest.from(url))
                 fileUrl = location
             } catch {
-                LogManager.logger.error("Failed to download source from \(url)")
+                LogManager.logger.error("Failed to download source from \(url.absoluteString): \(error)")
                 return nil
             }
         } else {
@@ -275,6 +277,7 @@ extension SourceManager {
 
         sources.append(result)
         sortSources()
+        sourceLanguages.formUnion(result.languages)
 
         NotificationCenter.default.post(name: .sourceLoaded, object: result.key)
         NotificationCenter.default.post(name: .updateSourceList, object: nil)
@@ -384,6 +387,7 @@ extension SourceManager {
             try? FileManager.default.removeItem(at: url)
         }
         sources.removeAll { $0.id == source.id }
+        loadSourceLanguages()
         Task {
             if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
                 await TrackerManager.komga.removeTrackItems(source: source)
@@ -489,25 +493,29 @@ extension SourceManager {
 
 // MARK: - Source List Management
 extension SourceManager {
-    func addSourceList(url: URL) async -> Bool {
+    func addSourceList(url: URL, allowUnavailable: Bool = false) async -> Bool {
         guard !sourceListURLs.contains(url) else {
             return false
         }
 
         let result = await loadSourceList(url: url)
-        guard let result else {
+        if !allowUnavailable && result == nil {
             return false
         }
 
-        sourceLists.append(result)
         sourceListURLs.append(url)
-        for source in result.sources {
-            if let sourceLanguages = source.languages {
-                sourceListLanguages.formUnion(sourceLanguages)
-            } else if let sourceLang = source.lang {
-                sourceListLanguages.insert(sourceLang)
+
+        if let result {
+            sourceLists.append(result)
+            for source in result.sources {
+                if let sourceLanguages = source.languages {
+                    sourceListLanguages.formUnion(sourceLanguages)
+                } else if let sourceLang = source.lang {
+                    sourceListLanguages.insert(sourceLang)
+                }
             }
         }
+
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
         return true
@@ -578,5 +586,13 @@ extension SourceManager {
             }
         }
         sourceListLanguages = languages
+    }
+
+    func loadSourceLanguages() {
+        var languages = Set<String>()
+        for source in sources {
+            languages.formUnion(source.languages)
+        }
+        sourceLanguages = languages
     }
 }

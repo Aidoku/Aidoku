@@ -430,7 +430,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .historySet) { [weak self] notification in
             guard let self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
             Task { @MainActor in
-                self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
+                await self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
                 self.updateDataSource()
             }
         }
@@ -892,7 +892,10 @@ extension LibraryViewController {
         ) as? LibraryCategorySelectionHeader) else {
             return
         }
+
         ignoreOptionChange = true
+        defer { ignoreOptionChange = false }
+
         var options: [LibraryCategorySelectionHeader.Section] = []
         if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
             options.append(.init(options: [NSLocalizedString("ALL"), NSLocalizedString("UNCATEGORIZED")]))
@@ -906,6 +909,7 @@ extension LibraryViewController {
             options.append(.init(title: NSLocalizedString("FILTER_GROUPS"), options: viewModel.filterGroups.map { $0.title }))
         }
         header.options = options
+
         if let currentCategory = viewModel.currentCategory {
             if let index = viewModel.categories.firstIndex(of: currentCategory) {
                 header.setSelectedOption(IndexPath(row: index, section: 1))
@@ -1296,51 +1300,9 @@ extension LibraryViewController {
         if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
             Task {
                 // get next chapter to read
-                let history = await CoreDataManager.shared.getReadingHistory(
-                    sourceId: info.sourceId,
-                    mangaId: info.mangaId
-                )
-                let chapters = await CoreDataManager.shared.getChapters(sourceId: info.sourceId, mangaId: info.mangaId)
-                    .map { $0.toNew() }
-
-                let filters = CoreDataManager.shared.getMangaChapterFilters(
-                    sourceId: info.sourceId,
-                    mangaId: info.mangaId
-                )
-                let sortOption = ChapterSortOption(flags: filters.flags)
-                let sortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
-
-                let sortedChapters: [AidokuRunner.Chapter] = {
-                    switch sortOption {
-                        case .sourceOrder:
-                            return sortAscending ? chapters.reversed() : chapters
-                        case .chapter:
-                            return chapters.sorted {
-                                let lhs = $0.chapterNumber ?? -1
-                                let rhs = $1.chapterNumber ?? -1
-                                return sortAscending ? lhs < rhs : lhs > rhs
-                            }
-                        case .uploadDate:
-                            return chapters.sorted {
-                                let lhs = $0.dateUploaded ?? .distantPast
-                                let rhs = $1.dateUploaded ?? .distantPast
-                                return sortAscending ? lhs < rhs : lhs > rhs
-                            }
-                    }
-                }()
-
-                let manga = AidokuRunner.Manga(
+                let (sortedChapters, nextChapter) = await MangaManager.shared.getNextChapter(
                     sourceKey: info.sourceId,
-                    key: info.mangaId,
-                    title: info.title ?? "",
-                    chapters: sortedChapters
-                )
-
-                let nextChapter = MangaManager.shared.getNextChapter(
-                    manga: manga,
-                    chapters: sortedChapters,
-                    readingHistory: history,
-                    sortAscending: sortAscending
+                    mangaKey: info.mangaId
                 )
 
                 if let chapter = nextChapter {
