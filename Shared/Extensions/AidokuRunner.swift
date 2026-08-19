@@ -28,7 +28,12 @@ extension InterpreterConfiguration {
                     if let httpResponse {
                         // check if cloudflare blocked the request
                         if CloudflareHandler.shared.shouldHandle(response: httpResponse, data: data) {
-                            return try await CloudflareHandler.shared.handle(request: request)
+                            do {
+                                return try await CloudflareHandler.shared.handle(request: request)
+                            } catch let error as CloudflareHandler.HandleError {
+                                LogManager.logger.error("Failed to handle CloudFlare: \(error)")
+                                return (data, response)
+                            }
                         }
                     }
 
