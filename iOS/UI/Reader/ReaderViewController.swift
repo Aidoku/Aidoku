@@ -170,7 +170,7 @@ class ReaderViewController: BaseObservingViewController {
                 image: UIImage(systemName: "list.bullet"),
                 style: .plain,
                 target: self,
-                action: #selector(openChapterList)
+                action: #selector(determineChapterList)
             )
         ]
         updateRightBarButtonItems()
@@ -1672,16 +1672,6 @@ extension ReaderViewController {
         // than added and removed. Removing it reflowed the items either side, so the buttons moved
         // between chapters and a tap aimed at one landed on another; a disabled item holds its place
         // and says plainly that it is not ready yet.
-        if state.contents {
-            let contentsButton = UIBarButtonItem(
-                image: UIImage(systemName: "list.bullet.indent"),
-                style: .plain,
-                target: self,
-                action: #selector(openTableOfContents)
-            )
-            contentsButton.isEnabled = state.contentsEnabled
-            items.append(contentsButton)
-        }
         items.append(
             UIBarButtonItem(
                 image: UIImage(systemName: "textformat.size"),
@@ -1709,5 +1699,14 @@ extension ReaderViewController {
             }
         )
         present(UIHostingController(rootView: view), animated: true)
+    }
+
+    @objc func determineChapterList() {
+       if let reader = reader as? ReaderTableOfContentsReader, !reader.tableOfContents.isEmpty {
+            openTableOfContents()
+        } else {
+            openChapterList()
+        }
+
     }
 }
