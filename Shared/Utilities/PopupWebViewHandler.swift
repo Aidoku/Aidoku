@@ -11,5 +11,4 @@ import WebKit
 protocol PopupWebViewHandler {
     func navigated(webView: WKWebView, for request: URLRequest)
     func canceled(request: URLRequest)
-    func handle(response: WKNavigationResponse)
 }
