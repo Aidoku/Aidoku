@@ -22,6 +22,11 @@ struct ChapterTableCell: View {
         downloadStatus == .finished
     }
 
+    /// A download that stopped with pages missing, which is neither downloaded nor in progress.
+    var downloadFailed: Bool {
+        downloadStatus == .failed
+    }
+
     var locked: Bool {
         chapter.locked && !downloaded
     }
@@ -59,6 +64,10 @@ struct ChapterTableCell: View {
                 Image(systemName: "arrow.down.circle.fill")
                     .imageScale(.small)
                     .foregroundStyle(.tertiary)
+            } else if downloadFailed {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .imageScale(.small)
+                    .foregroundStyle(.orange)
             } else if let progress {
                 DownloadProgressView(progress: progress)
                     .frame(width: 13, height: 13)

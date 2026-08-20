@@ -147,6 +147,9 @@ extension DownloadsView.ViewModel {
         // Low-priority updates that can be debounced
         let debouncedUpdateNotifications: [NSNotification.Name] = [
             .downloadFinished,
+            // a download that failed leaves a partial chapter listed here, so it changes this view
+            // exactly as a finished one does
+            .downloadFailed,
             .downloadsCancelled,
             .downloadsQueued,
             .downloadsPaused,

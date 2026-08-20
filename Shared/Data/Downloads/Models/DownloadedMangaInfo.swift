@@ -74,6 +74,8 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
     let volumeNumber: Float?     // For formatted titles
     let size: Int64
     let downloadDate: Date?
+    /// Whether this is a download that stopped with pages missing rather than a complete chapter.
+    let failed: Bool
 
     let chapter: AidokuRunner.Chapter?
 
@@ -141,6 +143,7 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
         volumeNumber: Float? = nil,
         size: Int64,
         downloadDate: Date? = nil,
+        failed: Bool = false,
         chapter: AidokuRunner.Chapter? = nil
     ) {
         self.id = chapterId
@@ -150,6 +153,7 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
         self.volumeNumber = volumeNumber
         self.size = size
         self.downloadDate = downloadDate
+        self.failed = failed
         self.chapter = chapter
     }
 

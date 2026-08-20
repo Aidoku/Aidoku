@@ -17,6 +17,7 @@ protocol DownloadTaskDelegate: AnyObject, Sendable {
     func taskFinished(task: DownloadTask) async
     func downloadProgressChanged(download: Download) async
     func downloadFinished(download: Download) async
+    func downloadFailed(download: Download) async
     func downloadCancelled(download: Download) async
 }
 
@@ -30,6 +31,8 @@ actor DownloadTask: Identifiable {
 
     private var currentPage: Int = 0
     private var failedPages: Int = 0
+    /// Which pages failed, in the order they were reported, for the marker a partial failure leaves.
+    private var failedPageNumbers: [Int] = []
     private var pages: [Page] = []
 
     private(set) var running: Bool = false
@@ -83,6 +86,7 @@ actor DownloadTask: Identifiable {
                 pages = []
                 currentPage = 0
                 failedPages = 0
+                failedPageNumbers = []
             }
             // remove chapter tmp download directory
             let download = downloads[index]
@@ -104,6 +108,7 @@ actor DownloadTask: Identifiable {
                         pages = []
                         currentPage = 0
                         failedPages = 0
+                        failedPageNumbers = []
                     }
                     downloads[i].status = .cancelled
                     await delegate?.downloadCancelled(download: downloads[i])
@@ -111,8 +116,9 @@ actor DownloadTask: Identifiable {
                 }
                 downloads.remove(atOffsets: cancelled)
                 cache.directory(for: manga)
-                    .contents
-                    .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                    .contentsIncludingHidden
+                    .filter { $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) }
+                    .filter { !cache.hasFailureMarker(inTmpDirectory: $0) }
                     .forEach { $0.removeItem() }
                 if wasRunning {
                     resume()
@@ -131,13 +137,15 @@ actor DownloadTask: Identifiable {
             Task {
                 for manga in manga {
                     cache.directory(for: manga)
-                        .contents
-                        .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                        .contentsIncludingHidden
+                        .filter { $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) }
+                        .filter { !cache.hasFailureMarker(inTmpDirectory: $0) }
                         .forEach { $0.removeItem() }
                 }
                 pages = []
                 currentPage = 0
                 failedPages = 0
+                failedPageNumbers = []
                 await delegate?.taskCancelled(task: self)
             }
         }
@@ -194,6 +202,18 @@ extension DownloadTask {
         let url: URL
         let context: PageContext?
         let targetPath: URL
+        /// The page's position in the chapter, one-based, which is the number it is stored under.
+        let pageNumber: Int
+    }
+
+    /// A finished page download, carrying the page it belongs to.
+    ///
+    /// A concurrent download hands results back in whatever order they finish, so a failure has to
+    /// name its page rather than be inferred from how many have completed.
+    struct PageDownloadResult {
+        let page: NetworkPage
+        let data: Data?
+        let targetPath: URL?
     }
 
     // perform download
@@ -202,6 +222,11 @@ extension DownloadTask {
 
         let download = downloads[0]
         downloads[0].status = .downloading
+
+        // an earlier attempt may have left this directory marked as failed, and this run supersedes
+        // it: the pages it holds are refetched here, and keeping the marker would both report the
+        // chapter as failed while it downloads and carry the marker into the promoted chapter
+        cache.discardFailedDownload(for: download.chapterIdentifier)
 
         let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
         tmpDirectory.createDirectory()
@@ -233,7 +258,8 @@ extension DownloadTask {
                 networkPages.append(.init(
                     url: url,
                     context: page.context,
-                    targetPath: targetPath
+                    targetPath: targetPath,
+                    pageNumber: i + 1
                 ))
             } else {
                 currentPage += 1
@@ -248,6 +274,7 @@ extension DownloadTask {
                     }
                 } catch {
                     failedPages += 1
+                    failedPageNumbers.append(i + 1)
                     LogManager.logger.error("Error writing page data: \(error)")
                 }
             }
@@ -272,7 +299,7 @@ extension DownloadTask {
 
         if UserDefaults.standard.bool(forKey: "Downloads.parallel") {
             // download pages from the network concurrently
-            await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
+            await withTaskGroup(of: PageDownloadResult.self) { taskGroup in
                 let groupSize = max(1, min(source.config?.maximumParallelRequests ?? Self.maxConcurrentPageTasks, Self.maxConcurrentPageTasks))
                 for pageGroup in networkPages.chunked(into: groupSize) {
                     for page in pageGroup {
@@ -280,38 +307,49 @@ extension DownloadTask {
                             await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
                         }
                     }
-                    for await (data, path) in taskGroup {
+                    for await result in taskGroup {
                         guard tmpDirectory.exists else {
                             // download was cancelled, stop processing
                             return
                         }
-                        if let data, let path {
+                        if let data = result.data, let path = result.targetPath {
                             do {
                                 try data.write(to: path)
                             } catch {
                                 LogManager.logger.error("Error writing downloaded image: \(error)")
                             }
                         }
-                        await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+                        await self.incrementProgress(
+                            for: download.chapterIdentifier,
+                            failedPage: result.data == nil ? result.page.pageNumber : nil
+                        )
                     }
                 }
             }
         } else {
             // download pages from the network serially
             for page in networkPages {
-                let (data, path) = await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
+                let result = await self.downloadPage(
+                    page,
+                    source: source,
+                    pageInterceptor: pageInterceptor,
+                    tmpDirectory: tmpDirectory
+                )
                 guard tmpDirectory.exists else {
                     // download was cancelled, stop processing
                     return
                 }
-                if let data, let path {
+                if let data = result.data, let path = result.targetPath {
                     do {
                         try data.write(to: path)
                     } catch {
                         LogManager.logger.error("Error writing downloaded image: \(error)")
                     }
                 }
-                await self.incrementProgress(for: download.chapterIdentifier, failed: data == nil)
+                await self.incrementProgress(
+                    for: download.chapterIdentifier,
+                    failedPage: result.data == nil ? page.pageNumber : nil
+                )
             }
         }
 
@@ -327,7 +365,7 @@ extension DownloadTask {
         source: AidokuRunner.Source,
         pageInterceptor: PageInterceptorProcessor?,
         tmpDirectory: URL
-    ) async -> (Data?, URL?) {
+    ) async -> PageDownloadResult {
         let urlRequest = await source.getModifiedImageRequest(
             url: page.url,
             context: page.context
@@ -379,7 +417,7 @@ extension DownloadTask {
             resultPath = page.targetPath.appendingPathExtension(fileExtention)
         }
 
-        return (resultData, resultPath)
+        return .init(page: page, data: resultData, targetPath: resultPath)
     }
 
     // fetch page data, retrying on any non-2xx HTTP response or network error
@@ -429,7 +467,7 @@ extension DownloadTask {
         }
     }
 
-    private func incrementProgress(for id: ChapterIdentifier, failed: Bool = false) async {
+    private func incrementProgress(for id: ChapterIdentifier, failedPage: Int? = nil) async {
         guard let downloadIndex = downloads.firstIndex(where: { $0.chapterIdentifier == id }) else {
             return
         }
@@ -439,8 +477,9 @@ extension DownloadTask {
         Task {
             await delegate?.downloadProgressChanged(download: download)
         }
-        if failed {
+        if let failedPage {
             failedPages += 1
+            failedPageNumbers.append(failedPage)
         }
         if currentPage == pages.count {
             await handleChapterDownloadFinish(download: download)
@@ -459,10 +498,23 @@ extension DownloadTask {
                 await delegate?.downloadCancelled(download: download)
             }
             LogManager.logger.error("Chapter failed to download: \(download.chapter.formattedTitle())")
-        } else {
-            if failedPages > 0 {
-                LogManager.logger.error("Chapter downloaded with \(failedPages) failed pages: \(download.chapter.formattedTitle())")
+        } else if failedPages > 0 {
+            // Some pages are missing, so the chapter is not the chapter. Promoting it here is what
+            // issue #243 is: the result was indistinguishable from a complete download, and a
+            // reader met the gap only on reaching it. The staging directory stays where it is,
+            // marked, so that it reports itself failed rather than queued.
+            LogManager.logger.error("Chapter downloaded with \(failedPages) failed pages: \(download.chapter.formattedTitle())")
+            // the downloads settings page lists this directory, so it needs the metadata a promoted
+            // chapter carries, otherwise there is nothing to name it by but its key
+            await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
+            markFailed(tmpDirectory: tmpDirectory)
+            if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
+                downloads[downloadIndex].status = .failed
+                let failed = downloads[downloadIndex]
+                downloads.remove(at: downloadIndex)
+                await delegate?.downloadFailed(download: failed)
             }
+        } else {
             do {
                 // Save chapter metadata after successful download
                 await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
@@ -504,7 +556,23 @@ extension DownloadTask {
         pages = []
         currentPage = 0
         failedPages = 0
+        failedPageNumbers = []
         await next()
+    }
+
+    /// Writes the marker that tells a failed download from one still running.
+    ///
+    /// The pages it names are the ones to refetch, one-based as they are stored, which is what a
+    /// resume would ask for. A marker
+    /// that cannot be written leaves the directory looking like a download in progress, which is
+    /// the behaviour that already existed, so it is logged rather than escalated.
+    private func markFailed(tmpDirectory: URL) {
+        let marker = cache.failureMarker(inTmpDirectory: tmpDirectory)
+        do {
+            try JSONEncoder().encode(failedPageNumbers.sorted()).write(to: marker)
+        } catch {
+            LogManager.logger.error("Error marking failed download (\(tmpDirectory)): \(error)")
+        }
     }
 }
 

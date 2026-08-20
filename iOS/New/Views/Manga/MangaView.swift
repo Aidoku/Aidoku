@@ -506,7 +506,9 @@ extension MangaView {
                     Label(NSLocalizedString("REMOVE"), systemImage: "trash")
                 }
             } else {
-                if downloadStatus == .finished {
+                // a failed download leaves a partial chapter on disk, so it is removable in the same
+                // way a complete one is; it keeps the download button as well, which retries it
+                if downloadStatus == .finished || downloadStatus == .failed {
                     Button(role: .destructive) {
                         Task {
                             await DownloadManager.shared.delete(chapters: [identifier])
@@ -874,7 +876,9 @@ private struct RightNavbarButton: View, Equatable {
         self.bookmarked = viewModel.bookmarked
         self.hasCategories = !CoreDataManager.shared.getCategoryTitles(sorted: false).isEmpty
         self.url = viewModel.manga.url
-        self.hasDownloads = viewModel.downloadStatus.contains(where: { $0.value == .finished })
+        // a failed download occupies space like a finished one does, so removing everything has to
+        // be offered for it too
+        self.hasDownloads = viewModel.downloadStatus.contains(where: { $0.value == .finished || $0.value == .failed })
         self.refresh = refreshController.refresh
 
         self.markAllRead = markAllRead

@@ -132,10 +132,45 @@ extension DownloadCache {
             .appendingSafePathComponent(chapter.chapterKey)
     }
 
+    /// Prefix of the directory a chapter is downloaded into before it is promoted to a chapter.
+    nonisolated static let tmpDirectoryPrefix = ".tmp_"
+
     nonisolated func tmpDirectory(for chapter: ChapterIdentifier) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(chapter.sourceKey)
             .appendingSafePathComponent(chapter.mangaKey)
-            .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+            .appendingSafePathComponent("\(Self.tmpDirectoryPrefix)\(chapter.chapterKey)")
+    }
+
+    /// Marks a staging directory as a download that finished with pages missing.
+    ///
+    /// A partial failure and a download still in progress are otherwise identical on disk: both are
+    /// a `.tmp` directory holding some of the pages, so without this a failed chapter would report
+    /// itself queued for ever. The marker names the pages that failed, which is what a later resume
+    /// would need to refetch only those.
+    ///
+    /// It is inside the staging directory rather than beside it so that discarding the download is
+    /// still one `removeItem`, and it is named so that it cannot be mistaken for a page: pages are
+    /// `%03d` with an image extension.
+    nonisolated func failureMarker(inTmpDirectory directory: URL) -> URL {
+        directory.appendingPathComponent(Self.failureMarkerName)
+    }
+
+    nonisolated static let failureMarkerName = ".failed"
+
+    /// Whether a staging directory holds a download that failed rather than one still running.
+    nonisolated func hasFailureMarker(inTmpDirectory directory: URL) -> Bool {
+        failureMarker(inTmpDirectory: directory).exists
+    }
+
+    /// Discards whatever a previous attempt left behind for a chapter that failed.
+    ///
+    /// A retry refetches every page, and the extension a page is stored under comes from its
+    /// response, so a page arriving as a jpeg where it was a png before would leave both files in
+    /// place and the chapter would end up showing that page twice.
+    nonisolated func discardFailedDownload(for chapter: ChapterIdentifier) {
+        let directory = tmpDirectory(for: chapter)
+        guard hasFailureMarker(inTmpDirectory: directory) else { return }
+        directory.removeItem()
     }
 }

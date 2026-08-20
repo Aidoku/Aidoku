@@ -24,6 +24,14 @@ extension URL {
         (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
     }
 
+    /// Directory contents with hidden entries included.
+    ///
+    /// A download stages itself into a directory whose name begins with a dot, so `contents` never
+    /// reports one and every filter written against that prefix has nothing to match.
+    var contentsIncludingHidden: [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil)) ?? []
+    }
+
     var isDirectory: Bool {
         (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
     }

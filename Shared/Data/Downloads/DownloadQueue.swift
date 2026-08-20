@@ -129,6 +129,10 @@ actor DownloadQueue {
             guard !(await cache.isChapterDownloaded(identifier: identifier)) else {
                 continue
             }
+            // a chapter queued again after failing is no longer failed, and the marker has to go
+            // now rather than when the download reaches the front of the queue, or it reports
+            // itself failed for as long as it waits
+            cache.discardFailedDownload(for: identifier)
             // create tmp directory so we know it's queued
             cache.tmpDirectory(for: identifier).createDirectory()
             let download = Download.from(manga: manga, chapter: chapter)
@@ -184,8 +188,11 @@ actor DownloadQueue {
             await task.cancel(manga: manga)
         } else {
             cache.directory(for: manga)
-                .contents
-                .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                .contentsIncludingHidden
+                .filter { $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) }
+                // a marked directory is a download that already failed rather than one in flight,
+                // so cancelling the manga's downloads must leave it alone
+                .filter { !cache.hasFailureMarker(inTmpDirectory: $0) }
                 .forEach { $0.removeItem() }
         }
         saveQueueState()
@@ -305,6 +312,19 @@ extension DownloadQueue: DownloadTaskDelegate {
         progressBlocks.removeValue(forKey: download.chapterIdentifier)
         onCompletion?()
         NotificationCenter.default.post(name: .downloadFinished, object: download)
+    }
+
+    /// A download that finished with pages missing, which leaves something on disk rather than
+    /// nothing: see `DownloadTask.handleChapterDownloadFinish`.
+    ///
+    /// It leaves the queue the same way a finished one does, since there is nothing left to run.
+    /// What differs is the notification, so a listener can tell a chapter that arrived from one
+    /// that arrived incomplete.
+    func downloadFailed(download: Download) async {
+        await downloadCancelled(download: download)
+        progressBlocks.removeValue(forKey: download.chapterIdentifier)
+        onCompletion?()
+        NotificationCenter.default.post(name: .downloadFailed, object: download)
     }
 
     func downloadCancelled(download: Download) async {

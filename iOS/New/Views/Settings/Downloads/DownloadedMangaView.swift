@@ -114,11 +114,17 @@ struct DownloadedMangaView: View {
                         ChapterRow(chapter: chapter, history: viewModel.readingHistory[chapter.chapterId])
                     }
                     .foregroundStyle(.primary)
+                    // a download that stopped with pages missing has no chapter to open or share:
+                    // opening it would fall through to the source and quietly read the chapter
+                    // online instead, which is not what tapping a downloaded chapter means
+                    .disabled(chapter.failed)
                     .contextMenu {
-                        Button {
-                            showShareSheet(chapter: chapter)
-                        } label: {
-                            Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
+                        if !chapter.failed {
+                            Button {
+                                showShareSheet(chapter: chapter)
+                            } label: {
+                                Label(NSLocalizedString("SHARE"), systemImage: "square.and.arrow.up")
+                            }
                         }
                     }
                     .matchedTransitionSourcePlease(id: chapter, in: transitionNamespace)
@@ -259,12 +265,23 @@ private struct ChapterRow: View {
             }
 
             Spacer()
+
+            if chapter.failed {
+                Image(systemName: "exclamationmark.circle.fill")
+                    .imageScale(.small)
+                    .foregroundStyle(.orange)
+            }
         }
         .contentShape(Rectangle())
     }
 
     private func formatChapterSubtitle() -> String? {
         var components: [String] = []
+
+        // a download that stopped with pages missing, which is why it is here without being readable
+        if chapter.failed {
+            components.append(NSLocalizedString("DOWNLOAD_INCOMPLETE"))
+        }
 
         // download date
         if let downloadDate = chapter.downloadDate {

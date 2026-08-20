@@ -51,6 +51,7 @@ extension Notification.Name {
     // downloads
     static let downloadProgressed = Self("downloadProgressed")
     static let downloadFinished = Self("downloadFinished")
+    static let downloadFailed = Self("downloadFailed")
     static let downloadRemoved = Self("downloadRemoved")
     static let downloadCancelled = Self("downloadCancelled")
     static let downloadsRemoved = Self("downloadsRemoved")
