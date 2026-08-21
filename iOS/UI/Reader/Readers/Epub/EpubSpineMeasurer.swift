@@ -44,6 +44,13 @@ final class EpubSpineMeasurer {
         let cancelled: Bool
     }
 
+    /// The three ways a pass reports, bundled so that handing them on stays one argument.
+    private struct Reports {
+        let count: (Int, Int) -> Void
+        let failure: (Int) -> Void
+        let finish: (Outcome) -> Void
+    }
+
     private let provider: any EpubResourceProvider
     private let settings: EpubPaginationSettings
 
@@ -93,11 +100,17 @@ final class EpubSpineMeasurer {
     /// `skipping` holds spine positions whose count is already known, which is at least the
     /// document the reader has open, since the reading renderer measured it on the way in. Cancels
     /// any pass already running.
+    ///
+    /// `onFailure` reports a document that could not be laid out, by spine position, as the failure
+    /// happens rather than at the end of the pass. Every answer about a position *after* that
+    /// document waits on whatever the caller decides to do about it, so it is worth telling them at
+    /// once rather than after the remaining documents have been walked.
     func start(
         spinePaths: [String],
         viewport: CGSize,
         skipping: Set<Int> = [],
         onCount: @escaping (Int, Int) -> Void,
+        onFailure: @escaping (Int) -> Void = { _ in },
         onFinish: @escaping (Outcome) -> Void
     ) {
         let superseded = task
@@ -134,8 +147,7 @@ final class EpubSpineMeasurer {
                 spinePaths: spinePaths,
                 viewport: viewport,
                 skipping: skipping,
-                onCount: onCount,
-                onFinish: onFinish
+                reports: Reports(count: onCount, failure: onFailure, finish: onFinish)
             )
             // A pass that has run to completion is no longer measuring. Cleared only while it is
             // still the current one, since a later pass may have replaced it in the meantime.
@@ -169,20 +181,23 @@ final class EpubSpineMeasurer {
         spinePaths: [String],
         viewport: CGSize,
         skipping: Set<Int>,
-        onCount: @escaping (Int, Int) -> Void,
-        onFinish: @escaping (Outcome) -> Void
+        reports: Reports
     ) async {
         let renderer: EpubSpineRenderer
         do {
             renderer = try await makeRenderer()
         } catch {
             LogManager.logger.error("EpubSpineMeasurer: could not build a renderer: \(error)")
-            onFinish(Outcome(measured: 0, failed: spinePaths, cancelled: false))
+            // Reported one by one as well as in the outcome: every path this pass gives up on
+            // reaches `onFailure`, so a caller placing failures in an index does not need a second
+            // route for the case where the pass never started.
+            for index in spinePaths.indices { reports.failure(index) }
+            reports.finish(Outcome(measured: 0, failed: spinePaths, cancelled: false))
             return
         }
 
         guard !Task.isCancelled else {
-            onFinish(Outcome(measured: 0, failed: [], cancelled: true))
+            reports.finish(Outcome(measured: 0, failed: [], cancelled: true))
             return
         }
 
@@ -200,7 +215,7 @@ final class EpubSpineMeasurer {
 
         for (index, path) in spinePaths.enumerated() {
             guard !Task.isCancelled else {
-                onFinish(Outcome(measured: measured, failed: failed, cancelled: true))
+                reports.finish(Outcome(measured: measured, failed: failed, cancelled: true))
                 return
             }
             guard !skipping.contains(index) else { continue }
@@ -216,17 +231,18 @@ final class EpubSpineMeasurer {
                 // publishing that count would put a stale number into the index the new pass is
                 // filling.
                 guard !Task.isCancelled else {
-                    onFinish(Outcome(measured: measured, failed: failed, cancelled: true))
+                    reports.finish(Outcome(measured: measured, failed: failed, cancelled: true))
                     return
                 }
                 measured += 1
-                onCount(index, count)
+                reports.count(index, count)
             } catch {
                 // A document that cannot be laid out cannot be read either, so this is reported
                 // rather than substituted for. What a book with an unreadable document should show
                 // as its total is the caller's decision, not this type's.
                 LogManager.logger.error("EpubSpineMeasurer: could not lay out \(path): \(error)")
                 failed.append(path)
+                reports.failure(index)
             }
 
             // Between documents, so a reader waiting on the provider is not held for the length of
@@ -234,7 +250,7 @@ final class EpubSpineMeasurer {
             await Task.yield()
         }
 
-        onFinish(Outcome(measured: measured, failed: failed, cancelled: false))
+        reports.finish(Outcome(measured: measured, failed: failed, cancelled: false))
     }
 
     private func makeRenderer() async throws -> EpubSpineRenderer {

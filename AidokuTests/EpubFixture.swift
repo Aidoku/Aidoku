@@ -76,7 +76,11 @@ enum EpubFixture {
     /// No table of contents, which is deliberate. `EpubParser` makes every spine file its own
     /// chapter when there are no titles to group by, so `chapters.flatMap(\.hrefs)` yields the
     /// spine unchanged and the fixture's spine is exactly what a reader enumerates.
-    static func makeBook(documents: [Int]) throws -> (url: URL, spinePaths: [String]) {
+    ///
+    /// `omitting` names spine positions the manifest declares and the archive does not hold, which
+    /// is what a book whose files were repacked incompletely looks like. The spine still lists
+    /// them, so a reader enumerates a document it cannot load.
+    static func makeBook(documents: [Int], omitting: Set<Int> = []) throws -> (url: URL, spinePaths: [String]) {
         var entries: [String: Data] = [:]
         var manifest = ""
         var spine = ""
@@ -84,7 +88,9 @@ enum EpubFixture {
 
         for (position, paragraphs) in documents.enumerated() {
             let name = "\(position).xhtml"
-            entries["OEBPS/\(name)"] = Data(page(body: prose(paragraphs: paragraphs)).utf8)
+            if !omitting.contains(position) {
+                entries["OEBPS/\(name)"] = Data(page(body: prose(paragraphs: paragraphs)).utf8)
+            }
             manifest += #"<item id="d\#(position)" href="\#(name)" media-type="application/xhtml+xml"/>"#
             spine += #"<itemref idref="d\#(position)"/>"#
             spinePaths.append("OEBPS/\(name)")

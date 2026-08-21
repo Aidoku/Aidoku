@@ -439,6 +439,29 @@ struct ReaderEpubViewModelTests {
         #expect(viewModel.bookPage == resolved)
     }
 
+    /// One document that cannot be laid out does not take the rest of the book with it.
+    ///
+    /// `EpubPageIndex` answers nothing about a position that sits after an unmeasured document, so
+    /// leaving the failure unrecorded froze the toolbar at the last good page for the remainder of
+    /// the book, withheld `progression` for good, and left `isMeasured` false, which is what gates
+    /// the host marking the chapter read. A document that failed still occupies a place, so it is
+    /// counted as one page rather than left unknown.
+    @Test func anUnreadableDocumentDoesNotFreezeTheRestOfTheBook() async throws {
+        let book = try EpubFixture.makeBook(documents: [6, 25, 8], omitting: [1])
+        defer { EpubFixture.remove(book.url) }
+
+        let viewModel = try makeViewModel(book.url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+
+        #expect(viewModel.unmeasurable == [book.spinePaths[1]], "the failure was not reported")
+        #expect(viewModel.index.pageCount(forDocumentAt: 1) == 1)
+        // Everything the reader asks about a position past the failure answers again.
+        #expect(viewModel.index.startOfDocument(at: 2) != nil)
+        #expect(viewModel.progression != nil)
+    }
+
     /// A book with no contents offers none, rather than one entry per spine document.
     @Test func aBookWithoutATocHasNoContents() throws {
         let url = try Self.makeBook()

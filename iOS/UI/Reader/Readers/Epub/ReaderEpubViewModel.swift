@@ -449,6 +449,18 @@ final class ReaderEpubViewModel {
                 index.setPageCount(count, forDocumentAt: document)
                 onChange?()
             },
+            onFailure: { [weak self] document in
+                guard let self else { return }
+                // A document that could not be laid out still occupies a place in the book, so it
+                // is counted as one page rather than left unknown. `EpubPageIndex` answers nothing
+                // about a position sitting after an unmeasured document, so leaving it unknown
+                // froze the toolbar at the last good page for the whole of the rest of the book,
+                // withheld `progression` for good, and left `isMeasured` false, which is what gates
+                // the host marking the chapter read. One blank page in the middle of a book is a
+                // smaller lie than a book that can never be finished.
+                index.setPageCount(1, forDocumentAt: document)
+                onChange?()
+            },
             onFinish: { [weak self] outcome in
                 guard let self else { return }
                 // A pass that was superseded reports what it had failed on so far, which is a
