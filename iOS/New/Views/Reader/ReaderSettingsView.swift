@@ -258,11 +258,15 @@ struct ReaderSettingsView: View {
                 if reader != .paged && reader != .scroll {
                     // Text Reader Settings
                     Section(String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER"))) {
+                        // The two readers keep separate styles. An ePub is a book and is read
+                        // paged; the text reader scrolled, which is what it did before it could
+                        // paginate. One control, and which key it writes follows what is open.
+                        let styleKey = reader == .epub ? "Reader.epubReaderStyle" : "Reader.textReaderStyle"
                         SettingView(
                             setting: .init(
-                                key: "Reader.textReaderStyle",
+                                key: styleKey,
                                 title: NSLocalizedString("TEXT_READER_STYLE"),
-                                notification: .init("Reader.textReaderStyle"),
+                                notification: .init(styleKey),
                                 value: .select(.init(
                                     values: ["paged", "scroll"],
                                     titles: [

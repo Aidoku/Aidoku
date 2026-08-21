@@ -235,7 +235,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         // rebuilding through `open` reuses the path a fresh open already exercises. Debounced
         // because the steppers in the settings sheet post once per tick.
         for key in [
-            "Reader.textReaderStyle", "Reader.textFontFamily", "Reader.textFontSize",
+            "Reader.epubReaderStyle", "Reader.textFontFamily", "Reader.textFontSize",
             "Reader.textLineSpacing", "Reader.textHorizontalPadding"
         ] {
             addObserver(forName: key) { [weak self] _ in

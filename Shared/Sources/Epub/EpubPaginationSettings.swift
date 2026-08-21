@@ -97,7 +97,7 @@ struct EpubPaginationSettings {
         settings.pageGutterPx = Int(padding)
         // In readium's scroll mode a document is one column of natural height, read by scrolling
         // vertically; the renderer counts its pages in viewport heights instead of columns.
-        settings.paged = defaults.string(forKey: "Reader.textReaderStyle") != "scroll"
+        settings.paged = defaults.string(forKey: "Reader.epubReaderStyle") != "scroll"
         return settings
     }
 

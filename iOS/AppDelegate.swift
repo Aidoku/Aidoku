@@ -177,6 +177,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.orientation": "device",
 
                 "Reader.textReaderStyle": "scroll",
+                // The ePub reads its own key so that it can default to paged without moving
+                // the text reader, whose "scroll" default is deliberate: it is what that
+                // reader did before it could paginate at all.
+                "Reader.epubReaderStyle": "paged",
                 "Reader.textFontFamily": "System",
                 "Reader.textFontSize": 18,
                 "Reader.textLineSpacing": 8,
