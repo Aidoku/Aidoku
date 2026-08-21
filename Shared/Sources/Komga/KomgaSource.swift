@@ -220,21 +220,7 @@ actor KomgaSourceRunner: Runner {
 
         // epubs komga can't serve as image pages are downloaded whole and read by the epub reader
         if isEpub {
-            guard let auth = helper.getAuthorizationHeader() else {
-                throw SourceError.message("NOT_LOGGED_IN")
-            }
-            let baseUrl = if let lastWorkingMirrorCopy {
-                lastWorkingMirrorCopy
-            } else {
-                try helper.getConfiguredServer()
-            }
-            guard let url = URL(string: "api/v1/books/\(chapter.id)/file", relativeTo: baseUrl) else {
-                throw SourceError.message("INVALID_SERVER_URL")
-            }
-            var request = URLRequest(url: url)
-            request.setValue(auth, forHTTPHeaderField: "Authorization")
-            let file = try await EpubChapterCache.fetch(request: request, sourceKey: sourceKey, chapterId: chapter.id)
-            return LocalFileManager.shared.readEpubPages(from: file)
+            return try await epubPages(chapterId: chapter.id, lastWorkingMirror: &lastWorkingMirrorCopy)
         }
 
         let pages: [KomgaPage] = try await helper.request(
@@ -947,5 +933,56 @@ extension KomgaSourceRunner {
             }
         }
         return links.compactMap { $0 }
+    }
+}
+
+extension KomgaSourceRunner {
+    /// Downloads a book Komga cannot serve as image pages, and reads its spine.
+    ///
+    /// Extracted from `getPageList` rather than written inline: the download answers with bytes
+    /// instead of JSON, so it cannot go through `helper.request`, and walking the base URLs itself
+    /// is enough code to push the actor past what it should hold.
+    private func epubPages(chapterId: String, lastWorkingMirror: inout URL?) async throws -> [AidokuRunner.Page] {
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer { lastWorkingMirror = lastWorkingMirrorCopy }
+
+        guard let auth = helper.getAuthorizationHeader() else {
+            throw SourceError.message("NOT_LOGGED_IN")
+        }
+        // The download answers with bytes rather than JSON, so it cannot go through
+        // `helper.request`. It walks the same base URLs in the same order instead: without that
+        // a stale last-working mirror leaves ePub chapters failing while the image chapters
+        // beside them still open, because those fail over and this did not.
+        let mainUrl = try helper.getConfiguredServer()
+        let baseUrls = try helper.baseUrls(lastWorkingMirror: lastWorkingMirrorCopy)
+        var lastError: any Error = SourceError.networkError
+        for (index, baseUrl) in baseUrls.enumerated() {
+            guard let url = URL(string: "api/v1/books/\(chapterId)/file", relativeTo: baseUrl) else {
+                throw SourceError.message("INVALID_SERVER_URL")
+            }
+            var request = URLRequest(url: url)
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            do {
+                let pages = try await EpubChapterCache.pages(
+                    request: request,
+                    sourceKey: sourceKey,
+                    chapterId: chapterId
+                )
+                lastWorkingMirrorCopy = baseUrl == mainUrl ? nil : baseUrl
+                return pages
+            } catch SourceError.message("NOT_LOGGED_IN") {
+                // Refusals of the account rather than of the server. Every mirror answers them
+                // the same way, so asking the next one spends a request to be told again.
+                throw SourceError.message("NOT_LOGGED_IN")
+            } catch SourceError.message("EPUB_DOWNLOAD_FORBIDDEN") {
+                throw SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")
+            } catch {
+                lastError = error
+                if index == baseUrls.count - 1 {
+                    lastWorkingMirrorCopy = nil
+                }
+            }
+        }
+        throw lastError
     }
 }

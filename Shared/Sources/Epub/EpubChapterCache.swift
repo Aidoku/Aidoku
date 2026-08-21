@@ -47,6 +47,28 @@ enum EpubChapterCache {
         return file
     }
 
+    /// Fetches the book unless it is already cached, and reads the spine pages out of it.
+    ///
+    /// A cached file is trusted only as far as it parses. A body that arrived complete without
+    /// being a book, which is what a proxy's error page or a wrapper around the file looks like,
+    /// would otherwise be served from the cache for ever: `EpubParser` reports no pages rather than
+    /// an error, so the chapter would read as empty on every open with nothing able to retry it.
+    static func pages(
+        request: URLRequest,
+        sourceKey: String,
+        chapterId: String
+    ) async throws -> [AidokuRunner.Page] {
+        let file = try await fetch(request: request, sourceKey: sourceKey, chapterId: chapterId)
+        let pages = LocalFileManager.shared.readEpubPages(from: file)
+        guard !pages.isEmpty else {
+            // Discarded rather than kept, so that opening the chapter again downloads it again.
+            try? FileManager.default.removeItem(at: file)
+            LogManager.logger.error("Cached epub holds no readable pages, discarded: \(file)")
+            throw SourceError.message("EPUB_DOWNLOAD_FAILED")
+        }
+        return pages
+    }
+
     /// A source key and a chapter id both become one path component, and neither is ours to trust:
     /// a separator in either would place the file outside the cache directory it belongs to.
     private static func sanitized(_ component: String) -> String {

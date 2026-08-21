@@ -252,17 +252,15 @@ actor KavitaSourceRunner: Runner {
             }
             return request
         }
-        let file: URL
         do {
-            file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
+            return try await EpubChapterCache.pages(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
         } catch SourceError.message("NOT_LOGGED_IN") {
             // an expired token is the one failure a second attempt can resolve. an account without
             // the download role answers 403 however often it is asked, and refreshing its token
             // only spends another request to be told the same thing.
             guard try await helper.refreshToken() else { throw SourceError.message("NOT_LOGGED_IN") }
-            file = try await EpubChapterCache.fetch(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
+            return try await EpubChapterCache.pages(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
         }
-        return LocalFileManager.shared.readEpubPages(from: file)
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
