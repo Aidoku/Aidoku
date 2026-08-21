@@ -585,7 +585,9 @@ extension BrowseViewController {
 
         snapshot.deleteSections([.updates, .external])
         if !viewModel.updatesSources.isEmpty {
-            if snapshot.indexOfSection(.installed) != nil {
+            if snapshot.indexOfSection(.pinned) != nil {
+                snapshot.insertSections([.updates], beforeSection: .pinned)
+            } else if snapshot.indexOfSection(.installed) != nil {
                 snapshot.insertSections([.updates], beforeSection: .installed)
             } else {
                 snapshot.appendSections([.updates])
@@ -598,7 +600,7 @@ extension BrowseViewController {
 //        }
 
         // prevents jumpiness from pull to refresh
-        dataSource.applySnapshotUsingReloadData(snapshot)
+        dataSource.apply(snapshot)
 
         Task { @MainActor in
             emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty

@@ -86,7 +86,7 @@ class SourceManager {
         await loadSourcesTask?.value
     }
 
-    func loadSourceLists(reload: Bool = false) async {
+    func loadSourceLists(reload: Bool = false, skipUpdateNotification: Bool = false) async {
         if let loadSourceListsTask {
             await loadSourceListsTask.value
             self.loadSourceListsTask = nil
@@ -108,7 +108,9 @@ class SourceManager {
                     return results
                 }
                 loadSourceListLanguages()
-                NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+                if !skipUpdateNotification {
+                    NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+                }
             }
             await loadSourceListsTask?.value
         }
