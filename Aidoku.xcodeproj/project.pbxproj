@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		002C0AC12EC0F44D0071CE82 /* LAPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */; };
 		002C0AC22EC0F44D0071CE82 /* LAPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */; };
+		00A1B2C42EA7F1000012AB01 /* Archive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A1B2C32EA7F1000012AB01 /* Archive.swift */; };
+		00A1B2C52EA7F1000012AB01 /* Archive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A1B2C32EA7F1000012AB01 /* Archive.swift */; };
 		04B48CF82CD6836100F719D0 /* ShikimoriTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B48CF72CD6835D00F719D0 /* ShikimoriTracker.swift */; };
 		04B48CF92CD6836100F719D0 /* ShikimoriTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B48CF72CD6835D00F719D0 /* ShikimoriTracker.swift */; };
 		04B48CFB2CD6838C00F719D0 /* ShikimoriApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B48CFA2CD6838600F719D0 /* ShikimoriApi.swift */; };
@@ -660,9 +662,7 @@
 		FBFA43AD2799DD110065A445 /* ReaderSliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFA43AC2799DD110065A445 /* ReaderSliderView.swift */; };
 		FBFC09843001DF36007C94E8 /* CHoshiDicts in Frameworks */ = {isa = PBXBuildFile; productRef = FBFC09833001DF36007C94E8 /* CHoshiDicts */; };
 		FBFDD40327838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
-		00A1B2C42EA7F1000012AB01 /* Archive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A1B2C32EA7F1000012AB01 /* Archive.swift */; };
 		FBFDD40427838AB90055ED9F /* Sequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFDD40227838AB90055ED9F /* Sequence.swift */; };
-		00A1B2C52EA7F1000012AB01 /* Archive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A1B2C32EA7F1000012AB01 /* Archive.swift */; };
 		FBFDF5F82DF799180064F603 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FBFDF5F72DF799180064F603 /* AidokuRunner */; };
 		FBFDF5FA2DF799340064F603 /* AidokuRunner in Frameworks */ = {isa = PBXBuildFile; productRef = FBFDF5F92DF799340064F603 /* AidokuRunner */; };
 		FBFF58912E7F2642009367B7 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFF58902E7F2641009367B7 /* Settings.swift */; };
@@ -682,6 +682,7 @@
 
 /* Begin PBXFileReference section */
 		002C0AC02EC0F44D0071CE82 /* LAPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LAPolicy.swift; sourceTree = "<group>"; };
+		00A1B2C32EA7F1000012AB01 /* Archive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Archive.swift; sourceTree = "<group>"; };
 		04B48CF72CD6835D00F719D0 /* ShikimoriTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShikimoriTracker.swift; sourceTree = "<group>"; };
 		04B48CFA2CD6838600F719D0 /* ShikimoriApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShikimoriApi.swift; sourceTree = "<group>"; };
 		04B48CFD2CD6B3AD00F719D0 /* ShikimoriQueries.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShikimoriQueries.swift; sourceTree = "<group>"; };
@@ -1199,7 +1200,6 @@
 		FBFAC3BB2996B292004D8489 /* af */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = af; path = af.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBFAC3BC2996B2CB004D8489 /* cs */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = cs; path = cs.lproj/Localizable.strings; sourceTree = "<group>"; };
 		FBFDD40227838AB90055ED9F /* Sequence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sequence.swift; sourceTree = "<group>"; };
-		00A1B2C32EA7F1000012AB01 /* Archive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Archive.swift; sourceTree = "<group>"; };
 		FBFF58902E7F2641009367B7 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		FBFF58922E7F2BEF009367B7 /* SettingView+Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SettingView+Environment.swift"; sourceTree = "<group>"; };
 		FBFF58942E807280009367B7 /* DoneButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneButton.swift; sourceTree = "<group>"; };

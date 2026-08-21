@@ -131,6 +131,7 @@ struct TrackerSearchView: View {
                     showSearchOptions = true
                 }
             )
+            .environment(\.autocorrectionDisabled, true)
             .task {
                 do {
                     results = try await tracker.search(for: manga, includeNsfw: includeNsfw)

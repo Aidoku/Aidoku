@@ -100,7 +100,7 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
         fatalError("logout not implemented for kavita tracker")
     }
 
-    func removeTrackItems(source: AidokuRunner.Source) async {
+    func removeTrackItems(sourceKey: String) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let request = TrackObject.fetchRequest()
             request.predicate = NSPredicate(
@@ -111,8 +111,8 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
                 guard let items else { return }
                 for item in items {
                     guard let id = item.id else { continue }
-                    let (sourceKey, _) = try self.getIdParts(from: id)
-                    if sourceKey == source.key {
+                    let (itemSourceKey, _) = try self.getIdParts(from: id)
+                    if itemSourceKey == sourceKey {
                         context.delete(item)
                     }
                 }

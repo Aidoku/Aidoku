@@ -9,7 +9,7 @@ import AidokuRunner
 
 /// A tracker that automatically registers and tracks supported series.
 protocol EnhancedTracker: Tracker {
-    func removeTrackItems(source: AidokuRunner.Source) async throws
+    func removeTrackItems(sourceKey: String) async throws
 }
 
 extension EnhancedTracker {

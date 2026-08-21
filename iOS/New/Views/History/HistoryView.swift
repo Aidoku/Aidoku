@@ -80,6 +80,7 @@ struct HistoryView: View {
                 }
             }
         )
+        .environment(\.autocorrectionDisabled, true)
         .onChange(of: searchText) { newValue in
             Task {
                 await viewModel.search(query: newValue, delay: true)

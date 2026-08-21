@@ -24,20 +24,8 @@ class BrowseViewModel {
     private var storedPinnedSources: [SourceInfo2]?
     private var storedInstalledSources: [SourceInfo2]?
 
-    private func getInstalledSources() async -> [SourceInfo2] {
-        await SourceManager.shared.waitForSourcesLoad()
-        return SourceManager.shared.sources
-            .map { source in
-                var info = source.toInfo()
-                let externalInfo = unfilteredExternalSources.first { $0.id == info.sourceId }
-                info.externalInfo = externalInfo
-                return info
-            }
-    }
-
-    // load installed sources
     func loadInstalledSources() async {
-        let installedSources = await getInstalledSources()
+        let installedSources = await SourceManager.shared.getSourceInfos()
         if storedInstalledSources != nil {
             storedInstalledSources = installedSources
             search(query: query)
@@ -47,7 +35,7 @@ class BrowseViewModel {
     }
 
     func loadPinnedSources() async {
-        let installedSources = await getInstalledSources()
+        let installedSources = storedInstalledSources ?? installedSources
         var defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
 
         var pinnedSources: [SourceInfo2] = []
@@ -60,12 +48,12 @@ class BrowseViewModel {
             }
 
             pinnedSources.append(source)
-            // remove sources from the installed array.
-            if let index = self.installedSources.firstIndex(of: source) {
+            // remove source from the installed array.
+            if let index = self.installedSources.firstIndex(where: { $0.sourceId == sourceId }) {
                 self.installedSources.remove(at: index)
             }
-            // remove sources from the stored installed array.
-            if let index = self.storedInstalledSources?.firstIndex(of: source) {
+            // remove source from the stored installed array.
+            if let index = self.storedInstalledSources?.firstIndex(where: { $0.sourceId == sourceId }) {
                 self.storedInstalledSources?.remove(at: index)
             }
         }
@@ -79,7 +67,7 @@ class BrowseViewModel {
 
     // load external source lists
     func loadExternalSources(reload: Bool = false) async {
-        await SourceManager.shared.loadSourceLists(reload: reload)
+        await SourceManager.shared.loadSourceLists(reload: reload, skipUpdateNotification: true)
 
         // ensure external sources have unique ids
         var sourceById: [String: ExternalSourceInfo] = [:]
@@ -104,7 +92,7 @@ class BrowseViewModel {
 
         func updateExternalInfo(for property: inout [SourceInfo2]) {
             property = property.map { info in
-                if let externalInfo = unfilteredExternalSources.first(where: { $0.id == info.sourceId }) {
+                if let externalInfo = sourceById[info.sourceId] {
                     var updatedInfo = info
                     updatedInfo.externalInfo = externalInfo
                     return updatedInfo
