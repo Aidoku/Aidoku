@@ -108,6 +108,7 @@ struct SourceHomeContentView: View {
                         loadingView().frame(height: 200).hidden()
                     }
                 }
+                .frame(maxWidth: .infinity)
                 .opacity(error != nil ? 0 : 1)
             }
             .overlay {
