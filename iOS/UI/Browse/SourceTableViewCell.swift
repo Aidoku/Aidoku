@@ -15,6 +15,7 @@ protocol SourceCellDelegate: AnyObject {
 
 class SourceTableViewCell: UITableViewCell {
     var info: SourceInfo2?
+    var section: BrowseViewController.Section?
     weak var delegate: SourceCellDelegate?
 
     private var iconSize: CGFloat = 48 {
@@ -167,13 +168,15 @@ class SourceTableViewCell: UITableViewCell {
         if editing {
             selectionStyle = .default
         } else {
-            let disabled = info?.disabled ?? false
+            let disabled = info?.disabled ?? false || section == .updates
             selectionStyle = disabled ? .none : .default
         }
     }
 
-    func setSourceInfo(_ info: SourceInfo2, showButton: Bool = false) {
+    func setSourceInfo(_ info: SourceInfo2, section: BrowseViewController.Section) {
         self.info = info
+        self.section = section
+
         titleLabel.text = info.name
         versionLabel.text = "v" + String(info.version)
         badgeView.isHidden = info.contentRating != .primarilyNsfw
@@ -182,11 +185,12 @@ class SourceTableViewCell: UITableViewCell {
             : Locale.current.localizedString(forIdentifier: info.languages[0]) ?? info.languages[0]
 
         warningButton.isHidden = !info.external || info.externalInfo != nil
-        getButton.isHidden = !showButton
+        getButton.isHidden = section != .updates
+        buttonTitle = NSLocalizedString("BUTTON_UPDATE")
 
         contentView.alpha = info.disabled ? 0.45 : 1
-        accessoryType = info.disabled ? .none : .disclosureIndicator
-        selectionStyle = info.disabled ? .none : .default
+        accessoryType = info.disabled || section == .updates ? .none : .disclosureIndicator
+        selectionStyle = info.disabled || section == .updates ? .none : .default
 
         imageTask?.cancel()
 

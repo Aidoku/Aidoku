@@ -526,13 +526,7 @@ extension BrowseViewController {
             }
 
             cell.delegate = self
-            cell.setSourceInfo(item.info, showButton: section == .updates)
-
-            if section == .updates {
-                cell.buttonTitle = NSLocalizedString("BUTTON_UPDATE")
-                cell.selectionStyle = .none
-                cell.accessoryType = .none
-            }
+            cell.setSourceInfo(item.info, section: section)
 
             return cell
         }
