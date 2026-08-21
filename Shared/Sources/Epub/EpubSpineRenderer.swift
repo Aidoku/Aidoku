@@ -95,6 +95,14 @@ final class EpubSpineRenderer: NSObject {
 
     private let settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
+
+    /// The navigation the continuation above is waiting on.
+    ///
+    /// Loading over a navigation already in flight makes WebKit report the replaced one as
+    /// cancelled, and that report arrives after the replacement is installed. Without an identity
+    /// to compare against, the failure of the navigation that was superseded resumes the healthy
+    /// one that superseded it.
+    private var pendingNavigation: WKNavigation?
     private var confirmationTask: Task<Void, Never>?
     private var sizeChangeTask: Task<Void, Never>?
 
@@ -302,21 +310,24 @@ final class EpubSpineRenderer: NSObject {
         webView.scrollView.setContentOffset(webView.scrollView.contentOffset, animated: false)
         #endif
 
-        // Loading over the custom scheme means relative subresource requests resolve against it
-        // too, so they arrive back at the handler.
-        webView.load(URLRequest(url: url))
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-            navigationContinuation = continuation
-        }
-
-        // Cleared before the measurement rather than after it. A throw here leaves the renderer
-        // holding the document it no longer shows, and a count belonging to that document beside a
-        // page and a progression belonging to this one is a state no caller can read: the debug
-        // screen reported `1/43` for a blank document with its next control enabled.
+        // Cleared before the navigation rather than after it. A throw from either the navigation
+        // or the measurement leaves the renderer holding the document it no longer shows, and a
+        // count belonging to that document beside a page and a progression belonging to this one is
+        // a state no caller can read: the debug screen reported `1/43` for a blank document with
+        // its next control enabled. The caller has already moved on to this document by now, so
+        // nothing is left describing the one that is gone.
         currentPage = 0
         progression = 0
         pageCount = 0
         currentPageOffset = 0
+
+        // Loading over the custom scheme means relative subresource requests resolve against it
+        // too, so they arrive back at the handler.
+        let navigation = webView.load(URLRequest(url: url))
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
+            pendingNavigation = navigation
+            navigationContinuation = continuation
+        }
 
         let count = try await measurePageCount()
         pageCount = count
@@ -710,9 +721,17 @@ final class EpubSpineRenderer: NSObject {
         sizeChangeTask = nil
         navigationContinuation?.resume(throwing: RenderError.superseded)
         navigationContinuation = nil
+        pendingNavigation = nil
     }
 
-    private func finishNavigation(with error: (any Error)?) {
+    /// Reports a navigation's outcome, ignoring any navigation other than the one being waited on.
+    ///
+    /// Only a definite mismatch is ignored. WebKit types these as implicitly unwrapped, so a nil on
+    /// either side is treated as the navigation in hand rather than risking a load that never
+    /// returns.
+    private func finishNavigation(_ navigation: WKNavigation?, with error: (any Error)?) {
+        if let navigation, let pendingNavigation, navigation !== pendingNavigation { return }
+        pendingNavigation = nil
         if let error {
             navigationContinuation?.resume(throwing: RenderError.navigationFailed(error.localizedDescription))
         } else {
@@ -746,11 +765,11 @@ extension EpubSpineRenderer: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        finishNavigation(with: nil)
+        finishNavigation(navigation, with: nil)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
-        finishNavigation(with: error)
+        finishNavigation(navigation, with: error)
     }
 
     func webView(
@@ -758,7 +777,7 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         didFailProvisionalNavigation navigation: WKNavigation!,
         withError error: any Error
     ) {
-        finishNavigation(with: error)
+        finishNavigation(navigation, with: error)
     }
 }
 
