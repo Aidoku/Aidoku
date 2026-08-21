@@ -66,6 +66,10 @@ final class EpubSpineMeasurer {
     /// is immaterial next to the load it is waiting for.
     private static let pausePollNanoseconds: UInt64 = 20_000_000
 
+    /// Which pass is current, so that a pass finishing can tell whether it is still the one whose
+    /// task is stored, rather than clearing a successor's.
+    private var generation = 0
+
     var isMeasuring: Bool {
         guard let task else { return false }
         return !task.isCancelled
@@ -99,6 +103,9 @@ final class EpubSpineMeasurer {
         let superseded = task
         cancel()
 
+        self.generation += 1
+        let generation = self.generation
+
         guard !spinePaths.isEmpty, viewport.width > 0, viewport.height > 0 else {
             onFinish(Outcome(measured: 0, failed: [], cancelled: false))
             return
@@ -116,7 +123,13 @@ final class EpubSpineMeasurer {
             // document short. Waiting for the old pass to leave the renderer costs one document's
             // load, a 9 ms median, and removes the overlap rather than detecting it.
             await superseded?.value
-            guard let self, !Task.isCancelled else { return }
+            guard let self, !Task.isCancelled else {
+                // Every other exit from a pass reports an outcome. A caller that waits on
+                // `onFinish`, which is how the tests observe a pass, would otherwise wait for ever
+                // on one that was replaced while it queued behind the pass before it.
+                onFinish(Outcome(measured: 0, failed: [], cancelled: true))
+                return
+            }
             await run(
                 spinePaths: spinePaths,
                 viewport: viewport,
@@ -124,6 +137,11 @@ final class EpubSpineMeasurer {
                 onCount: onCount,
                 onFinish: onFinish
             )
+            // A pass that has run to completion is no longer measuring. Cleared only while it is
+            // still the current one, since a later pass may have replaced it in the meantime.
+            if self.generation == generation {
+                self.task = nil
+            }
         }
     }
 
