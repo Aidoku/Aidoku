@@ -502,7 +502,7 @@
 "LOCAL_FILES_INFO" = "A Fonte de arquivos locais permite que você faça upload e controle sua própria biblioteca diretamente dentro do Aidoku.";
 "LOCAL_FILES_SETUP" = "Configuração de arquivos locais";
 "LOCAL_FILE_IMPORT" = "Importar arquivo local";
-"LOCAL_FILE_IMPORT_TEXT" = "Importe um CBZ ou ZIP contendo imagens para ler.";
+"LOCAL_FILE_IMPORT_TEXT" = "Importe um CBZ, ePub ou ZIP contendo imagens para ler.";
 "CHAPTER_TITLE" = "Título do Capítulo";
 "SERIES_TITLE" = "Título da Série";
 "DESCRIPTION" = "Descrição";
@@ -545,7 +545,7 @@
 "RECENTLY_UPDATED_SERIES" = "Séries recém atualizadas";
 "RECENTLY_READ_BOOKS" = "Livros recém lidos";
 "ANY" = "Qualquer";
-"SORT_DATE_UPDATED" = "Data de atualização";
+"SORT_DATE_UPDATED" = "Data de Atualização";
 "SORT_DATE_READ" = "Data da leitura";
 "SORT_RELEASE_DATE" = "Data de lançamento";
 "SORT_FOLDER_NAME" = "Nome da Pasta";
@@ -636,3 +636,4 @@
 "FOCUS_ITEM_PREV" = "Focar o item anterior";
 "OPEN_FOCUS_ITEM" = "Abrir o item focado";
 "RESET_FOCUS" = "Resetar o foco";
+"EPUB_NAME" = "ePub";
