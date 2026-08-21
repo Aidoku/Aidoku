@@ -48,12 +48,12 @@ class BrowseViewModel {
             }
 
             pinnedSources.append(source)
-            // remove sources from the installed array.
-            if let index = self.installedSources.firstIndex(of: source) {
+            // remove source from the installed array.
+            if let index = self.installedSources.firstIndex(where: { $0.sourceId == sourceId }) {
                 self.installedSources.remove(at: index)
             }
-            // remove sources from the stored installed array.
-            if let index = self.storedInstalledSources?.firstIndex(of: source) {
+            // remove source from the stored installed array.
+            if let index = self.storedInstalledSources?.firstIndex(where: { $0.sourceId == sourceId }) {
                 self.storedInstalledSources?.remove(at: index)
             }
         }

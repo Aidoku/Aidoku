@@ -270,11 +270,9 @@ extension SourceManager {
         let installedSource = sources
             .firstIndex { $0.id == id }
             .flatMap { sources.remove(at: $0) }
-        if installedSource != nil {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.removeSource(id: id, context: context)
-                try? context.save()
-            }
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeSource(id: id, context: context)
+            try? context.save()
         }
 
         // add to coredata
@@ -421,39 +419,46 @@ extension SourceManager {
         }
     }
 
-    func remove(sourceKey: String, skipUpdateNotification: Bool = false) {
-        guard let source = source(for: sourceKey) else { return }
-        removeSettings(from: source)
-        if let url = source.url {
-            try? FileManager.default.removeItem(at: url)
-        }
-        sources.removeAll { $0.id == source.id }
-        loadSourceLanguages()
-        unpin(sourceKey: source.key, skipUpdateNotification: true)
-        Task {
-            if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
-                await TrackerManager.komga.removeTrackItems(source: source)
-            } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
-                await TrackerManager.kavita.removeTrackItems(source: source)
-            } else if source.key.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
-                await TrackerManager.suwayomi.removeTrackItems(source: source)
-            }
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.removeSource(id: source.key, context: context)
+    func remove(sourceKey: String, skipUpdateNotification: Bool = false) async {
+        let data: SourceObjectData? = await CoreDataManager.shared.container.performBackgroundTask { context in
+            let data = CoreDataManager.shared.getSource(id: sourceKey, context: context)?.toData()
+            if data != nil {
+                CoreDataManager.shared.removeSource(id: sourceKey, context: context)
                 try? context.save()
             }
-            NotificationCenter.default.post(name: .sourceUnloaded, object: source.key)
-            if !skipUpdateNotification {
-                NotificationCenter.default.post(name: .updateSourceList, object: nil)
-            }
+            return data
+        }
+        guard let data else { return }
+
+        if let path = data.path {
+            let url = FileManager.default.applicationSupportDirectory.appendingPathComponent(path)
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        sources.removeAll { $0.id == sourceKey }
+        removeSettings(from: sourceKey)
+        unpin(sourceKey: sourceKey, skipUpdateNotification: true)
+        await enable(sourceKey: sourceKey, skipUpdateNotification: true)
+
+        if sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.komga.removeTrackItems(sourceKey: sourceKey)
+        } else if sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.kavita.removeTrackItems(sourceKey: sourceKey)
+        } else if sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.suwayomi.removeTrackItems(sourceKey: sourceKey)
+        }
+
+        NotificationCenter.default.post(name: .sourceUnloaded, object: sourceKey)
+        if !skipUpdateNotification {
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
     }
 
-    func removeSettings(from source: AidokuRunner.Source) {
+    func removeSettings(from sourceKey: String) {
         let userDefaults = UserDefaults.standard
         let keys = userDefaults.dictionaryRepresentation().keys
 
-        for key in keys where key.hasPrefix(source.key) {
+        for key in keys where key.hasPrefix(sourceKey) {
             userDefaults.removeObject(forKey: key)
         }
     }
@@ -502,7 +507,7 @@ extension SourceManager {
         }
     }
 
-    func enable(sourceKey: String) async {
+    func enable(sourceKey: String, skipUpdateNotification: Bool = false) async {
         let key = "Browse.disabledSources"
         let removed = disabledSources.remove(sourceKey) != nil
         if removed {
@@ -516,7 +521,9 @@ extension SourceManager {
             }
             UserDefaults.standard.set(Array(disabledSources), forKey: key)
             NotificationCenter.default.post(name: .sourceLoaded, object: key)
-            NotificationCenter.default.post(name: .updateSourceList, object: nil)
+            if !skipUpdateNotification {
+                NotificationCenter.default.post(name: .updateSourceList, object: nil)
+            }
         }
     }
 

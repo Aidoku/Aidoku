@@ -183,12 +183,13 @@ extension BrowseViewController {
         let containsLocalSource = sourceKeys.contains(where: { $0 == LocalSourceRunner.sourceKey })
 
         func commit() {
-            for key in sourceKeys {
-                SourceManager.shared.remove(sourceKey: key, skipUpdateNotification: true)
-            }
             Task {
+                for key in sourceKeys {
+                    await SourceManager.shared.remove(sourceKey: key, skipUpdateNotification: true)
+                }
                 await self.viewModel.loadInstalledSources()
                 await self.viewModel.loadPinnedSources()
+                self.viewModel.loadUpdates()
                 self.updateDataSource()
                 self.setEditing(false, animated: true)
             }
@@ -569,6 +570,15 @@ extension BrowseViewController {
                 }
             }
         } else {
+            let previousItems = dataSource.snapshot().itemIdentifiers
+            let changedItems = snapshot.itemIdentifiers.filter { item in
+                guard let previous = previousItems.first(where: { $0 == item }) else {
+                    return false
+                }
+                return previous.info != item.info
+            }
+            snapshot.reconfigureItems(changedItems)
+
             dataSource.apply(snapshot)
         }
 
