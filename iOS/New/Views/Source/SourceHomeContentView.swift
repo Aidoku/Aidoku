@@ -67,60 +67,48 @@ struct SourceHomeContentView: View {
             ScrollView {
                 VStack {}.id(0) // indicator to scroll to the top
 
-                if loading {
-                    // loading skeleton
-                    Group {
-                        if listingSelection == 0 && source.features.providesHome {
-                            SourceHomeSkeletonView(source: source)
-                        } else if let listing = currentListing {
-                            switch listing.kind {
-                                case .default:
-                                    HomeGridView.placeholder
-                                case .list:
-                                    PlaceholderMangaHomeList(showTitle: false)
+                Group {
+                    if loading {
+                        // loading skeleton
+                        loadingView().transition(.opacity)
+                    } else if let home, listingSelection == 0 {
+                        // home page
+                        homeView(for: home, partial: !homeFullyLoaded)
+                    } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
+                        // listing page - check if source provides custom Home-like layout
+                        if let listingHome {
+                            homeView(for: listingHome, partial: false)
+                                .transition(.opacity)
+                        } else {
+                            // Display listing with listing.kind
+                            Group {
+                                switch listing.kind {
+                                    case .default:
+                                        HomeGridView(source: source, entries: entries, bookmarkedItems: $bookmarkedItems) {
+                                            if hasMore && listingLoadState != .loading {
+                                                await loadEntries()
+                                            }
+                                        }
+                                    case .list:
+                                        HomeListView(
+                                            source: source,
+                                            component: .init(title: nil, value: .mangaList(entries: entries.map { $0.intoLink() }))
+                                        ) {
+                                            if hasMore && listingLoadState != .loading {
+                                                await loadEntries()
+                                            }
+                                        }
+                                        .id(listingSelection) // Force recreation on listing change
+                                        .padding(.bottom)
+                                }
                             }
-                        }
-                    }
-                    .transition(.opacity)
-                } else if error != nil {
-                    // fix for transition animation
-                    Spacer()
-                        .frame(height: 200)
-                        .frame(maxWidth: .infinity)
-                } else if let home, listingSelection == 0 {
-                    // home page
-                    homeView(for: home, partial: !homeFullyLoaded)
-                } else if listingSelection > 0 || !source.features.providesHome, let listing = currentListing {
-                    // listing page - check if source provides custom Home-like layout
-                    if let listingHome {
-                        homeView(for: listingHome, partial: false)
                             .transition(.opacity)
-                    } else {
-                        // Display listing with listing.kind
-                        Group {
-                            switch listing.kind {
-                                case .default:
-                                    HomeGridView(source: source, entries: entries, bookmarkedItems: $bookmarkedItems) {
-                                        if hasMore && listingLoadState != .loading {
-                                            await loadEntries()
-                                        }
-                                    }
-                                case .list:
-                                    HomeListView(
-                                        source: source,
-                                        component: .init(title: nil, value: .mangaList(entries: entries.map { $0.intoLink() }))
-                                    ) {
-                                        if hasMore && listingLoadState != .loading {
-                                            await loadEntries()
-                                        }
-                                    }
-                                    .id(listingSelection) // Force recreation on listing change
-                                    .padding(.bottom)
-                            }
                         }
-                        .transition(.opacity)
+                    } else {
+                        loadingView().frame(height: 200).hidden()
                     }
                 }
+                .opacity(error != nil ? 0 : 1)
             }
             .overlay {
                 if let error {
@@ -129,6 +117,7 @@ struct SourceHomeContentView: View {
                         restart: { try await source.restart() },
                         retry: { await reload() }
                     )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .transition(.opacity)
                     .padding()
                 }
@@ -217,6 +206,22 @@ struct SourceHomeContentView: View {
         .environmentObject(path)
     }
 
+    @ViewBuilder
+    private func loadingView() -> some View {
+        Group {
+            if listingSelection == 0 && source.features.providesHome {
+                SourceHomeSkeletonView(source: source)
+            } else if let listing = currentListing {
+                switch listing.kind {
+                    case .default:
+                        HomeGridView.placeholder
+                    case .list:
+                        PlaceholderMangaHomeList(showTitle: false)
+                }
+            }
+        }
+    }
+
     func homeView(for home: Home, partial: Bool) -> some View {
         VStack(spacing: 24) {
             ForEach(home.components.indices, id: \.self) { offset in
@@ -246,8 +251,11 @@ struct SourceHomeContentView: View {
 
     func reload(initial: Bool = false) async {
         loadListingTask?.cancel()
-        withAnimation {
-            error = nil
+        if error != nil {
+            withAnimation {
+                loading = true
+                error = nil
+            }
         }
         // only load listings when actually reloading
         // they're loaded in ListingsHeaderView initially
