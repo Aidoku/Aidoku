@@ -157,7 +157,7 @@ struct EpubPaginationSettings {
             root.style.setProperty('--USER__colCount', '\(columnCount)');
             root.style.setProperty('--RS__colGap', '\(columnGapPx)px');
             root.style.setProperty('--RS__pageGutter', '\(pageGutterPx)px');
-            root.style.setProperty('--USER__fontFamily', '\(fontFamily)');
+            root.style.setProperty('--USER__fontFamily', \(Self.jsLiteral(fontFamily)));
             root.style.setProperty('--USER__fontSize', '\(fontSizePercent)%');
             \(lineHeight.map { "root.style.setProperty('--USER__lineHeight', '\($0)');" } ?? "")
             \(paged ? "root.style.setProperty('--USER__View', 'readium-paged-on');" : "root.style.setProperty('--USER__View', 'readium-scroll-on');")
@@ -187,12 +187,26 @@ struct EpubPaginationSettings {
                 withExtension: "css",
                 subdirectory: "readium-css"
             ),
-            let css = try? String(contentsOf: url, encoding: .utf8),
-            let encoded = try? JSONEncoder().encode(css),
-            let literal = String(data: encoded, encoding: .utf8)
+            let css = try? String(contentsOf: url, encoding: .utf8)
         else {
             LogManager.logger.error("EpubPaginationSettings: missing bundled stylesheet \(name).css")
             assertionFailure("missing bundled stylesheet \(name).css")
+            return "\"\""
+        }
+        return jsLiteral(css)
+    }
+
+    /// A JavaScript string literal, quotes included, for a value that is not ours to choose.
+    ///
+    /// `Reader.textFontFamily` is picked from `UIFont.familyNames`, which includes families the
+    /// user has installed, so a name carrying an apostrophe would close the literal early and make
+    /// the whole injected script a syntax error. That failure is silent: no viewport element, no
+    /// readium-css, and a page count measured against a 980px layout that looks plausible.
+    private static func jsLiteral(_ value: String) -> String {
+        guard
+            let encoded = try? JSONEncoder().encode(value),
+            let literal = String(data: encoded, encoding: .utf8)
+        else {
             return "\"\""
         }
         return literal
