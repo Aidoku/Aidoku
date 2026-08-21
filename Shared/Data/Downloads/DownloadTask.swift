@@ -264,12 +264,6 @@ extension DownloadTask {
             }
         }
 
-        let pageInterceptor: PageInterceptorProcessor? = if source.features.processesPages {
-            PageInterceptorProcessor(source: source)
-        } else {
-            nil
-        }
-
         if UserDefaults.standard.bool(forKey: "Downloads.parallel") {
             // download pages from the network concurrently
             await withTaskGroup(of: (Data?, URL?).self) { taskGroup in
@@ -277,7 +271,7 @@ extension DownloadTask {
                 for pageGroup in networkPages.chunked(into: groupSize) {
                     for page in pageGroup {
                         taskGroup.addTask {
-                            await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
+                            await self.downloadPage(page, source: source, tmpDirectory: tmpDirectory)
                         }
                     }
                     for await (data, path) in taskGroup {
@@ -299,7 +293,7 @@ extension DownloadTask {
         } else {
             // download pages from the network serially
             for page in networkPages {
-                let (data, path) = await self.downloadPage(page, source: source, pageInterceptor: pageInterceptor, tmpDirectory: tmpDirectory)
+                let (data, path) = await self.downloadPage(page, source: source, tmpDirectory: tmpDirectory)
                 guard tmpDirectory.exists else {
                     // download was cancelled, stop processing
                     return
@@ -325,7 +319,6 @@ extension DownloadTask {
     private func downloadPage(
         _ page: NetworkPage,
         source: AidokuRunner.Source,
-        pageInterceptor: PageInterceptorProcessor?,
         tmpDirectory: URL
     ) async -> (Data?, URL?) {
         let urlRequest = await source.getModifiedImageRequest(
@@ -338,13 +331,14 @@ extension DownloadTask {
         var resultData: Data?
         var resultPath: URL?
 
-        if let pageInterceptor {
+        if source.features.processesPages {
             let image = result.flatMap { PlatformImage(data: $0.0) } ?? .mangaPlaceholder
             do {
+                let pageInterceptor = PageInterceptorProcessor(source: source, pageContext: page.context)
                 let container = ImageContainer(image: image, data: result?.0)
                 let request = ImageRequest(
                     urlRequest: urlRequest,
-                    userInfo: [.contextKey: page.context as Any]
+                    userInfo: [.processesKey: true]
                 )
                 let newImage = try await pageInterceptor.processAsync(
                     container,

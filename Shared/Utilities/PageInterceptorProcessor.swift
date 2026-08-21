@@ -10,14 +10,14 @@ import Foundation
 import Nuke
 
 extension ImageRequest.UserInfoKey {
-    static let contextKey: Self = "aidoku/context"
     static let processesKey: Self = "aidoku/usesPageProcessor"
 }
 
 struct PageInterceptorProcessor: ImageProcessing {
-    let identifier: String = "pageProcessor"
-
     let source: AidokuRunner.Source
+    let pageContext: PageContext?
+
+    let identifier: String = "pageProcessor"
 
     func process(_ image: PlatformImage) -> PlatformImage? {
         nil
@@ -38,8 +38,6 @@ struct PageInterceptorProcessor: ImageProcessing {
     }
 
     func processAsync(_ container: ImageContainer, context: ImageProcessingContext) async throws -> AidokuRunner.PlatformImage? {
-        let pageContext = context.request.userInfo[.contextKey] as? PageContext
-
         guard let request = context.request.urlRequest else {
             return nil
         }
@@ -100,6 +98,21 @@ struct PageInterceptorProcessor: ImageProcessing {
             isCompleted: true
         )
         return try self.process(container, context: context)
+    }
+}
+
+extension PageInterceptorProcessor: Hashable {
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.source.key == rhs.source.key && lhs.pageContext == rhs.pageContext
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(source.key)
+        hasher.combine(pageContext)
+    }
+
+    var hashableIdentifier: AnyHashable {
+        AnyHashable(self)
     }
 }
 

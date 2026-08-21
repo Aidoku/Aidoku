@@ -293,7 +293,7 @@ extension ReaderWebtoonPageNode {
             !url.isFileURL
         {
             // only process pages if the source supports it and the image isn't downloaded
-            processors.append(PageInterceptorProcessor(source: source))
+            processors.append(PageInterceptorProcessor(source: source, pageContext: context))
             usePageProcessor = true
         }
         if shouldCropBorders {
@@ -308,7 +308,7 @@ extension ReaderWebtoonPageNode {
         let request = ImageRequest(
             urlRequest: urlRequest,
             processors: processors,
-            userInfo: [.contextKey: context as Any, .processesKey: usePageProcessor]
+            userInfo: [.processesKey: usePageProcessor]
         )
 
         // Store current image request for reload functionality
