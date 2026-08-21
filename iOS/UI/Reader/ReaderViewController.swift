@@ -101,20 +101,23 @@ class ReaderViewController: BaseObservingViewController {
             }()
         )
 
-    /// What the right-hand bar items were last built for, so they are rebuilt only when one of
-    /// those answers changes.
+    /// What the bar items were last built for, so they are rebuilt only when one of those answers
+    /// changes.
     ///
     /// The ePub reader reports a new total for every spine document the measurement pass counts,
     /// which is 217 calls in five seconds on the largest book in the corpus. Rebuilding the items
     /// each time replaced the very `UIBarButtonItem` a finger was resting on, so its action never
-    /// fired: the contents button read as dead for the whole of pagination.
+    /// fired and the button read as dead for the whole of pagination.
     private struct BarButtonState: Equatable {
-        let contents: Bool
-        let contentsEnabled: Bool
+        let hostsContents: Bool
+        let contentsRead: Bool
         let web: Bool
     }
 
     private var builtBarState: BarButtonState?
+
+    /// The chapter-list button, held so that it can be disabled while contents are being read.
+    private var chapterListButton: UIBarButtonItem?
 
     private var barToggleTapGesture: UITapGestureRecognizer?
     private var barToggleSecondaryTapGesture: UITapGestureRecognizer?
@@ -160,20 +163,22 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.navigationBar.prefersLargeTitles = false
 
         // navbar buttons
+        let chapterListButton = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .plain,
+            target: self,
+            action: #selector(openContents)
+        )
+        self.chapterListButton = chapterListButton
         navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
                 barButtonSystemItem: .close,
                 target: self,
                 action: #selector(close)
             ),
-            UIBarButtonItem(
-                image: UIImage(systemName: "list.bullet"),
-                style: .plain,
-                target: self,
-                action: #selector(determineChapterList)
-            )
+            chapterListButton
         ]
-        updateRightBarButtonItems()
+        updateBarButtonItems()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -521,7 +526,7 @@ class ReaderViewController: BaseObservingViewController {
         // The contents belong to the chapter being left. Refreshed here so the button goes with it
         // rather than standing over the next chapter's load, where it opens nothing; `setPages`
         // brings it back once the new chapter has contents of its own.
-        updateRightBarButtonItems()
+        updateBarButtonItems()
     }
 
     func loadNavbarTitle() {
@@ -724,7 +729,7 @@ extension ReaderViewController {
             // The bar toggle tap is built differently for a reader hosting a web view, so it is
             // rebuilt whenever which reader is hosted changes rather than only on a chapter change.
             configureBarToggleTapGestures()
-            updateRightBarButtonItems()
+            updateBarButtonItems()
         }
         reader?.readingMode = readingMode
         configureDictionaryOverlayInteractionMode()
@@ -938,7 +943,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         activityIndicator.stopAnimating()
         // A reader with contents of its own only has them once it has opened what it was given, and
         // this is the call it makes when it has.
-        updateRightBarButtonItems()
+        updateBarButtonItems()
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
@@ -1321,7 +1326,7 @@ extension ReaderViewController: UIPencilInteractionDelegate {
                 ) { [weak self] _ in
                     Task { @MainActor in
                         self?.longSqueezeTimer = nil
-                        self?.openChapterList()
+                        self?.openContents()
                     }
                 }
             case .ended:
@@ -1595,7 +1600,7 @@ extension ReaderViewController {
             ),
             UIKeyCommand(
                 title: NSLocalizedString("OPEN_CHAPTER_LIST"),
-                action: #selector(openChapterList),
+                action: #selector(openContents),
                 input: "\t"
             ),
             UIKeyCommand(
@@ -1643,21 +1648,36 @@ extension ReaderViewController {
 // MARK: - Table of Contents
 
 extension ReaderViewController {
-    /// Rebuilds the right-hand bar items, which differ by whether the hosted reader has contents of
-    /// its own to offer.
+    /// The hosted reader when it carries contents of its own, which is what decides whether the
+    /// chapter-list button opens those contents or the chapters of the series.
+    private var contentsReader: ReaderTableOfContentsReader? {
+        reader as? ReaderTableOfContentsReader
+    }
+
+    /// Whether the hosted reader has read its own contents yet. False for a reader that has none.
+    private var hasReadContents: Bool {
+        contentsReader?.tableOfContents.isEmpty == false
+    }
+
+    /// Rebuilds the bar items that depend on what the hosted reader can offer.
     ///
     /// Rebuilt rather than hidden: `UIBarButtonItem.isHidden` is iOS 16 and the reader deploys to
     /// 15. Which reader is hosted, and whether it has read a table of contents yet, are both known
     /// only after a chapter has been loaded, so this is called again whenever either can have moved.
-    func updateRightBarButtonItems() {
-        let contentsReader = reader as? ReaderTableOfContentsReader
+    func updateBarButtonItems() {
         let state = BarButtonState(
-            contents: contentsReader != nil,
-            contentsEnabled: !(contentsReader?.tableOfContents.isEmpty ?? true),
+            hostsContents: contentsReader != nil,
+            contentsRead: hasReadContents,
             web: chapter.url != nil
         )
         guard state != builtBarState else { return }
         builtBarState = state
+
+        // A reader carrying contents of its own opens them from the chapter-list button, so the
+        // button waits rather than opening the wrong list. Disabled rather than removed: removing it
+        // reflowed the items either side, so the buttons moved between chapters and a tap aimed at
+        // one landed on another; a disabled item holds its place and says plainly it is not ready.
+        chapterListButton?.isEnabled = !state.hostsContents || state.contentsRead
 
         let moreButton = UIBarButtonItem(
             image: UIImage(systemName: "safari"),
@@ -1668,10 +1688,6 @@ extension ReaderViewController {
         moreButton.isEnabled = state.web
 
         var items = [moreButton]
-        // Present for any reader that can have contents, and disabled until it has read them, rather
-        // than added and removed. Removing it reflowed the items either side, so the buttons moved
-        // between chapters and a tap aimed at one landed on another; a disabled item holds its place
-        // and says plainly that it is not ready yet.
         items.append(
             UIBarButtonItem(
                 image: UIImage(systemName: "textformat.size"),
@@ -1685,10 +1701,11 @@ extension ReaderViewController {
 
     /// Shows the contents of what is open, so the reader can move about inside it.
     ///
-    /// The sibling of `openChapterList`, which moves between chapters. One ePub is one chapter, so
-    /// the two lists answer different questions and both are offered.
+    /// Reached through `openContents` rather than from a button of its own, since one ePub is one
+    /// chapter and its chapter list holds a single row: the two answer the same question, and only
+    /// one of them answers it usefully.
     @objc func openTableOfContents() {
-        guard let reader = reader as? ReaderTableOfContentsReader, !reader.tableOfContents.isEmpty else { return }
+        guard let reader = contentsReader, !reader.tableOfContents.isEmpty else { return }
         let view = ReaderEpubContentsView(
             contents: reader.tableOfContents,
             currentEntry: { await reader.currentTableOfContentsEntry() },
@@ -1701,12 +1718,17 @@ extension ReaderViewController {
         present(UIHostingController(rootView: view), animated: true)
     }
 
-    @objc func determineChapterList() {
-       if let reader = reader as? ReaderTableOfContentsReader, !reader.tableOfContents.isEmpty {
+    /// Opens whichever list places the reader in what they are reading.
+    ///
+    /// A reader carrying contents of its own answers that with them; every other reader answers it
+    /// with the chapters of the series. The button is disabled until a contents-carrying reader has
+    /// read them, so the fallback here serves readers that have no contents rather than a reader
+    /// whose contents have not arrived.
+    @objc func openContents() {
+        if hasReadContents {
             openTableOfContents()
         } else {
             openChapterList()
         }
-
     }
 }
