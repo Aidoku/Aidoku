@@ -154,13 +154,20 @@ class SourceManager {
         let objects: [SourceObjectData] = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getSources(context: context).map { $0.toData() }
         }
-        return objects
+        var infos: [SourceInfo2] = objects
             .compactMap { source in
                 guard var info = source.toInfo() else { return nil }
                 info.disabled = disabledSources.contains(info.sourceId)
                 info.externalInfo = sourceById[info.sourceId]
                 return info
             }
+        infos.sort { $0.name < $1.name }
+        infos.sort {
+            let lhs = Self.languageCodes.firstIndex(of: $0.languages.count == 1 ? $0.languages[0] : "multi") ?? Int.max
+            let rhs = Self.languageCodes.firstIndex(of: $1.languages.count == 1 ? $1.languages[0] : "multi") ?? Int.max
+            return lhs < rhs
+        }
+        return infos
     }
 }
 
