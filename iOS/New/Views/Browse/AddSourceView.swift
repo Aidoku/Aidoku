@@ -137,6 +137,7 @@ struct AddSourceView: View {
                     }
                 }
             )
+            .environment(\.autocorrectionDisabled, true)
             .animation(.default, value: searchText)
             .animation(.default, value: searching)
             .sheet(isPresented: $importing) {
