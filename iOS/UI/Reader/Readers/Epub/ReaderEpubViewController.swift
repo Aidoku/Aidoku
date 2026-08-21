@@ -853,6 +853,11 @@ extension ReaderEpubViewController: ReaderTableOfContentsReader {
         book?.toc ?? EpubTableOfContents(entries: [])
     }
 
+    /// The contents are parsed as the book is opened, so an open book has read whatever it has.
+    var hasReadTableOfContents: Bool {
+        book != nil
+    }
+
     func currentTableOfContentsEntry() async -> EpubTableOfContents.Entry? {
         await book?.currentEntry()
     }

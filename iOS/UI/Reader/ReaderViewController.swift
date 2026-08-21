@@ -1655,7 +1655,18 @@ extension ReaderViewController {
     }
 
     /// Whether the hosted reader has read its own contents yet. False for a reader that has none.
+    ///
+    /// Asked of the reader rather than of the table, because a book that declares no contents reads
+    /// them and finds none: taking an empty table for "not read yet" left the chapter-list button
+    /// disabled for as long as such a book was open, and the fallback in `openContents` that exists
+    /// for exactly that book was then reachable only by keyboard or pencil.
     private var hasReadContents: Bool {
+        contentsReader?.hasReadTableOfContents == true
+    }
+
+    /// Whether the hosted reader has contents worth showing, which decides which list the button
+    /// opens once it is enabled.
+    private var hasContents: Bool {
         contentsReader?.tableOfContents.isEmpty == false
     }
 
@@ -1721,11 +1732,11 @@ extension ReaderViewController {
     /// Opens whichever list places the reader in what they are reading.
     ///
     /// A reader carrying contents of its own answers that with them; every other reader answers it
-    /// with the chapters of the series. The button is disabled until a contents-carrying reader has
-    /// read them, so the fallback here serves readers that have no contents rather than a reader
-    /// whose contents have not arrived.
+    /// with the chapters of the series, and so does a book that read its contents and found none.
+    /// The button is disabled until a contents-carrying reader has read them, so the fallback here
+    /// serves readers with nothing to show rather than a reader whose contents have not arrived.
     @objc func openContents() {
-        if hasReadContents {
+        if hasContents {
             openTableOfContents()
         } else {
             openChapterList()

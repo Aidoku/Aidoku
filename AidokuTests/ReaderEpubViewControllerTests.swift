@@ -410,6 +410,29 @@ struct ReaderEpubViewControllerTests {
         #expect(reader.book?.bookURL == second.url, "the rebuild opened the book the chapter was left for")
     }
 
+    /// A book that declares no contents has still read them once it is open.
+    ///
+    /// The host disables the button that reaches the contents until the reader has read them, and
+    /// it asked the table whether it was empty to decide. A book with no resolvable table never
+    /// stops being empty, so the button stayed disabled for as long as that book was open and the
+    /// chapter list it falls back to was reachable only by keyboard or pencil. This is the signal
+    /// that tells "none to read" apart from "not read yet".
+    @Test func aBookWithoutContentsStillReportsHavingReadThem() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 6])
+        defer { EpubFixture.remove(book.url) }
+
+        let manga = AidokuRunner.Manga(sourceKey: "local", key: book.url.lastPathComponent, title: "")
+        let unopened = ReaderEpubViewController(source: nil, manga: manga, bookURL: book.url)
+        #expect(!unopened.hasReadTableOfContents, "a reader with no book open has read nothing")
+
+        let (reader, _) = try open(bookURL: book.url)
+        defer { dismantle(reader) }
+        try await EpubFixture.waitUntil(timeout: 30) { reader.book != nil }
+
+        #expect(reader.tableOfContents.isEmpty, "the fixture must declare no contents")
+        #expect(reader.hasReadTableOfContents, "an open book has read whatever contents it has")
+    }
+
     /// A chapter that is not an ePub is handed to the host rather than opened.
     ///
     /// The same folder walk that produces two ePub chapters produces an epub beside a cbz. The host

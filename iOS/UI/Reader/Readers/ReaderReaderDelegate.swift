@@ -53,6 +53,15 @@ protocol ReaderTableOfContentsReader: ReaderReaderDelegate {
     /// The contents of what is open, empty where it declares none.
     var tableOfContents: EpubTableOfContents { get }
 
+    /// Whether the contents have been read, which a book declaring none satisfies with an empty
+    /// table.
+    ///
+    /// Separate from `tableOfContents.isEmpty` because the two questions have different answers and
+    /// the host needs this one: it disables the button that reaches the contents until they have
+    /// arrived, and reading emptiness as "not yet" left the button disabled for the whole of a book
+    /// that has no contents to read.
+    var hasReadTableOfContents: Bool { get }
+
     /// The entry the reader is currently inside, or nil where the contents begin after them.
     ///
     /// Asynchronous because several entries may share a spine document, and telling those apart
