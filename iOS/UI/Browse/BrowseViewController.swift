@@ -179,12 +179,12 @@ class BrowseViewController: BaseTableViewController {
 }
 
 extension BrowseViewController {
-    func uninstall(sources: [AidokuRunner.Source]) {
-        let containsLocalSource = sources.contains(where: { $0.id == LocalSourceRunner.sourceKey })
+    func uninstall(sourceKeys: [String]) {
+        let containsLocalSource = sourceKeys.contains(where: { $0 == LocalSourceRunner.sourceKey })
 
         func commit() {
-            for source in sources {
-                SourceManager.shared.remove(source: source, skipUpdateNotification: true)
+            for key in sourceKeys {
+                SourceManager.shared.remove(sourceKey: key, skipUpdateNotification: true)
             }
             Task {
                 await self.viewModel.loadInstalledSources()
@@ -286,11 +286,11 @@ extension BrowseViewController {
             continueActionName: NSLocalizedString("UNINSTALL"),
             sourceItem: toolbarItems?.first
         ) {
-            let sources = self.tableView.indexPathsForSelectedRows?.compactMap { (path: IndexPath) -> AidokuRunner.Source? in
+            let sourceKeys = self.tableView.indexPathsForSelectedRows?.compactMap { (path: IndexPath) -> String? in
                 guard let info = self.dataSource.itemIdentifier(for: path) else { return nil }
-                return SourceManager.shared.source(for: info.sourceId)
+                return info.sourceId
             } ?? []
-            self.uninstall(sources: sources)
+            self.uninstall(sourceKeys: sourceKeys)
         }
     }
 }
@@ -327,6 +327,7 @@ extension BrowseViewController {
         if
             sectionId == .installed || sectionId == .pinned,
             let info = dataSource.itemIdentifier(for: indexPath),
+            !info.disabled,
             let source = SourceManager.shared.source(for: info.sourceId)
         {
             let vc: UIViewController = if let legacySource = source.legacySource {
@@ -378,8 +379,7 @@ extension BrowseViewController {
             !tableView.isEditing, // do not allow context menu when the sources are being edited
             case let section = dataSource.sectionIdentifier(for: indexPath.section),
             section == .installed || section == .pinned,
-            let info = dataSource.itemIdentifier(for: indexPath),
-            let source = SourceManager.shared.source(for: info.sourceId)
+            let info = dataSource.itemIdentifier(for: indexPath)
         else {
             return nil
         }
@@ -398,13 +398,22 @@ extension BrowseViewController {
                 image: UIImage(systemName: section == .pinned ? "pin.slash" : "pin")
             ) { _ in
                 if section == .pinned {
-                    SourceManager.shared.unpin(source: source)
+                    SourceManager.shared.unpin(sourceKey: info.sourceId)
                 } else {
-                    SourceManager.shared.pin(source: source)
+                    SourceManager.shared.pin(sourceKey: info.sourceId)
                 }
+            }
+
+            let disableAction = UIAction(
+                title: info.disabled ? NSLocalizedString("ENABLE") : NSLocalizedString("DISABLE"),
+                image: UIImage(systemName: info.disabled ? "play" : "pause")
+            ) { _ in
                 Task {
-                    await self.viewModel.loadPinnedSources()
-                    self.updateDataSource()
+                    if info.disabled {
+                        await SourceManager.shared.enable(sourceKey: info.sourceId)
+                    } else {
+                        await SourceManager.shared.disable(sourceKey: info.sourceId)
+                    }
                 }
             }
 
@@ -413,12 +422,13 @@ extension BrowseViewController {
                 image: UIImage(systemName: "trash"),
                 attributes: .destructive
             ) { _ in
-                self.uninstall(sources: [source])
+                self.uninstall(sourceKeys: [info.sourceId])
             }
 
             return UIMenu(title: "", children: [
                 editAction,
                 pinAction,
+                disableAction,
                 uninstallAction
             ])
         }
@@ -499,10 +509,8 @@ extension BrowseViewController {
                 cell.buttonTitle = NSLocalizedString("BUTTON_UPDATE")
                 cell.selectionStyle = .none
                 cell.accessoryType = .none
-            } else {
-                cell.selectionStyle = .default
-                cell.accessoryType = .disclosureIndicator
             }
+
             return cell
         }
     }

@@ -69,4 +69,51 @@ extension SourceObjectData {
         }
         return nil
     }
+
+    func toInfo() -> SourceInfo2? {
+        if let data = customSource as? Data, let config = try? CustomSourceConfig(from: data) {
+            return config.toSource().toInfo()
+        }
+        guard let path else { return nil }
+
+        let url = FileManager.default.applicationSupportDirectory.appendingPathComponent(path)
+        let iconUrl = url.appendingPathComponent(apiVersion == "0.6" ? "Icon.png" : "icon.png")
+
+        if apiVersion == "0.6" {
+            if
+                let data = try? Data(contentsOf: url.appendingPathComponent("source.json")),
+                let manifest = try? JSONDecoder().decode(Source.SourceManifest.self, from: data)
+            {
+                return .init(
+                    sourceId: id,
+                    iconUrl: iconUrl,
+                    name: manifest.info.name,
+                    altNames: [],
+                    languages: manifest.languages?.map(\.code) ?? [manifest.info.lang],
+                    version: manifest.info.version,
+                    contentRating: .init(rawValue: manifest.info.nsfw ?? 0) ?? .safe,
+                    external: false,
+                    externalInfo: nil
+                )
+            }
+        } else {
+            if
+                let data = try? Data(contentsOf: url.appendingPathComponent("source.json")),
+                let sourceInfo = try? JSONDecoder().decode(AidokuRunner.SourceInfo.self, from: data)
+            {
+                return .init(
+                    sourceId: id,
+                    iconUrl: iconUrl,
+                    name: sourceInfo.info.name,
+                    altNames: sourceInfo.info.altNames ?? [],
+                    languages: sourceInfo.info.languages,
+                    version: sourceInfo.info.version,
+                    contentRating: sourceInfo.info.contentRating ?? .safe,
+                    external: false,
+                    externalInfo: nil
+                )
+            }
+        }
+        return nil
+    }
 }

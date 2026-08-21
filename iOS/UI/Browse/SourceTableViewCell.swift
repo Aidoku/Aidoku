@@ -161,6 +161,17 @@ class SourceTableViewCell: UITableViewCell {
         iconView.image = UIImage(named: "MangaPlaceholder")
     }
 
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        // enable highlighting while editing for disabled source cells
+        if editing {
+            selectionStyle = .default
+        } else {
+            let disabled = info?.disabled ?? false
+            selectionStyle = disabled ? .none : .default
+        }
+    }
+
     func setSourceInfo(_ info: SourceInfo2, showButton: Bool = false) {
         self.info = info
         titleLabel.text = info.name
@@ -172,6 +183,10 @@ class SourceTableViewCell: UITableViewCell {
 
         warningButton.isHidden = !info.external || info.externalInfo != nil
         getButton.isHidden = !showButton
+
+        contentView.alpha = info.disabled ? 0.45 : 1
+        accessoryType = info.disabled ? .none : .disclosureIndicator
+        selectionStyle = info.disabled ? .none : .default
 
         imageTask?.cancel()
 

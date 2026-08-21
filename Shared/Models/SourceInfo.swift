@@ -17,6 +17,7 @@ struct SourceInfo2: Hashable {
     var languages: [String]
     var version: Int
     var contentRating: SourceContentRating
+    var disabled: Bool = false
     var external: Bool = true
 
     var externalInfo: ExternalSourceInfo?

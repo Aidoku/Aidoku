@@ -149,6 +149,8 @@
 "UNINSTALL" = "Uninstall";
 "PIN" = "Pin";
 "UNPIN" = "Unpin";
+"DISABLE" = "Disable";
+"ENABLE" = "Enable";
 "REORDER" = "Reorder";
 "EDIT_SOURCES" = "Edit Sources";
 "CONTENT_RATING" = "Content Rating";
