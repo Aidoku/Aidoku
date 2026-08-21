@@ -193,11 +193,7 @@ final class EpubSpineMeasurer {
         // Laid out immediately rather than at the next pass, since the first document is loaded
         // before a detached view would otherwise be given a chance to adopt the frame, and a view
         // still at its default zero size reports a viewport that means nothing.
-        #if os(macOS)
-        renderer.webView.layoutSubtreeIfNeeded()
-        #else
         renderer.webView.layoutIfNeeded()
-        #endif
 
         var measured = 0
         var failed: [String] = []

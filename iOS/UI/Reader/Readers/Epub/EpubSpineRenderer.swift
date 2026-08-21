@@ -150,7 +150,6 @@ final class EpubSpineRenderer: NSObject {
         webView.navigationDelegate = self
         webView.onSizeChange = { [weak self] in self?.handleSizeChange() }
 
-        #if !os(macOS)
         // WebKit resolves `100vh` against the web view's bounds rather than against the area left
         // visible once insets are applied. A view already pinned by its host whose scroll view
         // insets itself as well lays out a column taller than it can show, leaving the foot of
@@ -177,10 +176,8 @@ final class EpubSpineRenderer: NSObject {
                 Task { @MainActor in self?.handleScroll() }
             }
         }
-        #endif
     }
 
-    #if !os(macOS)
     private var scrollObservation: NSKeyValueObservation?
 
     private func handleScroll() {
@@ -241,7 +238,6 @@ final class EpubSpineRenderer: NSObject {
     private static let overscrollThreshold: Double = 120
 
     private var overscrollTriggered = false
-    #endif
 
     /// The absolute source URL of the image element at a point in the web view's coordinate
     /// space, or nil when the point hits no image. Walks up from the element under the point, so
@@ -297,7 +293,6 @@ final class EpubSpineRenderer: NSObject {
 
         cancelPendingWork()
 
-        #if !os(macOS)
         // A document swap must not inherit the gesture that caused it. A fling's remaining
         // momentum keeps scrolling after the next document has loaded, washing away the page the
         // move asked to land on: entering a document showed its bottom instead of its start, and
@@ -308,7 +303,6 @@ final class EpubSpineRenderer: NSObject {
         webView.scrollView.panGestureRecognizer.isEnabled = false
         webView.scrollView.panGestureRecognizer.isEnabled = true
         webView.scrollView.setContentOffset(webView.scrollView.contentOffset, animated: false)
-        #endif
 
         // Cleared before the navigation rather than after it. A throw from either the navigation
         // or the measurement leaves the renderer holding the document it no longer shows, and a
@@ -484,26 +478,12 @@ final class EpubSpineRenderer: NSObject {
     /// page turn as unfinished long after the reader could see it.
     private func isShowingCurrentPage() async -> Bool {
         let target = currentPageOffset
-        #if !os(macOS)
         // Points and CSS pixels are the same size here: the injected viewport element maps the
         // document to the device width at a scale of one.
         let offset = settings.paged
             ? Double(webView.scrollView.contentOffset.x)
             : Double(webView.scrollView.contentOffset.y)
         return abs(offset - target) < Self.pageOffsetTolerance
-        #else
-        // Compared within a tolerance rather than for equality. These are floating-point offsets,
-        // and one that lands on a device-pixel-snapped value would never satisfy an exact check,
-        // leaving every page turn to wait out its timeout while `holdCurrentPage` re-scrolls.
-        let script = """
-        String(Math.abs(\(settings.paged ? "window.pageXOffset" : "window.pageYOffset") - \(target)) < \(Self.pageOffsetTolerance))
-        """
-        let showing = try? await webView.evaluateJavaScript(
-            script,
-            contentWorld: EpubWebViewFactory.contentWorld
-        ) as? String
-        return showing == "true"
-        #endif
     }
 
     // MARK: - Measurement
@@ -793,17 +773,10 @@ private final class SizeReportingWebView: WKWebView {
 
     private var lastSize: CGSize = .zero
 
-    #if os(macOS)
-    override func layout() {
-        super.layout()
-        reportSizeChange()
-    }
-    #else
     override func layoutSubviews() {
         super.layoutSubviews()
         reportSizeChange()
     }
-    #endif
 
     /// Any change at all is reported, deliberately unlike `ReaderPagedTextViewController`, which
     /// ignores one below 10 points to keep `NSLayoutManager` from repaginating in a loop. Nothing
