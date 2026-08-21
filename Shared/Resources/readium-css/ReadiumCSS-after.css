@@ -1,5 +1,5 @@
 /*!
- * Readium CSS v.2.0.0
+ * Readium CSS v.2.0.5
  * Copyright (c) 2017–2026. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
@@ -247,11 +247,11 @@ body{
 :root[style*="--USER__bodyHyphens"] li,
 :root[style*="--USER__bodyHyphens"] div,
 :root[style*="--USER__bodyHyphens"] dd{
-  -webkit-hyphens:inherit;
-  -moz-hyphens:inherit;
-  -ms-hyphens:inherit;
-  -epub-hyphens:inherit;
-  hyphens:inherit;
+  -webkit-hyphens:var(--USER__bodyHyphens) !important;
+  -moz-hyphens:var(--USER__bodyHyphens) !important;
+  -ms-hyphens:var(--USER__bodyHyphens) !important;
+  -epub-hyphens:var(--USER__bodyHyphens) !important;
+  hyphens:var(--USER__bodyHyphens) !important;
 }
 
 :root[style*="--USER__fontFamily"]{
@@ -342,7 +342,7 @@ body{
 :root[style*="--USER__lineHeight"] p,
 :root[style*="--USER__lineHeight"] li,
 :root[style*="--USER__lineHeight"] div{
-  line-height:inherit;
+  line-height:var(--USER__lineHeight) !important;
 }
 
 :root[style*="--USER__paraSpacing"] p{
@@ -362,8 +362,7 @@ body{
   text-indent:var(--USER__paraIndent) !important;
 }
 
-:root[style*="--USER__paraIndent"] p *,
-:root[style*="--USER__paraIndent"] p:first-letter{
+:root[style*="--USER__paraIndent"] p *{
   text-indent:0 !important;
 }
 
@@ -378,7 +377,7 @@ body{
 :root[style*="--USER__wordSpacing"] div,
 :root[style*="--USER__wordSpacing"] dt,
 :root[style*="--USER__wordSpacing"] dd{
-  word-spacing:var(--USER__wordSpacing);
+  word-spacing:var(--USER__wordSpacing) !important;
 }
 
 :root[style*="--USER__letterSpacing"] h1,
@@ -392,8 +391,8 @@ body{
 :root[style*="--USER__letterSpacing"] div,
 :root[style*="--USER__letterSpacing"] dt,
 :root[style*="--USER__letterSpacing"] dd{
-  letter-spacing:var(--USER__letterSpacing);
-  font-variant:none;
+  letter-spacing:var(--USER__letterSpacing) !important;
+  font-variant:none !important;
 }
 
 :root[style*="--USER__ligatures"]{

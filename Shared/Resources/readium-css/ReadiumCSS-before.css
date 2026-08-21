@@ -1,5 +1,5 @@
 /*!
- * Readium CSS v.2.0.0
+ * Readium CSS v.2.0.5
  * Copyright (c) 2017–2026. Readium Foundation. All rights reserved.
  * Use of this source code is governed by a BSD-style license which is detailed in the
  * LICENSE file present in the project repository where this source code is maintained.
@@ -32,6 +32,14 @@
 
 :root{
 
+  --RS__sans-serif-ja-v:'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ W3', 'YuGothic', 'Yu Gothic Medium', 'BIZ UDGothic', 'Yu Gothic', 'ＭＳゴシック', 'MS Gothic', sans-serif;
+
+  --RS__serif-ja-v:'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'YuMincho', 'BIZ UDMincho', 'Yu Mincho', 'ＭＳ明朝', 'MS Mincho', serif;
+
+  --RS__sans-serif-ja:'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ W3', 'YuGothic', 'Yu Gothic Medium', 'BIZ UDPGothic', 'Yu Gothic', 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+
+  --RS__serif-ja:'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'YuMincho', 'BIZ UDPMincho', 'Yu Mincho', 'ＭＳ Ｐ明朝', 'MS PMincho', serif;
+
   --RS__monospaceTf:ui-monospace, 'Andale Mono', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
 
   --RS__humanistTf:Seravek, Calibri, 'Gill Sans Nova', Roboto, Ubuntu, 'DejaVu Sans', source-sans-pro, sans-serif;
@@ -41,9 +49,106 @@
   --RS__modernTf:Athelas, Constantia, Charter, 'Bitstream Charter', Cambria, 'Georgia Pro', Georgia, serif;
 
   --RS__oldStyleTf:'Iowan Old Style', Sitka, 'Sitka Text', Palatino, 'Book Antiqua', 'URW Palladio L', P052, serif;
-  --RS__baseFontFamily:var(--RS__oldStyleTf);
-  --RS__lineHeightCompensation:1;
 
+  --RS__zh-HK-lineHeightCompensation:1.167;
+
+  --RS__zh-HK-baseFontFamily:'方體', 'PingFang HK', '方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-TW-lineHeightCompensation:1.167;
+
+  --RS__zh-TW-baseFontFamily:'方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-Hant-lineHeightCompensation:1.167;
+
+  --RS__zh-Hant-baseFontFamily:'方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-lineHeightCompensation:1.167;
+
+  --RS__zh-baseFontFamily:'方体', 'PingFang SC', '黑体', 'Heiti SC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK SC', sans-serif;
+
+  --RS__th-lineHeightCompensation:1.067;
+
+  --RS__th-baseFontFamily:Thonburi, 'Leelawadee UI', 'Cordia New', Roboto, Noto, 'Noto Sans Thai', sans-serif;
+
+  --RS__te-baseFontFamily:'Kohinoor Telugu', 'Telugu Sangam MN', 'Nirmala UI', Gautami, Roboto, Noto, 'Noto Sans Telugu', sans-serif;
+
+  --RS__ta-lineHeightCompensation:1.067;
+
+  --RS__ta-baseFontFamily:'Tamil Sangam MN', 'Nirmala UI', Latha, Roboto, Noto, 'Noto Sans Tamil', sans-serif;
+
+  --RS__si-lineHeightCompensation:1.167;
+
+  --RS__si-baseFontFamily:'Sinhala Sangam MN', 'Nirmala UI', 'Iskoola Pota', Roboto, Noto, 'Noto Sans Sinhala', sans-serif;
+
+  --RS__pa-lineHeightCompensation:1.1;
+
+  --RS__pa-baseFontFamily:'Gurmukhi MN', 'Nirmala UI', Kartika, Roboto, Noto, 'Noto Sans Gurmukhi', sans-serif;
+
+  --RS__or-lineHeightCompensation:1.167;
+
+  --RS__or-baseFontFamily:'Oriya Sangam MN', 'Nirmala UI', Kalinga, Roboto, Noto, 'Noto Sans Oriya', sans-serif;
+
+  --RS__ml-lineHeightCompensation:1.067;
+
+  --RS__ml-baseFontFamily:'Malayalam Sangam MN', 'Nirmala UI', Kartika, Roboto, Noto, 'Noto Sans Malayalam', sans-serif;
+
+  --RS__lo-baseFontFamily:'Lao Sangam MN', 'Leelawadee UI', 'Lao UI', Roboto, Noto, 'Noto Sans Lao', sans-serif;
+
+  --RS__ko-lineHeightCompensation:1.167;
+
+  --RS__ko-baseFontFamily:'Nanum Gothic', 'Apple SD Gothic Neo', 'Malgun Gothic', Roboto, Noto, 'Noto Sans CJK KR', sans-serif;
+
+  --RS__kn-lineHeightCompensation:1.1;
+
+  --RS__kn-baseFontFamily:'Kannada Sangam MN', 'Nirmala UI', Tunga, Roboto, Noto, 'Noto Sans Kannada', sans-serif;
+
+  --RS__km-lineHeightCompensation:1.067;
+
+  --RS__km-baseFontFamily:'Khmer Sangam MN', 'Leelawadee UI', 'Khmer UI', Roboto, Noto, 'Noto Sans Khmer', sans-serif;
+
+  --RS__ja-lineHeightCompensation:1.167;
+
+  --RS__ja-baseFontFamily:YuGothic, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', 'MS Gothic', Roboto, Noto, 'Noto Sans CJK JP', sans-serif;
+
+  --RS__iu-baseFontFamily:'Euphemia UCAS', Euphemia, Roboto, Noto, 'Noto Sans Canadian Aboriginal', sans-serif;
+
+  --RS__hy-baseFontFamily:Mshtakan, Sylfaen, Roboto, Noto, 'Noto Serif Armenian', serif;
+
+  --RS__hi-lineHeightCompensation:1.1;
+
+  --RS__hi-baseFontFamily:'Kohinoor Devanagari', 'Devanagari Sangam MN', Kokila, 'Nirmala UI', Roboto, Noto, 'Noto Sans Devanagari', sans-serif;
+
+  --RS__he-lineHeightCompensation:1.1;
+
+  --RS__he-baseFontFamily:'New Peninim MT', 'Arial Hebrew', Gisha, 'Times New Roman', Roboto, Noto, 'Noto Sans Hebrew', sans-serif;
+
+  --RS__gu-lineHeightCompensation:1.167;
+
+  --RS__gu-baseFontFamily:'Gujarati Sangam MN', 'Nirmala UI', Shruti, Roboto, Noto, 'Noto Sans Gujarati', sans-serif;
+
+  --RS__fa-baseFontFamily:'Geeza Pro', 'Arabic Typesetting', Roboto, Noto, 'Noto Naskh Arabic', 'Times New Roman', serif;
+
+  --RS__chr-lineHeightCompensation:1.167;
+
+  --RS__chr-baseFontFamily:'Plantagenet Cherokee', Roboto, Noto, 'Noto Sans Cherokee';
+
+  --RS__bo-baseFontFamily:Kailasa, 'Microsoft Himalaya', Roboto, Noto, 'Noto Sans Tibetan', sans-serif;
+
+  --RS__bn-lineHeightCompensation:1.067;
+
+  --RS__bn-baseFontFamily:'Kohinoor Bangla', 'Bangla Sangam MN', Vrinda, Roboto, Noto, 'Noto Sans Bengali', sans-serif;
+
+  --RS__ar-baseFontFamily:'Geeza Pro', 'Arabic Typesetting', Roboto, Noto, 'Noto Naskh Arabic', 'Times New Roman', serif;
+
+  --RS__am-lineHeightCompensation:1.167;
+
+  --RS__am-baseFontFamily:Kefa, Nyala, Roboto, Noto, 'Noto Sans Ethiopic', serif;
+
+  --RS__latin-lineHeightCompensation:1;
+
+  --RS__latin-baseFontFamily:var(--RS__oldStyleTf);
+  --RS__baseFontFamily:var(--RS__latin-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__latin-lineHeightCompensation);
   --RS__baseLineHeight:calc(1.5 * var(--RS__lineHeightCompensation));
 
   --RS__selectionTextColor:inherit;
@@ -97,132 +202,131 @@ math{
 }
 
 :lang(am){
-  --RS__baseFontFamily:kefa, nyala, roboto, noto, "Noto Sans Ethiopic", serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__am-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__am-lineHeightCompensation);
 }
 
 :lang(ar){
-  --RS__baseFontFamily:"Geeza Pro", "Arabic Typesetting", roboto, noto, "Noto Naskh Arabic", "Times New Roman", serif;
+  --RS__baseFontFamily:var(--RS__ar-baseFontFamily);
 }
 
 :lang(bn){
-  --RS__baseFontFamily:"Kohinoor Bangla", "Bangla Sangam MN", vrinda, roboto, noto, "Noto Sans Bengali", sans-serif;
-  --RS__lineHeightCompensation:1.067;
+  --RS__baseFontFamily:var(--RS__bn-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__bn-lineHeightCompensation);
 }
 
 :lang(bo){
-  --RS__baseFontFamily:kailasa, "Microsoft Himalaya", roboto, noto, "Noto Sans Tibetan", sans-serif;
+  --RS__baseFontFamily:var(--RS__bo-baseFontFamily);
 }
 
 :lang(chr){
-  --RS__baseFontFamily:"Plantagenet Cherokee", roboto, noto, "Noto Sans Cherokee";
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__chr-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__chr-lineHeightCompensation);
 }
 
 :lang(fa){
-  --RS__baseFontFamily:"Geeza Pro", "Arabic Typesetting", roboto, noto, "Noto Naskh Arabic", "Times New Roman", serif;
+  --RS__baseFontFamily:var(--RS__fa-baseFontFamily);
 }
 
 :lang(gu){
-  --RS__baseFontFamily:"Gujarati Sangam MN", "Nirmala UI", shruti, roboto, noto, "Noto Sans Gujarati", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__gu-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__gu-lineHeightCompensation);
 }
 
 :lang(he){
-  --RS__baseFontFamily:"New Peninim MT", "Arial Hebrew", gisha, "Times New Roman", roboto, noto, "Noto Sans Hebrew" sans-serif;
-  --RS__lineHeightCompensation:1.1;
+  --RS__baseFontFamily:var(--RS__he-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__he-lineHeightCompensation);
 }
 
 :lang(hi){
-  --RS__baseFontFamily:"Kohinoor Devanagari", "Devanagari Sangam MN", kokila, "Nirmala UI", roboto, noto, "Noto Sans Devanagari", sans-serif;
-
-  --RS__lineHeightCompensation:1.1;
+  --RS__baseFontFamily:var(--RS__hi-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__hi-lineHeightCompensation);
 }
 
 :lang(hy){
-  --RS__baseFontFamily:mshtakan, sylfaen, roboto, noto, "Noto Serif Armenian", serif;
+  --RS__baseFontFamily:var(--RS__hy-baseFontFamily);
 }
 
 :lang(iu){
-  --RS__baseFontFamily:"Euphemia UCAS", euphemia, roboto, noto, "Noto Sans Canadian Aboriginal", sans-serif;
+  --RS__baseFontFamily:var(--RS__iu-baseFontFamily);
 }
 
 :lang(ja){
-  --RS__baseFontFamily:yugothic, "Hiragino Maru Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Meiryo UI", "MS Gothic", roboto, noto, "Noto Sans CJK JP", sans-serif;
-  --RS__lineHeightCompensation:1.167;
-  --RS__serif-ja:"Hiragino Mincho ProN", "Hiragino Mincho Pro", "YuMincho", "BIZ UDPMincho", "Yu Mincho", "ＭＳ Ｐ明朝", "MS PMincho", serif;
-  --RS__sans-serif-ja:"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ W3", "YuGothic", "Yu Gothic Medium", "BIZ UDPGothic", "Yu Gothic", "ＭＳ Ｐゴシック", "MS PGothic", sans-serif;
-  --RS__serif-ja-v:"Hiragino Mincho ProN", "Hiragino Mincho Pro", "YuMincho", "BIZ UDMincho", "Yu Mincho", "ＭＳ明朝", "MS Mincho", serif;
-  --RS__sans-serif-ja-v:"Hiragino Sans", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ W3", "YuGothic", "Yu Gothic Medium", "BIZ UDGothic", "Yu Gothic", "ＭＳゴシック", "MS Gothic", sans-serif;
+  --RS__baseFontFamily:var(--RS__ja-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ja-lineHeightCompensation);
 }
 
 :lang(km){
-  --RS__baseFontFamily:"Khmer Sangam MN", "Leelawadee UI", "Khmer UI", roboto, noto, "Noto Sans Khmer", sans-serif;
-  --RS__lineHeightCompensation:1.067;
+  --RS__baseFontFamily:var(--RS__km-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__km-lineHeightCompensation);
 }
 
 :lang(kn){
-  --RS__baseFontFamily:"Kannada Sangam MN", "Nirmala UI", tunga, roboto, noto, "Noto Sans Kannada", sans-serif;
-  --RS__lineHeightCompensation:1.1;
+  --RS__baseFontFamily:var(--RS__kn-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__kn-lineHeightCompensation);
 }
 
 :lang(ko){
-  --RS__baseFontFamily:"Nanum Gothic", "Apple SD Gothic Neo", "Malgun Gothic", roboto, noto, "Noto Sans CJK KR", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__ko-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ko-lineHeightCompensation);
 }
 
 :lang(lo){
-  --RS__baseFontFamily:"Lao Sangam MN", "Leelawadee UI", "Lao UI", roboto, noto, "Noto Sans Lao", sans-serif;
+  --RS__baseFontFamily:var(--RS__lo-baseFontFamily);
 }
 
 :lang(ml){
-  --RS__baseFontFamily:"Malayalam Sangam MN", "Nirmala UI", kartika, roboto, noto, "Noto Sans Malayalam", sans-serif;
-  --RS__lineHeightCompensation:1.067;
+  --RS__baseFontFamily:var(--RS__ml-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ml-lineHeightCompensation);
 }
 
 :lang(or){
-  --RS__baseFontFamily:"Oriya Sangam MN", "Nirmala UI", kalinga, roboto, noto, "Noto Sans Oriya", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__or-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__or-lineHeightCompensation);
 }
 
 :lang(pa){
-  --RS__baseFontFamily:"Gurmukhi MN", "Nirmala UI", kartika, roboto, noto, "Noto Sans Gurmukhi", sans-serif;
-  --RS__lineHeightCompensation:1.1;
+  --RS__baseFontFamily:var(--RS__pa-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__pa-lineHeightCompensation);
 }
 
 :lang(si){
-  --RS__baseFontFamily:"Sinhala Sangam MN", "Nirmala UI", "Iskoola Pota", roboto, noto, "Noto Sans Sinhala", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__si-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__si-lineHeightCompensation);
 }
 
 :lang(ta){
-  --RS__baseFontFamily:"Tamil Sangam MN", "Nirmala UI", latha, roboto, noto, "Noto Sans Tamil", sans-serif;
-  --RS__lineHeightCompensation:1.067;
+  --RS__baseFontFamily:var(--RS__ta-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ta-lineHeightCompensation);
 }
 
 :lang(te){
-  --RS__baseFontFamily:"Kohinoor Telugu", "Telugu Sangam MN", "Nirmala UI", gautami, roboto, noto, "Noto Sans Telugu", sans-serif;
+  --RS__baseFontFamily:var(--RS__te-baseFontFamily);
 }
 
 :lang(th){
-  --RS__baseFontFamily:"Thonburi", "Leelawadee UI", "Cordia New", roboto, noto, "Noto Sans Thai", sans-serif;
-  --RS__lineHeightCompensation:1.067;
+  --RS__baseFontFamily:var(--RS__th-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__th-lineHeightCompensation);
 }
 
 :lang(zh){
-  --RS__baseFontFamily:"方体", "PingFang SC", "黑体", "Heiti SC", "Microsoft JhengHei UI", "Microsoft JhengHei", roboto, noto, "Noto Sans CJK SC", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__zh-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-lineHeightCompensation);
 }
 
-:lang(zh-Hant),
+:lang(zh-Hant){
+  --RS__baseFontFamily:var(--RS__zh-Hant-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-Hant-lineHeightCompensation);
+}
+
 :lang(zh-TW){
-  --RS__baseFontFamily:"方體", "PingFang TC", "黑體", "Heiti TC", "Microsoft JhengHei UI", "Microsoft JhengHei", roboto, noto, "Noto Sans CJK TC", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__zh-TW-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-TW-lineHeightCompensation);
 }
 
 :lang(zh-HK){
-  --RS__baseFontFamily:"方體", "PingFang HK", "方體", "PingFang TC", "黑體", "Heiti TC", "Microsoft JhengHei UI", "Microsoft JhengHei", roboto, noto, "Noto Sans CJK TC", sans-serif;
-  --RS__lineHeightCompensation:1.167;
+  --RS__baseFontFamily:var(--RS__zh-HK-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-HK-lineHeightCompensation);
 }
 
 body{
