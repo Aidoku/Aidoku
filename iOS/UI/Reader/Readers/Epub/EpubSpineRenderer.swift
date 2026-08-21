@@ -738,7 +738,14 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         // the book and cancelled here: even a link into the document already loaded would restart
         // it, discarding the count and the page that belong to it.
         guard navigationAction.navigationType != .linkActivated else {
-            onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), url.fragment)
+            // Decoded, unlike the path beside it. `URL.path` hands back a decoded path, which is
+            // why `resourcePath(from:)` must not decode again, but `URL.fragment` hands back the
+            // encoded form: a link to `#sec%20one` or to a CJK anchor arrives here percent-encoded
+            // while the table of contents holds the same anchor decoded, so the two disagree and
+            // `fragmentPages` finds no element by that id. The iOS 16 `fragment(percentEncoded:)`
+            // says this outright and the reader deploys to 15.
+            let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
+            onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
             return .cancel
         }
         return .allow
