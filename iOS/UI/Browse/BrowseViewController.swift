@@ -141,7 +141,7 @@ class BrowseViewController: BaseTableViewController {
         super.viewDidLoad()
         dataSource.onReorder = { [weak self] snapshot in
             guard let self = self else { return }
-            let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.sourceId }
+            let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.info.sourceId }
             UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
 
             if sourceList.isEmpty { self.stopEditing() }
@@ -287,8 +287,8 @@ extension BrowseViewController {
             sourceItem: toolbarItems?.first
         ) {
             let sourceKeys = self.tableView.indexPathsForSelectedRows?.compactMap { (path: IndexPath) -> String? in
-                guard let info = self.dataSource.itemIdentifier(for: path) else { return nil }
-                return info.sourceId
+                guard let item = self.dataSource.itemIdentifier(for: path) else { return nil }
+                return item.info.sourceId
             } ?? []
             self.uninstall(sourceKeys: sourceKeys)
         }
@@ -326,9 +326,9 @@ extension BrowseViewController {
         }
         if
             sectionId == .installed || sectionId == .pinned,
-            let info = dataSource.itemIdentifier(for: indexPath),
-            !info.disabled,
-            let source = SourceManager.shared.source(for: info.sourceId)
+            let item = dataSource.itemIdentifier(for: indexPath),
+            !item.info.disabled,
+            let source = SourceManager.shared.source(for: item.info.sourceId)
         {
             let vc: UIViewController = if let legacySource = source.legacySource {
                 SourceViewController(source: legacySource)
@@ -379,10 +379,11 @@ extension BrowseViewController {
             !tableView.isEditing, // do not allow context menu when the sources are being edited
             case let section = dataSource.sectionIdentifier(for: indexPath.section),
             section == .installed || section == .pinned,
-            let info = dataSource.itemIdentifier(for: indexPath)
+            let item = dataSource.itemIdentifier(for: indexPath)
         else {
             return nil
         }
+        let info = item.info
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
             let editAction = UIMenu(title: "", options: .displayInline, children: [
                 UIAction(
@@ -444,11 +445,33 @@ extension BrowseViewController {
         case external
     }
 
+    struct SourceItem: Hashable {
+        let section: Section
+        let info: SourceInfo2
+
+        static func == (lhs: SourceItem, rhs: SourceItem) -> Bool {
+            lhs.section == rhs.section && lhs.info.sourceId == rhs.info.sourceId
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(section)
+            hasher.combine(info.sourceId)
+        }
+    }
+
+    private func sourceItems(_ sources: [SourceInfo2], in section: Section) -> [SourceItem] {
+        var seenSourceIds = Set<String>()
+        return sources.compactMap { info in
+            guard seenSourceIds.insert(info.sourceId).inserted else { return nil }
+            return SourceItem(section: section, info: info)
+        }
+    }
+
     // Ability to edit tableview for a diffable data source.
     // Changing data in a diffable data source requires its seperate tableview override which can't be done with the view's tableview delegate.
-    class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceInfo2> {
+    class SourceCellDataSource: UITableViewDiffableDataSource<Section, SourceItem> {
         // Used for callback when cells are reordered in the pinned section.
-        var onReorder: ((NSDiffableDataSourceSnapshot<Section, SourceInfo2>) -> Void)?
+        var onReorder: ((NSDiffableDataSourceSnapshot<Section, SourceItem>) -> Void)?
         // Let the rows in the Pinned section be reordered (used for reordering sources)
         override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
             sectionIdentifier(for: indexPath.section) == .pinned
@@ -491,7 +514,7 @@ extension BrowseViewController {
 
     private func makeDataSource() -> SourceCellDataSource {
         // Use subclass of UITableViewDiffableDataSource to add tableview overrides.
-        SourceCellDataSource(tableView: tableView) { [weak self] tableView, indexPath, info in
+        SourceCellDataSource(tableView: tableView) { [weak self] tableView, indexPath, item in
             guard
                 let self = self,
                 let cell = tableView.dequeueReusableCell(
@@ -503,7 +526,7 @@ extension BrowseViewController {
             }
 
             cell.delegate = self
-            cell.setSourceInfo(info, showButton: section == .updates)
+            cell.setSourceInfo(item.info, showButton: section == .updates)
 
             if section == .updates {
                 cell.buttonTitle = NSLocalizedString("BUTTON_UPDATE")
@@ -516,19 +539,19 @@ extension BrowseViewController {
     }
 
     func updateDataSource() {
-        var snapshot = NSDiffableDataSourceSnapshot<Section, SourceInfo2>()
+        var snapshot = NSDiffableDataSourceSnapshot<Section, SourceItem>()
 
         if !viewModel.updatesSources.isEmpty {
             snapshot.appendSections([.updates])
-            snapshot.appendItems(viewModel.updatesSources, toSection: .updates)
+            snapshot.appendItems(sourceItems(viewModel.updatesSources, in: .updates), toSection: .updates)
         }
         if !viewModel.pinnedSources.isEmpty {
             snapshot.appendSections([.pinned])
-            snapshot.appendItems(viewModel.pinnedSources, toSection: .pinned)
+            snapshot.appendItems(sourceItems(viewModel.pinnedSources, in: .pinned), toSection: .pinned)
         }
         if !viewModel.installedSources.isEmpty {
             snapshot.appendSections([.installed])
-            snapshot.appendItems(viewModel.installedSources, toSection: .installed)
+            snapshot.appendItems(sourceItems(viewModel.installedSources, in: .installed), toSection: .installed)
         }
 //        if !viewModel.externalSources.isEmpty {
 //            snapshot.appendSections([.external])
@@ -573,7 +596,7 @@ extension BrowseViewController {
             } else {
                 snapshot.appendSections([.updates])
             }
-            snapshot.appendItems(viewModel.updatesSources, toSection: .updates)
+            snapshot.appendItems(sourceItems(viewModel.updatesSources, in: .updates), toSection: .updates)
         }
 //        if !viewModel.externalSources.isEmpty {
 //            snapshot.appendSections([.external])
