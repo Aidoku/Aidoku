@@ -17,6 +17,8 @@ class BrowseViewController: BaseTableViewController {
     private lazy var refreshControl = UIRefreshControl()
     private lazy var emptyStackView = EmptyPageStackView()
 
+    private var hasAppliedInitialSnapshot = false
+
     override var tableViewStyle: UITableView.Style {
         .grouped
     }
@@ -90,7 +92,6 @@ class BrowseViewController: BaseTableViewController {
         Task {
             await viewModel.loadInstalledSources()
             await viewModel.loadPinnedSources()
-            updateDataSource()
             await viewModel.loadExternalSources()
             viewModel.loadUpdates()
             updateDataSource()
@@ -183,10 +184,11 @@ extension BrowseViewController {
 
         func commit() {
             for source in sources {
-                SourceManager.shared.remove(source: source)
+                SourceManager.shared.remove(source: source, skipUpdateNotification: true)
             }
             Task {
                 await self.viewModel.loadInstalledSources()
+                await self.viewModel.loadPinnedSources()
                 self.updateDataSource()
                 self.setEditing(false, animated: true)
             }
@@ -525,7 +527,25 @@ extension BrowseViewController {
 //            snapshot.appendItems(viewModel.externalSources, toSection: .external)
 //        }
 
-        dataSource.apply(snapshot)
+        let isInitialSnapshot = !hasAppliedInitialSnapshot
+        hasAppliedInitialSnapshot = true
+
+        if isInitialSnapshot {
+            // fade in animation for initial load to avoid jumpy default animation
+            tableView.alpha = 0
+
+            dataSource.apply(snapshot, animatingDifferences: false) { [weak self] in
+                guard let self else { return }
+
+                self.tableView.layoutIfNeeded()
+
+                UIView.animate(withDuration: 0.2, delay: 0, options: [.curveEaseOut]) {
+                    self.tableView.alpha = 1
+                }
+            }
+        } else {
+            dataSource.apply(snapshot)
+        }
 
         Task { @MainActor in
             if navigationItem.searchController?.searchBar.text?.isEmpty ?? true {
@@ -552,12 +572,8 @@ extension BrowseViewController {
 //            snapshot.appendItems(viewModel.externalSources, toSection: .external)
 //        }
 
-        if #available(iOS 15.0, *) {
-            // prevents jumpiness from pull to refresh
-            dataSource.applySnapshotUsingReloadData(snapshot)
-        } else {
-            dataSource.apply(snapshot)
-        }
+        // prevents jumpiness from pull to refresh
+        dataSource.applySnapshotUsingReloadData(snapshot)
 
         Task { @MainActor in
             emptyStackView.isHidden = !snapshot.itemIdentifiers.isEmpty
