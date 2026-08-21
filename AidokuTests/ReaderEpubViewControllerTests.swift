@@ -114,6 +114,98 @@ struct ReaderEpubViewControllerTests {
         }
     }
 
+    /// Where each chapter's page list has got to, so a test can wait for the two moments the race
+    /// is made of rather than sleep for a guess at when they are.
+    private final class DeliveryLog: @unchecked Sendable {
+        private let lock = NSLock()
+        private var requested: Set<String> = []
+        private var delivered: Set<String> = []
+
+        func recordRequest(_ key: String) {
+            lock.lock()
+            defer { lock.unlock() }
+            requested.insert(key)
+        }
+
+        func recordDelivery(_ key: String) {
+            lock.lock()
+            defer { lock.unlock() }
+            delivered.insert(key)
+        }
+
+        func hasRequested(_ key: String) -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return requested.contains(key)
+        }
+
+        func hasDelivered(_ key: String) -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return delivered.contains(key)
+        }
+    }
+
+    /// The same, with the page list of a chapter withheld for a while before it is handed back.
+    ///
+    /// A remote ePub is fetched over the network, so the reader is routinely suspended inside
+    /// `getPages` when the chapter changes under it. This is how a test gets to be there too.
+    private struct SlowRunner: AidokuRunner.Runner {
+        let features = AidokuRunner.SourceFeatures()
+        let pages: [String: [AidokuRunner.Page]]
+        let delays: [String: Double]
+        let log: DeliveryLog
+
+        func getSearchMangaList(
+            query: String?,
+            page: Int,
+            filters: [AidokuRunner.FilterValue]
+        ) async throws -> AidokuRunner.MangaPageResult {
+            .init(entries: [], hasNextPage: false)
+        }
+
+        func getMangaUpdate(
+            manga: AidokuRunner.Manga,
+            needsDetails: Bool,
+            needsChapters: Bool
+        ) async throws -> AidokuRunner.Manga {
+            manga
+        }
+
+        func getPageList(
+            manga: AidokuRunner.Manga,
+            chapter: AidokuRunner.Chapter
+        ) async throws -> [AidokuRunner.Page] {
+            log.recordRequest(chapter.key)
+            if let delay = delays[chapter.key] {
+                // Not `Task.sleep`, which cancellation resumes at once: what has to be reproduced
+                // is a fetch that hands its pages over *after* the chapter changed and the new one
+                // was opened, which is what a `URLSession` callback already in flight does.
+                await withCheckedContinuation { continuation in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                        continuation.resume()
+                    }
+                }
+            }
+            log.recordDelivery(chapter.key)
+            return pages[chapter.key] ?? []
+        }
+    }
+
+    private func slowSource(
+        pages: [String: [AidokuRunner.Page]],
+        delays: [String: Double],
+        log: DeliveryLog
+    ) -> AidokuRunner.Source {
+        .init(
+            key: "epub-test",
+            name: "ePub Test",
+            version: 1,
+            contentRating: .safe,
+            runner: SlowRunner(pages: pages, delays: delays, log: log)
+        )
+    }
+
     private func stubSource(pages: [String: [AidokuRunner.Page]]) -> AidokuRunner.Source {
         .init(
             key: "epub-test",
@@ -246,6 +338,76 @@ struct ReaderEpubViewControllerTests {
         let secondTotal = try #require(reader.book?.bookTotal)
         #expect(secondTotal != firstTotal, "the two books are the same length, so this proves nothing")
         #expect(delegate.reportedTotals.last == secondTotal, "the host was left holding the first book's length")
+    }
+
+    /// A page list that arrives after the chapter changed decides nothing.
+    ///
+    /// `getPages` suspends and cancellation is cooperative, so the task a chapter change cancelled
+    /// resumes anyway, and it used to write the archive of the chapter being left into the reader's
+    /// cache after the change had cleared it. The reader is already showing the right book at that
+    /// point; what the stale write decides is which book the *next* read of the cache opens, and a
+    /// settings change is a read of the cache. So the chapter is left open on one book and rebuilt
+    /// as another, mid-read.
+    ///
+    /// The other order, where the stale write lands early enough for the new chapter to open the
+    /// old book outright, is the same write and is fixed by the same check; it is not reproduced
+    /// here because which of the two tasks resumes first is not ours to arrange.
+    @Test func aPageListArrivingAfterAChapterChangeIsDiscarded() async throws {
+        let first = try EpubFixture.makeBook(documents: [1, 40])
+        defer { EpubFixture.remove(first.url) }
+        let second = try EpubFixture.makeBook(documents: [1, 6, 25, 30])
+        defer { EpubFixture.remove(second.url) }
+
+        let firstChapter = AidokuRunner.Chapter(key: "first.epub")
+        let secondChapter = AidokuRunner.Chapter(key: "second.epub")
+        let log = DeliveryLog()
+        let source = slowSource(
+            pages: [
+                firstChapter.key: epubPages(for: first),
+                secondChapter.key: epubPages(for: second)
+            ],
+            // Long enough that the second chapter's own page list has been fetched and cached
+            // first, which is what leaves the stale write landing on top of a correct one.
+            delays: [firstChapter.key: 0.5],
+            log: log
+        )
+
+        let defaults = UserDefaults.standard
+        let original = defaults.object(forKey: "Reader.textFontSize")
+        defer {
+            if let original {
+                defaults.set(original, forKey: "Reader.textFontSize")
+            } else {
+                defaults.removeObject(forKey: "Reader.textFontSize")
+            }
+        }
+        defaults.set(18 as Double, forKey: "Reader.textFontSize")
+
+        let (reader, _) = try openThroughSource(chapter: firstChapter, source: source)
+        defer { dismantle(reader) }
+
+        // The chapter changes while the first page list is still being waited on, which is the
+        // whole of the race, so the fetch has to have started before it does.
+        try await EpubFixture.waitUntil(timeout: 10) { log.hasRequested(firstChapter.key) }
+        #expect(!log.hasDelivered(firstChapter.key), "the first page list arrived before it was superseded")
+        #expect(reader.book == nil, "the first chapter was opened before its page list was superseded")
+        reader.setChapter(secondChapter, startPage: 1)
+        try await waitUntilMeasured(reader)
+        #expect(reader.book?.bookURL == second.url, "the superseded page list decided which book opened")
+
+        // The superseded fetch returns here, which is the write under test.
+        try await EpubFixture.waitUntil(timeout: 10) { log.hasDelivered(firstChapter.key) }
+
+        // A settings change reopens the chapter through the cache rather than fetching again, so
+        // this is where a poisoned cache shows.
+        let totalBefore = try #require(reader.book?.bookTotal)
+        defaults.set(24 as Double, forKey: "Reader.textFontSize")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.textFontSize"), object: nil)
+        try await EpubFixture.waitUntil(timeout: 30) {
+            reader.book?.isMeasured == true && reader.book?.bookTotal != totalBefore
+        }
+
+        #expect(reader.book?.bookURL == second.url, "the rebuild opened the book the chapter was left for")
     }
 
     /// A chapter that is not an ePub is handed to the host rather than opened.

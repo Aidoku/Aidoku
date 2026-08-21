@@ -511,6 +511,9 @@ class ReaderEpubViewController: BaseObservingViewController {
         case epub(URL)
         /// A chapter that is not an ePub at all, carrying its pages for the host to route.
         case pages([Page])
+        /// An answer that describes a chapter the reader has already left, and so describes
+        /// nothing the caller should act on.
+        case superseded
     }
 
     private func chapterContent() async -> ChapterContent {
@@ -522,7 +525,16 @@ class ReaderEpubViewController: BaseObservingViewController {
             return .epub(providedBookURL)
         }
         guard let chapter else { return .pages([]) }
+        // The chapter is captured before the fetch and checked again after it. `getPages` suspends,
+        // and cancellation is cooperative, so the task a chapter change cancelled still resumes
+        // here, after `setChapter` has cleared the cache for the chapter now open. Writing then
+        // caches the archive of the chapter being left, and whichever read of the cache comes next
+        // opens the wrong book: the settings rebuild swaps the book out mid-read, and a stale write
+        // that lands before the new task's first read opens it outright, which is what the doc
+        // comment on `bookURL` describes the cost of.
+        let chapterId = chapter.id
         let pages = await ReaderPagedViewModel.getPages(source: source, manga: manga, chapter: chapter)
+        guard !Task.isCancelled, self.chapter?.id == chapterId else { return .superseded }
         guard
             let archive = pages.first(where: { $0.isEpubPage })?.zipURL,
             let url = URL(string: archive)
@@ -546,6 +558,8 @@ class ReaderEpubViewController: BaseObservingViewController {
                 // belongs to. An empty list is a chapter that could not be read at all, which the
                 // host shows its failure alert for.
                 delegate?.setPages(pages)
+                return
+            case .superseded:
                 return
         }
         guard !Task.isCancelled else { return }
