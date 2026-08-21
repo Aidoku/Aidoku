@@ -94,13 +94,17 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         activeTasks.removeValue(forKey: identifier) != nil
     }
 
-    /// URL paths are absolute and percent-encoded; ePub-internal paths are neither.
+    /// URL paths are absolute; ePub-internal paths are not.
+    ///
+    /// `URL.path` has already decoded the percent encoding, so decoding again would corrupt any
+    /// name that legitimately contains a percent sequence: `a%41b.png` is encoded on the way in,
+    /// decoded back by `path`, and a second decode would turn it into `aAb.png` and miss the file.
     nonisolated static func resourcePath(from url: URL) -> String {
         var path = url.path
         if path.hasPrefix("/") {
             path = String(path.dropFirst())
         }
-        return path.removingPercentEncoding ?? path
+        return path
     }
 
     /// The type a resource is served as.
