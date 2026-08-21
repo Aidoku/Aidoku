@@ -172,6 +172,30 @@ struct EpubResourceLayerTests {
         }
     }
 
+    /// A path out of the book cannot aim a request at anything else the host serves.
+    ///
+    /// Neither `appendingPathComponent` nor a source's own join removes a dot segment, and the
+    /// server resolves what arrives: a manifest naming `../../admin` would otherwise reach a path
+    /// outside the book carrying whatever credentials the source attached to the request.
+    @Test func remoteProviderCannotBeAimedOutsideTheBook() async throws {
+        StubURLProtocol.respond { request in
+            (200, Data(request.url?.path.utf8 ?? "".utf8))
+        }
+        defer { StubURLProtocol.reset() }
+
+        let provider = EpubRemoteResourceProvider(
+            baseURL: URL(string: "https://example.test/book/1")!,
+            session: StubURLProtocol.session()
+        )
+
+        for path in ["../../admin", "OEBPS/../../../admin", "OEBPS/./../../admin"] {
+            let data = try await provider.data(at: path)
+            let requested = try #require(String(data: data, encoding: .utf8))
+            #expect(requested.hasPrefix("/book/1/"), "\(path) reached \(requested)")
+            #expect(!requested.contains(".."), "\(path) was sent unresolved as \(requested)")
+        }
+    }
+
     // MARK: - Web view posture
 
     /// The security posture this slice exists to establish. A blocked image never decodes, so its

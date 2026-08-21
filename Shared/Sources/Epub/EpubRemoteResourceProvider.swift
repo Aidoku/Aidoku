@@ -37,7 +37,35 @@ final actor EpubRemoteResourceProvider: EpubResourceProvider {
         }
     }
 
+    /// An ePub-internal path with its dot segments collapsed, clamped at the root of the book.
+    ///
+    /// Where the path ends up pointing is decided by whatever the request builder appends it to,
+    /// and nothing along that route removes a `..`: `appendingPathComponent` keeps it literally and
+    /// the server resolves what arrives. A book naming `../../admin` as one of its resources would
+    /// otherwise aim a request carrying the source's credentials at a path outside the book.
+    ///
+    /// Clamped rather than standardised, because `URL.standardized` resolves the segments against
+    /// the base and so lets them leave it: the point is that a path out of a book cannot address
+    /// anything the book does not contain.
+    nonisolated static func confined(_ path: String) -> String {
+        var components: [String] = []
+        for part in path.split(separator: "/") {
+            switch part {
+                case ".":
+                    continue
+                case "..":
+                    if !components.isEmpty { components.removeLast() }
+                default:
+                    components.append(String(part))
+            }
+        }
+        return components.joined(separator: "/")
+    }
+
     func data(at path: String) async throws -> Data {
+        // Confined here rather than in either initialiser, so that a source building its own
+        // requests is covered as well as the base-URL form.
+        let path = Self.confined(path)
         guard let request = buildRequest(path) else {
             throw EpubResourceError.notFound(path)
         }
