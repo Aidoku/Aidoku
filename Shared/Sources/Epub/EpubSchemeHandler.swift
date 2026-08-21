@@ -114,10 +114,18 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
     /// generic XML makes WebKit build an XML document: the viewport meta element is then ignored,
     /// the page lays out at 980 px, and nothing reports an error. The manifest is not available
     /// here, so the contents decide instead.
+    ///
+    /// `.html` and `.htm` go to the HTML parser rather than the XML one. EPUB 2 permits a content
+    /// document that is not well-formed XML, and that is the extension those carry: an unclosed
+    /// `<br>` or an HTML entity makes WebKit's XML parser refuse the document and render a parser
+    /// error in its place, so the page is blank, the measurer files it unmeasurable, and nothing
+    /// says why. The HTML parser reads a well-formed document just as correctly, so nothing is
+    /// given up. `.xhtml` keeps the XML parser, which is what its media type asks for.
     nonisolated static func mimeType(forPath path: String, contents: Data = Data()) -> String {
         switch (path as NSString).pathExtension.lowercased() {
             case "xml": declaresXHTML(contents) ? "application/xhtml+xml" : "application/xml"
-            case "xhtml", "html", "htm": "application/xhtml+xml"
+            case "xhtml": "application/xhtml+xml"
+            case "html", "htm": "text/html"
             case "css": "text/css"
             case "js": "text/javascript"
             case "png": "image/png"

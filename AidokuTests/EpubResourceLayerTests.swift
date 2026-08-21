@@ -97,6 +97,40 @@ struct EpubResourceLayerTests {
         #expect(EpubSchemeHandler.mimeType(forPath: "OPS/fb.ncx", contents: xhtml) == "application/xml")
     }
 
+    /// EPUB 2 allows a content document that is not well-formed XML, and `.html` is the extension
+    /// they carry.
+    ///
+    /// Served as XHTML, WebKit parses them with its XML parser, which refuses an unclosed `<br>`
+    /// or an HTML entity and renders a `parsererror` in place of the document. Nothing reports
+    /// that: the page is blank, the measurer files the document unmeasurable, and the reader shows
+    /// nothing where a chapter should be.
+    @MainActor
+    @Test func aLegacyHTMLDocumentIsParsedAsHTML() async throws {
+        let legacy = """
+        <html xmlns="http://www.w3.org/1999/xhtml">
+        <head><title>legacy</title></head>
+        <body><p>Legacy&nbsp;prose<br>across two lines<p>and a second paragraph</body>
+        </html>
+        """
+        let archiveURL = try EpubFixture.makeArchive(entries: ["OEBPS/legacy.html": Data(legacy.utf8)])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let webView = try await EpubFixture.load(spinePath: "OEBPS/legacy.html", from: archiveURL)
+        defer { EpubFixture.dismantle(webView) }
+
+        let refused = try await EpubFixture.evaluate(
+            "String(document.getElementsByTagName('parsererror').length > 0)",
+            in: webView
+        ) as? String
+        #expect(refused == "false", "the XML parser refused a document EPUB 2 allows")
+
+        let paragraphs = try await EpubFixture.evaluate(
+            "String(document.getElementsByTagName('p').length)",
+            in: webView
+        ) as? String
+        #expect(paragraphs == "2", "the document's own markup did not survive parsing")
+    }
+
     // MARK: - Remote provider
 
     @Test func remoteProviderFetchesThroughTheSuppliedMapping() async throws {
