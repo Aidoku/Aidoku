@@ -722,6 +722,11 @@ extension ReaderViewController {
                 }
         }
         if let pageController {
+            // Severed, not just removed: the reader being replaced still finishes its in-flight
+            // work. The paged reader that hands an epub over completes its own move afterwards,
+            // and the page it then delivered — against the one-page placeholder list — read as
+            // the last page of the chapter and marked it completed, or overwrote its progress.
+            reader?.delegate = nil
             reader?.remove()
             pageController.delegate = self
             reader = pageController
@@ -898,12 +903,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let isPrePaginationPlaceholder = totalPages == 1
             && self.pages.first?.isTextPage == true
             && !(reader is ReaderPagedTextViewController && (reader as? ReaderPagedTextViewController)?.hasPaginated == true)
-        // Exception: an epub is one chapter spanning a whole spine, and its total is a lower bound
-        // until every spine document has been counted. The last page of a provisional total is the
-        // end of the documents measured so far, not the end of the book, so completing there marks
-        // a book read from its first document and, with deleteDownloadAfterReading, deletes it.
-        let isEpubStillMeasuring = (reader as? ReaderEpubViewController)?.book.map { !$0.isMeasured } ?? false
-        if pages.upperBound >= totalPages && !isPrePaginationPlaceholder && !isEpubStillMeasuring {
+        if pages.upperBound >= totalPages && !isPrePaginationPlaceholder {
             setCompleted()
         }
     }
@@ -996,6 +996,17 @@ extension ReaderViewController: ReaderHoldingDelegate {
 
     func setCompleted() {
         guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+
+        // An epub is one chapter spanning a whole spine, and its total is a lower bound until
+        // every spine document has been counted — and unknown entirely while the book is still
+        // opening, when the reader that handed the chapter over delivers one last position against
+        // the single placeholder page. Completing on either marks a book read from its first
+        // document and, with deleteDownloadAfterReading, deletes it. Guarded here rather than at
+        // the last-page check so a completion no reader may claim yet is refused whichever
+        // delegate path it arrives by.
+        if let epubReader = reader as? ReaderEpubViewController, epubReader.book?.isMeasured != true {
+            return
+        }
 
         Task { [chaptersToMark] in
             await HistoryManager.shared.addHistory(

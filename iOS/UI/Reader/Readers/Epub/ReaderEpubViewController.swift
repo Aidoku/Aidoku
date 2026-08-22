@@ -680,6 +680,13 @@ class ReaderEpubViewController: BaseObservingViewController {
             }
         }
 
+        // A resume still waiting on those counts means the reader is not where they belong yet:
+        // the book is showing its head while the pending page waits to be placed. Published, that
+        // head becomes the host's position, and a close before the resume lands then saves page 1
+        // over the very progress being resumed to. Every navigation the reader makes themselves
+        // clears the pending page, so this cannot silence a reader who has taken over.
+        guard book.pendingBookPage == nil else { return }
+
         // A page the index cannot place yet is one in a document whose predecessors are still being
         // counted. Reporting a position then would put the reader somewhere arbitrary in the book.
         guard let page = book.bookPage else { return }
