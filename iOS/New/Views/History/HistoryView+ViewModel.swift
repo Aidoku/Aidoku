@@ -134,22 +134,16 @@ extension HistoryView.ViewModel {
 
         loadTask = Task.detached {
             // offset needs to be the number of items before today, in case of entries in the future
-            var offset = 0
-            for (_, section) in await self.filteredHistory.sorted(by: { $0.key < $1.key }) {
-                if section.daysAgo > 0 {
-                    break
-                } else if section.daysAgo == 0 {
-                    // find any items with a date before now
-                    let now = Date()
-                    for entry in section.entries {
-                        if entry.date < now {
-                            break
-                        }
-                        offset += 1
-                    }
-                    break
+            let now = Date()
+            let offset = await self.historyData.reduce(into: 0) { offset, section in
+                switch section.key {
+                    case ..<0: // future
+                        offset += section.value.count
+                    case 0: // today
+                        offset += section.value.prefix(while: { $0.date >= now }).count
+                    default: // past
+                        break
                 }
-                offset += section.entries.count
             }
             let newObjectCount = await self.processHistoryObjects(limit: count, offset: offset)
             await self.increaseOffset(by: newObjectCount)
