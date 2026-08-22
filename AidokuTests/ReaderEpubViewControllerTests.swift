@@ -709,4 +709,55 @@ struct ReaderEpubViewControllerTests {
         #expect(delegate.currentPage == total, "the reader stayed where the resume could not reach")
         #expect(try #require(reader.book).pendingBookPage == nil)
     }
+
+    /// A resume is marked outstanding until it lands, and the total climbs throughout.
+    ///
+    /// Two things have to hold at once here, and fixing one by breaking the other has now happened
+    /// twice. The reader must not be taken to be *at* the head of the book while it is being resumed
+    /// past it, because the host writes that position and it lands on top of the progress being
+    /// resumed to; measured on a real book, page 1 was saved over page 2120 of 5298. And the toolbar
+    /// must keep showing numbers throughout, because `ReaderToolbarView` blanks both of its labels
+    /// unless it has a current page as well as a total, so withholding the position withheld every
+    /// sign that a five thousand page book was doing anything at all.
+    ///
+    /// The resolution is that the position is reported and `isAwaitingResume` says not to write it.
+    /// This covers the reporting half. The half that refuses the write lives in
+    /// `ReaderViewController.updateReadPosition`, which no test drives.
+    @Test func aResumeIsMarkedOutstandingWhileTheTotalClimbs() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 40, 6, 25])
+        defer { EpubFixture.remove(book.url) }
+
+        let total: Int
+        do {
+            let (reader, _) = try open(bookURL: book.url)
+            defer { dismantle(reader) }
+            try await waitUntilMeasured(reader)
+            total = try #require(reader.book).bookTotal
+        }
+        try #require(total > 2, "the fixture must be long enough for a resume to be deep")
+
+        let (reader, delegate) = try open(bookURL: book.url, startPage: total)
+        defer { dismantle(reader) }
+
+        // Held from before the book is opened, so the very first count lands into a book that
+        // already knows it is not where it belongs.
+        try await EpubFixture.waitUntil(timeout: 10) { reader.book != nil }
+        #expect(reader.isAwaitingResume, "the resume was not outstanding while the book was counted")
+
+        try await waitUntilMeasured(reader)
+        try await EpubFixture.waitUntil(timeout: 10) { delegate.currentPage == total }
+
+        #expect(!reader.isAwaitingResume, "the resume stayed outstanding after it landed")
+        #expect(delegate.reportedPages.last == total)
+
+        // The total is a label rather than a place, and it is published throughout. Withholding it
+        // alongside the position froze the page count from the moment the book opened until the
+        // resume landed.
+        #expect(delegate.reportedTotals.count > 1, "the total did not climb while the resume was held")
+        #expect(
+            delegate.reportedTotals == delegate.reportedTotals.sorted(),
+            "the total did not climb in order: \(delegate.reportedTotals)"
+        )
+        #expect(delegate.reportedTotals.last == total)
+    }
 }

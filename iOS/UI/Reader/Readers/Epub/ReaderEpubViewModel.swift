@@ -205,6 +205,18 @@ final class ReaderEpubViewModel {
         }
     }
 
+    /// Records the page a resume is aiming at, before the book has been opened.
+    ///
+    /// Opening measures the first document, and every count that lands is a change the host reports
+    /// on. Until the resume has been asked for, nothing marks the book as not yet where it belongs,
+    /// so those first reports described the head of the book: the host took that as the reader's
+    /// position, and closing before the resume settled saved page 1 over the progress being resumed
+    /// to. Held here so the very first report already knows better. The page is placed by
+    /// `showPendingBookPage` as soon as `canShowPendingBookPage` allows.
+    func holdBookPage(_ page: Int) {
+        pendingBookPage = page
+    }
+
     /// Shows a page of the book, which is what a dragged slider asks for.
     ///
     /// A page that cannot be placed, which is any page beyond the run of documents counted so far,

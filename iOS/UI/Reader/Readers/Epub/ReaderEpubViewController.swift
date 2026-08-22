@@ -620,6 +620,16 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
         lastViewport = viewport
 
+        // Held before the book is opened rather than asked for after it. Opening counts the first
+        // document, and that count is reported: a report published between the open and the resume
+        // describes the head of the book, which the host then takes as the reader's position, and a
+        // close before the resume settles saves page 1 over the progress being resumed to. The total
+        // still climbs throughout, since `report` publishes it above the guard that withholds a
+        // position.
+        if startPage > 1 {
+            book.holdBookPage(startPage - 1)
+        }
+
         do {
             try await book.open(viewport: viewport)
         } catch {
@@ -629,10 +639,21 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
         guard !Task.isCancelled else { return }
 
-        if startPage > 1 {
-            await book.showBookPage(startPage - 1)
-        }
+        // Placed now if the counts already reach it, and retried by `report` as they land if not.
+        await book.showPendingBookPage()
+
         report()
+    }
+
+    /// Whether the reader is still being taken to the page the book was opened at.
+    ///
+    /// While it is, the position this reader reports describes the head of the book rather than the
+    /// reader: the first page is what is on screen, and the page being resumed to is waiting for the
+    /// counts that place it. Reporting it is right, because the toolbar has nothing else to show and
+    /// a bar with no numbers reads as a book that has hung. Writing it is not: it saves page 1 over
+    /// the very progress being resumed to. The host asks this before it persists a position.
+    var isAwaitingResume: Bool {
+        book?.pendingBookPage != nil
     }
 
     /// Tells the toolbar where the reader is and how long the book is.
@@ -679,13 +700,6 @@ class ReaderEpubViewController: BaseObservingViewController {
                 return
             }
         }
-
-        // A resume still waiting on those counts means the reader is not where they belong yet:
-        // the book is showing its head while the pending page waits to be placed. Published, that
-        // head becomes the host's position, and a close before the resume lands then saves page 1
-        // over the very progress being resumed to. Every navigation the reader makes themselves
-        // clears the pending page, so this cannot silence a reader who has taken over.
-        guard book.pendingBookPage == nil else { return }
 
         // A page the index cannot place yet is one in a document whose predecessors are still being
         // counted. Reporting a position then would put the reader somewhere arbitrary in the book.

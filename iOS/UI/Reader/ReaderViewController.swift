@@ -486,6 +486,15 @@ extension ReaderViewController {
             return
         }
 
+        // An epub still being taken to the page it was opened at is showing the head of the book,
+        // and reports that so the toolbar has numbers to display while the spine is counted. It is
+        // not where the reader is, and writing it saves page 1 over the progress being resumed to.
+        // The sibling of the guard in `setCompleted`, for the same reason: what an epub reports
+        // before its counts land describes the book rather than the reader.
+        if (reader as? ReaderEpubViewController)?.isAwaitingResume == true {
+            return
+        }
+
         let currentPage = effectiveCurrentPage
         let chapter = chapter ?? self.chapter
 
