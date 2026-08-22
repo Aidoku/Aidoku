@@ -190,7 +190,34 @@ actor KavitaSourceRunner: Runner {
                 lastWorkingMirror: &lastWorkingMirrorCopy
             )
             baseUrl = lastWorkingMirrorCopy ?? baseUrl
-            var chapters = volumes.flatMap { $0.intoChapters(baseUrl: baseUrl, apiKey: apiKey) }
+
+            // epub chapters are split into their logical chapters via the book toc
+            var epubTocs: [Int: [KavitaBookChapterItem]] = [:]
+            await withTaskGroup(of: (Int, [KavitaBookChapterItem]?).self) { [helper] taskGroup in
+                for chapter in volumes.flatMap({ $0.chapters }) where chapter.isEpub {
+                    taskGroup.addTask { [lastWorkingMirrorCopy] in
+                        var mirror = lastWorkingMirrorCopy
+                        let toc: [KavitaBookChapterItem]? = try? await helper.request(
+                            path: "api/book/\(chapter.id)/chapters",
+                            lastWorkingMirror: &mirror
+                        )
+                        if toc == nil {
+                            LogManager.logger.error("Kavita: failed to load epub toc for chapter \(chapter.id)")
+                        }
+                        return (chapter.id, toc)
+                    }
+                }
+                for await (id, toc) in taskGroup {
+                    epubTocs[id] = toc
+                }
+            }
+
+            // books read left to right, unlike the rtl manga default
+            if manga.viewer == .unknown && volumes.contains(where: { $0.chapters.contains { $0.isEpub } }) {
+                manga.viewer = .leftToRight
+            }
+
+            var chapters = volumes.flatMap { $0.intoChapters(baseUrl: baseUrl, apiKey: apiKey, epubTocs: epubTocs) }
             chapters.sort { a, b in
                 if a.volumeNumber == b.volumeNumber {
                     if a.chapterNumber == b.chapterNumber {
@@ -213,6 +240,11 @@ actor KavitaSourceRunner: Runner {
     }
 
     func getPageList(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) async throws -> [AidokuRunner.Page] {
+        // epub chapter keys have the format "<kavita chapter id>/<first spine page>-<end spine page>"
+        if chapter.key.contains("/") {
+            return try await getEpubPageList(key: chapter.key)
+        }
+
         var baseUrl = try helper.getConfiguredServer()
         let apiKey = helper.getApiKey()
 
@@ -231,6 +263,42 @@ actor KavitaSourceRunner: Runner {
                 .init(content: .url(url: $0))
             }
         }
+    }
+
+    /// Load the pages of an epub chapter: the chapter's spine pages are
+    /// fetched as html from the book api and converted into a single markdown
+    /// text page for the text reader.
+    private func getEpubPageList(key: String) async throws -> [AidokuRunner.Page] {
+        let parts = key.split(separator: "/")
+        let range = parts.count == 2 ? parts[1].split(separator: "-").compactMap { Int($0) } : []
+        guard let chapterId = parts.first.map(String.init), range.count == 2 else {
+            throw SourceError.message("Invalid epub chapter key")
+        }
+        let baseUrl = try helper.getConfiguredServer()
+
+        var segments: [EpubParser.Segment] = []
+        for page in range[0]..<range[1] {
+            guard let html = try? await helper.requestString(path: "api/book/\(chapterId)/book-page?page=\(page)") else {
+                LogManager.logger.error("Kavita: failed to load epub page \(page) of chapter \(chapterId)")
+                continue
+            }
+            segments += EpubParser.segments(fromHTML: html, basePath: "")
+        }
+        guard !segments.isEmpty else {
+            throw SourceError.message("Failed to load epub chapter")
+        }
+
+        // image urls in the served html already carry the api key
+        return await EpubParser.remotePages(
+            segments: segments,
+            cacheKey: "\(sourceKey)/\(chapterId)",
+            imageURL: { ref in
+                if ref.hasPrefix("//") {
+                    return URL(string: (baseUrl.scheme ?? "https") + ":" + ref)
+                }
+                return URL(string: ref, relativeTo: baseUrl)
+            }
+        )
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
@@ -473,6 +541,12 @@ actor KavitaSourceRunner: Runner {
         return request
     }
 
+    func getBaseUrl() async throws -> URL? {
+        try helper.getConfiguredServer()
+    }
+}
+
+extension KavitaSourceRunner {
     func getSettings() async throws -> [Setting] {
         var settings: [Setting] = [
             .init(
@@ -619,10 +693,6 @@ actor KavitaSourceRunner: Runner {
         }
 
         return settings
-    }
-
-    func getBaseUrl() async throws -> URL? {
-        try helper.getConfiguredServer()
     }
 }
 

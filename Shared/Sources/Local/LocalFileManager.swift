@@ -151,14 +151,14 @@ extension LocalFileManager {
         let documentsDir = FileManager.default.documentDirectory
         let archiveURL = documentsDir.appendingPathComponent(cbzPath)
         if archiveURL.pathExtension.lowercased() == "epub" {
-            return readEpubPages(from: archiveURL, chapterId: chapterId)
+            return await readEpubPages(from: archiveURL, chapterId: chapterId)
         }
         return readPages(from: archiveURL)
     }
 
     // read the pages for an epub chapter
     // the chapter id has the format "<epub file name>/<content file path>"
-    nonisolated func readEpubPages(from archiveURL: URL, chapterId: String) -> [AidokuRunner.Page] {
+    nonisolated func readEpubPages(from archiveURL: URL, chapterId: String) async -> [AidokuRunner.Page] {
         let prefix = archiveURL.lastPathComponent + "/"
         let href = chapterId.hasPrefix(prefix) ? String(chapterId.dropFirst(prefix.count)) : chapterId
         let segments = EpubParser.chapterSegments(url: archiveURL, href: href)
@@ -167,52 +167,36 @@ extension LocalFileManager {
             return []
         }
 
-        let hasText = segments.contains {
-            if case .text = $0 { return true }
-            return false
-        }
-
-        if hasText {
-            // build a single markdown page with inline image references so the
-            // whole chapter stays in the text reader
-            let parts: [String] = segments.compactMap { segment in
-                switch segment {
-                    case .text(let text):
-                        return text
-                    case .image(let path):
-                        guard let cachedURL = Self.cacheEpubImage(archiveURL: archiveURL, path: path) else {
-                            return nil
-                        }
-                        return "![image](\(cachedURL.absoluteString))"
-                }
-            }
-            return [AidokuRunner.Page(content: .text(parts.joined(separator: "\n\n")))]
-        }
-
-        // image-only chapter (cover, illustration pages)
-        return segments.compactMap { segment in
-            guard case let .image(path) = segment else { return nil }
-            return AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: path))
-        }
+        return await EpubParser.pages(
+            segments: segments,
+            inlineImageURL: { Self.cacheEpubImage(archiveURL: archiveURL, path: $0) },
+            imagePage: { .zipFile(url: archiveURL, filePath: $0) }
+        )
     }
 
     // cache directory for extracted images of a given epub archive
     nonisolated static func epubImageCacheDirectory(for archiveURL: URL) -> URL? {
+        epubImageCacheDirectory(forKey: archiveURL.path)
+    }
+
+    // cache directory for the inline images of an epub book, identified by a
+    // stable key (local archive path or server source book id)
+    nonisolated static func epubImageCacheDirectory(forKey key: String) -> URL? {
         guard let cachesDir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
         else { return nil }
 
-        // stable per-book folder name (fnv-1a hash)
-        func hash(_ string: String) -> String {
-            var hash: UInt64 = 0xcbf29ce484222325
-            for byte in string.utf8 {
-                hash = (hash ^ UInt64(byte)) &* 0x100000001b3
-            }
-            return String(hash, radix: 16)
-        }
-
         return cachesDir
             .appendingPathComponent("EpubImages", isDirectory: true)
-            .appendingPathComponent(hash(archiveURL.path), isDirectory: true)
+            .appendingPathComponent(fnvHash(key), isDirectory: true)
+    }
+
+    // stable file/folder name for a string (fnv-1a hash)
+    nonisolated static func fnvHash(_ string: String) -> String {
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in string.utf8 {
+            hash = (hash ^ UInt64(byte)) &* 0x100000001b3
+        }
+        return String(hash, radix: 16)
     }
 
     // extract an image from an epub archive into the cache directory so it can

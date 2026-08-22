@@ -179,20 +179,60 @@ actor KomgaSourceRunner: Runner {
                 lastWorkingMirror: &lastWorkingMirrorCopy
             )
 
-            manga.chapters = chapters.content
-                .filter { $0.media.mediaProfile != "EPUB" || $0.media.epubDivinaCompatible } // can't read epubs (yet?)
-                .map {
-                    $0.intoChapter(
-                        baseUrl: lastWorkingMirrorCopy ?? baseUrl,
-                        useChapters: UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
-                    )
+            let chapterBaseUrl = lastWorkingMirrorCopy ?? baseUrl
+            let useChapters = UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+
+            var chapterGroups: [[AidokuRunner.Chapter]] = chapters.content.map {
+                [$0.intoChapter(baseUrl: chapterBaseUrl, useChapters: useChapters)]
+            }
+
+            // epub books are split into their logical chapters via the webpub manifest
+            await withTaskGroup(of: (Int, [AidokuRunner.Chapter]).self) { [helper] taskGroup in
+                for (index, book) in chapters.content.enumerated()
+                where book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible {
+                    taskGroup.addTask { [lastWorkingMirrorCopy] in
+                        var mirror = lastWorkingMirrorCopy
+                        let manifest: KomgaWebPubManifest? = try? await helper.request(
+                            path: "api/v1/books/\(book.id)/manifest",
+                            accept: "application/webpub+json",
+                            lastWorkingMirror: &mirror
+                        )
+                        guard let manifest else {
+                            LogManager.logger.error("Komga: failed to load epub manifest for book \(book.id)")
+                            return (index, [])
+                        }
+                        // newest first, matching the descending book order
+                        return (index, Array(book.intoEpubChapters(manifest: manifest, baseUrl: chapterBaseUrl).reversed()))
+                    }
                 }
+                for await (index, epubChapters) in taskGroup {
+                    chapterGroups[index] = epubChapters
+                }
+            }
+
+            manga.chapters = chapterGroups.flatMap { $0 }
+
+            // books read left to right, unlike the rtl manga default; only
+            // applied when the server doesn't specify a reading direction
+            let hasEpubBooks = chapters.content.contains {
+                $0.media.mediaProfile == "EPUB" && !$0.media.epubDivinaCompatible
+            }
+            if hasEpubBooks && manga.viewer == .unknown {
+                manga.viewer = .leftToRight
+            }
         }
 
         return manga
     }
 
     func getPageList(manga: AidokuRunner.Manga, chapter: AidokuRunner.Chapter) async throws -> [AidokuRunner.Page] {
+        // epub chapter keys have the format "<book id>/<content file path>"
+        if let separator = chapter.key.firstIndex(of: "/") {
+            let bookId = String(chapter.key[..<separator])
+            let href = String(chapter.key[chapter.key.index(after: separator)...])
+            return try await getEpubPageList(bookId: bookId, href: href)
+        }
+
         var lastWorkingMirrorCopy = lastWorkingMirror
         defer {
             lastWorkingMirror = lastWorkingMirrorCopy
@@ -220,6 +260,54 @@ actor KomgaSourceRunner: Runner {
                 .init(content: .url(url: $0))
             }
         }
+    }
+
+    /// Load the pages of an epub chapter: the chapter's xhtml files are
+    /// fetched from the book resource endpoint and converted into a single
+    /// markdown text page for the text reader.
+    private func getEpubPageList(bookId: String, href: String) async throws -> [AidokuRunner.Page] {
+        let baseUrl = try helper.getConfiguredServer()
+        let manifest: KomgaWebPubManifest = try await helper.request(
+            path: "api/v1/books/\(bookId)/manifest",
+            accept: "application/webpub+json"
+        )
+        // grouped continuation files for this chapter
+        let hrefs = manifest.chapters().first { $0.href == href }?.hrefs ?? [href]
+
+        var segments: [EpubParser.Segment] = []
+        for href in hrefs {
+            let escaped = href.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? href
+            guard let html = try? await helper.requestString(path: "api/v1/books/\(bookId)/resource/\(escaped)") else {
+                LogManager.logger.error("Komga: failed to load epub chapter file \(href) of book \(bookId)")
+                continue
+            }
+            segments += EpubParser.segments(fromHTML: html, basePath: EpubParser.directory(of: href))
+        }
+        guard !segments.isEmpty else {
+            throw SourceError.message("Failed to load epub chapter")
+        }
+
+        let auth = helper.getAuthorizationHeader()
+        return await EpubParser.remotePages(
+            segments: segments,
+            cacheKey: "\(sourceKey)/\(bookId)",
+            imageURL: { ref in
+                if ref.hasPrefix("http://") || ref.hasPrefix("https://") {
+                    return URL(string: ref)
+                }
+                if ref.hasPrefix("//") {
+                    return URL(string: (baseUrl.scheme ?? "https") + ":" + ref)
+                }
+                let escaped = ref.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? ref
+                return URL(string: "api/v1/books/\(bookId)/resource/\(escaped)", relativeTo: baseUrl)
+            },
+            authorize: { request in
+                // only send credentials to the configured server
+                if let auth, request.url?.host == baseUrl.host {
+                    request.setValue(auth, forHTTPHeaderField: "Authorization")
+                }
+            }
+        )
     }
 
     func getMangaList(listing: AidokuRunner.Listing, page: Int) async throws -> AidokuRunner.MangaPageResult {
@@ -430,6 +518,12 @@ actor KomgaSourceRunner: Runner {
         return request
     }
 
+    func getBaseUrl() async throws -> URL? {
+        try helper.getConfiguredServer()
+    }
+}
+
+extension KomgaSourceRunner {
     func getSettings() async throws -> [Setting] {
         var settings: [Setting] = [
             .init(
@@ -522,10 +616,6 @@ actor KomgaSourceRunner: Runner {
             )
         ])
         return settings
-    }
-
-    func getBaseUrl() async throws -> URL? {
-        try helper.getConfiguredServer()
     }
 
     func handleBasicLogin(key _: String, username email: String, password: String) async throws -> Bool {

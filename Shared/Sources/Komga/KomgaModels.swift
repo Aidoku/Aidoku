@@ -272,6 +272,82 @@ extension KomgaBook {
     }
 }
 
+// MARK: Epub Manifest
+
+/// Subset of the Readium WebPub manifest served at `api/v1/books/{id}/manifest`,
+/// used to split epub books into chapters without downloading the file.
+struct KomgaWebPubManifest: Codable, Sendable {
+    struct Link: Codable, Sendable {
+        let href: String
+    }
+
+    struct TocEntry: Codable, Sendable {
+        let title: String?
+        let href: String?
+        let children: [TocEntry]?
+    }
+
+    let readingOrder: [Link]
+    let toc: [TocEntry]?
+}
+
+extension KomgaWebPubManifest {
+    /// The archive-relative path of a resource href, e.g.
+    /// "https://server/api/v1/books/{id}/resource/OEBPS/ch1.xhtml#frag" -> "OEBPS/ch1.xhtml"
+    static func resourcePath(of href: String) -> String {
+        var path = href
+        if let range = path.range(of: "/resource/") {
+            path = String(path[range.upperBound...])
+        }
+        if let hash = path.firstIndex(of: "#") {
+            path = String(path[..<hash])
+        }
+        return path.removingPercentEncoding ?? path
+    }
+
+    /// The spine grouped into logical chapters by TOC titles, like local epubs.
+    func chapters() -> [EpubParser.Chapter] {
+        var titles: [String: String] = [:]
+        var entries = toc ?? []
+        var index = 0
+        while index < entries.count {
+            let entry = entries[index]
+            if let href = entry.href, let title = entry.title, !title.isEmpty {
+                let path = Self.resourcePath(of: href)
+                if titles[path] == nil {
+                    titles[path] = title
+                }
+            }
+            entries.append(contentsOf: entry.children ?? [])
+            index += 1
+        }
+
+        return EpubParser.groupSpine(
+            hrefs: readingOrder.map { Self.resourcePath(of: $0.href) },
+            titles: titles
+        )
+    }
+}
+
+extension KomgaBook {
+    /// Chapters for an epub book, one per logical epub chapter.
+    /// The chapter key has the format "<book id>/<primary content file path>".
+    func intoEpubChapters(manifest: KomgaWebPubManifest, baseUrl: URL) -> [AidokuRunner.Chapter] {
+        manifest.chapters().enumerated().map { index, chapter in
+            .init(
+                key: "\(id)/\(chapter.href)",
+                title: chapter.title,
+                chapterNumber: Float(index + 1),
+                volumeNumber: metadata.numberSort,
+                dateUploaded: metadata.releaseDate ?? metadata.created,
+                url: URL(string: "book/\(id)", relativeTo: baseUrl),
+                language: "en",
+                thumbnail: URL(string: "api/v1/books/\(id)/thumbnail", relativeTo: baseUrl)?.absoluteString,
+            )
+        }
+    }
+}
+
 // MARK: Series
 
 struct KomgaSeries: Codable, Sendable {

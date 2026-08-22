@@ -237,33 +237,108 @@ struct KavitaVolume: Codable, Sendable {
         let pagesRead: Int
         let lastReadingProgressUtc: Date
         let files: [File]
+
+        var isEpub: Bool {
+            files.contains { $0.format == 3 }
+        }
     }
 
     let id: Int
     let name: String
     let number: Int
+    let minNumber: Float?
     let seriesId: Int
     let chapters: [Chapter]
+
+    /// The volume number; the legacy `number` field truncates fractional
+    /// volumes (e.g. 9.5 -> 9), so prefer `minNumber` where available.
+    var resolvedNumber: Float {
+        minNumber ?? Float(number)
+    }
+}
+
+/// An entry of an epub's table of contents, from `api/book/{chapterId}/chapters`.
+struct KavitaBookChapterItem: Codable, Sendable {
+    let title: String
+    let page: Int
+    let children: [KavitaBookChapterItem]?
 }
 
 extension KavitaVolume {
-    func intoChapters(baseUrl: URL, apiKey: String) -> [AidokuRunner.Chapter] {
-        chapters.compactMap { chapter -> AidokuRunner.Chapter? in
-            let isEpub = chapter.files.contains(where: { $0.format == 3 })
-            guard !isEpub else { return nil }
+    /// `epubTocs` maps epub chapter ids to their table of contents; epub
+    /// chapters without an entry are dropped (their toc failed to load).
+    func intoChapters(baseUrl: URL, apiKey: String, epubTocs: [Int: [KavitaBookChapterItem]] = [:]) -> [AidokuRunner.Chapter] {
+        chapters.flatMap { chapter -> [AidokuRunner.Chapter] in
+            if chapter.isEpub {
+                guard let toc = epubTocs[chapter.id] else { return [] }
+                return chapter.intoEpubChapters(volume: self, toc: toc, baseUrl: baseUrl, apiKey: apiKey)
+            }
             let chapterNumber = Float(chapter.number) ?? 0
-            let noVolume = number < 0 || number >= 100000
+            let noVolume = resolvedNumber < 0 || resolvedNumber >= 100000
             let noChapter = chapterNumber < 0 || chapterNumber >= 100000
-            return .init(
+            return [.init(
                 key: "\(chapter.id)",
                 title: (chapter.titleName?.isEmpty ?? true) ? nil : chapter.titleName,
                 chapterNumber: noChapter ? nil : chapterNumber,
-                volumeNumber: noVolume ? nil : Float(number),
+                volumeNumber: noVolume ? nil : resolvedNumber,
                 dateUploaded: chapter.createdUtc,
                 url: URL(string: "library/1/series/\(seriesId)/chapter/\(chapter.id)", relativeTo: baseUrl),
                 language: chapter.language,
                 thumbnail: URL(
                     string: "api/image/chapter-cover?chapterId=\(chapter.id)&apiKey=\(apiKey)",
+                    relativeTo: baseUrl
+                )?.absoluteString
+            )]
+        }
+    }
+}
+
+extension KavitaVolume.Chapter {
+    /// Chapters for an epub, one per logical epub chapter, grouping the spine
+    /// pages by their toc titles like local epubs. The chapter key has the
+    /// format "<kavita chapter id>/<first spine page>-<end spine page>".
+    func intoEpubChapters(
+        volume: KavitaVolume,
+        toc: [KavitaBookChapterItem],
+        baseUrl: URL,
+        apiKey: String
+    ) -> [AidokuRunner.Chapter] {
+        // first toc title per spine page
+        var titles: [Int: String] = [:]
+        var items = toc
+        var index = 0
+        while index < items.count {
+            let item = items[index]
+            if titles[item.page] == nil, !item.title.isEmpty {
+                titles[item.page] = item.title
+            }
+            items.append(contentsOf: item.children ?? [])
+            index += 1
+        }
+
+        // spine pages with a toc title start a new chapter, untitled pages are
+        // grouped into the preceding one; without a toc, every page is its own chapter
+        var groups: [(start: Int, title: String?)] = []
+        for page in 0..<pages {
+            let title = titles[page]
+            if titles.isEmpty || title != nil || groups.isEmpty {
+                groups.append((page, title))
+            }
+        }
+
+        let noVolume = volume.resolvedNumber < 0 || volume.resolvedNumber >= 100000
+        return groups.enumerated().map { index, group in
+            let end = index + 1 < groups.count ? groups[index + 1].start : pages
+            return .init(
+                key: "\(id)/\(group.start)-\(end)",
+                title: group.title,
+                chapterNumber: Float(index + 1),
+                volumeNumber: noVolume ? nil : volume.resolvedNumber,
+                dateUploaded: createdUtc,
+                url: URL(string: "library/1/series/\(volume.seriesId)/chapter/\(id)", relativeTo: baseUrl),
+                language: language,
+                thumbnail: URL(
+                    string: "api/image/chapter-cover?chapterId=\(id)&apiKey=\(apiKey)",
                     relativeTo: baseUrl
                 )?.absoluteString
             )

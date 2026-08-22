@@ -11,6 +11,7 @@
 //  packages (e.g. <opf:item>, <odc:rootfile>) parse the same as unprefixed ones.
 //
 
+import AidokuRunner
 import Foundation
 import SwiftSoup
 import ZIPFoundation
@@ -170,6 +171,34 @@ enum EpubParser {
         )
     }
 
+    /// Group spine files into logical chapters using TOC titles: files with a
+    /// TOC entry start a new chapter, files without one (illustrations, chapter
+    /// continuations) are grouped into the preceding chapter. Without any
+    /// titles, every file is its own chapter.
+    static func groupSpine(hrefs: [String], titles: [String: String]) -> [Chapter] {
+        var chapters: [Chapter] = []
+        var currentHrefs: [String] = []
+        var currentTitle: String?
+        func flushChapter() {
+            if !currentHrefs.isEmpty {
+                chapters.append(Chapter(hrefs: currentHrefs, title: currentTitle))
+            }
+            currentHrefs = []
+            currentTitle = nil
+        }
+        let hasTitles = !titles.isEmpty
+        for href in hrefs {
+            let title = titles[href]
+            if !hasTitles || title != nil {
+                flushChapter()
+                currentTitle = title
+            }
+            currentHrefs.append(href)
+        }
+        flushChapter()
+        return chapters
+    }
+
     // MARK: - Chapter Content
 
     /// Extract a chapter's XHTML from the archive and convert it into
@@ -303,16 +332,17 @@ enum EpubParser {
 
     private static let blockTags: Set<String> = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "blockquote", "li"]
 
-    /// Resolve an image element's source to an archive path, ignoring external and data urls.
+    /// Resolve an image element's source to an archive path, ignoring data urls.
+    /// Remote urls are passed through unresolved; local archives drop them
+    /// during entry lookup, while server sources fetch them directly.
     private static func imagePath(of element: Element, basePath: String) -> String? {
         let src = [attr(element, "src"), attr(element, "xlink:href"), attr(element, "href")]
             .compactMap { $0 }
             .first
-        guard
-            let src,
-            !src.hasPrefix("data:"),
-            !src.hasPrefix("http://"), !src.hasPrefix("https://")
-        else { return nil }
+        guard let src, !src.hasPrefix("data:") else { return nil }
+        if src.hasPrefix("http://") || src.hasPrefix("https://") || src.hasPrefix("//") {
+            return src
+        }
         return resolve(href: stripFragment(src), relativeTo: basePath)
     }
 
@@ -441,7 +471,7 @@ enum EpubParser {
 
     // MARK: - Path Helpers
 
-    private static func directory(of path: String) -> String {
+    static func directory(of path: String) -> String {
         path.split(separator: "/").dropLast().joined(separator: "/")
     }
 
@@ -464,5 +494,100 @@ enum EpubParser {
             }
         }
         return components.joined(separator: "/")
+    }
+}
+
+// MARK: - Reader Pages
+
+extension EpubParser {
+    /// Build reader pages from chapter segments: text chapters become a
+    /// single markdown page with inline image references, image-only chapters
+    /// (cover, illustration galleries) become one page per image for the
+    /// image reader. The data source only supplies the two image lookups:
+    /// `inlineImageURL` resolves an image ref to a local file url for
+    /// markdown, `imagePage` builds the page content for image-only chapters.
+    static func pages(
+        segments: [Segment],
+        inlineImageURL: (String) async -> URL?,
+        imagePage: (String) -> AidokuRunner.PageContent?
+    ) async -> [AidokuRunner.Page] {
+        let hasText = segments.contains {
+            if case .text = $0 { return true }
+            return false
+        }
+
+        if hasText {
+            var parts: [String] = []
+            for segment in segments {
+                switch segment {
+                    case .text(let text):
+                        parts.append(text)
+                    case .image(let ref):
+                        guard let fileURL = await inlineImageURL(ref) else { continue }
+                        parts.append("![image](\(fileURL.absoluteString))")
+                }
+            }
+            guard !parts.isEmpty else { return [] }
+            return [AidokuRunner.Page(content: .text(parts.joined(separator: "\n\n")))]
+        }
+
+        return segments.compactMap { segment in
+            guard case let .image(ref) = segment, let content = imagePage(ref) else { return nil }
+            return AidokuRunner.Page(content: content)
+        }
+    }
+
+    /// `pages(segments:...)` for a chapter fetched from a media server
+    /// (Komga/Kavita): inline images are downloaded to the local cache,
+    /// image-only chapters become url pages loaded through the source's
+    /// image requests.
+    static func remotePages(
+        segments: [Segment],
+        cacheKey: String,
+        imageURL: (String) -> URL?,
+        authorize: (inout URLRequest) -> Void = { _ in }
+    ) async -> [AidokuRunner.Page] {
+        await pages(
+            segments: segments,
+            inlineImageURL: { ref in
+                guard let url = imageURL(ref) else { return nil }
+                return await cacheRemoteImage(url: url, cacheKey: cacheKey, authorize: authorize)
+            },
+            imagePage: { ref in
+                imageURL(ref).map { .url(url: $0) }
+            }
+        )
+    }
+
+    /// Download an inline image into the epub image cache so it can be
+    /// referenced with a file url from markdown text. Small decorative images
+    /// are dropped, matching the local <100 KB heuristic in `chapterSegments`.
+    private static func cacheRemoteImage(
+        url: URL,
+        cacheKey: String,
+        authorize: (inout URLRequest) -> Void
+    ) async -> URL? {
+        guard let bookDir = LocalFileManager.epubImageCacheDirectory(forKey: cacheKey) else { return nil }
+        let fileURL = bookDir.appendingPathComponent(LocalFileManager.fnvHash(url.absoluteString))
+
+        if !fileURL.exists {
+            var request = URLRequest(url: url)
+            authorize(&request)
+            guard
+                let (data, _) = try? await URLSession.shared.data(for: request),
+                !data.isEmpty
+            else { return nil }
+            bookDir.createDirectory()
+            do {
+                try data.write(to: fileURL)
+            } catch {
+                LogManager.logger.error("EpubParser: failed to cache remote image \(url): \(error)")
+                return nil
+            }
+        }
+
+        let size = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        guard size >= 100_000 else { return nil }
+        return fileURL
     }
 }
