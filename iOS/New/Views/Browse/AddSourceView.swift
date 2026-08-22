@@ -15,6 +15,7 @@ struct AddSourceView: View {
     @State private var externalSources: [SourceInfo2] = []
     @State private var allSourcesInstalled: Bool = false
 
+    @State private var loadedInitial = false
     @State private var importing = false
     @State private var searching = false
     @State private var searchText = ""
@@ -30,10 +31,6 @@ struct AddSourceView: View {
 
     init(externalSources: [ExternalSourceInfo]) {
         allExternalSources = externalSources
-
-        let result = filterExternalSources()
-        _externalSources = State(initialValue: result.0)
-        _allSourcesInstalled = State(initialValue: result.allSourcesInstalled)
     }
 
     var body: some View {
@@ -137,6 +134,7 @@ struct AddSourceView: View {
                     }
                 }
             )
+            .environment(\.autocorrectionDisabled, true)
             .animation(.default, value: searchText)
             .animation(.default, value: searching)
             .sheet(isPresented: $importing) {
@@ -181,14 +179,25 @@ struct AddSourceView: View {
             .navigationTitle(NSLocalizedString("ADD_SOURCE"))
             .navigationBarTitleDisplayMode(.inline)
             .onReceive(NotificationCenter.default.publisher(for: .filterExternalSources)) { _ in
-                let result = filterExternalSources()
-                withAnimation {
-                    externalSources = result.0
-                    allSourcesInstalled = result.allSourcesInstalled
+                Task {
+                    await reload()
                 }
             }
         }
         .interactiveDismissDisabled(searching)
+        .task {
+            guard !loadedInitial else { return }
+            await reload()
+            loadedInitial = true
+        }
+    }
+
+    func reload() async {
+        let result = await filterExternalSources()
+        withAnimation {
+            externalSources = result.0
+            allSourcesInstalled = result.allSourcesInstalled
+        }
     }
 
     var builtInSources: some View {
@@ -312,7 +321,7 @@ struct AddSourceView: View {
         }
     }
 
-    func filterExternalSources() -> ([SourceInfo2], allSourcesInstalled: Bool) {
+    func filterExternalSources() async -> ([SourceInfo2], allSourcesInstalled: Bool) {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         else { return ([], true) }
         let appVersion = SemanticVersion(appVersionString)
@@ -322,7 +331,7 @@ struct AddSourceView: View {
 
         var allSourcesInstalled = true
 
-        let installedSources = SourceManager.shared.sources.map { $0.toInfo() }
+        let installedSources = await SourceManager.shared.getSourceInfos()
         let result = allExternalSources
             .compactMap { info -> SourceInfo2? in
                 // strip installed sources from external list

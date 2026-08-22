@@ -248,6 +248,7 @@ extension MangaView {
 
             for name in [
                 Notification.Name.downloadFinished,
+                Notification.Name.downloadFailed,
                 Notification.Name.downloadRemoved,
                 Notification.Name.downloadCancelled
             ] {
@@ -558,13 +559,10 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        for chapter in chapters {
+        for chapter in chapters + otherDownloadedChapters {
             downloadStatus[chapter.key] = DownloadManager.shared.getDownloadStatus(
                 for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
             )
-        }
-        for chapter in otherDownloadedChapters {
-            downloadStatus[chapter.key] = .finished
         }
     }
 

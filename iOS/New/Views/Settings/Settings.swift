@@ -595,6 +595,18 @@ extension Settings {
                         value: .toggle(.init())
                     ),
                     .init(
+                        key: "Reader.autoScroll",
+                        title: NSLocalizedString("AUTO_SCROLL"),
+                        notification: .init("Reader.autoScroll"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Reader.autoScrollSpeed",
+                        title: NSLocalizedString("AUTO_SCROLL_SPEED"),
+                        requires: "Reader.autoScroll",
+                        value: .stepper(.init(minimumValue: 1, maximumValue: 10, stepValue: 1))
+                    ),
+                    .init(
                         key: "Reader.pillarbox",
                         title: NSLocalizedString("PILLARBOX"),
                         value: .toggle(.init())

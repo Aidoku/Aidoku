@@ -129,8 +129,12 @@ actor DownloadQueue {
             guard !(await cache.isChapterDownloaded(identifier: identifier)) else {
                 continue
             }
+
             // create tmp directory so we know it's queued
-            cache.tmpDirectory(for: identifier).createDirectory()
+            let tmpDirectory = cache.tmpDirectory(for: identifier)
+            tmpDirectory.removeItem() // remove in case it exists from a previous failed download
+            tmpDirectory.createDirectory()
+
             let download = Download.from(manga: manga, chapter: chapter)
             downloads.append(download)
             if queue[manga.sourceKey] == nil {
@@ -184,8 +188,11 @@ actor DownloadQueue {
             await task.cancel(manga: manga)
         } else {
             cache.directory(for: manga)
-                .contents
-                .filter { $0.lastPathComponent.hasPrefix(".tmp") }
+                .contentsIncludingHidden
+                .filter {
+                    $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
+                        && !cache.hasFailureMarker(inTmpDirectory: $0)
+                }
                 .forEach { $0.removeItem() }
         }
         saveQueueState()
@@ -305,6 +312,13 @@ extension DownloadQueue: DownloadTaskDelegate {
         progressBlocks.removeValue(forKey: download.chapterIdentifier)
         onCompletion?()
         NotificationCenter.default.post(name: .downloadFinished, object: download)
+    }
+
+    func downloadFailed(download: Download) async {
+        await downloadCancelled(download: download)
+        progressBlocks.removeValue(forKey: download.chapterIdentifier)
+        onCompletion?()
+        NotificationCenter.default.post(name: .downloadFailed, object: download)
     }
 
     func downloadCancelled(download: Download) async {

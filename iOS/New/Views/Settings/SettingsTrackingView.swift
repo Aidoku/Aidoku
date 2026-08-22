@@ -286,9 +286,8 @@ extension SettingsTrackingView {
                 }
             } else {
                 // remove existing linked trackers on all items
-                guard let source = SourceManager.shared.source(for: sourceKey) else { return }
                 do {
-                    try await tracker.removeTrackItems(source: source)
+                    try await tracker.removeTrackItems(sourceKey: sourceKey)
                 } catch {
                     LogManager.logger.error("Unable to remove tracker items from source: \(error)")
                 }

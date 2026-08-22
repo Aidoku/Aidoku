@@ -53,6 +53,7 @@
 "NO_DOWNLOADS" = "No Downloads";
 "NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
 "DOWNLOADED_CHAPTERS" = "Downloaded Chapters";
+"DOWNLOAD_INCOMPLETE" = "Incomplete Download";
 "TOTAL_DOWNLOADS" = "Total Downloads";
 "%i_SERIES" = "%i series";
 "IN_LIBRARY" = "In Library";
@@ -149,6 +150,8 @@
 "UNINSTALL" = "Uninstall";
 "PIN" = "Pin";
 "UNPIN" = "Unpin";
+"DISABLE" = "Disable";
+"ENABLE" = "Enable";
 "REORDER" = "Reorder";
 "EDIT_SOURCES" = "Edit Sources";
 "CONTENT_RATING" = "Content Rating";
@@ -833,6 +836,8 @@
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
+"AUTO_SCROLL" = "Auto Scroll";
+"AUTO_SCROLL_SPEED" = "Auto Scroll Speed";
 "BOTH" = "Both";
 "%@_TRACKER_LOGIN_NEEDED" = "%@ Login Needed";
 "%@_TRACKER_LOGIN_NEEDED_TEXT" = "Your %@ token has expired, so the associated tracker will stop working until you re-login in settings.";

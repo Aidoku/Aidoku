@@ -75,148 +75,7 @@ struct ReaderSettingsView: View {
     var body: some View {
         PlatformNavigationStack {
             List {
-                Section(NSLocalizedString("GENERAL")) {
-                    let readingModeKey = "Reader.readingMode.\(mangaId)"
-                    SettingView(
-                        setting: .init(
-                            key: readingModeKey,
-                            title: NSLocalizedString("READING_MODE"),
-                            notification: .init(readingModeKey),
-                            value: .select(.init(
-                                values: [
-                                    "default",
-                                    "auto",
-                                    "rtl",
-                                    "ltr",
-                                    "vertical",
-                                    "webtoon",
-                                    "continuous"
-                                ],
-                                titles: [
-                                    NSLocalizedString("DEFAULT"),
-                                    NSLocalizedString("AUTOMATIC"),
-                                    NSLocalizedString("RTL"),
-                                    NSLocalizedString("LTR"),
-                                    NSLocalizedString("VERTICAL"),
-                                    NSLocalizedString("WEBTOON"),
-                                    NSLocalizedString("CONTINUOUS_WITH_GAPS")
-                                ]
-                            ))
-                        )
-                    )
-                    SettingView(
-                        setting: .init(
-                            key: "Reader.skipDuplicateChapters",
-                            title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS"),
-                            value: .toggle(.init())
-                        )
-                    )
-                    SettingView(
-                        setting: .init(
-                            key: "Reader.markDuplicateChapters",
-                            title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS"),
-                            value: .toggle(.init())
-                        )
-                    )
-                    if reader != .text {
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.downsampleImages",
-                                title: NSLocalizedString("DOWNSAMPLE_IMAGES"),
-                                value: .toggle(.init())
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.cropBorders",
-                                title: NSLocalizedString("CROP_BORDERS"),
-                                value: .toggle(.init())
-                            )
-                        )
-                        if lookupGestureLocksDoubleTap {
-                            SettingView(
-                                setting: .init(
-                                    key: "true",
-                                    title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                                    requiresFalse: "true",
-                                    value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP")))
-                                )
-                            )
-                        } else {
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.disableDoubleTap",
-                                    title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
-                                    value: .toggle(.init())
-                                )
-                            )
-                        }
-                        if lookupGestureLocksQuickActions {
-                            SettingView(
-                                setting: .init(
-                                    key: "true",
-                                    title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                                    requiresFalse: "true",
-                                    value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
-                                )
-                            )
-                        } else {
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.disableQuickActions",
-                                    title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
-                                    value: .toggle(.init())
-                                )
-                            )
-                        }
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.liveText",
-                                title: NSLocalizedString("LIVE_TEXT"),
-                                value: .toggle(.init())
-                            )
-                        )
-                    }
-                    SettingView(
-                        setting: .init(
-                            key: "Reader.hideBarsOnSwipe",
-                            title: NSLocalizedString("HIDE_BARS_ON_SWIPE"),
-                            value: .toggle(.init())
-                        )
-                    )
-                    SettingView(
-                        setting: .init(
-                            key: "Reader.backgroundColor",
-                            title: NSLocalizedString("READER_BG_COLOR"),
-                            value: .select(.init(
-                                values: ["system", "auto", "white", "black"],
-                                titles: [
-                                    NSLocalizedString("READER_BG_COLOR_SYSTEM"),
-                                    NSLocalizedString("READER_BG_COLOR_AUTO"),
-                                    NSLocalizedString("READER_BG_COLOR_WHITE"),
-                                    NSLocalizedString("READER_BG_COLOR_BLACK")
-                                ]
-                            ))
-                        )
-                    )
-                    if UIDevice.current.userInterfaceIdiom != .pad {
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.orientation",
-                                title: NSLocalizedString("READER_ORIENTATION"),
-                                notification: "Reader.orientation",
-                                value: .select(.init(
-                                    values: ["device", "portrait", "landscape"],
-                                    titles: [
-                                        NSLocalizedString("FOLLOW_DEVICE"),
-                                        NSLocalizedString("PORTRAIT"),
-                                        NSLocalizedString("LANDSCAPE")
-                                    ]
-                                ))
-                            )
-                        )
-                    }
-                }
+                generalSection
 
                 if #available(iOS 18.0, *), reader != .text {
                     dictionarySection
@@ -256,61 +115,7 @@ struct ReaderSettingsView: View {
                 // choose a side; `||` between two inequalities here is always true, which is what
                 // hid the image settings below and showed these on top of a manga.
                 if reader != .paged && reader != .scroll {
-                    // Text Reader Settings
-                    Section(String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER"))) {
-                        // The two readers keep separate styles. An ePub is a book and is read
-                        // paged; the text reader scrolled, which is what it did before it could
-                        // paginate. One control, and which key it writes follows what is open.
-                        let styleKey = reader == .epub ? "Reader.epubReaderStyle" : "Reader.textReaderStyle"
-                        SettingView(
-                            setting: .init(
-                                key: styleKey,
-                                title: NSLocalizedString("TEXT_READER_STYLE"),
-                                notification: .init(styleKey),
-                                value: .select(.init(
-                                    values: ["paged", "scroll"],
-                                    titles: [
-                                        NSLocalizedString("TEXT_READER_PAGED"),
-                                        NSLocalizedString("TEXT_READER_SCROLL")
-                                    ]
-                                ))
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.textFontFamily",
-                                title: NSLocalizedString("TEXT_FONT_FAMILY"),
-                                notification: .init("Reader.textFontFamily"),
-                                value: .select(.init(
-                                    values: Self.availableFonts
-                                ))
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.textFontSize",
-                                title: NSLocalizedString("TEXT_FONT_SIZE"),
-                                notification: .init("Reader.textFontSize"),
-                                value: .stepper(.init(minimumValue: 12, maximumValue: 32, stepValue: 2))
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.textLineSpacing",
-                                title: NSLocalizedString("TEXT_LINE_SPACING"),
-                                notification: .init("Reader.textLineSpacing"),
-                                value: .stepper(.init(minimumValue: 0, maximumValue: 24, stepValue: 2))
-                            )
-                        )
-                        SettingView(
-                            setting: .init(
-                                key: "Reader.textHorizontalPadding",
-                                title: NSLocalizedString("TEXT_HORIZONTAL_PADDING"),
-                                notification: .init("Reader.textHorizontalPadding"),
-                                value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
-                            )
-                        )
-                    }
+                    textSection
                 } else {
                     if !downsampleImages.value {
                         Section {
@@ -347,102 +152,11 @@ struct ReaderSettingsView: View {
                     }
 
                     if readingMode == .rtl || readingMode == .ltr || readingMode == .vertical || readingMode == nil {
-                        Section(NSLocalizedString("PAGED")) {
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.pagesToPreload",
-                                    title: NSLocalizedString("PAGES_TO_PRELOAD"),
-                                    value: .stepper(.init(minimumValue: 1, maximumValue: 10))
-                                )
-                            )
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.pagedPageLayout",
-                                    title: NSLocalizedString("PAGE_LAYOUT"),
-                                    value: .select(.init(
-                                        values: ["single", "double", "auto"],
-                                        titles: [
-                                            NSLocalizedString("SINGLE_PAGE"),
-                                            NSLocalizedString("DOUBLE_PAGE"),
-                                            NSLocalizedString("AUTOMATIC")
-                                        ]
-                                    ))
-                                )
-                            )
-                            let pageOffsetKey = "Reader.pagedPageOffset.\(mangaId)"
-                            SettingView(
-                                setting: .init(
-                                    key: pageOffsetKey,
-                                    title: NSLocalizedString("PAGE_OFFSET"),
-                                    notification: .init(pageOffsetKey),
-                                    value: .toggle(.init())
-                                )
-                            )
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.splitWideImages",
-                                    title: NSLocalizedString("SPLIT_WIDE_IMAGES"),
-                                    notification: .init("Reader.splitWideImages"),
-                                    value: .toggle(.init())
-                                )
-                            )
-                            if splitWideImages.value {
-                                SettingView(
-                                    setting: .init(
-                                        key: "Reader.reverseSplitOrder",
-                                        title: NSLocalizedString("REVERSE_SPLIT_ORDER"),
-                                        notification: .init("Reader.reverseSplitOrder"),
-                                        value: .toggle(.init())
-                                    )
-                                )
-                            }
-                        }
+                        pagedSection
                     }
 
                     if readingMode == .webtoon || readingMode == .continuous || readingMode == nil {
-                        Section {
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.verticalInfiniteScroll",
-                                    title: NSLocalizedString("INFINITE_VERTICAL_SCROLL"),
-                                    value: .toggle(.init())
-                                )
-                            )
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.pillarbox",
-                                    title: NSLocalizedString("PILLARBOX"),
-                                    value: .toggle(.init())
-                                )
-                            )
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.pillarboxAmount",
-                                    title: NSLocalizedString("PILLARBOX_AMOUNT"),
-                                    requires: "Reader.pillarbox",
-                                    value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
-                                )
-                            )
-                            SettingView(
-                                setting: .init(
-                                    key: "Reader.pillarboxOrientation",
-                                    title: NSLocalizedString("PILLARBOX_ORIENTATION"),
-                                    requires: "Reader.pillarbox",
-                                    value: .select(.init(
-                                        values: ["both", "portrait", "landscape"],
-                                        titles: [
-                                            NSLocalizedString("BOTH"),
-                                            NSLocalizedString("PORTRAIT"),
-                                            NSLocalizedString("LANDSCAPE")
-                                        ]
-                                    ))
-                                )
-                            )
-                        } header: {
-                            Text(NSLocalizedString("WEBTOON"))
-                        } footer: {
-                            Text(NSLocalizedString("PILLARBOX_ORIENTATION_INFO"))
-                        }
+                        webtoonSection
                     }
                 }
             }
@@ -469,6 +183,154 @@ struct ReaderSettingsView: View {
 }
 
 extension ReaderSettingsView {
+    var generalSection: some View {
+        Section(NSLocalizedString("GENERAL")) {
+            if reader != .text {
+                let readingModeKey = "Reader.readingMode.\(mangaId)"
+                SettingView(
+                    setting: .init(
+                        key: readingModeKey,
+                        title: NSLocalizedString("READING_MODE"),
+                        notification: .init(readingModeKey),
+                        value: .select(.init(
+                            values: [
+                                "default",
+                                "auto",
+                                "rtl",
+                                "ltr",
+                                "vertical",
+                                "webtoon",
+                                "continuous"
+                            ],
+                            titles: [
+                                NSLocalizedString("DEFAULT"),
+                                NSLocalizedString("AUTOMATIC"),
+                                NSLocalizedString("RTL"),
+                                NSLocalizedString("LTR"),
+                                NSLocalizedString("VERTICAL"),
+                                NSLocalizedString("WEBTOON"),
+                                NSLocalizedString("CONTINUOUS_WITH_GAPS")
+                            ]
+                        ))
+                    )
+                )
+            }
+            SettingView(
+                setting: .init(
+                    key: "Reader.skipDuplicateChapters",
+                    title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS"),
+                    value: .toggle(.init())
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.markDuplicateChapters",
+                    title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS"),
+                    value: .toggle(.init())
+                )
+            )
+            if reader != .text {
+                SettingView(
+                    setting: .init(
+                        key: "Reader.downsampleImages",
+                        title: NSLocalizedString("DOWNSAMPLE_IMAGES"),
+                        value: .toggle(.init())
+                    )
+                )
+                SettingView(
+                    setting: .init(
+                        key: "Reader.cropBorders",
+                        title: NSLocalizedString("CROP_BORDERS"),
+                        value: .toggle(.init())
+                    )
+                )
+                if lookupGestureLocksDoubleTap {
+                    SettingView(
+                        setting: .init(
+                            key: "true",
+                            title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
+                            requiresFalse: "true",
+                            value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_DOUBLE_TAP"))))
+                    )
+                } else {
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.disableDoubleTap",
+                            title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
+                            value: .toggle(.init())
+                        )
+                    )
+                }
+                if lookupGestureLocksQuickActions {
+                    SettingView(
+                        setting: .init(
+                            key: "true",
+                            title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                            requiresFalse: "true",
+                            value: .toggle(.init(subtitle: NSLocalizedString("LOOKUP_GESTURE_LOCKS_QUICK_ACTIONS")))
+                        )
+                    )
+                } else {
+                    SettingView(
+                        setting: .init(
+                            key: "Reader.disableQuickActions",
+                            title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                            value: .toggle(.init())
+                        )
+                    )
+                }
+                SettingView(
+                    setting: .init(
+                        key: "Reader.liveText",
+                        title: NSLocalizedString("LIVE_TEXT"),
+                        value: .toggle(.init())
+                    )
+                )
+            }
+            SettingView(
+                setting: .init(
+                    key: "Reader.hideBarsOnSwipe",
+                    title: NSLocalizedString("HIDE_BARS_ON_SWIPE"),
+                    value: .toggle(.init())
+                )
+            )
+            if reader != .text {
+                SettingView(
+                    setting: .init(
+                        key: "Reader.backgroundColor",
+                        title: NSLocalizedString("READER_BG_COLOR"),
+                        value: .select(.init(
+                            values: ["system", "auto", "white", "black"],
+                            titles: [
+                                NSLocalizedString("READER_BG_COLOR_SYSTEM"),
+                                NSLocalizedString("READER_BG_COLOR_AUTO"),
+                                NSLocalizedString("READER_BG_COLOR_WHITE"),
+                                NSLocalizedString("READER_BG_COLOR_BLACK")
+                            ]
+                        ))
+                    )
+                )
+            }
+            if UIDevice.current.userInterfaceIdiom != .pad {
+                SettingView(
+                    setting: .init(
+                        key: "Reader.orientation",
+                        title: NSLocalizedString("READER_ORIENTATION"),
+                        notification: "Reader.orientation",
+                        value: .select(.init(
+                            values: ["device", "portrait", "landscape"],
+                            titles: [
+                                NSLocalizedString("FOLLOW_DEVICE"),
+                                NSLocalizedString("PORTRAIT"),
+                                NSLocalizedString("LANDSCAPE")
+                            ]
+                        ))
+                    )
+                )
+            }
+        }
+    }
+
     @available(iOS 18.0, *)
     var dictionarySection: some View {
         Section {
@@ -581,6 +443,178 @@ extension ReaderSettingsView {
             }
         } header: {
             Text(NSLocalizedString("DICTIONARY_LOOKUP"))
+        }
+    }
+
+    var pagedSection: some View {
+        Section(NSLocalizedString("PAGED")) {
+            SettingView(
+                setting: .init(
+                    key: "Reader.pagesToPreload",
+                    title: NSLocalizedString("PAGES_TO_PRELOAD"),
+                    value: .stepper(.init(minimumValue: 1, maximumValue: 10))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.pagedPageLayout",
+                    title: NSLocalizedString("PAGE_LAYOUT"),
+                    value: .select(.init(
+                        values: ["single", "double", "auto"],
+                        titles: [
+                            NSLocalizedString("SINGLE_PAGE"),
+                            NSLocalizedString("DOUBLE_PAGE"),
+                            NSLocalizedString("AUTOMATIC")
+                        ]
+                    ))
+                )
+            )
+            let pageOffsetKey = "Reader.pagedPageOffset.\(mangaId)"
+            SettingView(
+                setting: .init(
+                    key: pageOffsetKey,
+                    title: NSLocalizedString("PAGE_OFFSET"),
+                    notification: .init(pageOffsetKey),
+                    value: .toggle(.init())
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.splitWideImages",
+                    title: NSLocalizedString("SPLIT_WIDE_IMAGES"),
+                    notification: .init("Reader.splitWideImages"),
+                    value: .toggle(.init())
+                )
+            )
+            if splitWideImages.value {
+                SettingView(
+                    setting: .init(
+                        key: "Reader.reverseSplitOrder",
+                        title: NSLocalizedString("REVERSE_SPLIT_ORDER"),
+                        notification: .init("Reader.reverseSplitOrder"),
+                        value: .toggle(.init())
+                    )
+                )
+            }
+        }
+    }
+
+    var webtoonSection: some View {
+        Section {
+            SettingView(
+                setting: .init(
+                    key: "Reader.verticalInfiniteScroll",
+                    title: NSLocalizedString("INFINITE_VERTICAL_SCROLL"),
+                    value: .toggle(.init())
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.autoScroll",
+                    title: NSLocalizedString("AUTO_SCROLL"),
+                    notification: .init("Reader.autoScroll"),
+                    value: .toggle(.init())
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.autoScrollSpeed",
+                    title: NSLocalizedString("AUTO_SCROLL_SPEED"),
+                    requires: "Reader.autoScroll",
+                    value: .stepper(.init(minimumValue: 1, maximumValue: 10, stepValue: 1))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.pillarbox",
+                    title: NSLocalizedString("PILLARBOX"),
+                    value: .toggle(.init())
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.pillarboxAmount",
+                    title: NSLocalizedString("PILLARBOX_AMOUNT"),
+                    requires: "Reader.pillarbox",
+                    value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.pillarboxOrientation",
+                    title: NSLocalizedString("PILLARBOX_ORIENTATION"),
+                    requires: "Reader.pillarbox",
+                    value: .select(.init(
+                        values: ["both", "portrait", "landscape"],
+                        titles: [
+                            NSLocalizedString("BOTH"),
+                            NSLocalizedString("PORTRAIT"),
+                            NSLocalizedString("LANDSCAPE")
+                        ]
+                    ))
+                )
+            )
+        } header: {
+            Text(NSLocalizedString("WEBTOON"))
+        } footer: {
+            Text(NSLocalizedString("PILLARBOX_ORIENTATION_INFO"))
+        }
+    }
+
+    @ViewBuilder
+    var textSection: some View {
+        let title = String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER"))
+        // The two readers keep separate styles. An ePub is a book and is read paged; the text
+        // reader scrolled, which is what it did before it could paginate. One control, and which
+        // key it writes follows what is open.
+        let styleKey = reader == .epub ? "Reader.epubReaderStyle" : "Reader.textReaderStyle"
+        Section(title) {
+            SettingView(
+                setting: .init(
+                    key: styleKey,
+                    title: NSLocalizedString("TEXT_READER_STYLE"),
+                    notification: .init(styleKey),
+                    value: .select(.init(
+                        values: ["paged", "scroll"],
+                        titles: [
+                            NSLocalizedString("TEXT_READER_PAGED"),
+                            NSLocalizedString("TEXT_READER_SCROLL")
+                        ]
+                    ))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.textFontFamily",
+                    title: NSLocalizedString("TEXT_FONT_FAMILY"),
+                    notification: .init("Reader.textFontFamily"),
+                    value: .select(.init(values: Self.availableFonts))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.textFontSize",
+                    title: NSLocalizedString("TEXT_FONT_SIZE"),
+                    notification: .init("Reader.textFontSize"),
+                    value: .stepper(.init(minimumValue: 12, maximumValue: 32, stepValue: 2))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.textLineSpacing",
+                    title: NSLocalizedString("TEXT_LINE_SPACING"),
+                    notification: .init("Reader.textLineSpacing"),
+                    value: .stepper(.init(minimumValue: 0, maximumValue: 24, stepValue: 2))
+                )
+            )
+            SettingView(
+                setting: .init(
+                    key: "Reader.textHorizontalPadding",
+                    title: NSLocalizedString("TEXT_HORIZONTAL_PADDING"),
+                    notification: .init("Reader.textHorizontalPadding"),
+                    value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
+                )
+            )
         }
     }
 }

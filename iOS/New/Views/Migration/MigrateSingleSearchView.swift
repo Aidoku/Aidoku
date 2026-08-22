@@ -119,6 +119,7 @@ struct MigrateSingleSearchView: View {
                 }
             }
         )
+        .environment(\.autocorrectionDisabled, true)
         .navigationBarBackButtonHidden(isMigrating)
         .alert(NSLocalizedString("MIGRATE_ONE_ITEM?"), isPresented: $showMigrateAlert) {
             Button(NSLocalizedString("CANCEL"), role: .cancel) {

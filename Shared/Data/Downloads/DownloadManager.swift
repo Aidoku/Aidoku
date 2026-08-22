@@ -141,8 +141,9 @@ actor DownloadManager {
         if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
             return .finished
         } else {
-            if cache.tmpDirectory(for: chapter).exists {
-                return .queued
+            let tmpDirectory = cache.tmpDirectory(for: chapter)
+            if tmpDirectory.exists {
+                return cache.hasFailureMarker(inTmpDirectory: tmpDirectory) ? .failed : .queued
             } else {
                 return .none
             }
@@ -227,17 +228,23 @@ extension DownloadManager {
         for chapter in chapters {
             let directory = cache.directory(for: chapter)
             let archiveURL = directory.appendingPathExtension("cbz")
-            if directory.exists || archiveURL.exists {
+            let tmpDirectory = cache.tmpDirectory(for: chapter)
+
+            if directory.exists || archiveURL.exists || tmpDirectory.exists {
                 directory.removeItem()
                 archiveURL.removeItem()
+                tmpDirectory.removeItem()
                 await cache.remove(chapter: chapter)
 
                 // check if all chapters have been removed (then remove manga directory)
                 let manga = chapter.mangaIdentifier
                 let hasRemainingChapters = cache.directory(for: manga)
-                    .contents
+                    .contentsIncludingHidden
                     .contains {
-                        ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+                        guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
+                        guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
+                        // a failed download counts as remaining
+                        return cache.hasFailureMarker(inTmpDirectory: $0)
                     }
                 if !hasRemainingChapters {
                     await deleteChapters(for: manga)
@@ -353,14 +360,16 @@ extension DownloadManager {
             for mangaDirectory in mangaDirectories {
                 let mangaId = mangaDirectory.lastPathComponent
 
-                // Count chapters and calculate total size
-                let chapterDirectories = mangaDirectory.contents.filter {
-                    ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+                // Count chapters and calculate total size, including from failed downloads
+                let chapterDirectories = mangaDirectory.contentsIncludingHidden.filter {
+                    guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
+                    guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
+                    return cache.hasFailureMarker(inTmpDirectory: $0)
                 }
 
                 guard !chapterDirectories.isEmpty else { continue }
 
-                let totalSize = await calculateDirectorySize(mangaDirectory)
+                let totalSize = await calculateDirectorySize(mangaDirectory, includingHidden: true)
                 let chapterCount = chapterDirectories.count
 
                 // Try to load metadata from the manga directory first
@@ -465,13 +474,21 @@ extension DownloadManager {
         guard mangaDirectory.exists else { return [] }
 
         let chapterDirectories = mangaDirectory.contents.filter {
-            ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp")
+            ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
+        }
+        let failedDirectories = mangaDirectory.contentsIncludingHidden.filter {
+            $0.isDirectory && cache.hasFailureMarker(inTmpDirectory: $0)
         }
 
         var chapters: [DownloadedChapterInfo] = []
+        let entries = chapterDirectories.map { ($0, false) } + failedDirectories.map { ($0, true) }
 
-        for chapterDirectory in chapterDirectories {
-            let chapterId = chapterDirectory.deletingPathExtension().lastPathComponent
+        for (chapterDirectory, failed) in entries {
+            let chapterId = if failed {
+                String(chapterDirectory.lastPathComponent.dropFirst(DownloadCache.tmpDirectoryPrefix.count))
+            } else {
+                chapterDirectory.deletingPathExtension().lastPathComponent
+            }
             let size = await calculateDirectorySize(chapterDirectory)
 
             // Get directory creation date as download date
@@ -488,6 +505,7 @@ extension DownloadManager {
                 volumeNumber: metadata?.volume.flatMap { Float($0) },
                 size: size,
                 downloadDate: downloadDate,
+                failed: failed,
                 chapter: metadata?.toChapter()
             )
 
@@ -495,15 +513,13 @@ extension DownloadManager {
         }
 
         // Sort chapters by ID
-        chapters.sort { lhs, rhs in
+        return chapters.sorted { lhs, rhs in
             // Try to sort numerically if possible, otherwise alphabetically
             if let lhsNum = Double(lhs.chapterId), let rhsNum = Double(rhs.chapterId) {
                 return lhsNum < rhsNum
             }
             return lhs.chapterId.localizedStandardCompare(rhs.chapterId) == .orderedAscending
         }
-
-        return chapters
     }
 
     /// Save chapter metadata to ComicInfo.xml.
@@ -575,7 +591,7 @@ extension DownloadManager {
     }
 
     /// Calculate the total size of a directory in bytes.
-    private func calculateDirectorySize(_ directory: URL) async -> Int64 {
+    private func calculateDirectorySize(_ directory: URL, includingHidden: Bool = false) async -> Int64 {
         guard directory.exists else { return 0 }
 
         return await withCheckedContinuation { continuation in
@@ -586,7 +602,7 @@ extension DownloadManager {
                     if let enumerator = FileManager.default.enumerator(
                         at: directory,
                         includingPropertiesForKeys: [.fileSizeKey, .isRegularFileKey],
-                        options: [.skipsHiddenFiles]
+                        options: includingHidden ? [] : [.skipsHiddenFiles]
                     ) {
                         for case let fileURL as URL in enumerator {
                             do {
@@ -615,7 +631,7 @@ extension DownloadManager {
     /// Get formatted total download size string
     func getFormattedTotalDownloadedSize() async -> String {
         let totalSize = if Self.directory.exists {
-            await calculateDirectorySize(Self.directory)
+            await calculateDirectorySize(Self.directory, includingHidden: true)
         } else {
             Int64(0)
         }

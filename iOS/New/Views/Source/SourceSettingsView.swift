@@ -129,7 +129,7 @@ struct SourceSettingsView: View {
 
     // find every userdefaults key with the source id as the prefix and remove it
     func resetSettings() {
-        SourceManager.shared.removeSettings(from: source)
+        SourceManager.shared.removeSettings(from: source.key)
 
         let currentSettings = settings
         settings = []

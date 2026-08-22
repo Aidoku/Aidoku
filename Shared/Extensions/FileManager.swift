@@ -24,6 +24,11 @@ extension URL {
         (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil, options: .skipsHiddenFiles)) ?? []
     }
 
+    /// Directory contents with hidden entries included.
+    var contentsIncludingHidden: [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: self, includingPropertiesForKeys: nil)) ?? []
+    }
+
     var isDirectory: Bool {
         (try? resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == true
     }

@@ -174,6 +174,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarbox": false,
                 "Reader.pillarboxAmount": 15,
                 "Reader.pillarboxOrientation": "both",
+                "Reader.autoScroll": false,
+                "Reader.autoScrollSpeed": 5,
                 "Reader.orientation": "device",
 
                 "Reader.textReaderStyle": "scroll",
@@ -292,7 +294,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     title: NSLocalizedString("LIBRARY_REFRESH_INTERRUPTED"),
                     message: NSLocalizedString("LIBRARY_REFRESH_INTERRUPTED_TEXT"),
                     actions: [
-                        .init(title: NSLocalizedString("CANCEL"), style: .cancel),
+                        .init(title: NSLocalizedString("CANCEL"), style: .cancel) { _ in
+                            AppSettings.flags.libraryRefreshInProgress.reset()
+                        },
                         .init(title: NSLocalizedString("RESUME"), style: .default) { _ in
                             AppSettings.flags.libraryRefreshInProgress.reset()
                             Task {

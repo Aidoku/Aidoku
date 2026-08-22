@@ -207,7 +207,7 @@ extension ReaderPageView {
             {
                 // only process pages if the source supports it and the image isn't downloaded
                 if newSource.features.processesPages, !url.isFileURL {
-                    processors.append(PageInterceptorProcessor(source: newSource))
+                    processors.append(PageInterceptorProcessor(source: newSource, pageContext: context))
                     usePageProcessor = true
                 }
             }
@@ -223,7 +223,7 @@ extension ReaderPageView {
             request = ImageRequest(
                 urlRequest: urlRequest,
                 processors: processors,
-                userInfo: [.contextKey: context as Any, .processesKey: usePageProcessor]
+                userInfo: [.processesKey: usePageProcessor]
             )
         }
 

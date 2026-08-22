@@ -25,8 +25,6 @@ struct ReaderPageDescriptionButtonView: View {
                 Image(systemName: "info.circle")
             }
         }
-        .padding()
-        .padding(.bottom, 2) // extra padding on the bottom
         .sheet(isPresented: $showingDescription) {
             if #available(iOS 16.0, *) {
                 PageDescriptionView(source: source, pages: pages)
