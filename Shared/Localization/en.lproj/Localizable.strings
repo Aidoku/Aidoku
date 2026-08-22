@@ -815,6 +815,7 @@
 "MIGRATE_%i_ITEMS?" = "Migrate %i items?";
 "MIGRATE_ONE_ITEM?" = "Migrate 1 item?";
 "MIGRATE_CONFIRM_TEXT" = "Reading history for the original entries will be removed when migrating to a different source.";
+"MIGRATE_WITH_HISTORY" = "Migrate and Keep History";
 "SELECT_PINNED_SOURCES" = "Select Pinned Sources";
 "SEARCH_MANUALLY" = "Search Manually";
 "DONT_MIGRATE" = "Don't Migrate";

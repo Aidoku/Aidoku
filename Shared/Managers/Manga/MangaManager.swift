@@ -787,6 +787,7 @@ extension MangaManager {
 extension MangaManager {
     func migrate(
         copy: Bool,
+        forceRemoveFromLibrary: Bool = false,
         fromSeries: [AidokuRunner.Manga],
         toSeries: [MangaIdentifier: AidokuRunner.Manga?],
         withChapters: [MangaIdentifier: [AidokuRunner.Chapter]] = [:],
@@ -819,7 +820,13 @@ extension MangaManager {
                         let newManga = details.0
                         let newChapters = details.1
 
-                        return await Self.migrate(copy: copy, from: oldManga, to: newManga, withChapters: newChapters)
+                        return await Self.migrate(
+                            copy: copy,
+                            forceRemoveFromLibrary: forceRemoveFromLibrary,
+                            from: oldManga,
+                            to: newManga,
+                            withChapters: newChapters
+                        )
                     }
                 }
 
@@ -841,6 +848,7 @@ extension MangaManager {
 
     private static func migrate(
         copy: Bool,
+        forceRemoveFromLibrary: Bool,
         from oldManga: AidokuRunner.Manga,
         to newManga: AidokuRunner.Manga,
         withChapters newChapters: [AidokuRunner.Chapter],
@@ -882,7 +890,7 @@ extension MangaManager {
         }
 
         // migrate/copy data
-        return await CoreDataManager.shared.container.performBackgroundTask { context in
+        let result: (AidokuRunner.Manga, AidokuRunner.Manga)? = await CoreDataManager.shared.container.performBackgroundTask { context in
             do {
                 // update manga object in library with new data
                 // remove old entry if the new one already exists in library
@@ -1014,6 +1022,13 @@ extension MangaManager {
                 return nil
             }
         }
+
+        // remove old item from library
+        if copy && forceRemoveFromLibrary {
+            await shared.removeFromLibrary(mangaId: oldManga.identifier)
+        }
+
+        return result
     }
 
     private func fetchNewDetails(

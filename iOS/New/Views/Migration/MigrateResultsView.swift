@@ -102,6 +102,9 @@ struct MigrateResultsView: View {
             isPresented: $showingConfirmAlert
         ) {
             Button(NSLocalizedString("CANCEL"), role: .cancel) {}
+            Button(NSLocalizedString("MIGRATE_WITH_HISTORY")) {
+                startMigration(copy: true, forceRemoveFromLibrary: true)
+            }
             Button(NSLocalizedString("CONTINUE")) {
                 startMigration(copy: false)
             }
@@ -198,7 +201,7 @@ extension MigrateResultsView {
         }
     }
 
-    func startMigration(copy: Bool) {
+    func startMigration(copy: Bool, forceRemoveFromLibrary: Bool = false) {
         guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
         appDelegate.showLoadingIndicator(style: .progress) {
             Task {
@@ -206,6 +209,7 @@ extension MigrateResultsView {
 
                 await MangaManager.shared.migrate(
                     copy: copy,
+                    forceRemoveFromLibrary: forceRemoveFromLibrary,
                     fromSeries: selectedSeries,
                     toSeries: migratedManga,
                     withChapters: newChapters,

@@ -131,6 +131,9 @@ struct MigrateSingleSearchView: View {
             Button(NSLocalizedString("MIGRATE")) {
                 migrate(copy: false)
             }
+            Button(NSLocalizedString("MIGRATE_WITH_HISTORY")) {
+                migrate(copy: true, forceRemoveFromLibrary: true)
+            }
             Button(NSLocalizedString("SHOW_ENTRY")) {
                 guard let targetSeries else { return }
                 path.push(MangaViewController(manga: targetSeries, parent: path.rootViewController))
@@ -145,7 +148,7 @@ struct MigrateSingleSearchView: View {
 }
 
 extension MigrateSingleSearchView {
-    func migrate(copy: Bool) {
+    func migrate(copy: Bool, forceRemoveFromLibrary: Bool = false) {
         guard
             let targetSeries,
             let appDelegate = UIApplication.shared.delegate as? AppDelegate
@@ -157,6 +160,7 @@ extension MigrateSingleSearchView {
             Task {
                 await MangaManager.shared.migrate(
                     copy: copy,
+                    forceRemoveFromLibrary: forceRemoveFromLibrary,
                     fromSeries: [selectedSeries],
                     toSeries: [selectedSeries.identifier: targetSeries]
                 )
