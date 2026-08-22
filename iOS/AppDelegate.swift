@@ -174,6 +174,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.pillarbox": false,
                 "Reader.pillarboxAmount": 15,
                 "Reader.pillarboxOrientation": "both",
+                "Reader.autoScroll": false,
+                "Reader.autoScrollSpeed": 5,
                 "Reader.orientation": "device",
 
                 "Reader.textReaderStyle": "scroll",

@@ -832,6 +832,8 @@
 "PILLARBOX_AMOUNT" = "Pillarbox Amount";
 "PILLARBOX_ORIENTATION" = "Pillarbox Orientation";
 "PILLARBOX_ORIENTATION_INFO" = "Pillarbox Orientation determines which orientations pillarboxing should be enabled for.";
+"AUTO_SCROLL" = "Auto Scroll";
+"AUTO_SCROLL_SPEED" = "Auto Scroll Speed";
 "BOTH" = "Both";
 "%@_TRACKER_LOGIN_NEEDED" = "%@ Login Needed";
 "%@_TRACKER_LOGIN_NEEDED_TEXT" = "Your %@ token has expired, so the associated tracker will stop working until you re-login in settings.";

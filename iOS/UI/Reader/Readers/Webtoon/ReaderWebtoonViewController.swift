@@ -11,7 +11,6 @@ import Nuke
 import UIKit
 
 class ReaderWebtoonViewController: ZoomableCollectionViewController {
-
     let viewModel: ReaderWebtoonViewModel
     weak var delegate: ReaderHoldingDelegate?
 
@@ -50,9 +49,24 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     // Stores the last calculated page number
     private var previousPage = 0
 
+    private var autoScrollDisplayLink: CADisplayLink?
+    private var autoScrollLastTimestamp: CFTimeInterval?
+    private var autoScrollPausedForUserInteraction = false
+
+    private(set) var isAutoScrolling = false {
+        didSet {
+            onAutoScrollStateChange?(isAutoScrolling)
+        }
+    }
+    var onAutoScrollStateChange: ((Bool) -> Void)?
+
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
         self.viewModel = ReaderWebtoonViewModel(source: source, manga: manga)
         super.init(layout: VerticalContentOffsetPreservingLayout())
+    }
+
+    deinit {
+        autoScrollDisplayLink?.invalidate()
     }
 
     override func configure() {
@@ -75,6 +89,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.bounces = false // bouncing can cause issues with page appending
         scrollView.scrollsToTop = false // dont want status bar tap to work
+        scrollView.panGestureRecognizer.addTarget(self, action: #selector(handleAutoScrollPan(_:)))
         scrollNode.insetsLayoutMarginsFromSafeArea = false
 
         if #available(iOS 27.0, *) {
@@ -189,10 +204,92 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     }
 }
 
+// MARK: - Auto Scroll
+extension ReaderWebtoonViewController {
+    func toggleAutoScroll() {
+        if isAutoScrolling {
+            stopAutoScroll()
+        } else {
+            startAutoScroll()
+        }
+    }
+
+    func stopAutoScroll() {
+        isAutoScrolling = false
+        autoScrollPausedForUserInteraction = false
+        autoScrollLastTimestamp = nil
+        autoScrollDisplayLink?.invalidate()
+        autoScrollDisplayLink = nil
+    }
+
+    private func startAutoScroll() {
+        guard !isAutoScrolling else { return }
+
+        isAutoScrolling = true
+        resumeAutoScroll()
+
+        let displayLink = CADisplayLink(target: self, selector: #selector(handleAutoScrollFrame(_:)))
+        displayLink.add(to: .main, forMode: .common)
+        autoScrollDisplayLink = displayLink
+    }
+
+    func pauseAutoScroll() {
+        guard isAutoScrolling else { return }
+        autoScrollPausedForUserInteraction = true
+        autoScrollLastTimestamp = nil
+    }
+
+    func resumeAutoScroll() {
+        guard isAutoScrolling else { return }
+        autoScrollPausedForUserInteraction = false
+        autoScrollLastTimestamp = nil
+    }
+
+    @objc private func handleAutoScrollPan(_ gesture: UIPanGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        pauseAutoScroll()
+    }
+
+    @objc private func handleAutoScrollFrame(_ displayLink: CADisplayLink) {
+        defer { autoScrollLastTimestamp = displayLink.timestamp }
+
+        guard
+            isAutoScrolling,
+            !autoScrollPausedForUserInteraction,
+            !isZooming,
+            !isSliding,
+            let previousTimestamp = autoScrollLastTimestamp
+        else {
+            return
+        }
+
+        let speed = max(UserDefaults.standard.integer(forKey: "Reader.autoScrollSpeed"), 1)
+        let distance = CGFloat(speed * 100) * CGFloat(displayLink.timestamp - previousTimestamp)
+        let minimumY = -scrollView.adjustedContentInset.top
+        let maximumY = max(
+            minimumY,
+            scrollView.contentSize.height - scrollView.bounds.height + scrollView.adjustedContentInset.bottom
+        )
+        let nextY = min(max(scrollView.contentOffset.y + distance, minimumY), maximumY)
+
+        scrollView.setContentOffset(.init(x: scrollView.contentOffset.x, y: nextY), animated: false)
+
+        if nextY >= maximumY {
+            stopAutoScroll()
+
+            if infinite {
+                isScrolling = false
+                checkInfiniteLoad()
+            }
+        }
+    }
+}
+
 // MARK: - Scroll View Delegate
 extension ReaderWebtoonViewController {
     override func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         super.scrollViewWillBeginDragging(scrollView)
+        pauseAutoScroll()
         setLiveTextButtonHidden(true)
     }
 
@@ -238,6 +335,7 @@ extension ReaderWebtoonViewController {
     // zooming sometimes causes page count to jitter between two pages
     func scrollViewWillBeginZooming(_ scrollView: UIScrollView, with view: UIView?) {
         isZooming = true
+        stopAutoScroll()
     }
 
     func scrollViewDidEndZooming(_ scrollView: UIScrollView, with view: UIView?, atScale scale: CGFloat) {
@@ -419,6 +517,7 @@ extension ReaderWebtoonViewController {
             isScrolling = false
             checkInfiniteLoad()
         }
+        resumeAutoScroll()
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -427,6 +526,7 @@ extension ReaderWebtoonViewController {
             isScrolling = false
             checkInfiniteLoad()
         }
+        resumeAutoScroll()
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
