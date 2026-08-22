@@ -51,6 +51,8 @@
 "CANCEL_ALL_DOWNLOADS" = "Cancel All Downloads";
 "DOWNLOADS" = "Downloads";
 "NO_DOWNLOADS" = "No Downloads";
+"NO_CONTENTS" = "No Table of Contents";
+"NO_CONTENTS_TEXT" = "This book doesn't provide one. Use the slider to move around it.";
 "NO_DOWNLOADS_TEXT" = "Downloaded content will appear here.";
 "DOWNLOADED_CHAPTERS" = "Downloaded Chapters";
 "DOWNLOAD_INCOMPLETE" = "Incomplete Download";

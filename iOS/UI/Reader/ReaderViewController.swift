@@ -1801,7 +1801,7 @@ extension ReaderViewController {
     /// chapter and its chapter list holds a single row: the two answer the same question, and only
     /// one of them answers it usefully.
     @objc func openTableOfContents() {
-        guard let reader = contentsReader, !reader.tableOfContents.isEmpty else { return }
+        guard let reader = contentsReader else { return }
         let view = ReaderEpubContentsView(
             contents: reader.tableOfContents,
             currentEntry: { await reader.currentTableOfContentsEntry() },
@@ -1817,11 +1817,18 @@ extension ReaderViewController {
     /// Opens whichever list places the reader in what they are reading.
     ///
     /// A reader carrying contents of its own answers that with them; every other reader answers it
-    /// with the chapters of the series, and so does a book that read its contents and found none.
-    /// The button is disabled until a contents-carrying reader has read them, so the fallback here
-    /// serves readers with nothing to show rather than a reader whose contents have not arrived.
+    /// with the chapters of the series. The button is disabled until a contents-carrying reader has
+    /// read them, so what is decided here is only which list a reader that has read them opens.
+    ///
+    /// A book that declares no contents still opens its own sheet, which says so, unless the series
+    /// holds more than one book: an ePub is one chapter, so a series of several is a list worth
+    /// showing, and it is the only way to reach the next book without leaving the reader.
     @objc func openContents() {
-        if hasContents {
+        guard contentsReader != nil else {
+            openChapterList()
+            return
+        }
+        if hasContents || chapterList.count <= 1 {
             openTableOfContents()
         } else {
             openChapterList()
