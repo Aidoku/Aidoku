@@ -143,8 +143,6 @@ actor DownloadManager {
         } else {
             let tmpDirectory = cache.tmpDirectory(for: chapter)
             if tmpDirectory.exists {
-                // A staging directory is either a download in progress or one that finished with
-                // pages missing, and only the marker tells them apart.
                 return cache.hasFailureMarker(inTmpDirectory: tmpDirectory) ? .failed : .queued
             } else {
                 return .none
@@ -230,25 +228,22 @@ extension DownloadManager {
         for chapter in chapters {
             let directory = cache.directory(for: chapter)
             let archiveURL = directory.appendingPathExtension("cbz")
-            // a download that finished with pages missing leaves a marked staging directory instead
-            // of a chapter, and removing it is the only way back out of the failed state
             let tmpDirectory = cache.tmpDirectory(for: chapter)
-            let failedDirectory = cache.hasFailureMarker(inTmpDirectory: tmpDirectory) ? tmpDirectory : nil
-            if directory.exists || archiveURL.exists || failedDirectory != nil {
+
+            if directory.exists || archiveURL.exists || tmpDirectory.exists {
                 directory.removeItem()
                 archiveURL.removeItem()
-                failedDirectory?.removeItem()
+                tmpDirectory.removeItem()
                 await cache.remove(chapter: chapter)
 
                 // check if all chapters have been removed (then remove manga directory)
                 let manga = chapter.mangaIdentifier
-                // a failed download counts as remaining, otherwise removing one of them takes the
-                // whole manga directory with it and the rest go silently
                 let hasRemainingChapters = cache.directory(for: manga)
                     .contentsIncludingHidden
                     .contains {
                         guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
                         guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
+                        // a failed download counts as remaining
                         return cache.hasFailureMarker(inTmpDirectory: $0)
                     }
                 if !hasRemainingChapters {
@@ -365,9 +360,7 @@ extension DownloadManager {
             for mangaDirectory in mangaDirectories {
                 let mangaId = mangaDirectory.lastPathComponent
 
-                // Count chapters and calculate total size. A download that stopped with pages
-                // missing counts too, so that a manga holding only those still appears here and
-                // can be removed.
+                // Count chapters and calculate total size, including from failed downloads
                 let chapterDirectories = mangaDirectory.contentsIncludingHidden.filter {
                     guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
                     guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
@@ -376,8 +369,6 @@ extension DownloadManager {
 
                 guard !chapterDirectories.isEmpty else { continue }
 
-                // hidden entries are counted so that a failed download, which is listed above,
-                // contributes the space it occupies rather than going unaccounted for
                 let totalSize = await calculateDirectorySize(mangaDirectory, includingHidden: true)
                 let chapterCount = chapterDirectories.count
 
@@ -485,16 +476,14 @@ extension DownloadManager {
         let chapterDirectories = mangaDirectory.contents.filter {
             ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
         }
-        // a download that stopped with pages missing never leaves its staging directory, and is
-        // listed here as well: otherwise it takes up space that nothing on screen accounts for
         let failedDirectories = mangaDirectory.contentsIncludingHidden.filter {
             $0.isDirectory && cache.hasFailureMarker(inTmpDirectory: $0)
         }
 
         var chapters: [DownloadedChapterInfo] = []
+        let entries = chapterDirectories.map { ($0, false) } + failedDirectories.map { ($0, true) }
 
-        for chapterDirectory in chapterDirectories + failedDirectories {
-            let failed = failedDirectories.contains(chapterDirectory)
+        for (chapterDirectory, failed) in entries {
             let chapterId = if failed {
                 String(chapterDirectory.lastPathComponent.dropFirst(DownloadCache.tmpDirectoryPrefix.count))
             } else {
@@ -524,15 +513,13 @@ extension DownloadManager {
         }
 
         // Sort chapters by ID
-        chapters.sort { lhs, rhs in
+        return chapters.sorted { lhs, rhs in
             // Try to sort numerically if possible, otherwise alphabetically
             if let lhsNum = Double(lhs.chapterId), let rhsNum = Double(rhs.chapterId) {
                 return lhsNum < rhsNum
             }
             return lhs.chapterId.localizedStandardCompare(rhs.chapterId) == .orderedAscending
         }
-
-        return chapters
     }
 
     /// Save chapter metadata to ComicInfo.xml.
@@ -644,7 +631,6 @@ extension DownloadManager {
     /// Get formatted total download size string
     func getFormattedTotalDownloadedSize() async -> String {
         let totalSize = if Self.directory.exists {
-            // includes staging directories, so this total matches the per-series sizes beside it
             await calculateDirectorySize(Self.directory, includingHidden: true)
         } else {
             Int64(0)

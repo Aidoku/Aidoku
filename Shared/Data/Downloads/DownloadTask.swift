@@ -31,7 +31,6 @@ actor DownloadTask: Identifiable {
 
     private var currentPage: Int = 0
     private var failedPages: Int = 0
-    /// Which pages failed, in the order they were reported, for the marker a partial failure leaves.
     private var failedPageNumbers: [Int] = []
     private var pages: [Page] = []
 
@@ -117,8 +116,10 @@ actor DownloadTask: Identifiable {
                 downloads.remove(atOffsets: cancelled)
                 cache.directory(for: manga)
                     .contentsIncludingHidden
-                    .filter { $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) }
-                    .filter { !cache.hasFailureMarker(inTmpDirectory: $0) }
+                    .filter {
+                        $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
+                            && !cache.hasFailureMarker(inTmpDirectory: $0)
+                    }
                     .forEach { $0.removeItem() }
                 if wasRunning {
                     resume()
@@ -138,8 +139,10 @@ actor DownloadTask: Identifiable {
                 for manga in manga {
                     cache.directory(for: manga)
                         .contentsIncludingHidden
-                        .filter { $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) }
-                        .filter { !cache.hasFailureMarker(inTmpDirectory: $0) }
+                        .filter {
+                            $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
+                                && !cache.hasFailureMarker(inTmpDirectory: $0)
+                        }
                         .forEach { $0.removeItem() }
                 }
                 pages = []
@@ -223,12 +226,8 @@ extension DownloadTask {
         let download = downloads[0]
         downloads[0].status = .downloading
 
-        // an earlier attempt may have left this directory marked as failed, and this run supersedes
-        // it: the pages it holds are refetched here, and keeping the marker would both report the
-        // chapter as failed while it downloads and carry the marker into the promoted chapter
-        cache.discardFailedDownload(for: download.chapterIdentifier)
-
         let tmpDirectory = cache.tmpDirectory(for: download.chapterIdentifier)
+        tmpDirectory.removeItem() // remove in case it exists from a previous failed download
         tmpDirectory.createDirectory()
 
         if pages.isEmpty {
@@ -488,19 +487,18 @@ extension DownloadTask {
             }
             LogManager.logger.error("Chapter failed to download: \(download.chapter.formattedTitle())")
         } else if failedPages > 0 {
-            // Some pages are missing, so the chapter is not the chapter. Promoting it here is what
-            // issue #243 is: the result was indistinguishable from a complete download, and a
-            // reader met the gap only on reaching it. The staging directory stays where it is,
-            // marked, so that it reports itself failed rather than queued.
-            LogManager.logger.error("Chapter downloaded with \(failedPages) failed pages: \(download.chapter.formattedTitle())")
-            // the downloads settings page lists this directory, so it needs the metadata a promoted
-            // chapter carries, otherwise there is nothing to name it by but its key
+            LogManager.logger.error(
+                "Chapter downloaded with \(failedPages) failed page\(failedPages == 1 ? "" : "s"): \(download.chapter.formattedTitle())"
+            )
+
+            // save metadata for failed download in downloads view
             await DownloadManager.shared.saveChapterMetadata(manga: download.manga, chapter: download.chapter, to: tmpDirectory)
+
             markFailed(tmpDirectory: tmpDirectory)
+
             if let downloadIndex = downloads.firstIndex(where: { $0 == download }) {
                 downloads[downloadIndex].status = .failed
-                let failed = downloads[downloadIndex]
-                downloads.remove(at: downloadIndex)
+                let failed = downloads.remove(at: downloadIndex)
                 await delegate?.downloadFailed(download: failed)
             }
         } else {
@@ -549,12 +547,7 @@ extension DownloadTask {
         await next()
     }
 
-    /// Writes the marker that tells a failed download from one still running.
-    ///
-    /// The pages it names are the ones to refetch, one-based as they are stored, which is what a
-    /// resume would ask for. A marker
-    /// that cannot be written leaves the directory looking like a download in progress, which is
-    /// the behaviour that already existed, so it is logged rather than escalated.
+    // store file with failed pages in failed download directory
     private func markFailed(tmpDirectory: URL) {
         let marker = cache.failureMarker(inTmpDirectory: tmpDirectory)
         do {

@@ -876,8 +876,6 @@ private struct RightNavbarButton: View, Equatable {
         self.bookmarked = viewModel.bookmarked
         self.hasCategories = !CoreDataManager.shared.getCategoryTitles(sorted: false).isEmpty
         self.url = viewModel.manga.url
-        // a failed download occupies space like a finished one does, so removing everything has to
-        // be offered for it too
         self.hasDownloads = viewModel.downloadStatus.contains(where: { $0.value == .finished || $0.value == .failed })
         self.refresh = refreshController.refresh
 

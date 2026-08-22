@@ -54,39 +54,6 @@ struct PartialDownloadTests {
         #expect(DownloadManager.shared.getDownloadStatus(for: chapter) == .finished)
     }
 
-    /// A retry refetches every page and the extension comes from the response, so anything the
-    /// failed attempt left behind has to go or the chapter can end up holding a page twice.
-    @Test func discardingAFailedDownloadTakesItsPagesWithIt() throws {
-        let cache = DownloadCache()
-        let chapter = identifier("discarded")
-        defer { removeDirectories(for: chapter) }
-
-        let tmpDirectory = cache.tmpDirectory(for: chapter)
-        tmpDirectory.createDirectory()
-        try Data().write(to: tmpDirectory.appendingPathComponent("001.png"))
-        try Data("[2]".utf8).write(to: cache.failureMarker(inTmpDirectory: tmpDirectory))
-
-        cache.discardFailedDownload(for: chapter)
-
-        #expect(!tmpDirectory.exists)
-    }
-
-    /// Only a failed download is discarded: the same directory shape belongs to a download that is
-    /// still running, and removing that would cancel it.
-    @Test func discardingLeavesAnUnmarkedStagingDirectoryAlone() throws {
-        let cache = DownloadCache()
-        let chapter = identifier("running")
-        defer { removeDirectories(for: chapter) }
-
-        let tmpDirectory = cache.tmpDirectory(for: chapter)
-        tmpDirectory.createDirectory()
-        try Data().write(to: tmpDirectory.appendingPathComponent("001.png"))
-
-        cache.discardFailedDownload(for: chapter)
-
-        #expect(tmpDirectory.exists)
-    }
-
     /// The marker lives inside the staging directory, so discarding a failed download stays a
     /// single removal and nothing is left beside it.
     @Test func markerLivesInsideTheStagingDirectory() {

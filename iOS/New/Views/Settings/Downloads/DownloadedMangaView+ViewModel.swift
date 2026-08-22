@@ -280,8 +280,6 @@ extension DownloadedMangaView.ViewModel {
                 else { return false }
                 return true
             }),
-            // a download that failed leaves a partial chapter in this list, so it has to refresh
-            // the same way a finished one does
             (.downloadFailed, { [weak self] notification in
                 guard let download = notification.object as? Download,
                       download.mangaIdentifier == self?.manga.mangaIdentifier

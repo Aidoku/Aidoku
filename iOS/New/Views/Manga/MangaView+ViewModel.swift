@@ -559,8 +559,6 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        // the second list is on disk by definition, but a download that stopped with pages missing
-        // is on disk as well without being a chapter, so its status is asked for rather than assumed
         for chapter in chapters + otherDownloadedChapters {
             downloadStatus[chapter.key] = DownloadManager.shared.getDownloadStatus(
                 for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
