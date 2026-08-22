@@ -10,7 +10,7 @@
 "SELECT" = "ជ្រើសរើស";
 "DEFAULT_CATEGORY" = "ធ្នើសៀវភៅលំនាំដើម";
 "CATEGORY_EMPTY" = "មិនមានម៉ានហ្គានៅលើធ្នើសៀវភៅទេ";
-"ADD_TO_CATEGORY" = "បន្ថែមទៅធ្នើសៀវភៅ";
+"ADD_TO_CATEGORY" = "ដាកបញ្ជូលតាមប្រភេទ";
 "RENAME_CATEGORY_INFO" = "បញ្ចូលឈ្មោះថ្មីសម្រាប់ធ្នើសៀវភៅ។";
 "SKIP_DUPLICATE_CHAPTERS" = "រំលងវគ្គដដែលៗ";
 "RENAME_CATEGORY_FAIL_INFO" = "ឈ្មោះធ្នើសៀវភៅត្រូវតែប្លែក។";
@@ -172,7 +172,7 @@
 "1_CHAPTER" = "វគ្គ 1";
 "UPCOMING" = "មកដល់នាពេលខាងមុខ";
 "REMOVE_FROM_CATEGORY" = "លុបចេញពីធ្នើសៀវភៅ";
-"ADD_TO_CATEGORIES" = "បន្ថែមទៅធ្នើសៀវភៅ";
+"ADD_TO_CATEGORIES" = "ដាក់បញ្ជូលតាមច្រើនប្រភេទ";
 "RENAME_CATEGORY_FAIL" = "បរាជ័យក្នុងការផ្លាស់ប្តូរឈ្មោះធ្នើសៀវភៅ";
 "RENAME_CATEGORY" = "ប្តូរឈ្មោះសៀវភៅ";
 "SYNC_LOCAL_HISTORY" = "សមកាលកម្មប្រវត្តិមូលដ្ឋាន";
@@ -204,7 +204,7 @@
 "REMOVE_DOWNLOADS" = "លុបការទាញយក";
 "LIBRARY_SEARCH" = "ស្វែងរកក្នុងបណ្ណាល័យ";
 "LIBRARY_EMPTY" = "បណ្ណាល័យទទេ";
-"ADD_TO_LIBRARY" = "បន្ថែមទៅក្នុងបណ្ណាល័យ";
+"ADD_TO_LIBRARY" = "ដាកបញ្ជូលក្នុង បណ្ណាល័យ";
 "REMOVE_DOWNLOADS_CONFIRM" = "លុបការទាញយកដែលបានជ្រើសរើសទាំងអស់ចេញ?";
 "NO_WIFI_ALERT_MESSAGE" = "អ្នកត្រូវភ្ជាប់ Wi-Fi ដើម្បីទាញយកឯកសារនេះ។ សូមភ្ជាប់ Wi-Fi និងព្យាយាមម្តងទៀត។";
 "FILTER_BY" = "តម្រង់ដោយ";
@@ -217,7 +217,7 @@
 // Categories
 "ALL" = "ទាំងអស់";
 "CATEGORY_ADD" = "បន្ថែមធ្នើសៀវភៅម៉ានហ្គា";
-"ALWAYS_ASK" = "Always Ask";
+"ALWAYS_ASK" = "តែងតែសួរ";
 
 // Browse
 "BROWSE" = "រុករក";
@@ -300,7 +300,7 @@
 "LOCKED_CATEGORIES" = "ធ្នើសៀវភៅដែលបានចាក់សោ";
 "AUTH_FOR_LIBRARY" = "សូមផ្ទៀងផ្ទាត់ភាពត្រឹមត្រូវ ដើម្បីមើលបណ្ណាល័យរបស់អ្នក។";
 "PAGE_LAYOUT" = "ប្លង់ទំព័រ";
-"DOUBLE_PAGE" = "ទំព័រតែពីរ";
+"DOUBLE_PAGE" = "ទំព័រទីពីរ";
 "DAILY" = "ប្រចាំថ្ងៃ";
 "EVERY_2_DAYS" = "រៀងរាល់ 2 ថ្ងៃម្តង";
 "WITH_UNREAD_CHAPTERS" = "ជាមួយនឹងវគ្គមិនទាន់អាន";
@@ -334,3 +334,28 @@
 "RESET_SETTINGS" = "កំណត់ការកំណត់ឡើងវិញ";
 "TRACKERS" = "ការតាមដាន";
 "BOTH" = "ទាំងពីរ";
+"INVALID" = "មិនត្រឹមត្រូវ";
+"TRACKING" = "តាមដាន";
+"TRACK_COMPLETED" = "បានសម្រេច";
+"DONE" = "រួចរាល់";
+"EDIT" = "កែសម្រួល";
+"DOWNLOADED_CHAPTERS" = "ជំពូកដែលបានទាញយក";
+"DISPLAY_CHAPTER" = "ជំពូក";
+"DISPLAY_DEFAULT" = "លំនាំដើម";
+"DESCRIPTION" = "ការពិពណ៏នា";
+"DATE" = "កាលបរិច្ឆាទ";
+"BACKUP_INFO_TITLE" = "បម្រុងទុកព័ត៍មាន";
+"AUTOMATIC_BACKUPS" = "បម្រុងទុក​ ស្វ័យប្រវត្តិ";
+"APPLY" = "បញ្ជូន";
+"1_PAGE" = "ទំព័រទី 1";
+"ADD_SOURCE" = "បន្ថែមប្រភព";
+"ADD_TO_OTHER_SERIES_INFO" = "file នឺងដាក់បញ្ជូលចូលក្នុងប្រភេទ series​ ដែលបានជ្រើសរើស។";
+"ALL_CHAPTERS_LOCKED" = "ជំពូកទាំងអស់ជាប់សោ";
+"AND_MORE" = "និង បន្ថែមទៀត";
+"ALL_TIME" = "គ្រប់ពេល";
+"ARTIST" = "សិល្បករ";
+"ARTIST_NAME" = "ឈ្មោះសិល្បករ";
+"AUTHOR" = "អ្នកនិពន្ធ";
+"AUTHOR_NAME" = "ឈ្មោះអ្នកនិពន្ធ";
+"AUTO" = "Auto";
+"BACKUP_%@" = "បម្រុងទុក %@";
