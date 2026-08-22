@@ -177,7 +177,7 @@ actor DownloadManager {
 extension DownloadManager {
     /// Download all chapters for a manga.
     func downloadAll(manga: AidokuRunner.Manga) async {
-        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
+        let allChapters = await CoreDataManager.shared.getChapters(mangaId: manga.identifier)
 
         var chaptersToDownload: [AidokuRunner.Chapter] = []
 
@@ -194,8 +194,8 @@ extension DownloadManager {
 
     /// Download unread chapters for a manga.
     func downloadUnread(manga: AidokuRunner.Manga) async {
-        let readingHistory = await CoreDataManager.shared.getReadingHistory(sourceId: manga.sourceKey, mangaId: manga.key)
-        let allChapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceKey, mangaId: manga.key)
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(mangaId: manga.identifier)
+        let allChapters = await CoreDataManager.shared.getChapters(mangaId: manga.identifier)
 
         var chaptersToDownload: [AidokuRunner.Chapter] = []
 
@@ -384,8 +384,7 @@ extension DownloadManager {
                         isInLibrary: await withCheckedContinuation { continuation in
                             CoreDataManager.shared.container.performBackgroundTask { context in
                                 let isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                                    sourceId: sourceId,
-                                    mangaId: extraData?.mangaKey ?? mangaId,
+                                    mangaId: .init(sourceKey: sourceId, mangaKey: extraData?.mangaKey ?? mangaId),
                                     context: context
                                 )
                                 continuation.resume(returning: isInLibrary)
@@ -398,13 +397,11 @@ extension DownloadManager {
                         CoreDataManager.shared.container.performBackgroundTask { context in
                             // First try direct lookup with the directory name
                             var mangaObject = CoreDataManager.shared.getManga(
-                                sourceId: sourceId,
-                                mangaId: mangaId,
+                                mangaId: .init(sourceKey: sourceId, mangaKey: extraData?.mangaKey ?? mangaId),
                                 context: context
                             )
                             var isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                                sourceId: sourceId,
-                                mangaId: mangaId,
+                                mangaId: .init(sourceKey: sourceId, mangaKey: extraData?.mangaKey ?? mangaId),
                                 context: context
                             )
 
@@ -418,8 +415,7 @@ extension DownloadManager {
                                     if candidateId.directoryName == mangaId {
                                         mangaObject = candidateManga
                                         isInLibrary = CoreDataManager.shared.hasLibraryManga(
-                                            sourceId: sourceId,
-                                            mangaId: candidateId,
+                                            mangaId: .init(sourceKey: sourceId, mangaKey: candidateId),
                                             context: context
                                         )
                                         break

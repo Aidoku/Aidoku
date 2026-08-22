@@ -901,14 +901,8 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 guard let self else { return ASCellNode() }
                 return ReaderWebtoonTransitionNode(transition: .init(
                     type: page.type == .prevInfoPage ? .prev : .next,
-                    from: chapter.toOld(
-                        sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,
-                        mangaId: self.viewModel.manga.key
-                    ),
-                    to: to?.toOld(
-                        sourceId: self.viewModel.source?.key ?? self.viewModel.manga.sourceKey,
-                        mangaId: self.viewModel.manga.key
-                    )
+                    from: chapter.toOld(mangaId: self.viewModel.manga.identifier),
+                    to: to?.toOld(mangaId: self.viewModel.manga.identifier)
                 ))
             }
         }

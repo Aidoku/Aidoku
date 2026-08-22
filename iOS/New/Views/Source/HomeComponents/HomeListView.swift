@@ -251,17 +251,16 @@ struct HomeListView: View {
         bookmarkedItemsState = await CoreDataManager.shared.container.performBackgroundTask { context in
             var keys: Set<String> = .init()
             for entry in entries {
-                let mangaKey: String? = switch entry.value {
-                    case .manga(let manga): manga.key
+                let mangaId: MangaIdentifier? = switch entry.value {
+                    case .manga(let manga): manga.identifier
                     default: nil
                 }
-                if let mangaKey {
+                if let mangaId {
                     if CoreDataManager.shared.hasLibraryManga(
-                        sourceId: source.key,
-                        mangaId: mangaKey,
+                        mangaId: mangaId,
                         context: context
                     ) {
-                        keys.insert(mangaKey)
+                        keys.insert(mangaId.mangaKey)
                     }
                 }
             }

@@ -655,8 +655,8 @@ extension LocalFileManager {
 }
 
 extension LocalFileManager {
-    func setCover(for mangaId: String, image: PlatformImage) async -> String? {
-        let mangaData = await LocalFileDataManager.shared.fetchLocalSeries(id: mangaId)
+    func setCover(for mangaKey: String, image: PlatformImage) async -> String? {
+        let mangaData = await LocalFileDataManager.shared.fetchLocalSeries(id: mangaKey)
 
         // remove the cover image file if it exists
         if let cover = mangaData?.cover, let url = URL(string: cover) {
@@ -669,20 +669,19 @@ extension LocalFileManager {
         // upload the new cover
         let fileManager = FileManager.default
         let localFolder = fileManager.documentDirectory.appendingPathComponent("Local", isDirectory: true)
-        let mangaFolder = localFolder.appendingPathComponent(mangaId, isDirectory: true)
+        let mangaFolder = localFolder.appendingPathComponent(mangaKey, isDirectory: true)
         let coverFileName = "cover.png"
         let newCoverURL = mangaFolder.appendingPathComponent(coverFileName)
         do {
             try image.pngData()?.write(to: newCoverURL)
         } catch {
-            LogManager.logger.error("Failed to write cover image for manga \(mangaId): \(error)")
+            LogManager.logger.error("Failed to write cover image for manga \(mangaKey): \(error)")
             return nil
         }
 
         // set cover image in coredata
         return await CoreDataManager.shared.setCover(
-            sourceId: LocalSourceRunner.sourceKey,
-            mangaId: mangaId,
+            mangaId: .init(sourceKey: LocalSourceRunner.sourceKey, mangaKey: mangaKey),
             coverUrl: newCoverURL.toAidokuImageUrl()?.absoluteString
         )
     }

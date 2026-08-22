@@ -96,8 +96,7 @@ struct MangaDetailsHeaderView: View {
         self.onReadButtonPressed = onReadButtonPressed
 
         self._isTracking = State(initialValue: TrackerManager.shared.isTracking(
-            sourceId: manga.wrappedValue.sourceKey,
-            mangaId: manga.wrappedValue.key
+            mangaId: manga.wrappedValue.identifier
         ))
     }
 
@@ -214,7 +213,7 @@ struct MangaDetailsHeaderView: View {
                     langFilter: $langFilter,
                     scanlatorFilter: $scanlatorFilter,
                     displayMode: $chapterTitleDisplayMode,
-                    mangaUniqueKey: manga.uniqueKey
+                    mangaId: manga.identifier
                 )
                 .padding(.horizontal, 20)
                 .padding(.bottom, 10)
@@ -249,14 +248,11 @@ struct MangaDetailsHeaderView: View {
             updateReadButtonText()
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateTrackers)) { _ in
-            isTracking = TrackerManager.shared.isTracking(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key
-            )
+            isTracking = TrackerManager.shared.isTracking(mangaId: manga.identifier)
         }
         .task {
             updateReadButtonText()
-            hasAvailableTrackers = await TrackerManager.shared.hasAvailableTrackers(sourceKey: manga.sourceKey, mangaKey: manga.key)
+            hasAvailableTrackers = await TrackerManager.shared.hasAvailableTrackers(mangaId: manga.identifier)
         }
     }
 
@@ -409,21 +405,16 @@ struct MangaDetailsHeaderView: View {
     }
 
     func toggleBookmarked() async {
-        let sourceId = manga.sourceKey
-        let mangaId = manga.key
+        let mangaId = manga.identifier
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.hasLibraryManga(
-                sourceId: sourceId,
                 mangaId: mangaId,
                 context: context
             )
         }
         if inLibrary {
             // remove from library
-            await MangaManager.shared.removeFromLibrary(
-                sourceId: sourceId,
-                mangaId: mangaId
-            )
+            await MangaManager.shared.removeFromLibrary(mangaId: mangaId)
             bookmarked = false
         } else {
             if MangaManager.shouldAskForCategories() { // open category select view

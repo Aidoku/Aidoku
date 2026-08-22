@@ -246,13 +246,13 @@ extension LibraryViewModel {
 
             let actuallyEmpty = libraryObjects.isEmpty
 
-            var ids = Set<String>()
+            var ids = Set<MangaIdentifier>()
 
             main: for libraryObject in libraryObjects {
                 guard
                     let mangaObject = libraryObject.manga,
                     // ensure the manga hasn't already been accounted for
-                    ids.insert("\(mangaObject.sourceId)|\(mangaObject.id)").inserted
+                    ids.insert(mangaObject.identifier).inserted
                 else {
                     continue
                 }
@@ -260,8 +260,7 @@ extension LibraryViewModel {
                 let categories = (libraryObject.categories?.allObjects as? [CategoryObject])?.map { $0.title } ?? []
 
                 let info = MangaInfo(
-                    mangaId: mangaObject.id,
-                    sourceId: mangaObject.sourceId,
+                    id: mangaObject.identifier,
                     coverUrl: mangaObject.cover.flatMap { URL(string: $0) },
                     title: mangaObject.title,
                     author: mangaObject.author,
@@ -282,8 +281,7 @@ extension LibraryViewModel {
                             continue
                         case .tracking:
                             condition = CoreDataManager.shared.hasTrack(
-                                sourceId: info.sourceId,
-                                mangaId: info.mangaId,
+                                mangaId: info.id,
                                 context: context
                             )
                         case .hasUnread:
@@ -291,8 +289,7 @@ extension LibraryViewModel {
                             continue
                         case .started:
                             condition = CoreDataManager.shared.hasHistory(
-                                sourceId: info.sourceId,
-                                mangaId: info.mangaId,
+                                mangaId: info.id,
                                 context: context
                             )
                         case .completed:
@@ -300,7 +297,7 @@ extension LibraryViewModel {
                         case .source:
                             guard let sourceId = filter.value else { continue }
                             if filter.exclude {
-                                condition = info.sourceId == sourceId
+                                condition = info.id.sourceKey == sourceId
                             } else {
                                 // handle included source filters as OR
                                 filteredSourceKeys.insert(sourceId)
@@ -331,7 +328,7 @@ extension LibraryViewModel {
                         continue main
                     }
                 }
-                if !filteredSourceKeys.isEmpty && !filteredSourceKeys.contains(info.sourceId) {
+                if !filteredSourceKeys.isEmpty && !filteredSourceKeys.contains(info.id.sourceKey) {
                     continue main
                 }
                 if !filteredContentRatings.isEmpty && !filteredContentRatings.contains(mangaObject.nsfw) {
@@ -422,23 +419,19 @@ extension LibraryViewModel {
                     func getUnreadCount() async -> Int {
                         await CoreDataManager.shared.container.performBackgroundTask { context in
                             let filters = CoreDataManager.shared.getMangaChapterFilters(
-                                sourceId: item.sourceId,
-                                mangaId: item.mangaId,
+                                mangaId: item.id,
                                 context: context
                             )
                             return CoreDataManager.shared.unreadCount(
-                                sourceId: item.sourceId,
-                                mangaId: item.mangaId,
+                                mangaId: item.id,
                                 lang: filters.language,
                                 scanlators: filters.scanlators,
                                 context: context
                             )
                         }
                     }
-                    if let manga = currentManga.first(where: {
-                        $0.mangaId == item.mangaId && $0.sourceId == item.sourceId
-                    }) {
-                        return (manga.hashValue, await getUnreadCount())
+                    if let info = currentManga.first(where: { $0.id == item.id }) {
+                        return (info.hashValue, await getUnreadCount())
                     } else {
                         return nil
                     }
@@ -490,14 +483,9 @@ extension LibraryViewModel {
                 group.addTask {
                     let context = CoreDataManager.shared.container.newBackgroundContext()
                     return context.performAndWait {
-                        let filters = CoreDataManager.shared.getMangaChapterFilters(
-                            sourceId: manga.sourceId,
-                            mangaId: manga.mangaId,
-                            context: context
-                        )
+                        let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.id, context: context)
                         let count = CoreDataManager.shared.unreadCount(
-                            sourceId: manga.sourceId,
-                            mangaId: manga.mangaId,
+                            mangaId: manga.id,
                             lang: filters.language,
                             scanlators: filters.scanlators,
                             context: context
@@ -531,25 +519,23 @@ extension LibraryViewModel {
     func fetchUnreads(for identifier: MangaIdentifier) async {
         let unreadCount = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             let filters = CoreDataManager.shared.getMangaChapterFilters(
-                sourceId: identifier.sourceKey,
-                mangaId: identifier.mangaKey,
+                mangaId: identifier,
                 context: context
             )
             return CoreDataManager.shared.unreadCount(
-                sourceId: identifier.sourceKey,
-                mangaId: identifier.mangaKey,
+                mangaId: identifier,
                 lang: filters.language,
                 scanlators: filters.scanlators,
                 context: context
             )
         }
         var didUpdate = false
-        if let index = self.manga.firstIndex(where: { $0.identifier == identifier }) {
+        if let index = self.manga.firstIndex(where: { $0.id == identifier }) {
             if self.manga[index].unread != unreadCount {
                 didUpdate = true
                 self.manga[index].unread = unreadCount
             }
-        } else if let index = self.pinnedManga.firstIndex(where: { $0.identifier == identifier }) {
+        } else if let index = self.pinnedManga.firstIndex(where: { $0.id == identifier }) {
             if self.pinnedManga[index].unread != unreadCount {
                 didUpdate = true
                 self.pinnedManga[index].unread = unreadCount
@@ -572,17 +558,17 @@ extension LibraryViewModel {
         } else {
             let currentManga = self.manga + self.pinnedManga
             for manga in currentManga {
-                let identifier = manga.identifier
+                let identifier = manga.id
                 downloadCounts[identifier] = await DownloadManager.shared.downloadsCount(for: identifier)
             }
         }
         for (i, manga) in self.pinnedManga.enumerated() {
-            if let count = downloadCounts[manga.identifier] {
+            if let count = downloadCounts[manga.id] {
                 self.pinnedManga[i].downloads = count
             }
         }
         for (i, manga) in self.manga.enumerated() {
-            if let count = downloadCounts[manga.identifier] {
+            if let count = downloadCounts[manga.id] {
                 self.manga[i].downloads = count
             }
         }
@@ -701,12 +687,12 @@ extension LibraryViewModel {
 
     // returns true if library was reloaded
     @discardableResult
-    func mangaOpened(sourceId: String, mangaId: String) async -> Bool {
+    func mangaOpened(mangaId: MangaIdentifier) async -> Bool {
         guard sortMethod == .lastOpened || pinType.needsUpdateOnContentOpen else { return false }
 
         var libraryReloaded = false
 
-        let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
+        let pinnedIndex = pinnedManga.firstIndex(where: { $0.id == mangaId })
         if let pinnedIndex {
             if sortMethod == .lastOpened {
                 let manga = pinnedManga.remove(at: pinnedIndex)
@@ -720,7 +706,7 @@ extension LibraryViewModel {
                 libraryReloaded = true
             }
         } else if sortMethod == .lastOpened {
-            let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId })
+            let index = manga.firstIndex(where: { $0.id == mangaId })
             if let index {
                 let manga = manga.remove(at: index)
                 if sortAscending {
@@ -736,7 +722,7 @@ extension LibraryViewModel {
         return libraryReloaded
     }
 
-    func mangaRead(sourceId: String, mangaId: String) async {
+    func mangaRead(mangaId: MangaIdentifier) async {
         if activeFilters.contains(where: { $0.type == .hasUnread }) {
             // reload library in case all chapters were read and the manga should be filtered
             await loadLibrary()
@@ -745,37 +731,35 @@ extension LibraryViewModel {
 
         guard sortMethod == .lastRead else { return }
 
-        if let pinnedIndex = pinnedManga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId }) {
+        if let pinnedIndex = pinnedManga.firstIndex(where: { $0.id == mangaId }) {
             let manga = pinnedManga.remove(at: pinnedIndex)
             self.manga.insert(manga, at: 0)
-        } else if let index = manga.firstIndex(where: { $0.mangaId == mangaId && $0.sourceId == sourceId }) {
+        } else if let index = manga.firstIndex(where: { $0.id == mangaId }) {
             let manga = manga.remove(at: index)
             self.manga.insert(manga, at: 0)
         }
     }
 
     func removeFromLibrary(manga: MangaInfo) async {
-        pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
-        self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
-        await MangaManager.shared.removeFromLibrary(sourceId: manga.sourceId, mangaId: manga.mangaId)
+        pinnedManga.removeAll { $0.id == manga.id }
+        self.manga.removeAll { $0.id == manga.id }
+        await MangaManager.shared.removeFromLibrary(mangaId: manga.id)
     }
 
     func addToCurrentCategory(manga: MangaInfo) async {
         guard let currentCategory, isInRealCategory else { return }
         await CoreDataManager.shared.addCategoriesToManga(
-            sourceId: manga.sourceId,
-            mangaId: manga.mangaId,
+            mangaId: manga.id,
             categories: [currentCategory]
         )
     }
 
     func removeFromCurrentCategory(manga: MangaInfo) async {
         guard let currentCategory, isInRealCategory else { return }
-        pinnedManga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
-        self.manga.removeAll { $0.mangaId == manga.mangaId && $0.sourceId == manga.sourceId }
+        pinnedManga.removeAll { $0.id == manga.id }
+        self.manga.removeAll { $0.id == manga.id }
         await CoreDataManager.shared.removeCategoriesFromManga(
-            sourceId: manga.sourceId,
-            mangaId: manga.mangaId,
+            mangaId: manga.id,
             categories: [currentCategory]
         )
     }

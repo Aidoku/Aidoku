@@ -18,17 +18,17 @@ extension MangaUpdateObject {
 
     func toItem() -> MangaUpdateItem {
         MangaUpdateItem(
-            sourceId: sourceId,
-            chapterId: chapterId,
-            mangaId: mangaId,
+            chapterId: .init(
+                sourceKey: sourceId ?? "",
+                mangaKey: mangaId ?? "",
+                chapterKey: chapterId ?? ""
+            ),
             viewed: viewed
         )
     }
 }
 
 struct MangaUpdateItem {
-    let sourceId: String?
-    let chapterId: String?
-    let mangaId: String?
+    let chapterId: ChapterIdentifier
     let viewed: Bool
 }

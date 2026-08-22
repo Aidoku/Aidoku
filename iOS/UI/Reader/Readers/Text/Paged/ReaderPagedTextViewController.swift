@@ -313,9 +313,11 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         await CoreDataManager.shared.container.performBackgroundTask { [weak self] context in
             guard let self else { return nil }
             let object = CoreDataManager.shared.getHistory(
-                sourceId: self.viewModel.manga.sourceKey,
-                mangaId: self.viewModel.manga.key,
-                chapterId: chapterKey,
+                chapterId: .init(
+                    sourceKey: self.viewModel.manga.sourceKey,
+                    mangaKey: self.viewModel.manga.key,
+                    chapterKey: chapterKey
+                ),
                 context: context
             )
             return object?.scrollPosition.map { CGFloat($0.doubleValue) }
@@ -727,13 +729,11 @@ extension ReaderPagedTextViewController: UIPageViewControllerDataSource {
             return createPageViewController(for: nextIndex)
         } else if nextIndex >= pages.count {
             // Show chapter transition page (matching image reader style)
-            let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
             return ChapterTransitionViewController(
                 direction: .next,
                 chapter: nextChapter,
                 currentChapter: chapter,
-                sourceId: sourceId,
-                mangaId: viewModel.manga.key,
+                mangaId: viewModel.manga.identifier,
                 parentReader: self
             )
         }
@@ -776,13 +776,11 @@ extension ReaderPagedTextViewController: UIPageViewControllerDataSource {
             return createPageViewController(for: prevIndex)
         } else if prevIndex < 0 {
             // Show chapter transition page (matching image reader style)
-            let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
             return ChapterTransitionViewController(
                 direction: .previous,
                 chapter: previousChapter,
                 currentChapter: chapter,
-                sourceId: sourceId,
-                mangaId: viewModel.manga.key,
+                mangaId: viewModel.manga.identifier,
                 parentReader: self
             )
         }

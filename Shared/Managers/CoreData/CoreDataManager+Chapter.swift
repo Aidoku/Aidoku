@@ -9,7 +9,6 @@ import CoreData
 import AidokuRunner
 
 extension CoreDataManager {
-
     /// Remove all chapter objects.
     func clearChapters(context: NSManagedObjectContext? = nil) {
         clear(request: ChapterObject.fetchRequest(), context: context)
@@ -21,45 +20,40 @@ extension CoreDataManager {
     }
 
     /// Gets all chapter objects for a source.
-    func getChapters(sourceId: String, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
+    func getChapters(sourceKey: String, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
-        request.predicate = NSPredicate(format: "sourceId == %@", sourceId)
+        request.predicate = NSPredicate(format: "sourceId == %@", sourceKey)
         return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular chapter object.
-    func getChapter(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
-        context: NSManagedObjectContext? = nil
-    ) -> ChapterObject? {
+    func getChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext? = nil) -> ChapterObject? {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
-            chapterId, mangaId, sourceId
+            chapterId.chapterKey, chapterId.mangaKey, chapterId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
     }
 
     /// Get the chapter objects for a manga.
-    func getChapters(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
+    func getChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         request.sortDescriptors = [NSSortDescriptor(key: "sourceOrder", ascending: true)]
         return (try? context.fetch(request)) ?? []
     }
 
-    func getChapters(sourceId: String, mangaId: String) async -> [Chapter] {
+    func getChapters(mangaId: MangaIdentifier) async -> [Chapter] {
         await container.performBackgroundTask { context in
-            let objects = self.getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+            let objects = self.getChapters(mangaId: mangaId, context: context)
             return objects.map { $0.toChapter() }
         }
     }
@@ -68,15 +62,13 @@ extension CoreDataManager {
     @discardableResult
     func createChapter(
         _ chapter: AidokuRunner.Chapter,
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         sourceOrder: Int,
         mangaObject: MangaObject? = nil,
         context: NSManagedObjectContext? = nil
     ) -> ChapterObject? {
         let context = context ?? self.context
         guard let mangaObject = mangaObject ?? getManga(
-            sourceId: sourceId,
             mangaId: mangaId,
             context: context
         ) else {
@@ -85,36 +77,37 @@ extension CoreDataManager {
         let object = ChapterObject(context: context)
         object.load(
             from: chapter,
-            sourceId: sourceId,
             mangaId: mangaId,
             sourceOrder: sourceOrder
         )
         object.manga = mangaObject
         object.history = getHistory(
-            sourceId: sourceId,
-            mangaId: mangaId,
-            chapterId: chapter.id,
+            chapterId: .init(
+                sourceKey: mangaId.sourceKey,
+                mangaKey: mangaId.mangaKey,
+                chapterKey: chapter.id
+            ),
             context: context
         )
         return object
     }
 
     /// Check if a chapter exists in the data store.
-    func hasChapter(sourceId: String, mangaId: String, chapterId: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func hasChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
-            chapterId, mangaId, sourceId
+            chapterId.chapterKey, chapterId.mangaKey, chapterId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Removes chapters for manga.
-    func removeChapters(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+    func removeChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) {
         let context = context ?? self.context
-        let chapters = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+        let chapters = getChapters(mangaId: mangaId, context: context)
         for chapter in chapters where chapter.fileInfo == nil {
             context.delete(chapter)
         }
@@ -125,17 +118,16 @@ extension CoreDataManager {
     @discardableResult
     func setChapters(
         _ chapters: [AidokuRunner.Chapter],
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> [ChapterObject] {
         let context = context ?? self.context
+        guard let manga = getManga(mangaId: mangaId, context: context) else { return [] }
+
         var newChapters = Array(chapters.enumerated())
 
-        guard let manga = self.getManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return [] }
-
         // update existing chapter objects
-        let chapterObjects = getChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+        let chapterObjects = getChapters(mangaId: mangaId, context: context)
         var chapterIds: Set<String> = Set()
         for object in chapterObjects {
             if let newChapter = newChapters.first(where: { $0.element.id == object.id }) {
@@ -149,7 +141,6 @@ extension CoreDataManager {
                 } else {
                     object.load(
                         from: newChapter.element,
-                        sourceId: sourceId,
                         mangaId: mangaId,
                         sourceOrder: newChapter.offset
                     )
@@ -164,14 +155,15 @@ extension CoreDataManager {
         // create new chapter objects
         var newChaptersCreated = [ChapterObject]()
         for (offset, chapter) in newChapters where !hasChapter(
-            sourceId: sourceId,
-            mangaId: mangaId,
-            chapterId: chapter.id,
+            chapterId: .init(
+                sourceKey: mangaId.sourceKey,
+                mangaKey: mangaId.mangaKey,
+                chapterKey: chapter.id
+            ),
             context: context
         ) {
             if let chapterObject = createChapter(
                 chapter,
-                sourceId: sourceId,
                 mangaId: mangaId,
                 sourceOrder: offset,
                 mangaObject: manga,
@@ -185,8 +177,7 @@ extension CoreDataManager {
 
     /// Get the number of unread chapters for a manga.
     func unreadCount(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         lang: String?,
         scanlators: [String]?,
         context: NSManagedObjectContext? = nil
@@ -208,7 +199,7 @@ extension CoreDataManager {
                 AND (history == nil OR history.completed == false)
                 AND locked == false
                 """,
-                sourceId, mangaId, lang, scanlators, scanlators
+                mangaId.sourceKey, mangaId.mangaKey, lang, scanlators, scanlators
             )
         } else if let scanlators {
             request.predicate = NSPredicate(
@@ -219,7 +210,7 @@ extension CoreDataManager {
                 AND (history == nil OR history.completed == false)
                 AND locked == false
                 """,
-                sourceId, mangaId, scanlators, scanlators
+                mangaId.sourceKey, mangaId.mangaKey, scanlators, scanlators
             )
         } else if let lang {
             request.predicate = NSPredicate(
@@ -230,7 +221,7 @@ extension CoreDataManager {
                 AND (history == nil OR history.completed == false)
                 AND locked == false
                 """,
-                sourceId, mangaId, lang
+                mangaId.sourceKey, mangaId.mangaKey, lang
             )
         } else {
             request.predicate = NSPredicate(
@@ -240,7 +231,7 @@ extension CoreDataManager {
                 AND (history == nil OR history.completed == false)
                 AND locked == false
                 """,
-                sourceId, mangaId
+                mangaId.sourceKey, mangaId.mangaKey
             )
         }
         return (try? context.count(for: request)) ?? 0
@@ -248,8 +239,7 @@ extension CoreDataManager {
 
     /// Get the number of read chapters for a manga.
     func readCount(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         lang: String?,
         scanlators: [String]?,
         context: NSManagedObjectContext? = nil
@@ -265,7 +255,7 @@ extension CoreDataManager {
                 AND ((scanlator IN %@) OR (scanlator == nil AND %@ CONTAINS ''))
                 AND history.completed == true
                 """,
-                sourceId, mangaId, lang, scanlators, scanlators
+                mangaId.sourceKey, mangaId.mangaKey, lang, scanlators, scanlators
             )
         } else if let scanlators {
             request.predicate = NSPredicate(
@@ -275,17 +265,17 @@ extension CoreDataManager {
                 AND ((scanlator IN %@) OR (scanlator == nil AND %@ CONTAINS ''))
                 AND history.completed == true
                 """,
-                sourceId, mangaId, scanlators, scanlators
+                mangaId.sourceKey, mangaId.mangaKey, scanlators, scanlators
             )
         } else if let lang {
             request.predicate = NSPredicate(
                 format: "sourceId == %@ AND mangaId == %@ AND history != nil AND lang == %@ AND history.completed == true",
-                sourceId, mangaId, lang
+                mangaId.sourceKey, mangaId.mangaKey, lang
             )
         } else {
             request.predicate = NSPredicate(
                 format: "sourceId == %@ AND mangaId == %@ AND history != nil AND history.completed == true",
-                sourceId, mangaId
+                mangaId.sourceKey, mangaId.mangaKey
             )
         }
         return (try? context.count(for: request)) ?? 0

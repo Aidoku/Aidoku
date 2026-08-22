@@ -100,7 +100,7 @@ protocol Tracker: AnyObject, Sendable {
     /// - Parameters:
     ///   - sourceKey: The source key for the given manga.
     ///   - mangaKey: The  key for the given manga.
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool
+    func canRegister(mangaId: MangaIdentifier) -> Bool
 
     /// Log out from the tracker.
     func logout() async throws
@@ -112,7 +112,7 @@ extension Tracker {
         options.first { $0.1 == score }?.0
     }
 
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
+    func canRegister(mangaId: MangaIdentifier) -> Bool {
         isLoggedIn
     }
 }

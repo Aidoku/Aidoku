@@ -271,7 +271,7 @@ extension SourceManager {
             .firstIndex { $0.id == id }
             .flatMap { sources.remove(at: $0) }
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeSource(id: id, context: context)
+            CoreDataManager.shared.removeSource(key: id, context: context)
             try? context.save()
         }
 
@@ -421,9 +421,9 @@ extension SourceManager {
 
     func remove(sourceKey: String, skipUpdateNotification: Bool = false) async {
         let data: SourceObjectData? = await CoreDataManager.shared.container.performBackgroundTask { context in
-            let data = CoreDataManager.shared.getSource(id: sourceKey, context: context)?.toData()
+            let data = CoreDataManager.shared.getSource(key: sourceKey, context: context)?.toData()
             if data != nil {
-                CoreDataManager.shared.removeSource(id: sourceKey, context: context)
+                CoreDataManager.shared.removeSource(key: sourceKey, context: context)
                 try? context.save()
             }
             return data
@@ -512,7 +512,7 @@ extension SourceManager {
         let removed = disabledSources.remove(sourceKey) != nil
         if removed {
             let object: SourceObjectData? = await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.getSource(id: sourceKey, context: context)?.toData()
+                CoreDataManager.shared.getSource(key: sourceKey, context: context)?.toData()
             }
             if let object, let source = await object.toNewSource()  {
                 sources.append(source)
@@ -530,7 +530,7 @@ extension SourceManager {
     func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) {
         Task {
             let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
-                let source = CoreDataManager.shared.getSource(id: key, context: context)
+                let source = CoreDataManager.shared.getSource(key: key, context: context)
                 source?.customSource = config.encode() as NSObject
                 try? context.save()
                 return source?.toData()

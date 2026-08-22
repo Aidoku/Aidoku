@@ -155,13 +155,12 @@ class SourceViewController: OldMangaCollectionViewController {
     }
 
     override func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
-        cell.identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
+        cell.identifier = info.id
         cell.title = info.title
         Task {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.hasLibraryManga(
-                    sourceId: info.sourceId,
-                    mangaId: info.mangaId,
+                    mangaId: info.id,
                     context: context
                 )
             }
@@ -329,7 +328,9 @@ extension SourceViewController {
         guard
             let indexPath = indexPaths.first,
             let mangaInfo = dataSource.itemIdentifier(for: indexPath)
-        else { return nil }
+        else {
+            return nil
+        }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] actions -> UIMenu? in
             var actions: [UIMenuElement] = []
 
@@ -339,11 +340,7 @@ extension SourceViewController {
 
                 Task {
                     let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
-                        CoreDataManager.shared.hasLibraryManga(
-                            sourceId: mangaInfo.sourceId,
-                            mangaId: mangaInfo.mangaId,
-                            context: context
-                        )
+                        CoreDataManager.shared.hasLibraryManga(mangaId: mangaInfo.id, context: context)
                     }
                     if inLibrary {
                         completion([UIAction(
@@ -352,10 +349,7 @@ extension SourceViewController {
                             attributes: .destructive
                         ) { _ in
                             Task {
-                                await MangaManager.shared.removeFromLibrary(
-                                    sourceId: mangaInfo.sourceId,
-                                    mangaId: mangaInfo.mangaId
-                                )
+                                await MangaManager.shared.removeFromLibrary(mangaId: mangaInfo.id)
                                 self.refreshCells(for: [mangaInfo])
                             }
                         }])
@@ -481,7 +475,6 @@ extension SourceViewController: UISearchResultsUpdating {
 
 // MARK: - Listing Header Delegate
 extension SourceViewController: MangaListSelectionHeaderDelegate {
-
     func optionSelected(_ index: Int) {
         guard !ignoreOptionChange else {
             ignoreOptionChange = false
@@ -491,7 +484,7 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
             if await index == viewModel.listings.count { // "all" listing
                 await viewModel.setCurrentListing(nil)
                 Task {
-                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: 0)
+                    await CoreDataManager.shared.setListing(sourceKey: source.id, listing: 0)
                 }
             } else {
                 // remove search query when switching to listing
@@ -499,7 +492,7 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
                 await viewModel.setTitleQuery(nil)
                 await viewModel.setCurrentListing(index)
                 Task {
-                    await CoreDataManager.shared.setListing(sourceId: source.id, listing: index + 1)
+                    await CoreDataManager.shared.setListing(sourceKey: source.id, listing: index + 1)
                 }
             }
             await viewModel.setCurrentPage(nil)
@@ -511,7 +504,6 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
 
 // MARK: - Filter Modal Delegate
 extension SourceViewController: MiniModalDelegate {
-
     func modalWillDismiss() {
         Task {
             let shouldRefresh = await viewModel.savedFiltersDiffer()

@@ -8,7 +8,6 @@
 import CoreData
 
 extension CoreDataManager {
-
     /// Removes all track objects.
     func clearTracks(context: NSManagedObjectContext? = nil) {
         clear(request: TrackObject.fetchRequest(), context: context)
@@ -20,48 +19,48 @@ extension CoreDataManager {
     }
 
     /// Checks if a track item exists in the data store for a manga.
-    func hasTrack(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func hasTrack(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
         let request = TrackObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ ",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Checks if a track item for a specified tracker exists in the data store for a manga.
-    func hasTrack(trackerId: String, sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func hasTrack(trackerId: String, mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
         let request = TrackObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND trackerId = %@",
-            mangaId, sourceId, trackerId
+            mangaId.mangaKey, mangaId.sourceKey, trackerId
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Fetches a track item for a specified tracker exists in the data store for a manga.
-    func getTrack(trackerId: String, sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> TrackObject? {
+    func getTrack(trackerId: String, mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> TrackObject? {
         let context = context ?? self.context
         let request = TrackObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND trackerId = %@",
-            mangaId, sourceId, trackerId
+            mangaId.mangaKey, mangaId.sourceKey, trackerId
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
     }
 
     /// Fetches all track items for a specified manga.
-    func getTracks(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [TrackObject] {
+    func getTracks(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> [TrackObject] {
         let context = context ?? self.context
         let request = TrackObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         return (try? context.fetch(request)) ?? []
     }
@@ -82,8 +81,7 @@ extension CoreDataManager {
     func createTrack(
         id: String,
         trackerId: String,
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         title: String?,
         chapterOffset: Int = 0,
         context: NSManagedObjectContext? = nil
@@ -92,8 +90,8 @@ extension CoreDataManager {
         let object = TrackObject(context: context)
         object.id = id
         object.trackerId = trackerId
-        object.sourceId = sourceId
-        object.mangaId = mangaId
+        object.sourceId = mangaId.sourceKey
+        object.mangaId = mangaId.mangaKey
         object.title = title
         object.chapterOffset = Int16(chapterOffset)
         return object
@@ -101,14 +99,12 @@ extension CoreDataManager {
 
     func setTrackChapterOffset(
         trackerId: String,
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         chapterOffset: Int,
         context: NSManagedObjectContext? = nil
     ) {
         guard let object = getTrack(
             trackerId: trackerId,
-            sourceId: sourceId,
             mangaId: mangaId,
             context: context
         ) else { return }
@@ -116,10 +112,9 @@ extension CoreDataManager {
     }
 
     /// Removes a track item.
-    func removeTrack(trackerId: String, sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+    func removeTrack(trackerId: String, mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) {
         guard let object = getTrack(
             trackerId: trackerId,
-            sourceId: sourceId,
             mangaId: mangaId,
             context: context
         ) else { return }

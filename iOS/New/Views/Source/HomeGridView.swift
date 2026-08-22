@@ -138,10 +138,7 @@ struct HomeGridView: View {
                 Button(role: .destructive) {
                     bookmarkedItems.remove(entry.key)
                     Task {
-                        await MangaManager.shared.removeFromLibrary(
-                            sourceId: source.key,
-                            mangaId: entry.key
-                        )
+                        await MangaManager.shared.removeFromLibrary(mangaId: entry.identifier)
                     }
                 } label: {
                     Label(NSLocalizedString("REMOVE_FROM_LIBRARY"), systemImage: "trash")

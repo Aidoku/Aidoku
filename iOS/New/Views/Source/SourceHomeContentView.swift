@@ -417,8 +417,7 @@ struct SourceHomeContentView: View {
             let bookmarkedKeys: [String] = await CoreDataManager.shared.container.performBackgroundTask { context in
                 var keys: [String] = []
                 for manga in result.entries where CoreDataManager.shared.hasLibraryManga(
-                    sourceId: self.source.key,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     context: context
                 ) {
                     keys.append(manga.key)

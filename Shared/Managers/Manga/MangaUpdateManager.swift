@@ -16,8 +16,7 @@ extension MangaUpdateManager {
     func viewAllUpdates(of manga: AidokuRunner.Manga) async {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             let updates = CoreDataManager.shared.setMangaUpdatesViewed(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
+                mangaId: manga.identifier,
                 context: context
             )
             if !updates.isEmpty {

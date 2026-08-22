@@ -562,7 +562,7 @@ extension BackupManager {
                     var needsRefresh = false
                     for item in sourceItems {
                         guard item.config != nil else { continue }
-                        CoreDataManager.shared.removeSource(id: item.id, context: context)
+                        CoreDataManager.shared.removeSource(key: item.id, context: context)
                         _ = item.toObject(context: context)
                         needsRefresh = true
                     }
@@ -619,7 +619,7 @@ extension BackupManager {
             } else {
                 // show missing sources alert if there are any
                 let missingSources = (backup.sources ?? []).filter {
-                    !CoreDataManager.shared.hasSource(id: $0.id)
+                    !CoreDataManager.shared.hasSource(key: $0.id)
                 }
                 if !missingSources.isEmpty {
                     delegate?.presentAlert(

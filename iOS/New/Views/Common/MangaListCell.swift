@@ -254,7 +254,7 @@ extension MangaListCell {
     }
 
     func configure(with info: MangaInfo) {
-        identifier = MangaIdentifier(sourceKey: info.sourceId, mangaKey: info.mangaId)
+        identifier = info.id
         titleLabel.text = info.title
         subtitleLabel.text = info.author
         subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? true

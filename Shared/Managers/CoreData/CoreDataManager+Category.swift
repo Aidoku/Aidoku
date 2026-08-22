@@ -40,8 +40,8 @@ extension CoreDataManager {
     }
 
     /// Get category objects for a library manga.
-    func getCategories(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
-        let libraryObject = getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+    func getCategories(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
+        let libraryObject = getLibraryManga(mangaId: mangaId, context: context)
         return (libraryObject?.categories?.allObjects as? [CategoryObject]) ?? []
     }
 
@@ -156,17 +156,17 @@ extension CoreDataManager {
     }
 
     /// Add categories to library manga.
-    func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String], context: NSManagedObjectContext? = nil) {
-        guard let libraryObject = getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
+    func addCategoriesToManga(mangaId: MangaIdentifier, categories: [String], context: NSManagedObjectContext? = nil) {
+        guard let libraryObject = getLibraryManga(mangaId: mangaId, context: context) else { return }
         for category in categories {
             guard let categoryObject = getCategory(title: category, context: context) else { continue }
             libraryObject.addToCategories(categoryObject)
         }
     }
 
-    func addCategoriesToManga(sourceId: String, mangaId: String, categories: [String]) async {
+    func addCategoriesToManga(mangaId: MangaIdentifier, categories: [String]) async {
         await container.performBackgroundTask { context in
-            self.addCategoriesToManga(sourceId: sourceId, mangaId: mangaId, categories: categories, context: context)
+            self.addCategoriesToManga(mangaId: mangaId, categories: categories, context: context)
             do {
                 try context.save()
             } catch {
@@ -176,9 +176,9 @@ extension CoreDataManager {
     }
 
     /// Remove categories from library manga.
-    func removeCategoriesFromManga(sourceId: String, mangaId: String, categories: [String]) async {
+    func removeCategoriesFromManga(mangaId: MangaIdentifier, categories: [String]) async {
         await container.performBackgroundTask { context in
-            guard let libraryObject = self.getLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context) else { return }
+            guard let libraryObject = self.getLibraryManga(mangaId: mangaId, context: context) else { return }
             for category in categories {
                 guard let categoryObject = self.getCategory(title: category, context: context) else { continue }
                 libraryObject.removeFromCategories(categoryObject)
@@ -191,10 +191,9 @@ extension CoreDataManager {
         }
     }
 
-    func setMangaCategories(sourceId: String, mangaId: String, categories: [String]) async {
+    func setMangaCategories(mangaId: MangaIdentifier, categories: [String]) async {
         await container.performBackgroundTask { context in
             guard let libraryObject = self.getLibraryManga(
-                sourceId: sourceId,
                 mangaId: mangaId,
                 context: context
             ) else { return }

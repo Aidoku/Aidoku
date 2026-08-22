@@ -67,8 +67,9 @@ final class SuwayomiTracker: EnhancedTracker, PageTracker {
         nil
     }
 
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
+    func canRegister(mangaId: MangaIdentifier) -> Bool {
+        mangaId.sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix)
+            && !UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).disableTracking")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {

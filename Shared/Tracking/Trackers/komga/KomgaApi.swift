@@ -8,9 +8,8 @@
 import Foundation
 
 actor KomgaApi {
-    func shouldUseChapters(sourceKey: String, mangaKey: String) -> Bool {
-        let uniqueKey = "\(sourceKey).\(mangaKey)"
-        let key = "Manga.chapterDisplayMode.\(uniqueKey)"
+    func shouldUseChapters(mangaId: MangaIdentifier) -> Bool {
+        let key = "Manga.chapterDisplayMode.\(mangaId)"
         let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
         if displayMode == .chapter {
@@ -18,7 +17,7 @@ actor KomgaApi {
         } else if displayMode == .volume {
             return false
         } else {
-            return UserDefaults.standard.bool(forKey: "\(sourceKey).useChapters")
+            return UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).useChapters")
         }
     }
 
@@ -36,7 +35,7 @@ actor KomgaApi {
         request.setValue("application/json", forHTTPHeaderField: "Accept")
 
         let data: KomgaReadProgress = try await URLSession.shared.object(from: request)
-        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
+        let useChapters = shouldUseChapters(mangaId: .init(sourceKey: sourceKey, mangaKey: seriesId))
 
         if useChapters {
             return .init(
@@ -52,7 +51,7 @@ actor KomgaApi {
     }
 
     func update(sourceKey: String, seriesId: String, update: TrackUpdate) async throws {
-        let useChapters = shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
+        let useChapters = shouldUseChapters(mangaId: .init(sourceKey: sourceKey, mangaKey: seriesId))
         guard let lastReadVolume = useChapters ? update.lastReadChapter.flatMap({ Int(floor($0)) }) : update.lastReadVolume
         else { return }
 

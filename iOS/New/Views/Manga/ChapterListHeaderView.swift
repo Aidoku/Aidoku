@@ -23,7 +23,7 @@ struct ChapterListHeaderView: View {
     private var showMenu: Bool = false
     private var languages: [String] = []
     private var scanlators: [String] = []
-    private var mangaUniqueKey: String
+    private var mangaId: MangaIdentifier
 
     init(
         allChapters: [AidokuRunner.Chapter]? = nil,
@@ -34,7 +34,7 @@ struct ChapterListHeaderView: View {
         langFilter: Binding<String?>,
         scanlatorFilter: Binding<[String]>,
         displayMode: Binding<ChapterTitleDisplayMode>,
-        mangaUniqueKey: String
+        mangaId: MangaIdentifier
     ) {
         self.chapterCount = filteredChapters?.count
         self._sortOption = sortOption
@@ -43,7 +43,7 @@ struct ChapterListHeaderView: View {
         self._langFilter = langFilter
         self._scanlatorFilter = scanlatorFilter
         self._displayMode = displayMode
-        self.mangaUniqueKey = mangaUniqueKey
+        self.mangaId = mangaId
 
         if let allChapters, !allChapters.isEmpty {
             var languages: Set<String> = []
@@ -184,7 +184,7 @@ struct ChapterListHeaderView: View {
                 ForEach(ChapterTitleDisplayMode.allCases, id: \.rawValue) { mode in
                     Button {
                         displayMode = mode
-                        let key = "Manga.chapterDisplayMode.\(mangaUniqueKey)"
+                        let key = "Manga.chapterDisplayMode.\(mangaId)"
                         if mode == .default {
                             UserDefaults.standard.removeObject(forKey: key)
                         } else {

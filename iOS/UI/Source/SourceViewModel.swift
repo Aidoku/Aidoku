@@ -8,7 +8,6 @@
 import Foundation
 
 actor SourceViewModel {
-
     weak var source: Source?
 
     var manga: [MangaInfo] = []
@@ -29,7 +28,7 @@ actor SourceViewModel {
         guard let source = source else { return }
         listings = source.listings
         // check for current listing
-        let sourceListing = await CoreDataManager.shared.getListing(sourceId: source.id) ?? 0
+        let sourceListing = await CoreDataManager.shared.getListing(sourceKey: source.id) ?? 0
         if sourceListing > 0 && sourceListing - 1 < listings.count {
             currentListing = listings[sourceListing - 1]
         }

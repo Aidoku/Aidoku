@@ -20,16 +20,14 @@ extension CoreDataManager {
 
     /// Get a particular manga update object.
     func getMangaUpdate(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> MangaUpdateObject? {
         let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
-            chapterId, mangaId, sourceId
+            chapterId.chapterKey, chapterId.mangaKey, chapterId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
@@ -45,14 +43,10 @@ extension CoreDataManager {
     }
 
     func hasMangaUpdate(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> Bool {
         getMangaUpdate(
-            sourceId: sourceId,
-            mangaId: mangaId,
             chapterId: chapterId,
             context: context
         ) != nil
@@ -60,22 +54,23 @@ extension CoreDataManager {
 
     /// Creates a new manga update object if does not exist
     func createMangaUpdate(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         chapterObject: ChapterObject,
         context: NSManagedObjectContext? = nil
     ) {
         if hasMangaUpdate(
-            sourceId: sourceId,
-            mangaId: mangaId,
-            chapterId: chapterObject.id,
+            chapterId: .init(
+                sourceKey: mangaId.sourceKey,
+                mangaKey: mangaId.mangaKey,
+                chapterKey: chapterObject.id
+            ),
             context: context
         ) {
             return
         }
         let mangaUpdateObject = MangaUpdateObject(context: context ?? self.context)
-        mangaUpdateObject.sourceId = sourceId
-        mangaUpdateObject.mangaId = mangaId
+        mangaUpdateObject.sourceId = mangaId.sourceKey
+        mangaUpdateObject.mangaId = mangaId.mangaKey
         mangaUpdateObject.chapterId = chapterObject.id
         mangaUpdateObject.date = Date()
         mangaUpdateObject.chapter = chapterObject
@@ -107,15 +102,14 @@ extension CoreDataManager {
 
     /// Gets all unviewed updates of a manga
     func getUnviewedMangaUpdates(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> [MangaUpdateObject] {
         let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND viewed == false",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         return (try? context.fetch(request)) ?? []
     }
@@ -125,12 +119,11 @@ extension CoreDataManager {
     @discardableResult
     func setMangaUpdatesViewed(
         viewed: Bool = true,
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> [MangaUpdateObject] {
         let context = context ?? self.context
-        let unviewedUpdates = getUnviewedMangaUpdates(sourceId: sourceId, mangaId: mangaId, context: context)
+        let unviewedUpdates = getUnviewedMangaUpdates(mangaId: mangaId, context: context)
         if unviewedUpdates.isEmpty { return [] }
         for update in unviewedUpdates {
             update.viewed = viewed

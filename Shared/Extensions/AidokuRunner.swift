@@ -195,10 +195,6 @@ extension AidokuRunner.Manga {
         sourceKey == LocalSourceRunner.sourceKey
     }
 
-    var uniqueKey: String {
-        "\(sourceKey).\(key)"
-    }
-
     var identifier: MangaIdentifier {
         .init(sourceKey: sourceKey, mangaKey: key)
     }
@@ -375,14 +371,13 @@ extension AidokuRunner.Chapter {
     }
 
     func toOld(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         sourceOrder: Int? = nil
     ) -> Chapter {
         Chapter(
-            sourceId: sourceId,
+            sourceId: mangaId.sourceKey,
             id: key,
-            mangaId: mangaId,
+            mangaId: mangaId.mangaKey,
             title: title,
             scanlator: scanlators.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") },
             url: url?.absoluteString,

@@ -757,11 +757,11 @@ extension AppDelegate {
                                 historyMangaIds,
                                 historyChapterIds,
                             ) = await CoreDataManager.shared.container.performBackgroundTask { context in
-                                let historyObjects = CoreDataManager.shared.getHistory(sourceId: source.id, context: context)
+                                let historyObjects = CoreDataManager.shared.getHistory(sourceKey: source.id, context: context)
                                 return (
-                                    CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
+                                    CoreDataManager.shared.getLibraryManga(sourceKey: source.id, context: context)
                                         .compactMap { $0.manga?.id },
-                                    CoreDataManager.shared.getChapters(sourceId: source.id, context: context)
+                                    CoreDataManager.shared.getChapters(sourceKey: source.id, context: context)
                                         .map { ($0.mangaId, $0.id) },
                                     historyObjects.map { $0.mangaId },
                                     historyObjects.map { ($0.mangaId, $0.chapterId) },
@@ -788,9 +788,9 @@ extension AppDelegate {
                                 newChapterIds[oldId] = try? await source.handleMigration(kind: .chapter, mangaKey: mangaId, chapterKey: oldId)
                             }
                             await CoreDataManager.shared.container.performBackgroundTask { [newMangaIds, newChapterIds] context in
-                                let libraryObjects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
-                                let chapterObjects = CoreDataManager.shared.getChapters(sourceId: source.id, context: context)
-                                let historyObjects = CoreDataManager.shared.getHistory(sourceId: source.id, context: context)
+                                let libraryObjects = CoreDataManager.shared.getLibraryManga(sourceKey: source.id, context: context)
+                                let chapterObjects = CoreDataManager.shared.getChapters(sourceKey: source.id, context: context)
+                                let historyObjects = CoreDataManager.shared.getHistory(sourceKey: source.id, context: context)
                                 for object in libraryObjects {
                                     guard
                                         let oldId = object.manga?.id,
@@ -822,7 +822,7 @@ extension AppDelegate {
                         // otherwise, we just show the migration view and let the user do it
                         Task {
                             let sourceManga = await CoreDataManager.shared.container.performBackgroundTask { context in
-                                let objects = CoreDataManager.shared.getLibraryManga(sourceId: source.id, context: context)
+                                let objects = CoreDataManager.shared.getLibraryManga(sourceKey: source.id, context: context)
                                 return objects.compactMap { $0.manga?.toNewManga() }
                             }
                             if !sourceManga.isEmpty {

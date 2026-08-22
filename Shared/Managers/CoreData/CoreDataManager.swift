@@ -156,9 +156,7 @@ final class CoreDataManager {
                 guard
                     historyObject.chapter == nil,
                     let chapterObject = self.getChapter(
-                        sourceId: historyObject.sourceId,
-                        mangaId: historyObject.mangaId,
-                        chapterId: historyObject.chapterId,
+                        chapterId: historyObject.identifier,
                         context: context
                     )
                 else { continue }
@@ -173,7 +171,6 @@ final class CoreDataManager {
 }
 
 extension CoreDataManager {
-
     func storeRemoteChange() {
         queue.addOperation {
             let context = self.container.newBackgroundContext()

@@ -146,8 +146,7 @@ struct HomeChapterListView: View {
         bookmarkedItems = await CoreDataManager.shared.container.performBackgroundTask { context in
             var keys: Set<String> = .init()
             for entry in entries where CoreDataManager.shared.hasLibraryManga(
-                sourceId: source.key,
-                mangaId: entry.manga.key,
+                mangaId: entry.manga.identifier,
                 context: context
             ) {
                 keys.insert(entry.manga.key)

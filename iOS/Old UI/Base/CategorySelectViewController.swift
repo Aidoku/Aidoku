@@ -37,14 +37,12 @@ class CategorySelectViewController: UITableViewController {
             (categories, selectedCategories) = await CoreDataManager.shared.container.performBackgroundTask { context in
                 let categories = CoreDataManager.shared.getCategoryTitles(context: context)
                 let inLibrary = CoreDataManager.shared.hasLibraryManga(
-                    sourceId: self.manga.sourceKey,
-                    mangaId: self.manga.key,
+                    mangaId: self.manga.identifier,
                     context: context
                 )
                 let selectedCategories: [String] = if inLibrary {
                     CoreDataManager.shared.getCategories(
-                        sourceId: self.manga.sourceKey,
-                        mangaId: self.manga.key,
+                        mangaId: self.manga.identifier,
                         context: context
                     )
                     .compactMap { $0.title }
@@ -66,8 +64,7 @@ class CategorySelectViewController: UITableViewController {
         Task {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.hasLibraryManga(
-                    sourceId: self.manga.sourceKey,
-                    mangaId: self.manga.key,
+                    mangaId: self.manga.identifier,
                     context: context
                 )
             }
@@ -79,8 +76,7 @@ class CategorySelectViewController: UITableViewController {
                 )
             }
             await MangaManager.shared.setCategories(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
+                mangaId: manga.identifier,
                 categories: selectedCategories
             )
         }

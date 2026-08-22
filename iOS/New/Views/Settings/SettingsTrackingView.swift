@@ -264,13 +264,11 @@ extension SettingsTrackingView {
             if enabled {
                 // enable tracking for all items in library
                 let libraryManga = await CoreDataManager.shared.container.performBackgroundTask { context in
-                    let manga = CoreDataManager.shared.getLibraryManga(sourceId: sourceKey, context: context)
+                    let manga = CoreDataManager.shared.getLibraryManga(sourceKey: sourceKey, context: context)
                     return manga.compactMap { $0.manga?.toNewManga() }
                 }
                 for manga in libraryManga {
-                    guard
-                        tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key)
-                    else {
+                    guard tracker.canRegister(mangaId: manga.identifier) else {
                         continue
                     }
                     do {

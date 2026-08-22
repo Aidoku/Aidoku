@@ -59,7 +59,7 @@ extension MangaView {
             self.source = source
             self.manga = manga
 
-            let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
+            let key = "Manga.chapterDisplayMode.\(manga.identifier)"
             self.chapterTitleDisplayMode = .init(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
             setupNotifications()
@@ -291,7 +291,7 @@ extension MangaView.ViewModel {
         if getNextChapter() == .allRead {
             markedOpened = true
             Task {
-                await CoreDataManager.shared.setOpened(sourceId: manga.sourceKey, mangaId: manga.key)
+                await CoreDataManager.shared.setOpened(mangaId: manga.identifier)
                 NotificationCenter.default.post(name: .openedManga, object: manga.identifier)
             }
         }
@@ -302,14 +302,11 @@ extension MangaView.ViewModel {
         guard !fetchedDetails else { return }
         fetchedDetails = true
 
-        if let cachedManga = CoreDataManager.shared.getManga(sourceId: self.manga.sourceKey, mangaId: self.manga.key) {
+        if let cachedManga = CoreDataManager.shared.getManga(mangaId: self.manga.identifier) {
             self.manga = self.manga.copy(from: cachedManga.toNewManga())
         }
 
-        let filters = CoreDataManager.shared.getMangaChapterFilters(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key
-        )
+        let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.identifier)
         chapterSortOption = .init(flags: filters.flags)
         chapterSortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
         chapterFilters = ChapterFilterOption.parseOptions(flags: filters.flags)
@@ -323,16 +320,14 @@ extension MangaView.ViewModel {
 
     // fetches manga data, from coredata if in library or from source if not
     func fetchData() async {
-        let sourceKey = manga.sourceKey
-        let mangaId = manga.key
+        let mangaId = manga.identifier
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-            CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaId, context: context)
+            CoreDataManager.shared.hasLibraryManga(mangaId: mangaId, context: context)
         }
         if inLibrary {
             // load data from db
             let chapters = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 CoreDataManager.shared.getChapters(
-                    sourceId: sourceKey,
                     mangaId: mangaId,
                     context: context
                 ).map {
@@ -425,8 +420,7 @@ extension MangaView.ViewModel {
         if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") {
             let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable [manga] context in
                 CoreDataManager.shared.getTracks(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     context: context
                 ).map { $0.toItem() }
             }
@@ -448,11 +442,10 @@ extension MangaView.ViewModel {
             return
         }
 
-        let sourceKey = source.key
-        let mangaKey = manga.key
+        let mangaId = manga.identifier
 
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-            CoreDataManager.shared.hasLibraryManga(sourceId: sourceKey, mangaId: mangaKey, context: context)
+            CoreDataManager.shared.hasLibraryManga(mangaId: mangaId, context: context)
         }
 
         do {
@@ -473,8 +466,7 @@ extension MangaView.ViewModel {
                     ] context in
                         guard
                             let libraryObject = CoreDataManager.shared.getLibraryManga(
-                                sourceId: sourceKey,
-                                mangaId: mangaKey,
+                                mangaId: mangaId,
                                 context: context
                             ),
                             let mangaObject = libraryObject.manga
@@ -488,8 +480,7 @@ extension MangaView.ViewModel {
                         if let chapters = newManga.chapters {
                             let newChapters = CoreDataManager.shared.setChapters(
                                 chapters,
-                                sourceId: sourceKey,
-                                mangaId: mangaKey,
+                                mangaId: mangaId,
                                 context: context
                             )
                             if !newChapters.isEmpty {
@@ -500,8 +491,7 @@ extension MangaView.ViewModel {
                                     && !chapterScanlatorFilter.isEmpty ? chapterScanlatorFilter.contains(chapter.scanlator ?? "") : true
                                 {
                                     CoreDataManager.shared.createMangaUpdate(
-                                        sourceId: sourceKey,
-                                        mangaId: mangaKey,
+                                        mangaId: mangaId,
                                         chapterObject: chapter,
                                         context: context
                                     )
@@ -567,11 +557,9 @@ extension MangaView.ViewModel {
     }
 
     private func loadBookmarked() async {
-        let sourceKey = manga.sourceKey
-        let mangaId = manga.key
+        let mangaId = manga.identifier
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.hasLibraryManga(
-                sourceId: sourceKey,
                 mangaId: mangaId,
                 context: context
             )
@@ -580,10 +568,7 @@ extension MangaView.ViewModel {
     }
 
     private func loadHistory() async {
-        readingHistory = await CoreDataManager.shared.getReadingHistory(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key
-        )
+        readingHistory = await CoreDataManager.shared.getReadingHistory(mangaId: manga.identifier)
     }
 
     private func checkTrackerSync(item: TrackItem) async {
@@ -622,8 +607,7 @@ extension MangaView.ViewModel {
                 guard let self else { return }
                 Task {
                     await HistoryManager.shared.addHistory(
-                        sourceId: self.manga.sourceKey,
-                        mangaId: self.manga.key,
+                        mangaId: self.manga.identifier,
                         chapters: chaptersToMark,
                         skipTracker: tracker
                     )
@@ -653,8 +637,7 @@ extension MangaView.ViewModel {
         let chapters = chapters.filter { !$0.locked || downloadStatus[$0.key] == .finished }
 
         await HistoryManager.shared.addHistory(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key,
+            mangaId: manga.identifier,
             chapters: chapters
         )
         let date = Int(Date().timeIntervalSince1970)
@@ -667,9 +650,9 @@ extension MangaView.ViewModel {
     // remove coredata history for given chapters
     func markUnread(chapters: [AidokuRunner.Chapter]) async {
         await HistoryManager.shared.removeHistory(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key,
-            chapterIds: chapters.map { $0.key }
+            chapterIds: chapters.map {
+                .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0.key)
+            }
         )
         for chapter in chapters {
             readingHistory[chapter.key] = nil

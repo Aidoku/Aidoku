@@ -8,10 +8,7 @@
 import Foundation
 
 struct MangaInfo: Hashable, Sendable {
-    var identifier: MangaIdentifier { .init(sourceKey: sourceId, mangaKey: mangaId) }
-
-    let mangaId: String
-    let sourceId: String
+    let id: MangaIdentifier
 
     var coverUrl: URL?
     var title: String?
@@ -24,8 +21,8 @@ struct MangaInfo: Hashable, Sendable {
 
     func toManga() -> Manga {
         Manga(
-            sourceId: sourceId,
-            id: mangaId,
+            sourceId: id.sourceKey,
+            id: id.mangaKey,
             title: title,
             author: author,
             coverUrl: coverUrl,

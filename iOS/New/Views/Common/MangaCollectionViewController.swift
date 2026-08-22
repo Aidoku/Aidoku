@@ -283,10 +283,7 @@ extension MangaCollectionViewController {
                     image: UIImage(systemName: "trash"),
                     attributes: .destructive
                 ) { _ in
-                    let isTracking = TrackerManager.shared.isTracking(
-                        sourceId: entry.sourceKey,
-                        mangaId: entry.key
-                    )
+                    let isTracking = TrackerManager.shared.isTracking(mangaId: entry.identifier)
                     func commit() {
                         // remove bookmark icon
                         self.bookmarkedItems.remove(entry.key)
@@ -295,10 +292,7 @@ extension MangaCollectionViewController {
                         self.dataSource.apply(snapshot)
                         // remove from library
                         Task {
-                            await MangaManager.shared.removeFromLibrary(
-                                sourceId: entry.sourceKey,
-                                mangaId: entry.key
-                            )
+                            await MangaManager.shared.removeFromLibrary(mangaId: entry.identifier)
                         }
                     }
                     if isTracking {

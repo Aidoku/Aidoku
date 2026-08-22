@@ -48,10 +48,7 @@ extension DownloadedMangaView.ViewModel {
     }
 
     func loadHistory() async {
-        readingHistory = await CoreDataManager.shared.getReadingHistory(
-            sourceId: manga.sourceId,
-            mangaId: manga.mangaId
-        )
+        readingHistory = await CoreDataManager.shared.getReadingHistory(mangaId: manga.mangaIdentifier)
     }
 
     func toggleSortOrder() {
@@ -207,8 +204,7 @@ extension DownloadedMangaView.ViewModel {
         await withCheckedContinuation { continuation in
             CoreDataManager.shared.container.performBackgroundTask { [manga] context in
                 let hasLibraryManga = CoreDataManager.shared.hasLibraryManga(
-                    sourceId: manga.sourceId,
-                    mangaId: manga.mangaId,
+                    mangaId: manga.mangaIdentifier,
                     context: context
                 )
                 continuation.resume(returning: hasLibraryManga)

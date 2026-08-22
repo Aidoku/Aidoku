@@ -13,10 +13,8 @@ struct TrackItem: Sendable {
     let id: String
     /// The tracker identifier for the item.
     let trackerId: String
-    /// The source identifier for the item.
-    let sourceId: String
-    /// The identifier for the item.
-    let mangaId: String
+    /// The manga identifier for the item.
+    let mangaId: MangaIdentifier
     /// The tracker's title for the item.
     var title: String?
     /// The paired tracking state of the item.

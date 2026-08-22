@@ -30,7 +30,7 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
 
         let state = try? await api.getState(sourceKey: sourceKey, seriesId: seriesId)
         if state?.lastReadVolume == nil || highestChapterRead > state?.lastReadChapter ?? 0 {
-            let useChapters = await api.shouldUseChapters(sourceKey: sourceKey, mangaKey: seriesId)
+            let useChapters = await api.shouldUseChapters(mangaId: .init(sourceKey: sourceKey, mangaKey: seriesId))
             let update: TrackUpdate = if useChapters {
                 .init(lastReadChapter: highestChapterRead)
             } else {
@@ -77,8 +77,9 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
         nil // url is the same as the series url, so it's not necessary to provide
     }
 
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
+    func canRegister(mangaId: MangaIdentifier) -> Bool {
+        mangaId.sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix)
+            && !UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).disableTracking")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {

@@ -12,8 +12,7 @@ extension TrackObject {
        TrackItem(
             id: id ?? "",
             trackerId: trackerId ?? "",
-            sourceId: sourceId ?? "",
-            mangaId: mangaId ?? "",
+            mangaId: .init(sourceKey: sourceId ?? "", mangaKey: mangaId ?? ""),
             title: title,
             chapterOffset: Int(chapterOffset)
         )

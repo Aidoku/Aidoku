@@ -67,7 +67,7 @@ struct TrackerListView: View {
         .task {
             var trackers: [Tracker] = []
             for tracker in TrackerManager.trackers {
-                let canRegister = tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key)
+                let canRegister = tracker.canRegister(mangaId: manga.identifier)
                 if canRegister {
                     let info = try? await tracker.getTrackerInfo()
                     guard let info else { continue }
@@ -83,6 +83,6 @@ struct TrackerListView: View {
     }
 
     func loadTrackItems() {
-        trackItems = CoreDataManager.shared.getTracks(sourceId: manga.sourceKey, mangaId: manga.key).map { $0.toItem() }
+        trackItems = CoreDataManager.shared.getTracks(mangaId: manga.identifier).map { $0.toItem() }
     }
 }

@@ -67,10 +67,9 @@ class AddToCategoryViewController: BaseTableViewController {
         close()
         Task {
             await CoreDataManager.shared.container.performBackgroundTask { [selectedCategories] context in
-                for manga in self.manga {
+                for info in self.manga {
                     CoreDataManager.shared.addCategoriesToManga(
-                        sourceId: manga.sourceId,
-                        mangaId: manga.mangaId,
+                        mangaId: info.id,
                         categories: selectedCategories,
                         context: context
                     )

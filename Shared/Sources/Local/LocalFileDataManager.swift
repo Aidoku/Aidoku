@@ -392,8 +392,7 @@ extension LocalFileDataManager {
             detailedChapter.title = title ?? detailedChapter.title
             chapterObject.load(
                 from: detailedChapter,
-                sourceId: LocalSourceRunner.sourceKey,
-                mangaId: mangaId
+                mangaId: .init(sourceKey: LocalSourceRunner.sourceKey, mangaKey: mangaId)
             )
         } else {
             chapterObject.id = id

@@ -8,7 +8,6 @@
 import CoreData
 
 extension CoreDataManager {
-
     /// Remove all history objects.
     func clearHistory(context: NSManagedObjectContext? = nil) {
         clear(request: HistoryObject.fetchRequest(), context: context)
@@ -53,27 +52,25 @@ extension CoreDataManager {
 
     /// Get history objects for a source.
     func getHistory(
-        sourceId: String,
+        sourceKey: String,
         context: NSManagedObjectContext? = nil
     ) -> [HistoryObject] {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
-        request.predicate = NSPredicate(format: "sourceId == %@", sourceId)
+        request.predicate = NSPredicate(format: "sourceId == %@", sourceKey)
         return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular history object.
     func getHistory(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> HistoryObject? {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
-            chapterId, mangaId, sourceId
+            chapterId.chapterKey, chapterId.mangaKey, chapterId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
@@ -90,16 +87,14 @@ extension CoreDataManager {
 
     /// Check if history exists for a chapter.
     func hasHistory(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> Bool {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@",
-            chapterId, mangaId, sourceId
+            chapterId.chapterKey, chapterId.mangaKey, chapterId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
@@ -107,24 +102,23 @@ extension CoreDataManager {
 
     /// Check if history exists for a manga.
     func hasHistory(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> Bool {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Removes history for manga.
-    func removeHistory(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) {
+    func removeHistory(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) {
         let context = context ?? self.context
-        let history = getHistoryForManga(sourceId: sourceId, mangaId: mangaId, context: context)
+        let history = getHistoryForManga(mangaId: mangaId, context: context)
         for item in history {
             context.delete(item)
         }
@@ -136,9 +130,11 @@ extension CoreDataManager {
             do {
                 for chapter in chapters {
                     if let object = self.getHistory(
-                        sourceId: chapter.sourceId,
-                        mangaId: chapter.mangaId,
-                        chapterId: chapter.id,
+                        chapterId: .init(
+                            sourceKey: chapter.sourceId,
+                            mangaKey: chapter.mangaId,
+                            chapterKey: chapter.id
+                        ),
                         context: context
                     ) {
                         context.delete(object)
@@ -151,13 +147,11 @@ extension CoreDataManager {
         }
     }
 
-    func removeHistory(sourceId: String, mangaId: String, chapterIds: [String]) async {
+    func removeHistory(chapterIds: [ChapterIdentifier]) async {
         await container.performBackgroundTask { context in
             do {
                 for chapterId in chapterIds {
                     if let object = self.getHistory(
-                        sourceId: sourceId,
-                        mangaId: mangaId,
                         chapterId: chapterId,
                         context: context
                     ) {
@@ -172,29 +166,20 @@ extension CoreDataManager {
     }
 
     func getOrCreateHistory(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> HistoryObject {
         if let historyObject = getHistory(
-            sourceId: sourceId,
-            mangaId: mangaId,
             chapterId: chapterId,
             context: context
         ) {
             return historyObject
         }
         let historyObject = HistoryObject(context: context ?? self.context)
-        historyObject.sourceId = sourceId
-        historyObject.mangaId = mangaId
-        historyObject.chapterId = chapterId
-        if let chapterObject = self.getChapter(
-            sourceId: sourceId,
-            mangaId: mangaId,
-            chapterId: chapterId,
-            context: context
-        ) {
+        historyObject.sourceId = chapterId.sourceKey
+        historyObject.mangaId = chapterId.mangaKey
+        historyObject.chapterId = chapterId.chapterKey
+        if let chapterObject = self.getChapter(chapterId: chapterId, context: context) {
             historyObject.chapter = chapterObject
         }
         return historyObject
@@ -202,28 +187,27 @@ extension CoreDataManager {
 
     /// Get history objects for a manga.
     func getHistoryForManga(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> [HistoryObject] {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         return (try? context.fetch(request)) ?? []
     }
 
     // format: [chapterId: (page (-1 if completed), read date)]
-    func getReadingHistory(sourceId: String, mangaId: String) async -> [String: (page: Int, date: Int)] {
+    func getReadingHistory(mangaId: MangaIdentifier) async -> [String: (page: Int, date: Int)] {
         await container.performBackgroundTask { context in
-            let objects = self.getHistoryForManga(sourceId: sourceId, mangaId: mangaId, context: context)
+            let objects = self.getHistoryForManga(mangaId: mangaId, context: context)
 
             var needsSave = false
             var historyDict: [String: (page: Int, date: Int)] = [:]
 
-            let inLibrary = self.hasLibraryManga(sourceId: sourceId, mangaId: mangaId, context: context)
+            let inLibrary = self.hasLibraryManga(mangaId: mangaId, context: context)
 
             for history in objects {
                 // remove duplicate read history objects for the same chapter
@@ -235,9 +219,11 @@ extension CoreDataManager {
                 // link history to chapter if link is missing
                 if inLibrary && history.chapter == nil {
                     if let chapter = self.getChapter(
-                        sourceId: sourceId,
-                        mangaId: mangaId,
-                        chapterId: history.chapterId,
+                        chapterId: .init(
+                            sourceKey: mangaId.sourceKey,
+                            mangaKey: mangaId.mangaKey,
+                            chapterKey: history.chapterId
+                        ),
                         context: context
                     ) {
                         history.chapter = chapter
@@ -260,21 +246,17 @@ extension CoreDataManager {
 
     /// Get current completion status and page progress for chapter
     func getProgress(
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> (completed: Bool, progress: Int?) {
-        let historyObject = getHistory(sourceId: sourceId, mangaId: mangaId, chapterId: chapterId, context: context)
+        let historyObject = getHistory(chapterId: chapterId, context: context)
         return (historyObject?.completed ?? false, (historyObject?.progress).flatMap(Int.init))
     }
 
     /// Set page progress for a chapter and creates a history object if it doesn't already exist.
     func setProgress(
         _ progress: Int,
-        sourceId: String,
-        mangaId: String,
-        chapterId: String,
+        chapterId: ChapterIdentifier,
         totalPages: Int? = nil,
         scrollPosition: Double? = nil,
         dateRead: Date? = nil,
@@ -282,8 +264,6 @@ extension CoreDataManager {
         context: NSManagedObjectContext? = nil
     ) {
         let historyObject = self.getOrCreateHistory(
-            sourceId: sourceId,
-            mangaId: mangaId,
             chapterId: chapterId,
             context: context
         )
@@ -301,37 +281,15 @@ extension CoreDataManager {
     }
 
     /// Marks chapters as completed.
-    func setCompleted(
-        chapters: [Chapter],
-        date: Date = Date(),
-        context: NSManagedObjectContext? = nil
-    ) {
-        for chapter in chapters {
-            let historyObject = self.getOrCreateHistory(
-                sourceId: chapter.sourceId,
-                mangaId: chapter.mangaId,
-                chapterId: chapter.id,
-                context: context
-            )
-            guard !historyObject.completed else { continue }
-            historyObject.completed = true
-            historyObject.dateRead = date
-        }
-    }
-
     @discardableResult
     func setCompleted(
-        sourceId: String,
-        mangaId: String,
-        chapterIds: [String],
+        chapterIds: [ChapterIdentifier],
         date: Date = Date(),
         context: NSManagedObjectContext? = nil
     ) -> Bool {
         var success = false
         for chapterId in chapterIds {
             let historyObject = self.getOrCreateHistory(
-                sourceId: sourceId,
-                mangaId: mangaId,
                 chapterId: chapterId,
                 context: context
             )
@@ -344,16 +302,12 @@ extension CoreDataManager {
     }
 
     /// Check if history exists for a manga.
-    func getEarliestReadDate(
-        sourceId: String,
-        mangaId: String,
-        context: NSManagedObjectContext? = nil
-    ) -> Date? {
+    func getEarliestReadDate(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> Date? {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND completed == true",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         request.fetchLimit = 1
         request.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: true)]
@@ -363,26 +317,23 @@ extension CoreDataManager {
 
     /// Get the highest read number (chapter or volume) based on forced mode for a manga.
     func getHighestReadNumber(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> Float? {
         let context = context ?? self.context
         let request = HistoryObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND completed == true",
-            mangaId, sourceId
+            mangaId.mangaKey, mangaId.sourceKey
         )
         request.fetchLimit = 1
 
-        let uniqueKey = "\(sourceId).\(mangaId)"
-        let key = "Manga.chapterDisplayMode.\(uniqueKey)"
-        let displayMode: ChapterTitleDisplayMode = if sourceId.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
-            UserDefaults.standard.bool(forKey: "\(sourceId).useChapters") ? .chapter : .volume
+        let key = "Manga.chapterDisplayMode.\(mangaId.description)"
+        let displayMode: ChapterTitleDisplayMode = if mangaId.sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
+            UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).useChapters") ? .chapter : .volume
         } else {
             .init(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
         }
-
         switch displayMode {
             case .default:
                 // Default mode: return highest chapter number

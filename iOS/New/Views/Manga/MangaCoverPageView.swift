@@ -109,16 +109,14 @@ struct MangaCoverPageView: View {
             .task {
                 (hasEditedCover, inLibrary) = await CoreDataManager.shared.container.performBackgroundTask { [manga, inLibrary] context in
                     let hasEditedCover = CoreDataManager.shared.hasEditedKey(
-                        sourceId: manga.sourceKey,
-                        mangaId: manga.key,
+                        mangaId: manga.identifier,
                         key: .cover,
                         context: context
                     )
                     var inLibrary = inLibrary
                     if inLibrary == nil {
                         inLibrary = CoreDataManager.shared.hasLibraryManga(
-                            sourceId: manga.sourceKey,
-                            mangaId: manga.key,
+                            mangaId: manga.identifier,
                             context: context
                         )
                     }
@@ -154,8 +152,7 @@ struct MangaCoverPageView: View {
                             Button {
                                 Task {
                                     await CoreDataManager.shared.setCover(
-                                        sourceId: manga.sourceKey,
-                                        mangaId: manga.key,
+                                        mangaId: manga.identifier,
                                         coverUrl: coverImage
                                     )
                                     setCover(url: coverImage)

@@ -78,24 +78,20 @@ actor MangaManager {
 
     /// Fetches the stored chapters for a manga in the user's sort order, along with the next chapter to read.
     nonisolated func getNextChapter(
-        sourceKey: String,
-        mangaKey: String,
+        mangaId: MangaIdentifier,
         fallbackChapters: [AidokuRunner.Chapter]? = nil,
         fetchIfNeeded: Bool = false
     ) async -> (chapters: [AidokuRunner.Chapter], nextChapter: AidokuRunner.Chapter?) {
-        let readingHistory = await CoreDataManager.shared.getReadingHistory(
-            sourceId: sourceKey,
-            mangaId: mangaKey
-        )
-        var chapters = await CoreDataManager.shared.getChapters(sourceId: sourceKey, mangaId: mangaKey)
+        let readingHistory = await CoreDataManager.shared.getReadingHistory(mangaId: mangaId)
+        var chapters = await CoreDataManager.shared.getChapters(mangaId: mangaId)
             .map { $0.toNew() }
 
         // chapters are only stored for manga in the library, so fall back to the ones we have loaded
         if chapters.isEmpty {
             if let fallbackChapters, !fallbackChapters.isEmpty {
                 chapters = fallbackChapters
-            } else if fetchIfNeeded, let source = SourceManager.shared.source(for: sourceKey) {
-                let manga = AidokuRunner.Manga(sourceKey: sourceKey, key: mangaKey, title: "")
+            } else if fetchIfNeeded, let source = SourceManager.shared.source(for: mangaId.sourceKey) {
+                let manga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
                 let updatedManga = try? await source.getMangaUpdate(
                     manga: manga,
                     needsDetails: false,
@@ -107,8 +103,7 @@ actor MangaManager {
 
         let filters = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getMangaChapterFilters(
-                sourceId: sourceKey,
-                mangaId: mangaKey,
+                mangaId: mangaId,
                 context: context
             )
         }
@@ -132,7 +127,7 @@ actor MangaManager {
                 }
         }
 
-        let manga = AidokuRunner.Manga(sourceKey: sourceKey, key: mangaKey, title: "")
+        let manga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
         let nextChapter = getNextChapter(
             manga: manga,
             chapters: sortedChapters,
@@ -172,8 +167,7 @@ extension MangaManager {
                 let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
                 if hasCategory {
                     CoreDataManager.shared.addCategoriesToManga(
-                        sourceId: manga.sourceKey,
-                        mangaId: manga.key,
+                        mangaId: manga.identifier,
                         categories: [defaultCategory],
                         context: context
                     )
@@ -192,25 +186,23 @@ extension MangaManager {
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 
-    func removeFromLibrary(sourceId: String, mangaId: String) async {
+    func removeFromLibrary(mangaId: MangaIdentifier) async {
         // Get manga object for notification before deletion
         let mangaForNotification = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getManga(sourceId: sourceId, mangaId: mangaId, context: context)?.toNewManga()
+            CoreDataManager.shared.getManga(mangaId: mangaId, context: context)?.toNewManga()
         }
 
         await CoreDataManager.shared.container.performBackgroundTask { context in
             // remove from library
             CoreDataManager.shared.removeManga(
-                sourceId: sourceId,
                 mangaId: mangaId,
                 context: context
             )
             // remove chapters
-            CoreDataManager.shared.removeChapters(sourceId: sourceId, mangaId: mangaId, context: context)
+            CoreDataManager.shared.removeChapters(mangaId: mangaId, context: context)
             // remove associated trackers
             if
                 case let items = CoreDataManager.shared.getTracks(
-                    sourceId: sourceId,
                     mangaId: mangaId,
                     context: context
                 ).map({ $0.toItem() }),
@@ -249,8 +241,7 @@ extension MangaManager {
             )
 
             if let libraryObject = CoreDataManager.shared.getLibraryManga(
-                sourceId: manga.sourceId,
-                mangaId: manga.id,
+                mangaId: manga.identifier,
                 context: context
             ) {
                 if
@@ -270,20 +261,22 @@ extension MangaManager {
 
             for item in trackItems {
                 CoreDataManager.shared.createTrack(
-                    id: item.id, trackerId: item.trackerId, sourceId: item.sourceId,
-                    mangaId: item.mangaId, title: item.title, context: context)
+                    id: item.id,
+                    trackerId: item.trackerId,
+                    mangaId: item.mangaId,
+                    title: item.title,
+                    context: context
+                )
             }
 
             for category in categories {
-                let hasCategory = CoreDataManager.shared.hasCategory(
-                    title: category, context: context)
+                let hasCategory = CoreDataManager.shared.hasCategory(title: category, context: context)
                 if !hasCategory {
                     CoreDataManager.shared.createCategory(title: category, context: context)
                 }
             }
             CoreDataManager.shared.addCategoriesToManga(
-                sourceId: manga.sourceId,
-                mangaId: manga.id,
+                mangaId: manga.identifier,
                 categories: categories,
                 context: context
             )
@@ -312,15 +305,14 @@ extension MangaManager {
 
 // MARK: - Category Managing
 extension MangaManager {
-    func setCategories(sourceId: String, mangaId: String, categories: [String]) async {
+    func setCategories(mangaId: MangaIdentifier, categories: [String]) async {
         await CoreDataManager.shared.setMangaCategories(
-            sourceId: sourceId,
             mangaId: mangaId,
             categories: categories
         )
         NotificationCenter.default.post(
             name: Notification.Name("updateMangaCategories"),
-            object: MangaInfo(mangaId: mangaId, sourceId: sourceId)
+            object: MangaInfo(id: mangaId)
         )
     }
 }
@@ -496,8 +488,7 @@ extension MangaManager {
         }
         // has unread chapters
         if options.contains("hasUnread") && CoreDataManager.shared.unreadCount(
-            sourceId: manga.sourceId,
-            mangaId: manga.id,
+            mangaId: manga.identifier,
             lang: manga.langFilter,
             scanlators: manga.scanlatorFilter,
             context: context
@@ -506,8 +497,7 @@ extension MangaManager {
         }
         // has no read chapters
         if options.contains("notStarted") && CoreDataManager.shared.readCount(
-            sourceId: manga.sourceId,
-            mangaId: manga.id,
+            mangaId: manga.identifier,
             lang: manga.langFilter,
             scanlators: manga.scanlatorFilter,
             context: context
@@ -522,8 +512,7 @@ extension MangaManager {
         if !excludedCategories.isEmpty {
             // check if excluded via category
             let categories = CoreDataManager.shared.getCategories(
-                sourceId: manga.sourceId,
-                mangaId: manga.id,
+                mangaId: manga.identifier,
                 context: context
             ).compactMap { $0.title }
 
@@ -624,8 +613,7 @@ extension MangaManager {
                 let summary = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
                     guard
                         let libraryObject = CoreDataManager.shared.getLibraryManga(
-                            sourceId: manga.sourceId,
-                            mangaId: manga.id,
+                            mangaId: manga.identifier,
                             context: context
                         ),
                         let mangaObject = libraryObject.manga
@@ -643,8 +631,7 @@ extension MangaManager {
 
                     let newChapters = CoreDataManager.shared.setChapters(
                         chapters,
-                        sourceId: manga.sourceId,
-                        mangaId: manga.id,
+                        mangaId: manga.identifier,
                         context: context
                     )
                     var notifiableCount = 0
@@ -657,8 +644,7 @@ extension MangaManager {
                             && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                         {
                             CoreDataManager.shared.createMangaUpdate(
-                                sourceId: manga.sourceId,
-                                mangaId: manga.id,
+                                mangaId: manga.identifier,
                                 chapterObject: chapter,
                                 context: context
                             )
@@ -762,8 +748,7 @@ extension MangaManager {
         // set cover in coredata
         let coverUrl = "aidoku-image:///Covers/\(targetUrl.lastPathComponent)"
         await CoreDataManager.shared.setCover(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key,
+            mangaId: manga.identifier,
             coverUrl: coverUrl
         )
 
@@ -784,8 +769,7 @@ extension MangaManager {
 
         // set new cover and get old cover url
         let originalCover = await CoreDataManager.shared.setCover(
-            sourceId: manga.sourceKey,
-            mangaId: manga.key,
+            mangaId: manga.identifier,
             coverUrl: cover,
             original: true
         )
@@ -873,8 +857,7 @@ extension MangaManager {
         if copy {
             let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
                 let storedNewManga = CoreDataManager.shared.getManga(
-                    sourceId: newManga.sourceKey,
-                    mangaId: newManga.key,
+                    mangaId: newManga.identifier,
                     context: context
                 )
                 guard let storedNewManga else {
@@ -885,8 +868,7 @@ extension MangaManager {
                 // update chapters
                 CoreDataManager.shared.setChapters(
                     newChapters,
-                    sourceId: newManga.sourceKey,
-                    mangaId: newManga.key,
+                    mangaId: newManga.identifier,
                     context: context
                 )
                 return true
@@ -909,23 +891,20 @@ extension MangaManager {
 
                     // new is already in library
                     if newManga.key != oldManga.key, let storedNewManga = CoreDataManager.shared.getManga(
-                        sourceId: newManga.sourceKey,
-                        mangaId: newManga.key,
+                        mangaId: newManga.identifier,
                         context: context
                     ) {
                         // update the object in the library with the new details we fetched already
                         mangaObjectToUpdate = storedNewManga
                         // remove old entry
                         CoreDataManager.shared.removeManga(
-                            sourceId: oldManga.sourceKey,
-                            mangaId: oldManga.key,
+                            mangaId: oldManga.identifier,
                             context: context
                         )
                     } else {
                         // get existing old object to replace data with new details
                         mangaObjectToUpdate = CoreDataManager.shared.getManga(
-                            sourceId: oldManga.sourceKey,
-                            mangaId: oldManga.key,
+                            mangaId: oldManga.identifier,
                             context: context
                         )
                     }
@@ -935,8 +914,7 @@ extension MangaManager {
 
                 // migrate history
                 let storedOldHistory = CoreDataManager.shared.getHistoryForManga(
-                    sourceId: oldManga.sourceKey,
-                    mangaId: oldManga.key,
+                    mangaId: oldManga.identifier,
                     context: context
                 )
 
@@ -956,22 +934,19 @@ extension MangaManager {
                 // remove old chapters and history
                 if !copy {
                     CoreDataManager.shared.removeChapters(
-                        sourceId: oldManga.sourceKey,
-                        mangaId: oldManga.key,
+                        mangaId: oldManga.identifier,
                         context: context
                     )
 
                     CoreDataManager.shared.removeHistory(
-                        sourceId: oldManga.sourceKey,
-                        mangaId: oldManga.key,
+                        mangaId: oldManga.identifier,
                         context: context
                     )
 
                     // store new chapters
                     CoreDataManager.shared.setChapters(
                         newChapters,
-                        sourceId: newManga.sourceKey,
-                        mangaId: newManga.key,
+                        mangaId: newManga.identifier,
                         context: context
                     )
                 }
@@ -985,9 +960,9 @@ extension MangaManager {
                     }
                     if !chaptersToMark.isEmpty {
                         CoreDataManager.shared.setCompleted(
-                            sourceId: newManga.sourceKey,
-                            mangaId: newManga.key,
-                            chapterIds: chaptersToMark.map { $0.key },
+                            chapterIds: chaptersToMark.map {
+                                .init(sourceKey: newManga.sourceKey, mangaKey: newManga.key, chapterKey: $0.key)
+                            },
                             context: context
                         )
                     }
@@ -995,8 +970,7 @@ extension MangaManager {
 
                 // migrate trackers
                 let trackItems = CoreDataManager.shared.getTracks(
-                    sourceId: oldManga.sourceKey,
-                    mangaId: oldManga.key,
+                    mangaId: oldManga.identifier,
                     context: context
                 )
 
@@ -1006,12 +980,11 @@ extension MangaManager {
                         let trackerId = item.trackerId,
                         !CoreDataManager.shared.hasTrack(
                             trackerId: trackerId,
-                            sourceId: newManga.sourceKey,
-                            mangaId: newManga.key,
+                            mangaId: newManga.identifier,
                             context: context
                         ),
                         let tracker = TrackerManager.getTracker(id: trackerId),
-                        tracker.canRegister(sourceKey: newManga.sourceKey, mangaKey: newManga.key)
+                        tracker.canRegister(mangaId: newManga.identifier)
                     else {
                         if !copy && newManga.identifier != oldManga.identifier {
                             context.delete(item)
@@ -1023,8 +996,7 @@ extension MangaManager {
                         CoreDataManager.shared.createTrack(
                             id: trackId,
                             trackerId: trackerId,
-                            sourceId: newManga.sourceKey,
-                            mangaId: newManga.key,
+                            mangaId: newManga.identifier,
                             title: item.title,
                             context: context
                         )

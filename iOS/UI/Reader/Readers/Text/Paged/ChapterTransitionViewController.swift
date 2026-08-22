@@ -23,8 +23,7 @@ extension ReaderPagedTextViewController {
             direction: Direction,
             chapter: AidokuRunner.Chapter?,
             currentChapter: AidokuRunner.Chapter?,
-            sourceId: String,
-            mangaId: String,
+            mangaId: MangaIdentifier,
             parentReader: ReaderPagedTextViewController?
         ) {
             self.direction = direction
@@ -36,11 +35,11 @@ extension ReaderPagedTextViewController {
             let infoView = ReaderInfoPageView(type: infoPageType)
 
             // Set chapter info using the old Chapter model (matching the image reader)
-            infoView.currentChapter = currentChapter?.toOld(sourceId: sourceId, mangaId: mangaId)
+            infoView.currentChapter = currentChapter?.toOld(mangaId: mangaId)
             if direction == .previous {
-                infoView.previousChapter = chapter?.toOld(sourceId: sourceId, mangaId: mangaId)
+                infoView.previousChapter = chapter?.toOld(mangaId: mangaId)
             } else {
-                infoView.nextChapter = chapter?.toOld(sourceId: sourceId, mangaId: mangaId)
+                infoView.nextChapter = chapter?.toOld(mangaId: mangaId)
             }
 
             self.infoView = infoView

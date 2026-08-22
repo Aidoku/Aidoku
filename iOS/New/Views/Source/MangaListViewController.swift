@@ -57,8 +57,7 @@ extension MangaListViewController {
             let newBookmarks = await CoreDataManager.shared.container.performBackgroundTask { context in
                 var items: Set<String> = []
                 for manga in result.entries where CoreDataManager.shared.hasLibraryManga(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     context: context
                 ) {
                     items.insert(manga.key)

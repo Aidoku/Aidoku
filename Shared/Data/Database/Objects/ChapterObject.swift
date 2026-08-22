@@ -17,12 +17,11 @@ public class ChapterObject: NSManagedObject {
 
     func load(
         from chapter: AidokuRunner.Chapter,
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         sourceOrder: Int? = nil
     ) {
-        self.sourceId = sourceId
-        self.mangaId = mangaId
+        self.sourceId = mangaId.sourceKey
+        self.mangaId = mangaId.mangaKey
         id = chapter.key
         title = chapter.title
         scanlator = chapter.scanlators.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") }

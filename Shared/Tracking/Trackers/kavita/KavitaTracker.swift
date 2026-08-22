@@ -71,8 +71,9 @@ final class KavitaTracker: EnhancedTracker, PageTracker {
         nil // url is the same as the series url, so it's not necessary to provide
     }
 
-    func canRegister(sourceKey: String, mangaKey: String) -> Bool {
-        sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) && !UserDefaults.standard.bool(forKey: "\(sourceKey).disableTracking")
+    func canRegister(mangaId: MangaIdentifier) -> Bool {
+        mangaId.sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix)
+            && !UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).disableTracking")
     }
 
     func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {

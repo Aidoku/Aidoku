@@ -46,7 +46,7 @@ struct HistoryView: View {
                     ForEach(sections, id: \.daysAgo) { section in
                         if !section.entries.isEmpty {
                             Section {
-                                ForEach(section.entries, id: \.chapterCacheKey) { entry in
+                                ForEach(section.entries, id: \.chapterId) { entry in
                                     cellView(entry: entry)
                                 }
                             } header: {
@@ -181,11 +181,11 @@ struct HistoryView: View {
     }
 
     func cellView(entry: HistoryEntry) -> some View {
-        let manga = viewModel.mangaCache[entry.mangaCacheKey]
+        let manga = viewModel.mangaCache[entry.chapterId.mangaIdentifier]
         return HistoryEntryCell(
             entry: entry,
             manga: manga,
-            chapter: viewModel.chapterCache[entry.chapterCacheKey]
+            chapter: viewModel.chapterCache[entry.chapterId]
         ) {
             if let manga {
                 path.push(MangaViewController(manga: manga, parent: path.rootViewController))
@@ -210,8 +210,8 @@ struct HistoryView: View {
             }
             .tint(.red) // adding destructive role breaks animation, so do this instead
         }
-        .id(entry.chapterCacheKey)
-        .tag(entry.chapterCacheKey)
+        .id(entry.chapterId)
+        .tag(entry.chapterId)
         .offsetListSeparator()
     }
 
@@ -262,33 +262,30 @@ struct HistoryView: View {
         openingLastRead = true
         defer { openingLastRead = false }
 
-        let entry = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let mangaId = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getRecentHistory(limit: 1, offset: 0, context: context)
                 .first
-                .map { (sourceId: $0.sourceId, mangaId: $0.mangaId) }
+                .map { $0.identifier.mangaIdentifier }
         }
-        guard let entry else { return }
+        guard let mangaId else { return }
 
-        let mangaCacheKey = "\(entry.sourceId).\(entry.mangaId)"
-        var manga = viewModel.mangaCache[mangaCacheKey]
+        var manga = viewModel.mangaCache[mangaId]
         if manga == nil {
             manga = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getManga(
-                    sourceId: entry.sourceId,
-                    mangaId: entry.mangaId,
+                    mangaId: mangaId,
                     context: context
                 )?.toNewManga()
             }
         }
 
         let (chapters, nextChapter) = await MangaManager.shared.getNextChapter(
-            sourceKey: entry.sourceId,
-            mangaKey: entry.mangaId,
+            mangaId: mangaId,
             fallbackChapters: manga?.chapters,
             fetchIfNeeded: true
         )
 
-        var targetManga = manga ?? AidokuRunner.Manga(sourceKey: entry.sourceId, key: entry.mangaId, title: "")
+        var targetManga = manga ?? AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
         if !chapters.isEmpty {
             targetManga.chapters = chapters
         }
@@ -302,13 +299,15 @@ struct HistoryView: View {
 
         guard
             let chapter = nextChapter,
-            let source = SourceManager.shared.source(for: entry.sourceId)
+            let source = SourceManager.shared.source(for: mangaId.sourceKey)
         else {
             // nothing left to read (or the source is missing), so open the manga page instead.
             // without a source to load details from or anything stored to show, the page would be blank
             guard
-                SourceManager.shared.hasSourceInstalled(id: entry.sourceId) || !targetManga.title.isEmpty
-            else { return }
+                SourceManager.shared.hasSourceInstalled(id: mangaId.sourceKey) || !targetManga.title.isEmpty
+            else {
+                return
+            }
             path.push(MangaViewController(manga: targetManga, parent: rootViewController))
             return
         }

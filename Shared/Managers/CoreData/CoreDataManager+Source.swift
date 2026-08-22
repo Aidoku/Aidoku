@@ -9,7 +9,6 @@ import CoreData
 import AidokuRunner
 
 extension CoreDataManager {
-
     /// Remove all source objects.
     func clearSources(context: NSManagedObjectContext? = nil) {
         clear(request: SourceObject.fetchRequest(), context: context)
@@ -21,19 +20,19 @@ extension CoreDataManager {
     }
 
     /// Check if a source exists in the data store.
-    func hasSource(id: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func hasSource(key: String, context: NSManagedObjectContext? = nil) -> Bool {
         let context = context ?? self.context
         let request = SourceObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id)
+        request.predicate = NSPredicate(format: "id == %@", key)
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Get a particular source object.
-    func getSource(id: String, context: NSManagedObjectContext? = nil) -> SourceObject? {
+    func getSource(key: String, context: NSManagedObjectContext? = nil) -> SourceObject? {
         let context = context ?? self.context
         let request = SourceObject.fetchRequest()
-        request.predicate = NSPredicate(format: "id == %@", id)
+        request.predicate = NSPredicate(format: "id == %@", key)
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
     }
@@ -56,17 +55,17 @@ extension CoreDataManager {
     }
 
     /// Removes a source object.
-    func removeSource(id: String, context: NSManagedObjectContext? = nil) {
-        guard let object = getSource(id: id, context: context) else { return }
+    func removeSource(key: String, context: NSManagedObjectContext? = nil) {
+        guard let object = getSource(key: key, context: context) else { return }
         (context ?? self.context).delete(object)
     }
 
-    func setListing(sourceId: String, listing: Int) async {
+    func setListing(sourceKey: String, listing: Int) async {
         await container.performBackgroundTask { context in
             guard
                 listing >= 0,
                 listing < Int16.max,
-                let source = self.getSource(id: sourceId, context: context)
+                let source = self.getSource(key: sourceKey, context: context)
             else { return }
             source.listing = Int16(listing)
             do {
@@ -77,9 +76,9 @@ extension CoreDataManager {
         }
     }
 
-    func getListing(sourceId: String) async -> Int? {
+    func getListing(sourceKey: String) async -> Int? {
         await container.performBackgroundTask { context in
-            if let source = self.getSource(id: sourceId, context: context) {
+            if let source = self.getSource(key: sourceKey, context: context) {
                 return Int(source.listing)
             } else {
                 return nil

@@ -61,16 +61,12 @@ actor TrackerManager {
         let volumeNum = chapter.volumeNum.flatMap { Int(floor($0)) }
         guard chapterNum != nil || volumeNum != nil else { return }
 
-        let uniqueKey = "\(chapter.sourceId).\(chapter.mangaId)"
-        let key = "Manga.chapterDisplayMode.\(uniqueKey)"
+        let key = "Manga.chapterDisplayMode.\(chapter.mangaIdentifier)"
         let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
-        let sourceId = chapter.sourceId
-        let mangaId = chapter.mangaId
         let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.getTracks(
-                sourceId: sourceId,
-                mangaId: mangaId,
+                mangaId: chapter.mangaIdentifier,
                 context: context
             ).map { $0.toItem() }
         }
@@ -190,15 +186,14 @@ actor TrackerManager {
     }
 
     /// Set the page progress for trackers that support it.
-    func setProgress(sourceKey: String, mangaKey: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async {
-        await setProgress(sourceKey: sourceKey, mangaKey: mangaKey, chapters: [chapter], progress: progress)
+    func setProgress(mangaId: MangaIdentifier, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async {
+        await setProgress(mangaId: mangaId, chapters: [chapter], progress: progress)
     }
 
-    func setProgress(sourceKey: String, mangaKey: String, chapters: [AidokuRunner.Chapter], progress: ChapterReadProgress) async {
+    func setProgress(mangaId: MangaIdentifier, chapters: [AidokuRunner.Chapter], progress: ChapterReadProgress) async {
         let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getTracks(
-                sourceId: sourceKey,
-                mangaId: mangaKey,
+                mangaId: mangaId,
                 context: context
             ).map { $0.toItem() }
         }
@@ -225,16 +220,15 @@ actor TrackerManager {
 
     /// Register a new track item to a manga and save to the data store.
     func register(tracker: Tracker, manga: AidokuRunner.Manga, item: TrackSearchItem) async {
+        let mangaId = manga.identifier
         let (highestReadNumber, earliestReadDate) = await CoreDataManager.shared.container.performBackgroundTask { context in
             (
                 CoreDataManager.shared.getHighestReadNumber(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: mangaId,
                     context: context
                 ),
                 CoreDataManager.shared.getEarliestReadDate(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: mangaId,
                     context: context
                 )
             )
@@ -248,8 +242,7 @@ actor TrackerManager {
             let trackItem = TrackItem(
                 id: id ?? item.id,
                 trackerId: tracker.id,
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
+                mangaId: mangaId,
                 title: item.title ?? manga.title,
                 chapterOffset: 0
             )
@@ -272,7 +265,6 @@ actor TrackerManager {
             CoreDataManager.shared.createTrack(
                 id: item.id,
                 trackerId: item.trackerId,
-                sourceId: item.sourceId,
                 mangaId: item.mangaId,
                 title: item.title,
                 chapterOffset: item.chapterOffset,
@@ -300,7 +292,6 @@ actor TrackerManager {
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.setTrackChapterOffset(
                 trackerId: item.trackerId,
-                sourceId: item.sourceId,
                 mangaId: item.mangaId,
                 chapterOffset: chapterOffset,
                 context: context
@@ -317,7 +308,6 @@ actor TrackerManager {
     nonisolated func removeTrackItem(item: TrackItem, context: NSManagedObjectContext) {
         CoreDataManager.shared.removeTrack(
             trackerId: item.trackerId,
-            sourceId: item.sourceId,
             mangaId: item.mangaId,
             context: context
         )
@@ -331,14 +321,14 @@ actor TrackerManager {
 
     /// Checks if a manga is being tracked
     @MainActor
-    func isTracking(sourceId: String, mangaId: String) -> Bool {
-        CoreDataManager.shared.hasTrack(sourceId: sourceId, mangaId: mangaId)
+    func isTracking(mangaId: MangaIdentifier) -> Bool {
+        CoreDataManager.shared.hasTrack(mangaId: mangaId)
     }
 
     /// Checks if there is a tracker that can be added to the given manga.
-    func hasAvailableTrackers(sourceKey: String, mangaKey: String) async -> Bool {
+    func hasAvailableTrackers(mangaId: MangaIdentifier) async -> Bool {
         for tracker in Self.trackers {
-            let canRegister = tracker.canRegister(sourceKey: sourceKey, mangaKey: mangaKey)
+            let canRegister = tracker.canRegister(mangaId: mangaId)
             if canRegister {
                 return true
             }
@@ -368,8 +358,7 @@ actor TrackerManager {
             )
             if !chaptersToMark.isEmpty {
                 await HistoryManager.shared.addHistory(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     chapters: chaptersToMark,
                     skipTracker: tracker
                 )
@@ -395,8 +384,7 @@ actor TrackerManager {
 
         let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getTracks(
-                sourceId: manga.sourceKey,
-                mangaId: manga.key,
+                mangaId: manga.identifier,
                 context: context
             ).map { $0.toItem() }
         }
@@ -440,10 +428,13 @@ actor TrackerManager {
             var lastRead = Date.distantPast
 
             for (chapterKey, progress) in result {
+                let chapterId = ChapterIdentifier(
+                    sourceKey: manga.sourceKey,
+                    mangaKey: manga.key,
+                    chapterKey: chapterKey
+                )
                 let existingHistory = CoreDataManager.shared.getHistory(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
-                    chapterId: chapterKey,
+                    chapterId: chapterId,
                     context: context
                 )
                 if let existingDate = existingHistory?.dateRead, let newDate = progress.date, newDate <= existingDate {
@@ -457,9 +448,7 @@ actor TrackerManager {
                         let readDate = progress.date ?? Date.now
                         lastRead = readDate > lastRead ? readDate : lastRead
                         CoreDataManager.shared.setCompleted(
-                            sourceId: manga.sourceKey,
-                            mangaId: manga.key,
-                            chapterIds: [chapterKey],
+                            chapterIds: [chapterId],
                             date: progress.date ?? Date(),
                             context: context
                         )
@@ -470,9 +459,7 @@ actor TrackerManager {
                     lastRead = readDate > lastRead ? readDate : lastRead
                     CoreDataManager.shared.setProgress(
                         progress.page,
-                        sourceId: manga.sourceKey,
-                        mangaId: manga.key,
-                        chapterId: chapterKey,
+                        chapterId: chapterId,
                         dateRead: readDate,
                         completed: false,
                         context: context
@@ -483,8 +470,7 @@ actor TrackerManager {
             // mark manga as read only if history was updated
             if !completed.isEmpty || !progressed.isEmpty {
                 CoreDataManager.shared.setRead(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     date: lastRead,
                     context: context
                 )
@@ -530,12 +516,11 @@ actor TrackerManager {
     /// Add all applicable enhanced trackers to a given manga.
     func bindEnhancedTrackers(manga: AidokuRunner.Manga) async {
         for tracker in Self.trackers where tracker is EnhancedTracker {
-            if tracker.canRegister(sourceKey: manga.sourceKey, mangaKey: manga.key) {
+            if tracker.canRegister(mangaId: manga.identifier) {
                 let isTracking = await CoreDataManager.shared.container.performBackgroundTask { context in
                     CoreDataManager.shared.hasTrack(
                         trackerId: tracker.id,
-                        sourceId: manga.sourceKey,
-                        mangaId: manga.key,
+                        mangaId: manga.identifier,
                         context: context
                     )
                 }
@@ -569,14 +554,13 @@ extension TrackerManager {
 extension TrackerManager {
     private func getChapters(manga: AidokuRunner.Manga) async -> [AidokuRunner.Chapter] {
         let inLibrary = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.hasLibraryManga(sourceId: manga.sourceKey, mangaId: manga.key, context: context)
+            CoreDataManager.shared.hasLibraryManga(mangaId: manga.identifier, context: context)
         }
         if inLibrary {
             // load data from db
             return await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getChapters(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     context: context
                 ).map {
                     $0.toNewChapter()
@@ -619,15 +603,14 @@ extension TrackerManager {
         } else {
             await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getHighestReadNumber(
-                    sourceId: manga.sourceKey,
-                    mangaId: manga.key,
+                    mangaId: manga.identifier,
                     context: context
                 ) ?? 0
             }
         }
 
         // Check for display mode
-        let key = "Manga.chapterDisplayMode.\(manga.uniqueKey)"
+        let key = "Manga.chapterDisplayMode.\(manga.identifier)"
         let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
         var chaptersToMark: [AidokuRunner.Chapter] = []

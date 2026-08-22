@@ -344,7 +344,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             guard let self, let id = notification.object as? MangaIdentifier else { return }
             Task {
                 let libraryReloaded = if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
-                    await self.viewModel.mangaOpened(sourceId: id.sourceKey, mangaId: id.mangaKey)
+                    await self.viewModel.mangaOpened(mangaId: id)
                 } else {
                     false
                 }
@@ -363,7 +363,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .openedManga) { [weak self] notification in
             guard let self, let id = notification.object as? MangaIdentifier else { return }
             Task {
-                await self.viewModel.mangaOpened(sourceId: id.sourceKey, mangaId: id.mangaKey)
+                await self.viewModel.mangaOpened(mangaId: id)
                 self.updateDataSource()
             }
         }
@@ -409,7 +409,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .historyAdded) { [weak self] notification in
             guard let self, let chapters = notification.object as? [Chapter] else { return }
             Task { @MainActor in
-                let manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                let manga = Array(Set(chapters.map { MangaInfo(id: $0.mangaIdentifier) }))
                 await self.viewModel.updateHistory(for: manga, read: true)
                 self.updateDataSource()
             }
@@ -419,7 +419,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             Task { @MainActor in
                 var manga: [MangaInfo] = []
                 if let chapters = notification.object as? [Chapter] {
-                    manga = Array(Set(chapters.map { MangaInfo(mangaId: $0.mangaId, sourceId: $0.sourceId) }))
+                    manga = Array(Set(chapters.map { MangaInfo(id: $0.mangaIdentifier) }))
                 } else if let mangaObject = notification.object as? Manga {
                     manga = [mangaObject.toInfo()]
                 }
@@ -430,7 +430,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .historySet) { [weak self] notification in
             guard let self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
             Task { @MainActor in
-                await self.viewModel.mangaRead(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)
+                await self.viewModel.mangaRead(mangaId: item.chapter.mangaIdentifier)
                 self.updateDataSource()
             }
         }
@@ -1300,19 +1300,16 @@ extension LibraryViewController {
         if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
             Task {
                 // get next chapter to read
-                let (sortedChapters, nextChapter) = await MangaManager.shared.getNextChapter(
-                    sourceKey: info.sourceId,
-                    mangaKey: info.mangaId
-                )
+                let (sortedChapters, nextChapter) = await MangaManager.shared.getNextChapter(mangaId: info.id)
 
                 if let chapter = nextChapter {
                     // open reader view
-                    guard let source = SourceManager.shared.source(for: info.sourceId) else {
+                    guard let source = SourceManager.shared.source(for: info.id.sourceKey) else {
                         return
                     }
                     let manga = AidokuRunner.Manga(
-                        sourceKey: info.sourceId,
-                        key: info.mangaId,
+                        sourceKey: info.id.sourceKey,
+                        key: info.id.mangaKey,
                         title: info.title ?? "",
                         chapters: sortedChapters
                     )
@@ -1356,8 +1353,8 @@ extension LibraryViewController {
 
         if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
             Task {
-                await CoreDataManager.shared.setOpened(sourceId: info.sourceId, mangaId: info.mangaId)
-                await self.viewModel.mangaOpened(sourceId: info.sourceId, mangaId: info.mangaId)
+                await CoreDataManager.shared.setOpened(mangaId: info.id)
+                await self.viewModel.mangaOpened(mangaId: info.id)
                 self.updateDataSource()
             }
         }
@@ -1482,11 +1479,10 @@ extension LibraryViewController {
                     Task {
                         for manga in mangaInfo {
                             let manga = manga.toManga()
-                            let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
+                            let chapters = await CoreDataManager.shared.getChapters(mangaId: manga.identifier)
 
                             await HistoryManager.shared.addHistory(
-                                sourceId: manga.sourceId,
-                                mangaId: manga.id,
+                                mangaId: manga.identifier,
                                 chapters: chapters.map { $0.toNew() }
                             )
                         }
@@ -1500,13 +1496,9 @@ extension LibraryViewController {
 
                     Task {
                         for manga in mangaInfo {
-                            let manga = manga.toManga()
-                            let chapters = await CoreDataManager.shared.getChapters(sourceId: manga.sourceId, mangaId: manga.id)
-
+                            let chapters = await CoreDataManager.shared.getChapters(mangaId: manga.id)
                             await HistoryManager.shared.removeHistory(
-                                sourceId: manga.sourceId,
-                                mangaId: manga.id,
-                                chapterIds: chapters.map { $0.id }
+                                chapterIds: chapters.map { $0.identifier }
                             )
                         }
 
@@ -1549,7 +1541,10 @@ extension LibraryViewController {
                 }
             }
 
-            if manga.sourceId != LocalSourceRunner.sourceKey && SourceManager.shared.hasSourceInstalled(id: manga.sourceId) {
+            if
+                manga.id.sourceKey != LocalSourceRunner.sourceKey,
+                SourceManager.shared.hasSourceInstalled(id: manga.id.sourceKey)
+            {
                 bottomMenuChildren.append(UIMenu(
                     title: NSLocalizedString("DOWNLOAD"),
                     image: UIImage(systemName: "arrow.down.circle"),
@@ -1615,21 +1610,10 @@ extension LibraryViewController {
         undoManager.setActionName(actionName)
 
         let removedManga = mangaInfo.map {
-            let manga = CoreDataManager.shared.getManga(sourceId: $0.sourceId, mangaId: $0.mangaId)?
-                .toManga()
-
-            let chapters = CoreDataManager.shared.getChapters(
-                sourceId: $0.sourceId, mangaId: $0.mangaId
-            ).map { $0.toChapter() }
-
-            let trackItems = CoreDataManager.shared.getTracks(
-                sourceId: $0.sourceId, mangaId: $0.mangaId
-            ).map { $0.toItem() }
-
-            let categories = CoreDataManager.shared.getCategories(
-                sourceId: $0.sourceId, mangaId: $0.mangaId
-            ).compactMap { $0.title }
-
+            let manga = CoreDataManager.shared.getManga(mangaId: $0.id)?.toManga()
+            let chapters = CoreDataManager.shared.getChapters(mangaId: $0.id).map { $0.toChapter() }
+            let trackItems = CoreDataManager.shared.getTracks(mangaId: $0.id).map { $0.toItem() }
+            let categories = CoreDataManager.shared.getCategories(mangaId: $0.id).compactMap { $0.title }
             return (manga, chapters, trackItems, categories)
         }
 

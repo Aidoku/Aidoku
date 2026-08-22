@@ -9,25 +9,24 @@ import CoreData
 import AidokuRunner
 
 extension CoreDataManager {
-
     /// Remove all library manga objects.
     func clearLibrary(context: NSManagedObjectContext? = nil) {
         clear(request: LibraryMangaObject.fetchRequest(), context: context)
     }
 
     /// Get library objects from a particular source.
-    func getLibraryManga(sourceId: String, context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
+    func getLibraryManga(sourceKey: String, context: NSManagedObjectContext? = nil) -> [LibraryMangaObject] {
         let context = context ?? self.context
         let request = LibraryMangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "manga.sourceId == %@", sourceId)
+        request.predicate = NSPredicate(format: "manga.sourceId == %@", sourceKey)
         return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular library object.
-    func getLibraryManga(sourceId: String, mangaId: String, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
+    func getLibraryManga(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> LibraryMangaObject? {
         let context = context ?? self.context
         let request = LibraryMangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", mangaId.sourceKey, mangaId.mangaKey)
         request.fetchLimit = 1
         return (try? context.fetch(request))?.first
     }
@@ -46,22 +45,21 @@ extension CoreDataManager {
 
     /// Check if a library object exists.
     func hasLibraryManga(
-        sourceId: String,
-        mangaId: String,
+        mangaId: MangaIdentifier,
         context: NSManagedObjectContext? = nil
     ) -> Bool {
         let context = context ?? self.context
         let request = LibraryMangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", mangaId.sourceKey, mangaId.mangaKey)
         request.fetchLimit = 1
         return (try? context.count(for: request)) ?? 0 > 0
     }
 
     /// Set LibraryManga opened date to current date.
-    func setOpened(sourceId: String, mangaId: String) async {
+    func setOpened(mangaId: MangaIdentifier) async {
         await container.performBackgroundTask { context in
             let request = LibraryMangaObject.fetchRequest()
-            request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+            request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", mangaId.sourceKey, mangaId.mangaKey)
             request.fetchLimit = 1
             do {
                 if let object = (try context.fetch(request)).first {
@@ -75,9 +73,9 @@ extension CoreDataManager {
     }
 
     /// Set LibraryManga last read date to current date.
-    func setRead(sourceId: String, mangaId: String, date: Date? = nil, context: NSManagedObjectContext? = nil) {
+    func setRead(mangaId: MangaIdentifier, date: Date? = nil, context: NSManagedObjectContext? = nil) {
         let request = LibraryMangaObject.fetchRequest()
-        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", sourceId, mangaId)
+        request.predicate = NSPredicate(format: "manga.sourceId == %@ AND manga.id == %@", mangaId.sourceKey, mangaId.mangaKey)
         request.fetchLimit = 1
         do {
             if let object = (try context?.fetch(request))?.first {
@@ -98,6 +96,6 @@ extension CoreDataManager {
         let libraryObject = LibraryMangaObject(context: context ?? self.context)
         libraryObject.manga = mangaObject
         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
-        self.setChapters(chapters, sourceId: manga.sourceKey, mangaId: manga.key, context: context)
+        self.setChapters(chapters, mangaId: manga.identifier, context: context)
     }
 }

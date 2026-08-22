@@ -167,8 +167,7 @@ struct HomeBigScrollerView: View {
         bookmarkedItems = await CoreDataManager.shared.container.performBackgroundTask { context in
             var keys: Set<String> = .init()
             for entry in entries where CoreDataManager.shared.hasLibraryManga(
-                sourceId: source.key,
-                mangaId: entry.key,
+                mangaId: entry.identifier,
                 context: context
             ) {
                 keys.insert(entry.key)

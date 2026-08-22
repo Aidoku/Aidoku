@@ -8,19 +8,10 @@
 import Foundation
 
 struct HistoryEntry: Hashable {
-    let sourceKey: String
-    let mangaKey: String
-    let chapterKey: String
+    let chapterId: ChapterIdentifier
 
     var date: Date
     var currentPage: Int?
     var totalPages: Int?
     var additionalEntryCount: Int?
-
-    var mangaCacheKey: String {
-        "\(sourceKey).\(mangaKey)"
-    }
-    var chapterCacheKey: String {
-        "\(mangaCacheKey).\(chapterKey)"
-    }
 }

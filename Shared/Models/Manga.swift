@@ -151,8 +151,7 @@ class Manga: Codable, Hashable {
 
     func toInfo() -> MangaInfo {
         MangaInfo(
-            mangaId: id,
-            sourceId: sourceId,
+            id: identifier,
             coverUrl: coverUrl,
             title: title,
             author: author

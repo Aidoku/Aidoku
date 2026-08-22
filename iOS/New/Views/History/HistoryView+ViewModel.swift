@@ -9,17 +9,12 @@ import AidokuRunner
 import Combine
 import SwiftUI
 
-struct MangaKey: Hashable {
-    let sourceId: String
-    let mangaId: String
-}
-
 extension HistoryView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var filteredHistory: [Int: HistorySection] = [:]
-        @Published var mangaCache: [String: AidokuRunner.Manga] = [:]
-        @Published var chapterCache: [String: AidokuRunner.Chapter] = [:]
+        @Published var mangaCache: [MangaIdentifier: AidokuRunner.Manga] = [:]
+        @Published var chapterCache: [ChapterIdentifier: AidokuRunner.Chapter] = [:]
 
         enum LoadingState {
             case idle  // more available to laod
@@ -36,7 +31,7 @@ extension HistoryView {
         private var searchQuery: String = ""
         private var searchTask: Task<Void, Never>?
 
-        private var missingMangaQueue: [MangaKey: Set<String>] = [:]  // [mangaKey: Set<chapterId>]
+        private var missingMangaQueue: [MangaIdentifier: Set<String>] = [:]  // [mangaKey: Set<chapterId>]
         private var mangaLoadTask: Task<Void, Never>?
         private let maxConcurrentLoads = 3
 
@@ -76,12 +71,12 @@ extension HistoryView.ViewModel {
                 Task { @MainActor in
                     if chapters.count == 1, let chapter = chapters.first {
                         // check if there's existing history to remove first
-                        let chapterCacheKey = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
+                        let chapterId = chapter.identifier
                         if
-                            self.chapterCache[chapterCacheKey] != nil
-                                || self.missingMangaQueue[MangaKey(sourceId: chapter.sourceId, mangaId: chapter.mangaId)] != nil
+                            self.chapterCache[chapterId] != nil
+                                || self.missingMangaQueue[chapterId.mangaIdentifier] != nil
                         {
-                            self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
+                            self.removeStoredHistory(chapterId: chapterId)
                         }
                     }
                     await self.fetchNew(count: chapters.count)
@@ -96,11 +91,10 @@ extension HistoryView.ViewModel {
                 Task { @MainActor in
                     if let chapters = output.object as? [Chapter] {
                         for chapter in chapters {
-                            let chapterId = chapter.sourceId + "." + chapter.mangaId + "." + chapter.id
-                            self.removeStoredHistory(chapterCacheKey: chapterId)
+                            self.removeStoredHistory(chapterId: chapter.identifier)
                         }
                     } else if let manga = output.object as? Manga {
-                        self.removeStoredHistory(mangaCacheKey: manga.key)
+                        self.removeStoredHistory(mangaId: manga.identifier)
                     }
                 }
             }
@@ -116,13 +110,13 @@ extension HistoryView.ViewModel {
                     return
                 }
                 Task { @MainActor in
-                    let chapterCacheKey = item.chapter.sourceId + "." + item.chapter.mangaId + "." + item.chapter.id
+                    let chapterId = item.chapter.identifier
                     if
-                        self.chapterCache[chapterCacheKey] != nil
-                            || self.missingMangaQueue[MangaKey(sourceId: item.chapter.sourceId, mangaId: item.chapter.mangaId)] != nil
+                        self.chapterCache[chapterId] != nil
+                            || self.missingMangaQueue[chapterId.mangaIdentifier] != nil
                     {
                         // a history entry might exist already, so remove it
-                        self.removeStoredHistory(chapterCacheKey: chapterCacheKey)
+                        self.removeStoredHistory(chapterId: chapterId)
                     }
                     // add new chapter history to the top
                     await self.fetchNew(count: 1)
@@ -221,16 +215,9 @@ extension HistoryView.ViewModel {
     // if all is true, removes all history for the associated manga
     func removeHistory(entry: HistoryEntry, all: Bool = false) async {
         if all {
-            await HistoryManager.shared.removeHistory(
-                sourceId: entry.sourceKey,
-                mangaId: entry.mangaKey
-            )
+            await HistoryManager.shared.removeHistory(mangaId: entry.chapterId.mangaIdentifier)
         } else {
-            await HistoryManager.shared.removeHistory(
-                sourceId: entry.sourceKey,
-                mangaId: entry.mangaKey,
-                chapterIds: [entry.chapterKey]
-            )
+            await HistoryManager.shared.removeHistory(chapterIds: [entry.chapterId])
         }
     }
 
@@ -249,9 +236,9 @@ extension HistoryView.ViewModel {
     }
 
     // remove a cached history entry for a chapter
-    private func removeStoredHistory(chapterCacheKey: String) {
+    private func removeStoredHistory(chapterId: ChapterIdentifier) {
         for section in historyData {
-            for (index, entry) in section.value.enumerated() where entry.chapterCacheKey == chapterCacheKey {
+            for (index, entry) in section.value.enumerated() where entry.chapterId == chapterId {
                 historyData[section.key]?.remove(at: index)
                 filteredHistory[section.key] = HistorySection(
                     daysAgo: section.key,
@@ -264,13 +251,13 @@ extension HistoryView.ViewModel {
     }
 
     // remove all cached history entries for a manga
-    private func removeStoredHistory(mangaCacheKey: String) {
+    private func removeStoredHistory(mangaId: MangaIdentifier) {
         var modifiedDays = Set<Int>()
         for section in historyData {
             var index = 0
             for _ in 0..<section.value.count {
                 let entry = historyData[section.key]![index]
-                if entry.mangaCacheKey == mangaCacheKey {
+                if entry.chapterId.mangaIdentifier == mangaId {
                     historyData[section.key]?.remove(at: index)
                     modifiedDays.insert(section.key)
                     offset -= 1
@@ -298,46 +285,40 @@ extension HistoryView.ViewModel {
     }
 
     // add a chapter (missing from coredata) to the queue for loading
-    private func addToQueue(mangaKey: MangaKey, chapterKey: String) {
-        if missingMangaQueue[mangaKey] == nil {
-            missingMangaQueue[mangaKey] = []
+    private func addToQueue(mangaId: MangaIdentifier, chapterKey: String) {
+        if missingMangaQueue[mangaId] == nil {
+            missingMangaQueue[mangaId] = []
         }
-        missingMangaQueue[mangaKey]?.insert(chapterKey)
+        missingMangaQueue[mangaId]?.insert(chapterKey)
     }
 
     // loader for manga/chapters missing from coredata
     private func processMissingMangaQueue() async {
         while !missingMangaQueue.isEmpty {
-            let mangaKeys = Array(missingMangaQueue.keys.prefix(maxConcurrentLoads))
+            let mangaIds = Array(missingMangaQueue.keys.prefix(maxConcurrentLoads))
             await withTaskGroup(of: Void.self) { group in
-                for mangaKey in mangaKeys {
-                    guard let chapterIds = missingMangaQueue[mangaKey] else { continue }
+                for mangaId in mangaIds {
+                    guard let chapterIds = missingMangaQueue[mangaId] else { continue }
                     group.addTask {
-                        await self.loadMangaAndChapters(
-                            mangaKey: mangaKey,
-                            chapterIds: chapterIds
-                        )
+                        await self.loadMangaAndChapters(mangaId: mangaId, chapterIds: chapterIds)
                     }
                 }
                 await group.waitForAll()
             }
             // remove processed manga from queue
-            for mangaKey in mangaKeys {
-                missingMangaQueue.removeValue(forKey: mangaKey)
+            for mangaId in mangaIds {
+                missingMangaQueue.removeValue(forKey: mangaId)
             }
         }
         mangaLoadTask = nil
     }
 
     // load manga and chapter data from source into cache
-    private func loadMangaAndChapters(mangaKey: MangaKey, chapterIds: Set<String>) async {
-        let sourceId = mangaKey.sourceId
-        let mangaId = mangaKey.mangaId
-        guard let source = SourceManager.shared.source(for: sourceId) else { return }
-        let tempManga = AidokuRunner.Manga(sourceKey: sourceId, key: mangaId, title: "")
+    private func loadMangaAndChapters(mangaId: MangaIdentifier, chapterIds: Set<String>) async {
+        guard let source = SourceManager.shared.source(for: mangaId.sourceKey) else { return }
+        let tempManga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
 
-        let mangaCacheKey = "\(sourceId).\(mangaId)"
-        let needsManga = mangaCache[mangaCacheKey] == nil
+        let needsManga = mangaCache[mangaId] == nil
 
         if let newManga = try? await source.getMangaUpdate(
             manga: tempManga,
@@ -346,12 +327,12 @@ extension HistoryView.ViewModel {
         ) {
             await MainActor.run {
                 if needsManga {
-                    self.mangaCache[mangaCacheKey] = newManga
+                    self.mangaCache[mangaId] = newManga
                 }
                 if let chapters = newManga.chapters {
                     for chapter in chapters where chapterIds.contains(chapter.key) {
-                        let chapterCacheKey = "\(sourceId).\(mangaId).\(chapter.key)"
-                        self.chapterCache[chapterCacheKey] = chapter
+                        let key = ChapterIdentifier(sourceKey: mangaId.sourceKey, mangaKey: mangaId.mangaKey, chapterKey: chapter.key)
+                        self.chapterCache[key] = chapter
                     }
                 }
             }
@@ -362,9 +343,7 @@ extension HistoryView.ViewModel {
 // MARK: Processing
 extension HistoryView.ViewModel {
     private struct HistoryInfo {
-        let sourceId: String
-        let mangaId: String
-        let chapterId: String
+        let chapterId: ChapterIdentifier
         let dateRead: Date?
         let progress: Int16
         let total: Int16
@@ -378,9 +357,7 @@ extension HistoryView.ViewModel {
             CoreDataManager.shared.getRecentHistory(limit: limit, offset: offset, context: context)
                 .map {
                     HistoryInfo(
-                        sourceId: $0.sourceId,
-                        mangaId: $0.mangaId,
-                        chapterId: $0.chapterId,
+                        chapterId: .init(sourceKey: $0.sourceId, mangaKey: $0.mangaId, chapterKey: $0.chapterId),
                         dateRead: $0.dateRead,
                         progress: $0.progress,
                         total: $0.total,
@@ -392,8 +369,8 @@ extension HistoryView.ViewModel {
         var modifiedDays = Set<Int>()
 
         var newHistoryData = await historyData
-        var newMangaCacheItems: [String: AidokuRunner.Manga] = [:]
-        var newChapterCacheItems: [String: AidokuRunner.Chapter] = [:]
+        var newMangaCacheItems: [MangaIdentifier: AidokuRunner.Manga] = [:]
+        var newChapterCacheItems: [ChapterIdentifier: AidokuRunner.Chapter] = [:]
 
         for obj in historyObj {
             let readDate = obj.dateRead ?? Date.distantPast
@@ -414,35 +391,29 @@ extension HistoryView.ViewModel {
             let (manga, chapter) = await CoreDataManager.shared.container.performBackgroundTask { context in
                 (
                     CoreDataManager.shared.getManga(
-                        sourceId: obj.sourceId,
-                        mangaId: obj.mangaId,
+                        mangaId: obj.chapterId.mangaIdentifier,
                         context: context
                     )?.toNewManga(),
                     CoreDataManager.shared.getChapter(
-                        sourceId: obj.sourceId,
-                        mangaId: obj.mangaId,
                         chapterId: obj.chapterId,
                         context: context
                     )?.toNewChapter()
                 )
             }
 
+            let chapterId = obj.chapterId
+            let mangaId = chapterId.mangaIdentifier
+
             // If manga or chapter is missing, add to queue for background loading
             if manga == nil || chapter == nil {
-                let key = MangaKey(sourceId: obj.sourceId, mangaId: obj.mangaId)
-                let shortChapterKey = obj.chapterId
-                await addToQueue(mangaKey: key, chapterKey: shortChapterKey)
+                await addToQueue(mangaId: mangaId, chapterKey: chapterId.chapterKey)
             }
 
-            let mangaCacheKey = "\(obj.sourceId).\(obj.mangaId)"
-            let chapterCacheKey = mangaCacheKey + ".\(obj.chapterId)"
-            if let manga { newMangaCacheItems[mangaCacheKey] = manga }
-            if let chapter { newChapterCacheItems[chapterCacheKey] = chapter }
+            if let manga { newMangaCacheItems[mangaId] = manga }
+            if let chapter { newChapterCacheItems[chapterId] = chapter }
 
             let newEntry = HistoryEntry(
-                sourceKey: obj.sourceId,
-                mangaKey: obj.mangaId,
-                chapterKey: obj.chapterId,
+                chapterId: obj.chapterId,
                 date: obj.dateRead ?? Date.distantPast,
                 currentPage: obj.completed ? -1 : Int(obj.progress),
                 totalPages: Int(obj.total)
@@ -483,27 +454,28 @@ extension HistoryView.ViewModel {
     private func filterDay(entries: [HistoryEntry]) -> [HistoryEntry] {
         var newEntries: [HistoryEntry] = []
 
-        var counts: [String: Int] = [:]  // keyed by manga key
+        var counts: [MangaIdentifier: Int] = [:]  // keyed by manga key
 
         for entry in entries {
-            if let existingCount = counts[entry.mangaCacheKey] {
-                counts[entry.mangaCacheKey] = existingCount + 1
+            let mangaId = entry.chapterId.mangaIdentifier
+            if let existingCount = counts[mangaId] {
+                counts[mangaId] = existingCount + 1
                 continue
             }
             if !searchQuery.isEmpty {
                 let query = searchQuery.lowercased()
-                let manga = mangaCache[entry.mangaCacheKey]
+                let manga = mangaCache[mangaId]
                 if let manga, manga.title.lowercased().contains(query) {
                     newEntries.append(entry)
                 }
             } else {
                 newEntries.append(entry)
             }
-            counts[entry.mangaCacheKey] = 0
+            counts[mangaId] = 0
         }
 
         for (i, entry) in newEntries.enumerated() {
-            if let additionalCount = counts[entry.mangaCacheKey], additionalCount > 0 {
+            if let additionalCount = counts[entry.chapterId.mangaIdentifier], additionalCount > 0 {
                 newEntries[i].additionalEntryCount = additionalCount
             } else {
                 newEntries[i].additionalEntryCount = nil
@@ -520,13 +492,13 @@ extension HistoryView.ViewModel {
         offset += value
     }
 
-    private func addMangaCacheItems(_ newItems: [String: AidokuRunner.Manga]) {
+    private func addMangaCacheItems(_ newItems: [MangaIdentifier: AidokuRunner.Manga]) {
         for (key, manga) in newItems {
             mangaCache[key] = manga
         }
     }
 
-    private func addChapterCacheItems(_ newItems: [String: AidokuRunner.Chapter]) {
+    private func addChapterCacheItems(_ newItems: [ChapterIdentifier: AidokuRunner.Chapter]) {
         for (key, chapter) in newItems {
             chapterCache[key] = chapter
         }
