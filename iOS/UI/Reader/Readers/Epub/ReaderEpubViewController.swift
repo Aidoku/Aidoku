@@ -7,6 +7,7 @@
 
 import AidokuRunner
 import UIKit
+import WebKit
 
 /// Hosts an ePub, reading a whole book across its spine.
 ///
@@ -287,20 +288,24 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Shows a fullscreen preview when a tap landed on an image of the book, and reports whether
-    /// it did, so the host runs its tap zones only for taps that hit no image.
+    /// Shows a fullscreen preview when a tap landed on an image or a scaled-down table of the
+    /// book, and reports whether it did, so the host runs its tap zones only for taps that hit
+    /// neither.
     ///
     /// `point` is in this controller's view coordinates.
     func presentImagePreview(forTapAt point: CGPoint) async -> Bool {
         guard let book, let webView = book.renderer?.webView else { return false }
         let clientPoint = view.convert(point, to: webView)
-        guard
-            webView.bounds.contains(clientPoint),
-            let data = await book.imageData(at: clientPoint),
-            let image = UIImage(data: data)
-        else { return false }
-        present(EpubImagePreviewController(image: image), animated: true)
-        return true
+        guard webView.bounds.contains(clientPoint) else { return false }
+        if let data = await book.imageData(at: clientPoint), let image = UIImage(data: data) {
+            present(EpubImagePreviewController(image: image), animated: true)
+            return true
+        }
+        if let html = await book.renderer?.tableHTML(at: clientPoint) {
+            present(EpubTablePreviewController(tableHTML: html), animated: true)
+            return true
+        }
+        return false
     }
 
     /// Tears the book down and opens it again at the same place, picking up the current settings.
@@ -1078,5 +1083,64 @@ private final class EpubImagePreviewController: UIViewController {
 
     @objc private func didTap() {
         dismiss(animated: true)
+    }
+}
+
+// MARK: - Table Preview
+
+/// Fullscreen viewer for one table of the book, at its natural size inside a web view that
+/// scrolls both axes and pinch-zooms; pulling the sheet down or the close button dismisses.
+private final class EpubTablePreviewController: UIViewController {
+    private let tableHTML: String
+
+    init(tableHTML: String) {
+        self.tableHTML = tableHTML
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .systemBackground
+
+        let webView = WKWebView(frame: view.bounds)
+        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        webView.isOpaque = false
+        webView.backgroundColor = .systemBackground
+        view.addSubview(webView)
+        webView.loadHTMLString(Self.shell(around: tableHTML), baseURL: nil)
+
+        let closeButton = UIButton(type: .close)
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
+        view.addSubview(closeButton)
+        NSLayoutConstraint.activate([
+            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            closeButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
+        ])
+    }
+
+    /// The table in a plain readable shell of its own: the book's stylesheets are not carried
+    /// over, and the scale the injection script left inline on the table is undone. The viewport
+    /// is user-scalable, so a pinch zooms the way the book itself deliberately cannot.
+    private static func shell(around tableHTML: String) -> String {
+        """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+        :root { color-scheme: light dark; }
+        body { margin: 16px; margin-top: 60px; font-family: -apple-system, sans-serif; }
+        table { transform: none !important; border-collapse: collapse; }
+        td, th { border: 1px solid rgba(128, 128, 128, 0.5); padding: 0.25em 0.5em; }
+        </style>
+        </head>
+        <body>\(tableHTML)</body>
+        </html>
+        """
     }
 }

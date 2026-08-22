@@ -171,6 +171,44 @@ struct EpubPaginationSettings {
             root.style.setProperty('--USER__noOverflow', 'readium-noOverflow-on');
             \(applyIOSPatch ? "root.style.setProperty('--USER__iOSPatch', 'readium-iOSPatch-on');" : "")
             \(applyIPadOSPatch ? "root.style.setProperty('--USER__iPadOSPatch', 'readium-iPadOSPatch-on');" : "")
+
+            // A table wider than its column would paint across the page boundary onto the
+            // following pages, since noOverflow disables readium-css's body clipping. Each one is
+            // scaled down to fit a single page whole instead, and marked so a tap on it can open
+            // the reader's fullscreen table preview. `transform` shrinks only the painting, so a
+            // wrapper carries the scaled height for the column layout and clips whatever the
+            // transform did not cover. Measured after the stylesheets and the variables above,
+            // which is what decides the column geometry the tables must fit.
+            var tables = Array.prototype.slice.call(document.querySelectorAll('table'))
+                .filter(function(table) {
+                    // a nested table is part of its outer table's width
+                    return !(table.parentElement && table.parentElement.closest('table'));
+                });
+            tables.forEach(function(table) {
+                var wrap = document.createElement('div');
+                table.parentNode.insertBefore(wrap, table);
+                wrap.appendChild(table);
+                var avail = wrap.clientWidth;
+                var width = table.offsetWidth;
+                var height = table.offsetHeight;
+                if (width <= avail || avail <= 0 || height <= 0) {
+                    // the table fits where it is; put it back untouched
+                    wrap.parentNode.insertBefore(table, wrap);
+                    wrap.parentNode.removeChild(wrap);
+                    return;
+                }
+                // In paged mode the whole table must land on one page, so the scale also fits
+                // the column height; scrolled documents only need the width.
+                var availHeight = \(paged ? "window.innerHeight * 0.95" : "Infinity");
+                var scale = Math.min(avail / width, availHeight / height);
+                table.style.transform = 'scale(' + scale + ')';
+                table.style.transformOrigin = 'top left';
+                table.style.margin = '0';
+                wrap.style.height = (height * scale) + 'px';
+                wrap.style.overflow = 'hidden';
+                wrap.style.breakInside = 'avoid';
+                wrap.setAttribute('data-aidoku-table', '1');
+            });
         })();
         """
     }

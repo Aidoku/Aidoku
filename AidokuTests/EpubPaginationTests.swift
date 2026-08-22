@@ -141,6 +141,72 @@ struct EpubPaginationTests {
         #expect(renderer.progression == 1)
     }
 
+    /// A table wider than the column is scaled down to fit its page whole rather than painting
+    /// across the page boundary onto the pages after it.
+    @Test func aWideTableIsScaledToFitItsPage() async throws {
+        let cells = (0..<40).map { "<td>wide cell \($0)</td>" }.joined()
+        let body = EpubFixture.prose(paragraphs: 10) + "<table><tr>\(cells)</tr></table>"
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(EpubFixture.page(body: body).utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+
+        let count = try await renderer.load(spinePath: "OEBPS/page.xhtml")
+        let scrollWidth = try await EpubFixture.number("document.documentElement.scrollWidth", in: renderer.webView)
+        let viewportWidth = try await EpubFixture.number("window.innerWidth", in: renderer.webView)
+        let viewportHeight = try await EpubFixture.number("window.innerHeight", in: renderer.webView)
+
+        // The document still ends on a page boundary: the table contributes nothing to the
+        // document's own scroll extent.
+        #expect(scrollWidth == EpubFixture.scrollExtent(pages: count, width: viewportWidth))
+
+        // The painted table fits one page in both directions; the bounding rect is what the
+        // transform produced, so it is the painting that is measured rather than the layout.
+        let tableWidth = try await EpubFixture.number(
+            "document.querySelector('table').getBoundingClientRect().width", in: renderer.webView
+        )
+        let tableHeight = try await EpubFixture.number(
+            "document.querySelector('table').getBoundingClientRect().height", in: renderer.webView
+        )
+        #expect(tableWidth > 0)
+        #expect(tableWidth <= viewportWidth)
+        #expect(tableHeight <= viewportHeight)
+    }
+
+    /// A tap inside a scaled-down table finds the table's markup, which is what the reader's
+    /// fullscreen table preview shows; a tap elsewhere finds none.
+    @Test func aTapOnAScaledTableFindsItsMarkup() async throws {
+        let cells = (0..<40).map { "<td>wide cell \($0)</td>" }.joined()
+        let archiveURL = try EpubFixture.makeArchive(entries: [
+            "OEBPS/page.xhtml": Data(EpubFixture.page(body: "<table><tr>\(cells)</tr></table>").utf8)
+        ])
+        defer { EpubFixture.remove(archiveURL) }
+
+        let renderer = try await EpubFixture.makeRenderer(for: archiveURL)
+        defer { EpubFixture.dismantle(renderer.webView) }
+        _ = try await renderer.load(spinePath: "OEBPS/page.xhtml")
+
+        let x = try await EpubFixture.number(
+            "(function(){ var r = document.querySelector('table').getBoundingClientRect(); return r.left + r.width / 2; })()",
+            in: renderer.webView
+        )
+        let y = try await EpubFixture.number(
+            "(function(){ var r = document.querySelector('table').getBoundingClientRect(); return r.top + r.height / 2; })()",
+            in: renderer.webView
+        )
+
+        let html = await renderer.tableHTML(at: CGPoint(x: x, y: y))
+        #expect(html?.contains("<table") == true)
+        #expect(html?.contains("wide cell 0") == true)
+
+        // Below the scaled table is ordinary page, which must stay a page turn rather than a
+        // preview.
+        #expect(await renderer.tableHTML(at: CGPoint(x: x, y: y * 2 + 50)) == nil)
+    }
+
     /// A page index outside the document lands on the nearest page that exists rather than on an
     /// empty column past the end.
     @Test func showPageClampsToTheDocument() async throws {
