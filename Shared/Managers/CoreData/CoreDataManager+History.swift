@@ -79,7 +79,10 @@ extension CoreDataManager {
     /// Gets sorted history objects.
     func getRecentHistory(limit: Int, offset: Int, context: NSManagedObjectContext? = nil) -> [HistoryObject] {
         let request = HistoryObject.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "dateRead", ascending: false)]
+        request.sortDescriptors = [
+            NSSortDescriptor(key: "dateRead", ascending: false),
+            NSSortDescriptor(key: "chapter.chapter", ascending: false)
+        ]
         request.fetchLimit = limit
         request.fetchOffset = offset
         return (try? (context ?? self.context).fetch(request)) ?? []
