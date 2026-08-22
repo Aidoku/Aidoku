@@ -266,6 +266,23 @@ final class EpubSpineRenderer: NSObject {
         return source
     }
 
+    /// The markup of the scaled-down table at a point in the web view's coordinate space, or nil
+    /// when the point hits none. Only tables the injection script had to shrink are returned:
+    /// a table that fits its page is readable where it is and needs no preview.
+    func tableHTML(at point: CGPoint) async -> String? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            var wrap = el && el.closest ? el.closest('[data-aidoku-table]') : null;
+            var table = wrap ? wrap.querySelector('table') : null;
+            return table ? table.outerHTML : '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let html = result as? String, !html.isEmpty else { return nil }
+        return html
+    }
+
     /// Called when the reader scrolls a scroll-mode document, after `progression` has moved.
     var onScroll: (() -> Void)?
 
