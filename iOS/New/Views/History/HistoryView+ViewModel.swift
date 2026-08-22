@@ -109,15 +109,20 @@ extension HistoryView.ViewModel {
                     return
                 }
                 Task { @MainActor in
+                    var refreshingDays = Set<Int>()
+                    // a history entry might exist already, so remove it
                     if
                         self.chapterCache[item.chapterId] != nil
-                            || self.missingMangaQueue[item.chapterId.mangaIdentifier] != nil
+                            || self.missingMangaQueue[item.chapterId.mangaIdentifier] != nil,
+                        let day = self.removeStoredHistory(
+                            chapterId: item.chapterId,
+                            updateFilteredHistory: false
+                        )
                     {
-                        // a history entry might exist already, so remove it
-                        self.removeStoredHistory(chapterId: item.chapterId)
+                        refreshingDays.insert(day)
                     }
                     // add new chapter history to the top
-                    await self.fetchNew(count: 1)
+                    await self.fetchNew(count: 1, refreshingDays: refreshingDays)
                 }
             }
             .store(in: &cancellables)
@@ -127,7 +132,7 @@ extension HistoryView.ViewModel {
 // MARK: Loading
 extension HistoryView.ViewModel {
     // fetch a specified number of new history entries (that will be appended to the top)
-    func fetchNew(count: Int) async {
+    func fetchNew(count: Int, refreshingDays: Set<Int> = []) async {
         if let loadTask {
             _ = await loadTask.value
         }
@@ -145,7 +150,11 @@ extension HistoryView.ViewModel {
                         break
                 }
             }
-            let newObjectCount = await self.processHistoryObjects(limit: count, offset: offset)
+            let newObjectCount = await self.processHistoryObjects(
+                limit: count,
+                offset: offset,
+                refreshingDays: refreshingDays
+            )
             await self.increaseOffset(by: newObjectCount)
             return false
         }
@@ -228,18 +237,21 @@ extension HistoryView.ViewModel {
     }
 
     // remove a cached history entry for a chapter
-    private func removeStoredHistory(chapterId: ChapterIdentifier) {
+    private func removeStoredHistory(chapterId: ChapterIdentifier, updateFilteredHistory: Bool = true) -> Int? {
         for section in historyData {
             for (index, entry) in section.value.enumerated() where entry.chapterId == chapterId {
                 historyData[section.key]?.remove(at: index)
-                filteredHistory[section.key] = HistorySection(
-                    daysAgo: section.key,
-                    entries: filterDay(entries: historyData[section.key] ?? [])
-                )
+                if updateFilteredHistory {
+                    filteredHistory[section.key] = HistorySection(
+                        daysAgo: section.key,
+                        entries: filterDay(entries: historyData[section.key] ?? [])
+                    )
+                }
                 offset -= 1
-                return
+                return section.key
             }
         }
+        return nil
     }
 
     // remove all cached history entries for a manga
@@ -344,7 +356,11 @@ extension HistoryView.ViewModel {
 
     // fetch history objects from core data and process them into history entries
     // returns the number of history objects found (if less than limit then the end was reached)
-    private nonisolated func processHistoryObjects(limit: Int, offset: Int) async -> Int {
+    private nonisolated func processHistoryObjects(
+        limit: Int,
+        offset: Int,
+        refreshingDays: Set<Int> = []
+    ) async -> Int {
         let historyObj = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             CoreDataManager.shared.getRecentHistory(limit: limit, offset: offset, context: context)
                 .map {
@@ -358,7 +374,7 @@ extension HistoryView.ViewModel {
                 }
         }
 
-        var modifiedDays = Set<Int>()
+        var modifiedDays = refreshingDays
 
         var newHistoryData = await historyData
         var newMangaCacheItems: [MangaIdentifier: AidokuRunner.Manga] = [:]
