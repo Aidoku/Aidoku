@@ -56,19 +56,16 @@ actor TrackerManager {
     }
 
     /// Send chapter read update to logged in trackers.
-    func setCompleted(chapter: Chapter, skipTracker: Tracker? = nil) async {
-        let chapterNum = chapter.chapterNum
-        let volumeNum = chapter.volumeNum.flatMap { Int(floor($0)) }
+    func setCompleted(mangaId: MangaIdentifier, chapter: AidokuRunner.Chapter, skipTracker: Tracker? = nil) async {
+        let chapterNum = chapter.chapterNumber
+        let volumeNum = chapter.volumeNumber.flatMap { Int(floor($0)) }
         guard chapterNum != nil || volumeNum != nil else { return }
 
-        let key = "Manga.chapterDisplayMode.\(chapter.mangaIdentifier)"
+        let key = "Manga.chapterDisplayMode.\(mangaId)"
         let displayMode = ChapterTitleDisplayMode(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
         let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
-            CoreDataManager.shared.getTracks(
-                mangaId: chapter.mangaIdentifier,
-                context: context
-            ).map { $0.toItem() }
+            CoreDataManager.shared.getTracks(mangaId: mangaId, context: context).map { $0.toItem() }
         }
 
         for item in trackItems {
@@ -208,7 +205,11 @@ actor TrackerManager {
                 newUpdates.append(.init(
                     trackerId: tracker.id,
                     trackId: item.id,
-                    chapter: chapter,
+                    chapterId: .init(
+                        sourceKey: mangaId.sourceKey,
+                        mangaKey: mangaId.mangaKey,
+                        chapterKey: chapter.key
+                    ),
                     progress: progress
                 ))
             }
@@ -486,13 +487,7 @@ actor TrackerManager {
             NotificationCenter.default.post(
                 name: .historyAdded,
                 object: completed.map {
-                    Chapter(
-                        sourceId: manga.sourceKey,
-                        id: $0,
-                        mangaId: manga.key,
-                        title: "",
-                        sourceOrder: -1
-                    )
+                    ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: $0)
                 }
             )
         }
@@ -500,12 +495,10 @@ actor TrackerManager {
             NotificationCenter.default.post(
                 name: .historySet,
                 object: (
-                    Chapter(
-                        sourceId: manga.sourceKey,
-                        id: chapterKey,
-                        mangaId: manga.key,
-                        title: "",
-                        sourceOrder: -1
+                    ChapterIdentifier(
+                        sourceKey: manga.sourceKey,
+                        mangaKey: manga.key,
+                        chapterKey: chapterKey
                     ),
                     page
                 )
@@ -695,7 +688,7 @@ extension TrackerManager {
                 do {
                     try await tracker.setProgress(
                         trackId: update.trackId,
-                        chapter: update.chapter,
+                        chapterId: update.chapterId,
                         progress: update.progress
                     )
                     if update.failCount > 0 {
@@ -734,7 +727,7 @@ extension TrackerManager {
         for update in updates {
             // remove any old update, assuming it's not as recent as the new one
             let existingUpdateIndex = trackingState.pendingPageUpdates.firstIndex(where: {
-                $0.trackerId == update.trackerId && $0.trackId == update.trackId && $0.chapter.key == update.chapter.key
+                $0.trackerId == update.trackerId && $0.trackId == update.trackId && $0.chapterId == update.chapterId
             })
             if let existingUpdateIndex {
                 trackingState.pendingPageUpdates.remove(at: existingUpdateIndex)

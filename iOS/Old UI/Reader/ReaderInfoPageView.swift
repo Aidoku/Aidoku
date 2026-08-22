@@ -5,6 +5,7 @@
 //  Created by Skitty on 1/22/22.
 //
 
+import AidokuRunner
 import UIKit
 
 enum ReaderInfoPageType {
@@ -15,17 +16,17 @@ enum ReaderInfoPageType {
 class ReaderInfoPageView: UIView {
     var type: ReaderInfoPageType
 
-    var currentChapter: Chapter? {
+    var currentChapter: AidokuRunner.Chapter? {
         didSet {
             updateLabelText()
         }
     }
-    var previousChapter: Chapter? {
+    var previousChapter: AidokuRunner.Chapter? {
         didSet {
             updateLabelText()
         }
     }
-    var nextChapter: Chapter? {
+    var nextChapter: AidokuRunner.Chapter? {
         didSet {
             updateLabelText()
         }
@@ -41,7 +42,7 @@ class ReaderInfoPageView: UIView {
     let bottomChapterLabel = UILabel()
     let bottomChapterTitleLabel = UILabel()
 
-    init(type: ReaderInfoPageType, currentChapter: Chapter? = nil) {
+    init(type: ReaderInfoPageType, currentChapter: AidokuRunner.Chapter? = nil) {
         self.type = type
         self.currentChapter = currentChapter
 
@@ -124,43 +125,22 @@ class ReaderInfoPageView: UIView {
         Int(floor(higherChapterNumber) - floor(lowerChapterNumber))
     }
 
-    func title(for chapter: Chapter) -> String {
-        switch (chapter.volumeNum, chapter.chapterNum, chapter.title) {
-            case (.some(let volumeNum), nil, nil):
-                return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
-            case (nil, .some(let chapterNum), nil):
-                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
-            case (nil, nil, .some(let chapterTitle)): return chapterTitle
-            default:
-                var arr = [String]()
-                if let volumeNum = chapter.volumeNum {
-                    arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
-                }
-                if let chapterNum = chapter.chapterNum {
-                    arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNum))
-                }
-                if let chapterTitle = chapter.title {
-                    arr.append("-")
-                    arr.append(chapterTitle)
-                }
-                return arr.joined(separator: " ")
-        }
-    }
-
     func updateLabelText() {
         guard let currentChapter else { return }
         if let previousChapter {
-            topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON", comment: "")
-            topChapterTitleLabel.text = title(for: previousChapter)
-            bottomChapterLabel.text = NSLocalizedString("CURRENT_COLON", comment: "")
-            bottomChapterTitleLabel.text = title(for: currentChapter)
-            if let currChapterNum = currentChapter.chapterNum,
-               let prevChapterNum = previousChapter.chapterNum {
+            topChapterLabel.text = NSLocalizedString("PREVIOUS_COLON")
+            topChapterTitleLabel.text = previousChapter.formattedTitle()
+            bottomChapterLabel.text = NSLocalizedString("CURRENT_COLON")
+            bottomChapterTitleLabel.text = currentChapter.formattedTitle()
+            if
+                let currChapterNum = currentChapter.chapterNumber,
+                let prevChapterNum = previousChapter.chapterNumber
+            {
                 let chapterDifference = chapterDifference(higherChapterNumber: currChapterNum, lowerChapterNumber: prevChapterNum)
                 let shouldSkipChapters = chapterDifference > 1
                 skippingChaptersView.isHidden = !shouldSkipChapters
                 if shouldSkipChapters {
-                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS", comment: ""), chapterDifference)
+                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS"), chapterDifference)
                 }
             } else {
                 skippingChaptersView.isHidden = true
@@ -168,17 +148,19 @@ class ReaderInfoPageView: UIView {
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else if let nextChapter {
-            topChapterLabel.text = NSLocalizedString("FINISHED_COLON", comment: "")
-            topChapterTitleLabel.text = title(for: currentChapter)
-            bottomChapterLabel.text = NSLocalizedString("NEXT_COLON", comment: "")
-            bottomChapterTitleLabel.text = title(for: nextChapter)
-            if let currChapterNum = currentChapter.chapterNum,
-               let nextChapterNum = nextChapter.chapterNum {
+            topChapterLabel.text = NSLocalizedString("FINISHED_COLON")
+            topChapterTitleLabel.text = currentChapter.formattedTitle()
+            bottomChapterLabel.text = NSLocalizedString("NEXT_COLON")
+            bottomChapterTitleLabel.text = nextChapter.formattedTitle()
+            if
+                let currChapterNum = currentChapter.chapterNumber,
+                let nextChapterNum = nextChapter.chapterNumber
+            {
                 let chapterDifference = chapterDifference(higherChapterNumber: nextChapterNum, lowerChapterNumber: currChapterNum)
                 let shouldSkipChapters = chapterDifference > 1
                 skippingChaptersView.isHidden = !shouldSkipChapters
                 if shouldSkipChapters {
-                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS", comment: ""), chapterDifference)
+                    skippingChaptersLabel.text = String(format: NSLocalizedString("SKIPPING_CHAPTERS"), chapterDifference)
                 }
             } else {
                 skippingChaptersView.isHidden = true
@@ -186,8 +168,9 @@ class ReaderInfoPageView: UIView {
             noChapterLabel.isHidden = true
             stackView.isHidden = false
         } else {
-            noChapterLabel.text = type == .previous ? NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
-                : NSLocalizedString("NO_NEXT_CHAPTER", comment: "")
+            noChapterLabel.text = type == .previous
+                ? NSLocalizedString("NO_PREVIOUS_CHAPTER")
+                : NSLocalizedString("NO_NEXT_CHAPTER")
             stackView.isHidden = true
             noChapterLabel.isHidden = false
             skippingChaptersView.isHidden = true

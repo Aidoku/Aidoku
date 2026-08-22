@@ -5,6 +5,7 @@
 //  Created by Skitty on 8/15/22.
 //
 
+import AidokuRunner
 import UIKit
 
 class ReaderPageViewController: BaseObservingViewController {
@@ -37,15 +38,15 @@ class ReaderPageViewController: BaseObservingViewController {
         return reloadButton
     }()
 
-    var currentChapter: Chapter? {
+    var currentChapter: AidokuRunner.Chapter? {
         get { infoView?.currentChapter }
         set { infoView?.currentChapter = newValue }
     }
-    var previousChapter: Chapter? {
+    var previousChapter: AidokuRunner.Chapter? {
         get { infoView?.previousChapter }
         set { infoView?.previousChapter = newValue }
     }
-    var nextChapter: Chapter? {
+    var nextChapter: AidokuRunner.Chapter? {
         get { infoView?.nextChapter }
         set { infoView?.nextChapter = newValue }
     }

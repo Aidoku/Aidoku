@@ -5,8 +5,8 @@
 //  Created by Skitty on 1/9/23.
 //
 
-import CoreData
 import AidokuRunner
+import CoreData
 
 final class HistoryManager: Sendable {
     static let shared = HistoryManager()
@@ -14,13 +14,13 @@ final class HistoryManager: Sendable {
 
 extension HistoryManager {
     func setProgress(
-        chapter: Chapter,
+        chapterId: ChapterIdentifier,
+        chapter: AidokuRunner.Chapter,
         progress: Int,
         totalPages: Int? = nil,
         scrollPosition: Double? = nil,
         completed: Bool
     ) async {
-        let chapterId = chapter.identifier
         let mangaId = chapterId.mangaIdentifier
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.setRead(mangaId: mangaId, context: context)
@@ -37,13 +37,13 @@ extension HistoryManager {
                 LogManager.logger.error("HistoryManager.setProgress: \(error)")
             }
         }
-        NotificationCenter.default.post(name: .historySet, object: (chapter, progress))
+        NotificationCenter.default.post(name: .historySet, object: (chapterId, progress))
         if !completed {
             Task {
                 // update page trackers with progress
                 await TrackerManager.shared.setProgress(
                     mangaId: mangaId,
-                    chapter: chapter.toNew(),
+                    chapter: chapter,
                     progress: .init(completed: false, page: progress)
                 )
             }
@@ -104,14 +104,17 @@ extension HistoryManager {
         guard success else { return }
         NotificationCenter.default.post(
             name: .historyAdded,
-            object: chapters.map { $0.toOld(mangaId: mangaId) }
+            object: chapters.map {
+                ChapterIdentifier(sourceKey: mangaId.sourceKey, mangaKey: mangaId.mangaKey, chapterKey: $0.key)
+            }
         )
         Task {
             if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
                 // update tracker with chapter with largest number
                 if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
                     await TrackerManager.shared.setCompleted(
-                        chapter: maxChapter.toOld(mangaId: mangaId),
+                        mangaId: mangaId,
+                        chapter: maxChapter,
                         skipTracker: skipTracker
                     )
                 }
@@ -128,18 +131,7 @@ extension HistoryManager {
     func removeHistory(chapterIds: [ChapterIdentifier]) async {
         guard !chapterIds.isEmpty else { return }
         await CoreDataManager.shared.removeHistory(chapterIds: chapterIds)
-        NotificationCenter.default.post(
-            name: .historyRemoved,
-            object: chapterIds.map {
-                Chapter(
-                    sourceId: $0.sourceKey,
-                    id: $0.chapterKey,
-                    mangaId: $0.mangaKey,
-                    title: "",
-                    sourceOrder: -1
-                )
-            }
-        )
+        NotificationCenter.default.post(name: .historyRemoved, object: chapterIds)
         Task {
             await TrackerManager.shared.setProgress(
                 mangaId: chapterIds[0].mangaIdentifier,
@@ -154,7 +146,7 @@ extension HistoryManager {
             CoreDataManager.shared.removeHistory(mangaId: mangaId, context: context)
             try? context.save()
         }
-        NotificationCenter.default.post(name: .historyRemoved, object: Manga(sourceId: mangaId.sourceKey, id: mangaId.mangaKey))
+        NotificationCenter.default.post(name: .historyRemoved, object: mangaId)
         Task {
             let chapters = await CoreDataManager.shared.getChapters(mangaId: mangaId)
             await TrackerManager.shared.setProgress(

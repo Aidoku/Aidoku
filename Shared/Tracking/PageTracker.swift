@@ -11,7 +11,7 @@ import Foundation
 /// A tracker that automatically tracks chapter read progress, syncing remote and local history.
 protocol PageTracker: Tracker {
     /// Sets the read progress of a chapter.
-    func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws
+    func setProgress(trackId: String, chapterId: ChapterIdentifier, progress: ChapterReadProgress) async throws
 
     /// Gets the read progress of multiple chapters.
     ///
@@ -28,7 +28,7 @@ struct ChapterReadProgress: Codable {
 struct PageTrackUpdate: Codable {
     let trackerId: String
     let trackId: String
-    let chapter: AidokuRunner.Chapter
+    let chapterId: ChapterIdentifier
     let progress: ChapterReadProgress
     var failCount: Int = 0
 }

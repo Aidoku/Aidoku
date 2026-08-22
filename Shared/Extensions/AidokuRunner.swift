@@ -369,27 +369,6 @@ extension AidokuRunner.Chapter {
             return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
         }
     }
-
-    func toOld(
-        mangaId: MangaIdentifier,
-        sourceOrder: Int? = nil
-    ) -> Chapter {
-        Chapter(
-            sourceId: mangaId.sourceKey,
-            id: key,
-            mangaId: mangaId.mangaKey,
-            title: title,
-            scanlator: scanlators.flatMap { $0.isEmpty ? nil : $0.joined(separator: ", ") },
-            url: url?.absoluteString,
-            lang: language ?? "en",
-            chapterNum: chapterNumber,
-            volumeNum: volumeNumber,
-            dateUploaded: dateUploaded,
-            thumbnail: thumbnail,
-            locked: locked,
-            sourceOrder: sourceOrder ?? 0
-        )
-    }
 }
 
 extension AidokuRunner.Page {

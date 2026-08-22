@@ -64,14 +64,13 @@ extension HistoryView.ViewModel {
                 // fetch new history entries
                 guard
                     let self,
-                    let chapters = output.object as? [Chapter]
+                    let chapters = output.object as? [ChapterIdentifier]
                 else {
                     return
                 }
                 Task { @MainActor in
-                    if chapters.count == 1, let chapter = chapters.first {
+                    if chapters.count == 1, let chapterId = chapters.first {
                         // check if there's existing history to remove first
-                        let chapterId = chapter.identifier
                         if
                             self.chapterCache[chapterId] != nil
                                 || self.missingMangaQueue[chapterId.mangaIdentifier] != nil
@@ -89,12 +88,12 @@ extension HistoryView.ViewModel {
                 // remove history entries
                 guard let self else { return }
                 Task { @MainActor in
-                    if let chapters = output.object as? [Chapter] {
-                        for chapter in chapters {
-                            self.removeStoredHistory(chapterId: chapter.identifier)
+                    if let chapters = output.object as? [ChapterIdentifier] {
+                        for chapterId in chapters {
+                            self.removeStoredHistory(chapterId: chapterId)
                         }
-                    } else if let manga = output.object as? Manga {
-                        self.removeStoredHistory(mangaId: manga.identifier)
+                    } else if let mangaId = output.object as? MangaIdentifier {
+                        self.removeStoredHistory(mangaId: mangaId)
                     }
                 }
             }
@@ -105,18 +104,17 @@ extension HistoryView.ViewModel {
                 // remove existing history entry and add new one
                 guard
                     let self,
-                    let item = output.object as? (chapter: Chapter, page: Int)
+                    let item = output.object as? (chapterId: ChapterIdentifier, page: Int)
                 else {
                     return
                 }
                 Task { @MainActor in
-                    let chapterId = item.chapter.identifier
                     if
-                        self.chapterCache[chapterId] != nil
-                            || self.missingMangaQueue[chapterId.mangaIdentifier] != nil
+                        self.chapterCache[item.chapterId] != nil
+                            || self.missingMangaQueue[item.chapterId.mangaIdentifier] != nil
                     {
                         // a history entry might exist already, so remove it
-                        self.removeStoredHistory(chapterId: chapterId)
+                        self.removeStoredHistory(chapterId: item.chapterId)
                     }
                     // add new chapter history to the top
                     await self.fetchNew(count: 1)

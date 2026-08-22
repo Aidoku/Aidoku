@@ -407,7 +407,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
         addObserver(forName: .historyAdded) { [weak self] notification in
-            guard let self, let chapters = notification.object as? [Chapter] else { return }
+            guard let self, let chapters = notification.object as? [ChapterIdentifier] else { return }
             Task { @MainActor in
                 let manga = Array(Set(chapters.map { MangaInfo(id: $0.mangaIdentifier) }))
                 await self.viewModel.updateHistory(for: manga, read: true)
@@ -418,19 +418,19 @@ class LibraryViewController: OldMangaCollectionViewController {
             guard let self else { return }
             Task { @MainActor in
                 var manga: [MangaInfo] = []
-                if let chapters = notification.object as? [Chapter] {
+                if let chapters = notification.object as? [ChapterIdentifier] {
                     manga = Array(Set(chapters.map { MangaInfo(id: $0.mangaIdentifier) }))
-                } else if let mangaObject = notification.object as? Manga {
-                    manga = [mangaObject.toInfo()]
+                } else if let mangaId = notification.object as? MangaIdentifier {
+                    manga = [MangaInfo(id: mangaId)]
                 }
                 await self.viewModel.updateHistory(for: manga, read: false)
                 self.updateDataSource()
             }
         }
         addObserver(forName: .historySet) { [weak self] notification in
-            guard let self, let item = notification.object as? (chapter: Chapter, page: Int) else { return }
+            guard let self, let item = notification.object as? (chapterId: ChapterIdentifier, page: Int) else { return }
             Task { @MainActor in
-                await self.viewModel.mangaRead(mangaId: item.chapter.mangaIdentifier)
+                await self.viewModel.mangaRead(mangaId: item.chapterId.mangaIdentifier)
                 self.updateDataSource()
             }
         }

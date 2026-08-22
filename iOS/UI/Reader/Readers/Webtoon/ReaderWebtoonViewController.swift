@@ -897,12 +897,11 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
             let to = page.type == .prevInfoPage
                 ? self.delegate?.getPreviousChapter()
                 : self.delegate?.getNextChapter()
-            return { [weak self] in
-                guard let self else { return ASCellNode() }
-                return ReaderWebtoonTransitionNode(transition: .init(
+            return {
+                ReaderWebtoonTransitionNode(transition: .init(
                     type: page.type == .prevInfoPage ? .prev : .next,
-                    from: chapter.toOld(mangaId: self.viewModel.manga.identifier),
-                    to: to?.toOld(mangaId: self.viewModel.manga.identifier)
+                    from: chapter,
+                    to: to
                 ))
             }
         }

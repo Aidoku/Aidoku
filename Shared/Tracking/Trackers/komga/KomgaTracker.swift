@@ -82,11 +82,11 @@ final class KomgaTracker: EnhancedTracker, PageTracker {
             && !UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).disableTracking")
     }
 
-    func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
+    func setProgress(trackId: String, chapterId: ChapterIdentifier, progress: ChapterReadProgress) async throws {
         let (sourceKey, _) = try getIdParts(from: trackId)
         try await api.updateReadProgress(
             sourceKey: sourceKey,
-            bookId: chapter.key,
+            bookId: chapterId.chapterKey,
             progress: progress
         )
     }

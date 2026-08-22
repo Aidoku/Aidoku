@@ -495,7 +495,8 @@ extension ReaderViewController {
         }
 
         await HistoryManager.shared.setProgress(
-            chapter: chapter.toOld(mangaId: manga.identifier),
+            chapterId: chapterId,
+            chapter: chapter,
             progress: currentPage,
             totalPages: totalPages,
             scrollPosition: currentPosition,

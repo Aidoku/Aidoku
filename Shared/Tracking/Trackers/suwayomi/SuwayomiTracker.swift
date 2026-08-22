@@ -72,11 +72,11 @@ final class SuwayomiTracker: EnhancedTracker, PageTracker {
             && !UserDefaults.standard.bool(forKey: "\(mangaId.sourceKey).disableTracking")
     }
 
-    func setProgress(trackId: String, chapter: AidokuRunner.Chapter, progress: ChapterReadProgress) async throws {
+    func setProgress(trackId: String, chapterId: ChapterIdentifier, progress: ChapterReadProgress) async throws {
         let (sourceKey, seriesId) = try getIdParts(from: trackId)
         guard
             let seriesId = Int(seriesId),
-            let chapterId = Int(chapter.key)
+            let chapterId = Int(chapterId.chapterKey)
         else {
             throw SuwayomiTrackerError.invalidId
         }

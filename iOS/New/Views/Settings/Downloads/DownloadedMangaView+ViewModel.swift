@@ -335,36 +335,24 @@ extension DownloadedMangaView.ViewModel {
             .sink { [weak self] output in
                 guard
                     let self,
-                    let chapters = output.object as? [Chapter]
+                    let chapters = output.object as? [ChapterIdentifier]
                 else { return }
                 let date = Int(Date().timeIntervalSince1970)
-                for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
-                    self.readingHistory[chapter.id] = (page: -1, date: date)
-                }
-            }
-            .store(in: &cancellables)
-        NotificationCenter.default.publisher(for: .historyAdded)
-            .sink { [weak self] output in
-                guard
-                    let self,
-                    let chapters = output.object as? [Chapter]
-                else { return }
-                let date = Int(Date().timeIntervalSince1970)
-                for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
-                    self.readingHistory[chapter.id] = (page: -1, date: date)
+                for chapterId in chapters where chapterId.mangaIdentifier == self.manga.mangaIdentifier {
+                    self.readingHistory[chapterId.chapterKey] = (page: -1, date: date)
                 }
             }
             .store(in: &cancellables)
         NotificationCenter.default.publisher(for: .historyRemoved)
             .sink { [weak self] output in
                 guard let self else { return }
-                if let chapters = output.object as? [Chapter] {
-                    for chapter in chapters where chapter.mangaIdentifier == self.manga.mangaIdentifier {
-                        self.readingHistory.removeValue(forKey: chapter.id)
+                if let chapters = output.object as? [ChapterIdentifier] {
+                    for chapterId in chapters where chapterId.mangaIdentifier == self.manga.mangaIdentifier {
+                        self.readingHistory.removeValue(forKey: chapterId.chapterKey)
                     }
                 } else if
-                    let manga = output.object as? Manga,
-                    manga.identifier == self.manga.mangaIdentifier
+                    let mangaId = output.object as? MangaIdentifier,
+                    mangaId == self.manga.mangaIdentifier
                 {
                     self.readingHistory = [:]
                 }
@@ -374,13 +362,13 @@ extension DownloadedMangaView.ViewModel {
             .sink { [weak self] output in
                 guard
                     let self,
-                    let item = output.object as? (chapter: Chapter, page: Int),
-                    item.chapter.mangaIdentifier == self.manga.mangaIdentifier,
-                    self.readingHistory[item.chapter.id]?.page != -1
+                    let item = output.object as? (chapterId: ChapterIdentifier, page: Int),
+                    item.chapterId.mangaIdentifier == self.manga.mangaIdentifier,
+                    self.readingHistory[item.chapterId.chapterKey]?.page != -1
                 else {
                     return
                 }
-                self.readingHistory[item.chapter.id] = (
+                self.readingHistory[item.chapterId.chapterKey] = (
                     page: item.page,
                     date: Int(Date().timeIntervalSince1970)
                 )

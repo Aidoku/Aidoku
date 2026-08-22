@@ -5,6 +5,7 @@
 //  Created by Skitty on 3/22/23.
 //
 
+import AidokuRunner
 import AsyncDisplayKit
 
 struct Transition {
@@ -13,47 +14,23 @@ struct Transition {
     }
 
     var type: TransitionType
-    var from: Chapter
-    var to: Chapter?
+    var from: AidokuRunner.Chapter
+    var to: AidokuRunner.Chapter?
 }
 
 class ReaderTransitionNode: ASDisplayNode {
-
     var transition: Transition
 
     private static let defaultFontSize: CGFloat = 16
     private lazy var fontSize = Self.defaultFontSize
     private var lastWidth: CGFloat = 0
 
-    func title(for chapter: Chapter) -> String {
-        switch (chapter.volumeNum, chapter.chapterNum, chapter.title) {
-            case (.some(let volumeNum), nil, nil):
-                return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
-            case (nil, .some(let chapterNum), nil):
-                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
-            case (nil, nil, .some(let chapterTitle)): return chapterTitle
-            default:
-                var arr = [String]()
-                if let volumeNum = chapter.volumeNum {
-                    arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum))
-                }
-                if let chapterNum = chapter.chapterNum {
-                    arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNum))
-                }
-                if let chapterTitle = chapter.title {
-                    arr.append("-")
-                    arr.append(chapterTitle)
-                }
-                return arr.joined(separator: " ")
-        }
-    }
-
     lazy var topChapterTextNode: ASTextNode = {
         let node = ASTextNode()
         node.attributedText = NSAttributedString(
             string: transition.type == .prev
-                ? NSLocalizedString("PREVIOUS_COLON", comment: "")
-                : NSLocalizedString("FINISHED_COLON", comment: ""),
+                ? NSLocalizedString("PREVIOUS_COLON")
+                : NSLocalizedString("FINISHED_COLON"),
             attributes: [
                 .foregroundColor: UIColor.label,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize, weight: .medium)
@@ -68,9 +45,11 @@ class ReaderTransitionNode: ASDisplayNode {
             let chapter = transition.type == .prev
                 ? transition.to
                 : transition.from
-        else { return node }
+                else {
+            return node
+        }
         node.attributedText = NSAttributedString(
-            string: title(for: chapter),
+            string: chapter.formattedTitle(),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
@@ -84,8 +63,8 @@ class ReaderTransitionNode: ASDisplayNode {
         let node = ASTextNode()
         node.attributedText = NSAttributedString(
             string: transition.type == .prev
-                ? NSLocalizedString("CURRENT_COLON", comment: "")
-                : NSLocalizedString("NEXT_COLON", comment: ""),
+                ? NSLocalizedString("CURRENT_COLON")
+                : NSLocalizedString("NEXT_COLON"),
             attributes: [
                 .foregroundColor: UIColor.label,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize, weight: .medium)
@@ -100,9 +79,11 @@ class ReaderTransitionNode: ASDisplayNode {
             let chapter = transition.type == .prev
                 ? transition.from
                 : transition.to
-        else { return node }
+        else {
+            return node
+        }
         node.attributedText = NSAttributedString(
-            string: title(for: chapter),
+            string: chapter.formattedTitle(),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
@@ -116,8 +97,8 @@ class ReaderTransitionNode: ASDisplayNode {
         let node = ASTextNode()
         node.attributedText = NSAttributedString(
             string: transition.type == .prev
-                ? NSLocalizedString("NO_PREVIOUS_CHAPTER", comment: "")
-                : NSLocalizedString("NO_NEXT_CHAPTER", comment: ""),
+                ? NSLocalizedString("NO_PREVIOUS_CHAPTER")
+                : NSLocalizedString("NO_NEXT_CHAPTER"),
             attributes: [
                 .foregroundColor: UIColor.secondaryLabel,
                 .font: UIFont.systemFont(ofSize: Self.defaultFontSize)
