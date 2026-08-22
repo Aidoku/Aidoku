@@ -132,10 +132,25 @@ extension DownloadCache {
             .appendingSafePathComponent(chapter.chapterKey)
     }
 
+    /// Prefix of the directory a chapter is downloaded into before it is promoted to a chapter.
+    nonisolated static let tmpDirectoryPrefix = ".tmp_"
+
     nonisolated func tmpDirectory(for chapter: ChapterIdentifier) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(chapter.sourceKey)
             .appendingSafePathComponent(chapter.mangaKey)
-            .appendingSafePathComponent(".tmp_\(chapter.chapterKey)")
+            .appendingSafePathComponent("\(Self.tmpDirectoryPrefix)\(chapter.chapterKey)")
+    }
+
+    // marker file for failed downloads, which is contained inside a .tmp directory
+    nonisolated static let failureMarkerName = ".failed"
+
+    nonisolated func failureMarker(inTmpDirectory directory: URL) -> URL {
+        directory.appendingPathComponent(Self.failureMarkerName)
+    }
+
+    /// Whether a staging directory holds a download that failed rather than one still running.
+    nonisolated func hasFailureMarker(inTmpDirectory directory: URL) -> Bool {
+        failureMarker(inTmpDirectory: directory).exists
     }
 }
