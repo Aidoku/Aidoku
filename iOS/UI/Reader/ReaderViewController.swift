@@ -71,6 +71,9 @@ class ReaderViewController: BaseObservingViewController {
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
 
+    private var windowTraitRegistration: Any?
+    private weak var observedWindow: UIWindow?
+
     private var squeezeTimer: Timer?
     private var longSqueezeTimer: Timer?
     private var squeezeStartTime: Date?
@@ -323,6 +326,9 @@ class ReaderViewController: BaseObservingViewController {
                 }
             }
         }
+        addObserver(forName: ReaderTextTheme.changeNotification) { [weak self] _ in
+            self?.updateTextThemeOverride()
+        }
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
             Task {
@@ -365,12 +371,31 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.isToolbarHidden = false
         navigationController?.toolbar.alpha = 1
 
+        // the text theme selection depends on the window's light/dark style, and the
+        // reader's own traits may be pinned by the theme override, so observe the window
+        if #available(iOS 17.0, *), windowTraitRegistration == nil, let window = view.window {
+            observedWindow = window
+            windowTraitRegistration = window.registerForTraitChanges(
+                [UITraitUserInterfaceStyle.self]
+            ) { (_: UIWindow, _) in
+                NotificationCenter.default.post(name: .init(ReaderTextTheme.changeNotification), object: nil)
+            }
+        }
+
         disableSwipeGestures()
         configureNavigationBarDismissTapGesture(enabled: isDictionarySingleTapLookupActiveForCurrentChapter)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+
+        // the reader is being closed, stop observing the window's interface style
+        if #available(iOS 17.0, *),
+           navigationController?.isBeingDismissed ?? isBeingDismissed,
+           let registration = windowTraitRegistration as? any UITraitChangeRegistration {
+            observedWindow?.unregisterForTraitChanges(registration)
+            windowTraitRegistration = nil
+        }
 
         if !chaptersToRemoveDownload.isEmpty {
             Task {
@@ -534,6 +559,8 @@ class ReaderViewController: BaseObservingViewController {
             }
 
         navigationItem.setTitle(upper: volume, lower: title)
+        // re-apply theme title colors, since setTitle recreates the title view
+        updateTextThemeOverride()
     }
 
     func showLoadFailAlert() {
@@ -705,6 +732,62 @@ extension ReaderViewController {
         configureDictionaryOverlayInteractionMode()
         configureDictionaryOverlayTapHandler()
         disableSwipeGestures()
+        updateTextThemeOverride()
+    }
+
+    /// Text reader themes (besides system) force a light or dark appearance so the
+    /// bars and transition pages match the page background. Other readers are unaffected.
+    func updateTextThemeOverride() {
+        let theme = ReaderTextTheme.current
+        let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
+        let themed = isTextReader && theme != .system
+        navigationController?.overrideUserInterfaceStyle = themed ? theme.interfaceStyle : .unspecified
+
+        // the bar renders from the appearance objects set in configure(), which
+        // don't follow the trait override (they resolve against the device style),
+        // so write the theme colors into them directly: the bar background matches
+        // the page (like the books app) and the title uses the theme text color
+        let titleColor = themed ? theme.textColor : nil
+        if let navigationBar = navigationController?.navigationBar {
+            func applyTheme(_ appearance: UINavigationBarAppearance) {
+                if themed {
+                    if #available(iOS 26.0, *), reader is ReaderTextViewController {
+                        // scroll reader: text scrolls under the bar, so keep it
+                        // transparent for the liquid glass look over the page
+                        appearance.configureWithTransparentBackground()
+                    } else {
+                        // paged reader: nothing extends under the bar (the paginator
+                        // reserves the top), so match the page color seamlessly
+                        appearance.backgroundEffect = nil
+                        appearance.backgroundColor = theme.backgroundColor
+                        appearance.shadowColor = .clear
+                    }
+                    appearance.titleTextAttributes[.foregroundColor] = theme.textColor
+                } else {
+                    appearance.configureWithDefaultBackground()
+                    appearance.titleTextAttributes.removeValue(forKey: .foregroundColor)
+                }
+            }
+            let standard = navigationBar.standardAppearance
+            applyTheme(standard)
+            navigationBar.standardAppearance = standard
+            if let compact = navigationBar.compactAppearance {
+                applyTheme(compact)
+                navigationBar.compactAppearance = compact
+            }
+            if let scrollEdge = navigationBar.scrollEdgeAppearance {
+                applyTheme(scrollEdge)
+                navigationBar.scrollEdgeAppearance = scrollEdge
+            }
+        }
+        // the two-line title view (volume + chapter) uses plain labels instead
+        if let stackView = navigationItem.titleView as? UIStackView {
+            let labels = stackView.arrangedSubviews.compactMap { $0 as? UILabel }
+            if labels.count == 2 {
+                labels[0].textColor = titleColor?.withAlphaComponent(0.6) ?? .secondaryLabel
+                labels[1].textColor = titleColor ?? .label
+            }
+        }
     }
 }
 

@@ -76,11 +76,14 @@ class ReaderTextViewController: BaseViewController {
 
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = .systemBackground
+        scrollView.backgroundColor = ReaderTextTheme.background
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.delegate = self
         scrollView.alwaysBounceVertical = true
         scrollView.contentInsetAdjustmentBehavior = .never
+        if #available(iOS 27.0, *) {
+            scrollView.topEdgeEffect.style = .soft
+        }
         return scrollView
     }()
 
@@ -114,7 +117,8 @@ class ReaderTextViewController: BaseViewController {
             rootView: ReaderTextView(
                 source: viewModel.source, page: page,
                 fontFamily: currentFontFamily, fontSize: currentFontSize,
-                lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding
+                lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
+                textColor: Color(uiColor: ReaderTextTheme.text)
             )
         )
         if #available(iOS 16.0, *) {
@@ -177,7 +181,8 @@ class ReaderTextViewController: BaseViewController {
                 hc.rootView = ReaderTextView(
                     source: viewModel.source, page: page,
                     fontFamily: currentFontFamily, fontSize: currentFontSize,
-                    lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding
+                    lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
+                    textColor: Color(uiColor: ReaderTextTheme.text)
                 )
                 hc.view.invalidateIntrinsicContentSize()
             }
@@ -191,7 +196,8 @@ class ReaderTextViewController: BaseViewController {
             "Reader.textFontFamily",
             "Reader.textFontSize",
             "Reader.textLineSpacing",
-            "Reader.textHorizontalPadding"
+            "Reader.textHorizontalPadding",
+            ReaderTextTheme.changeNotification
         ]
         for key in styleKeys {
             NotificationCenter.default.addObserver(
@@ -414,6 +420,7 @@ extension ReaderTextViewController {
     }
 
     @objc private func textStyleChanged() {
+        scrollView.backgroundColor = ReaderTextTheme.background
         refreshTextViews()
     }
 

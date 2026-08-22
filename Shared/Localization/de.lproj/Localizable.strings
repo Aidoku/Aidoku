@@ -329,6 +329,11 @@
 "TEXT_FONT_SIZE" = "Schriftgröße";
 "TEXT_LINE_SPACING" = "Zeilenabstand";
 "TEXT_HORIZONTAL_PADDING" = "Seitenrand";
+"TEXT_THEME_LIGHT" = "Farbschema (Hell)";
+"TEXT_THEME_DARK" = "Farbschema (Dunkel)";
+"TEXT_THEME_SEPIA" = "Sepia";
+"TEXT_THEME_PAPER" = "Papier";
+"TEXT_THEME_GRAY" = "Grau";
 
 // Manga Updates
 "MANGA_UPDATES" = "Updates";

@@ -638,6 +638,24 @@ extension Settings {
                         title: NSLocalizedString("TEXT_HORIZONTAL_PADDING"),
                         notification: .init("Reader.textHorizontalPadding"),
                         value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
+                    ),
+                    .init(
+                        key: ReaderTextTheme.lightUserDefaultsKey,
+                        title: NSLocalizedString("TEXT_THEME_LIGHT"),
+                        notification: .init(ReaderTextTheme.changeNotification),
+                        value: .select(.init(
+                            values: ReaderTextTheme.allCases.map(\.rawValue),
+                            titles: ReaderTextTheme.allCases.map(\.title)
+                        ))
+                    ),
+                    .init(
+                        key: ReaderTextTheme.darkUserDefaultsKey,
+                        title: NSLocalizedString("TEXT_THEME_DARK"),
+                        notification: .init(ReaderTextTheme.changeNotification),
+                        value: .select(.init(
+                            values: ReaderTextTheme.allCases.map(\.rawValue),
+                            titles: ReaderTextTheme.allCases.map(\.title)
+                        ))
                     )
                 ]
             ))

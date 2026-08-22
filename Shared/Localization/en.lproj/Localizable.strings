@@ -584,6 +584,11 @@
 "TEXT_FONT_SIZE" = "Font Size";
 "TEXT_LINE_SPACING" = "Line Spacing";
 "TEXT_HORIZONTAL_PADDING" = "Horizontal Padding";
+"TEXT_THEME_LIGHT" = "Theme (Light)";
+"TEXT_THEME_DARK" = "Theme (Dark)";
+"TEXT_THEME_SEPIA" = "Sepia";
+"TEXT_THEME_PAPER" = "Paper";
+"TEXT_THEME_GRAY" = "Gray";
 
 // Dictionary
 "DICTIONARY_LOOKUP" = "Dictionary Lookup";
