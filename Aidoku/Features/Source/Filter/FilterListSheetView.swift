@@ -170,7 +170,7 @@ struct FilterListSheetView: View {
 
     func promptSearchSave() {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: NSLocalizedString("NAME_SAVED_SEARCH"),
             message: NSLocalizedString("NAME_SAVED_SEARCH_INFO"),
             actions: [

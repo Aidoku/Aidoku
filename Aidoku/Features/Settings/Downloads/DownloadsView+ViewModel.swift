@@ -202,11 +202,11 @@ extension DownloadsView.ViewModel {
     }
 
     func migrate() {
-        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+        UIApplication.shared.appDelegate?.showLoadingIndicator()
         Task {
             await DownloadManager.shared.migrateOldMetadata()
             await loadDownloadedManga()
-            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+            await UIApplication.shared.appDelegate?.hideLoadingIndicator()
         }
     }
 }

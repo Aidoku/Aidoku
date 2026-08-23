@@ -25,7 +25,7 @@ class FilterBase: KVCObject, Identifiable, Equatable, NSCopying {
         lhs.id == rhs.id
     }
 
-    var name: String
+    let name: String
 
     var type: FilterType {
         .base

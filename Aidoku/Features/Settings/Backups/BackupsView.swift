@@ -257,7 +257,7 @@ struct BackupsView: View {
 
     func showRenamePrompt(targetRenameBackupUrl: URL, initialName: String?) {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: NSLocalizedString("RENAME_BACKUP"),
             message: NSLocalizedString("RENAME_BACKUP_TEXT"),
             actions: [
@@ -303,7 +303,7 @@ extension BackupsView {
             // renaming requires re-encoding the backup, so it can fail even though the info loaded fine
             let renamed = await BackupManager.shared.renameBackup(url: url, name: name)
             if !renamed {
-                (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+                UIApplication.shared.appDelegate?.presentAlert(
                     title: NSLocalizedString("CORRUPTED_BACKUP"),
                     message: NSLocalizedString("CORRUPTED_BACKUP_TEXT")
                 )

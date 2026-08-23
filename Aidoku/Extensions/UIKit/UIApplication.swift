@@ -14,4 +14,8 @@ extension UIApplication {
             .first?
             .keyWindow
     }
+
+    var appDelegate: AppDelegate? {
+        delegate as? AppDelegate
+    }
 }

@@ -151,7 +151,7 @@ extension MigrateSingleSearchView {
     func migrate(copy: Bool, forceRemoveFromLibrary: Bool = false) {
         guard
             let targetSeries,
-            let appDelegate = UIApplication.shared.delegate as? AppDelegate
+            let appDelegate = UIApplication.shared.appDelegate
         else {
             return
         }

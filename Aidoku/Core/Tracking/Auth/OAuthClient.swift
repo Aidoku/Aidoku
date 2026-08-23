@@ -195,7 +195,7 @@ extension OAuthClient {
             tokens.askedForRefresh = true
             setTokens(tokens)
             await MainActor.run {
-                (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+                UIApplication.shared.appDelegate?.presentAlert(
                     title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), trackerName),
                     message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), trackerName)
                 )

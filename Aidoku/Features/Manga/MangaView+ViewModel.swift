@@ -619,7 +619,7 @@ extension MangaView.ViewModel {
                 }
             })
 
-            (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
+            UIApplication.shared.appDelegate?.visibleViewController?.present(alert, animated: true)
         }
     }
 }

@@ -114,7 +114,7 @@ struct CategoriesView: View {
 
     func showAddPrompt() {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: NSLocalizedString("CATEGORY_ADD"),
             message: NSLocalizedString("CATEGORY_ADD_TEXT"),
             actions: [
@@ -138,7 +138,7 @@ struct CategoriesView: View {
 
     func showRenamePrompt(targetRenameCategory: String) {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: NSLocalizedString("RENAME_CATEGORY"),
             message: NSLocalizedString("RENAME_CATEGORY_INFO"),
             actions: [

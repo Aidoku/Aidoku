@@ -288,7 +288,7 @@ struct TrackerView: View {
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel, handler: nil))
 
-        (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
+        UIApplication.shared.appDelegate?.visibleViewController?.present(alert, animated: true)
     }
 }
 
