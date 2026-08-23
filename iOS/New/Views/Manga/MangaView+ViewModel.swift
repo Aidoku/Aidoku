@@ -114,6 +114,9 @@ extension MangaView {
                     else { return }
                     self.source = newSource
                     self.manga = migration.to
+                    Task {
+                        await self.fetchData()
+                    }
                 }
                 .store(in: &cancellables)
 
