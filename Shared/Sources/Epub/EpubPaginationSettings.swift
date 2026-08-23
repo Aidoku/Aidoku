@@ -168,6 +168,23 @@ struct EpubPaginationSettings {
             // readium-css toggles are substring matches against the inline style attribute
             // (`:root[style*="readium-…-on"]`) rather than classes, so `classList.add` does
             // nothing. A flag is activated by setting a custom property whose value is the flag.
+            //
+            // This one reads as a double negative and is worth stating outright: every rule it
+            // gates is written `:not([style*="readium-noOverflow-on"])`, six of them and no
+            // positive selector, so **setting** it removes readium-css's `overflow: hidden` and
+            // `overflow: clip` from `body` and `:root`.
+            //
+            // Kept deliberately. Measured on Project Gutenberg 20871, whose tables run to 450px in
+            // a 280px column: clipping changes neither `scrollWidth` nor the page count, so it
+            // hides content the column has already lost rather than making it reachable. Cutting a
+            // table at the column edge leaves nothing to show for it, while content that bleeds
+            // onto the following pages is at least visible, and the table pass below scales the
+            // tables that would do it. Removing this line breaks no test, so it is not load-bearing
+            // for pagination; it is a choice about which failure a reader is better served by.
+            //
+            // Tracked upstream at readium/readium-css#138, where the clipping these rules apply was
+            // added deliberately for this complaint and gated so a reading system handling overflow
+            // itself can opt out, which is what setting this does. Worth reading before changing it.
             root.style.setProperty('--USER__noOverflow', 'readium-noOverflow-on');
             \(applyIOSPatch ? "root.style.setProperty('--USER__iOSPatch', 'readium-iOSPatch-on');" : "")
             \(applyIPadOSPatch ? "root.style.setProperty('--USER__iPadOSPatch', 'readium-iPadOSPatch-on');" : "")
