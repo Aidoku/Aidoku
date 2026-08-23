@@ -1,5 +1,5 @@
 //
-//  JsonAnyValue.swift
+//  JSONAnyValue.swift
 //  Aidoku
 //
 //  Created by Skitty on 6/24/22.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum JsonAnyType: Int {
+enum JSONAnyType: Int {
     case null = 0
     case int = 1
     case string = 3
@@ -18,8 +18,8 @@ enum JsonAnyType: Int {
     case intArray = 8
 }
 
-struct JsonAnyValue: Hashable, Sendable {
-    let type: JsonAnyType
+struct JSONAnyValue: Hashable, Sendable {
+    let type: JSONAnyType
 
     var boolValue: Bool?
     var intValue: Int?
@@ -27,7 +27,7 @@ struct JsonAnyValue: Hashable, Sendable {
     var stringValue: String?
     var intArrayValue: [Int]?
     var stringArrayValue: [String]?
-    var objectValue: [String: JsonAnyValue]?
+    var objectValue: [String: JSONAnyValue]?
 
     func toRaw() -> Any? {
         switch type {
@@ -43,7 +43,7 @@ struct JsonAnyValue: Hashable, Sendable {
     }
 }
 
-extension JsonAnyValue: Codable {
+extension JSONAnyValue: Codable {
     init(from decoder: Decoder) throws {
         let container =  try decoder.singleValueContainer()
 
@@ -110,7 +110,7 @@ extension JsonAnyValue: Codable {
             intArrayValue = nil
             stringArrayValue = strings
             objectValue = nil
-        } else if let object = try? container.decode([String: JsonAnyValue].self) {
+        } else if let object = try? container.decode([String: JSONAnyValue].self) {
             type = .object
             boolValue = nil
             intValue = nil
@@ -146,36 +146,36 @@ extension JsonAnyValue: Codable {
     }
 }
 
-extension JsonAnyValue {
-    static func null() -> JsonAnyValue {
+extension JSONAnyValue {
+    static func null() -> JSONAnyValue {
         .init(type: .null)
     }
 
-    static func string(_ value: String) -> JsonAnyValue {
+    static func string(_ value: String) -> JSONAnyValue {
         .init(type: .string, stringValue: value)
     }
 
-    static func int(_ value: Int) -> JsonAnyValue {
+    static func int(_ value: Int) -> JSONAnyValue {
         .init(type: .int, intValue: value, doubleValue: Double(value))
     }
 
-    static func double(_ value: Double) -> JsonAnyValue {
+    static func double(_ value: Double) -> JSONAnyValue {
         .init(type: .double, intValue: Int(value), doubleValue: value)
     }
 
-    static func bool(_ value: Bool) -> JsonAnyValue {
+    static func bool(_ value: Bool) -> JSONAnyValue {
         .init(type: .bool, boolValue: value)
     }
 
-    static func array(_ value: [String]) -> JsonAnyValue {
+    static func array(_ value: [String]) -> JSONAnyValue {
         .init(type: .array, stringArrayValue: value)
     }
 
-    static func intArray(_ value: [Int]) -> JsonAnyValue {
+    static func intArray(_ value: [Int]) -> JSONAnyValue {
         .init(type: .intArray, intArrayValue: value)
     }
 
-    static func object(_ value: [String: JsonAnyValue]) -> JsonAnyValue {
+    static func object(_ value: [String: JSONAnyValue]) -> JSONAnyValue {
         .init(type: .object, objectValue: value)
     }
 }

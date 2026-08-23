@@ -21,7 +21,7 @@ struct Backup: Codable, Hashable, Identifiable, Sendable {
     var categories: [BackupCategory]?
     var sources: [BackupSource]?
     var sourceLists: [String]?
-    var settings: [String: JsonAnyValue]?
+    var settings: [String: JSONAnyValue]?
     var date: Date
     var name: String?
     var automatic: Bool?

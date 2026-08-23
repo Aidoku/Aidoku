@@ -17,7 +17,7 @@ struct ModelInfo: Codable {
     var tags: [String]?
     var type: String?
     var miniOS: Int?
-    var config: [String: JsonAnyValue]?
+    var config: [String: JSONAnyValue]?
     var file: String
     var size: Int?
 }

@@ -165,7 +165,7 @@ actor BackupManager {
             let sources: [BackupSource] = CoreDataManager.shared.getSources(context: context).compactMap(BackupSource.init)
             let sourceLists = options.sourceLists ? SourceManager.shared.sourceListsStrings : []
 
-            let settings: [String: JsonAnyValue]? = if options.settings {
+            let settings: [String: JSONAnyValue]? = if options.settings {
                 self.exportSettings(includeSensitive: options.sensitiveSettings, sourceKeys: sources.map(\.id))
             } else {
                 nil
@@ -192,7 +192,7 @@ actor BackupManager {
         }
     }
 
-    private nonisolated func exportSettings(includeSensitive: Bool, sourceKeys: [String]) -> [String: JsonAnyValue] {
+    private nonisolated func exportSettings(includeSensitive: Bool, sourceKeys: [String]) -> [String: JSONAnyValue] {
         var allSettings = UserDefaults.standard.dictionaryRepresentation()
 
         // filter out potentially sensitive info
@@ -203,7 +203,7 @@ actor BackupManager {
             }
         }
 
-        var convertedSettings: [String: JsonAnyValue] = [:]
+        var convertedSettings: [String: JSONAnyValue] = [:]
 
         // convert to export compatible types
         for (key, value) in allSettings {
