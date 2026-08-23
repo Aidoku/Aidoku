@@ -139,15 +139,27 @@ struct EpubPageIndex {
 
     /// The fraction of the book that page `page` of document `index` sits at, for persistence.
     ///
-    /// `index / (count - 1)` is the convention both text readers use and which the same
-    /// `HistoryObject.scrollPosition` column already holds, so the last page of a book is exactly
-    /// 1. `max(total - 1, 1)` guards a single-page book, matching `EpubSpineRenderer.progression`.
+    /// `(page + anchor) / total`, restored as the page *containing* that place,
+    /// `floor(fraction * total)`. The anchor says where within the page the reading position
+    /// sits, and the caller knows that where this index does not: the leading edge (0) for a
+    /// single column or a scrolling document, whose first visible line is exactly where reading
+    /// resumes, and the leading edge of the last column — `(n - 1) / n` — for an n-column spread,
+    /// whose earlier columns the reader has been through by the time they leave it.
+    ///
+    /// Both halves of that convention came from a failure. Anchoring a two-column spread at its
+    /// edge restored a one-column iPhone onto the *first* column's text, a page before where the
+    /// reader left off; anchoring everything in the middle of the page made switching a paged
+    /// book to scroll mode land half a page past the line the reader was on. On the layout that
+    /// saved it the fraction floors back to the same page exactly, whatever the anchor.
+    ///
+    /// The text readers write `index / (count - 1)` to the same `HistoryObject.scrollPosition`
+    /// column, but each reader only ever reads its own values back, so the conventions may differ.
     ///
     /// `nil` until the book is completely measured. A fraction of a lower bound overstates how far
     /// through the book the reader is, and it is written to storage, so it is worth withholding
     /// rather than approximating.
-    func progression(forDocumentAt index: Int, page: Int) -> Double? {
+    func progression(forDocumentAt index: Int, page: Int, anchor: Double) -> Double? {
         guard isComplete, let bookPage = bookPage(forDocumentAt: index, page: page) else { return nil }
-        return Double(bookPage) / Double(max(total - 1, 1))
+        return (Double(bookPage) + anchor) / Double(total)
     }
 }

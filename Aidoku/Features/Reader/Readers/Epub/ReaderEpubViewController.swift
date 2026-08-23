@@ -262,23 +262,46 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// and page 400 about fifty-six.
     private var settingsReloadPage: Int?
 
-    /// Where the reader belongs, as a fraction of the whole book, refined onto a page once the new
-    /// layout has been measured.
+    /// Where the reader belongs after a fresh open, as `EpubPageIndex.progression`'s fraction of
+    /// the whole book out of history, refined onto a page once the new layout has been measured.
     ///
-    /// The same anchor a rotation uses, and for the same reason: re-fragmenting moves text between
-    /// pages, so a fraction survives it and an index does not. Only captured from a book that has
-    /// been measured, since an unmeasured total is a lower bound and would place the fraction too
-    /// far in; the page number carries those alone.
+    /// Only for a place saved by another layout entirely, where the book fraction is all that was
+    /// kept. An in-session rebuild has something better — see `settingsReloadAnchor`.
     private var settingsReloadPosition: Double?
+
+    /// Where the reader belongs across an in-session rebuild: the spine document they are in, and
+    /// how far through it their page's leading edge sits.
+    ///
+    /// Per document rather than as a fraction of the whole book, because a book fraction assumes
+    /// pages hold equal shares of the text and the per-document rounding breaks that across modes:
+    /// scroll mode rounds every document's count *up*, so a long spine inflates the scroll total
+    /// by half a page per document, and a book fraction carried between modes drifted by several
+    /// pages. The document is the unit both layouts agree on. The leading edge rather than the
+    /// column anchor the history uses, because on the same device nothing may be skipped: the
+    /// column anchor put a reader who was still in an iPad spread's left column onto the right
+    /// column's text when they switched to scroll mode.
+    private var settingsReloadAnchor: (document: Int, fraction: Double)?
+
+    /// The page count of the anchor's document as of the last time the anchor was applied.
+    ///
+    /// The anchor outlives its first application because the count it was applied against can be
+    /// provisional: WebKit lays a freshly loaded document out again a moment later, a two-column
+    /// layout all but always, and the repagination moves every boundary the landing was computed
+    /// from — an anchor at 0.675 of a document applied at 32 pages landed on page 21 of what
+    /// settled at 40. A changed count is the signal to apply the anchor again, and an unchanged
+    /// one is what keeps re-applying from looping: a navigation this controller performs cannot
+    /// change a count. Keyed on the anchor's own document; a count change in an *earlier* document
+    /// shifts the landing too, but the document being re-laid-out is the one on screen.
+    private var settingsReloadAnchorAppliedCount: Int?
 
     private func scheduleSettingsReload() {
         withdrawUnanchoredReturnOffer()
         if settingsReloadPage == nil {
             settingsReloadPage = (book?.bookPage).map { $0 + 1 }
-            settingsReloadPosition = book.flatMap { book in
-                guard book.isMeasured, book.bookTotal > 1, let page = book.bookPage else { return nil }
-                return Double(page) / Double(book.bookTotal - 1)
+            settingsReloadAnchor = book.flatMap { book in
+                book.edgeInDocument.map { (book.currentDocument, $0) }
             }
+            settingsReloadAnchorAppliedCount = nil
         }
         settingsReloadTask?.cancel()
         settingsReloadTask = Task { [weak self] in
@@ -633,6 +656,13 @@ class ReaderEpubViewController: BaseObservingViewController {
         // position.
         if startPage > 1 {
             book.holdBookPage(startPage - 1)
+            // A fresh open refines its page-number landing by the saved fraction through the same
+            // route a settings reload does: the saved page belongs to the viewport that counted
+            // it, so on any other screen it names the wrong text. Never over an anchor a settings
+            // reload already holds, which describes this session rather than the last one.
+            if settingsReloadPosition == nil, settingsReloadAnchor == nil {
+                settingsReloadPosition = await savedScrollPosition()
+            }
         }
 
         do {
@@ -648,6 +678,19 @@ class ReaderEpubViewController: BaseObservingViewController {
         await book.showPendingBookPage()
 
         report()
+    }
+
+    /// The fraction of the book the reader left off at, from history.
+    ///
+    /// `ReaderPagedTextViewController.loadReadingProgress` is the sibling: both readers reflow, so
+    /// both persist a fraction alongside the page number and resume from the fraction.
+    private func savedScrollPosition() async -> Double? {
+        guard let chapterKey = chapter?.key else { return nil }
+        let chapterId = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapterKey)
+        return await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getHistory(chapterId: chapterId, context: context)?
+                .scrollPosition?.doubleValue
+        }
     }
 
     /// Whether the reader is still being taken to the page the book was opened at.
@@ -692,14 +735,45 @@ class ReaderEpubViewController: BaseObservingViewController {
             navigate(isRestore: true) { await $0.showPendingBookPage() }
         }
 
-        // A rebuild's page-number landing is refined onto the place the reader actually left once the
-        // new layout is finished being counted, which is the first moment the fraction can be turned
-        // back into a page. Cleared first, so nothing downstream sees it as still pending, and only
-        // while the reader has not moved themselves: `navigate` drops it precisely then.
-        if book.isMeasured, let position = settingsReloadPosition, book.bookTotal > 1 {
+        // A rebuild's page-number landing is refined onto the place the reader actually left once
+        // the new layout is finished being counted, which is the first moment a fraction can be
+        // turned back into a page.
+        //
+        // Both anchors restore to the page *containing* the place — floor, not the nearest
+        // boundary; rounding sent an iPhone position from the right half of an iPad spread onto
+        // the spread after it. The epsilon keeps an edge-anchored fraction, which lands exactly on
+        // a page boundary, from flooring into the page before it: a scroll offset comes back a few
+        // pixels under what was set (the browser rounds `scrollTo`), so the margin is a hundredth
+        // of a page — half a line — rather than float dust, which one pixel already exceeds.
+        //
+        // The scroll-mode landing is refined onto the exact fraction after the page lands it in
+        // the right document: a scroll viewport can rest anywhere, and resting it on the page
+        // boundary instead — which sits *before* the anchor, that being what floor means — walked
+        // every paged → scroll → paged round trip one page back: the switch back floored a second
+        // time from the already-behind boundary. `showEdge` is why this navigates even when the
+        // coarse landing already sits on the target page.
+        //
+        // The anchor is kept rather than consumed, and applies again whenever its document's count
+        // has changed since it last did; see `settingsReloadAnchorAppliedCount`. Only the page
+        // number and the book fraction are cleared, so a later reload re-seeds instead of reusing
+        // them.
+        if book.isMeasured, let (document, fraction) = settingsReloadAnchor,
+           let count = book.index.pageCount(forDocumentAt: document),
+           let start = book.index.startOfDocument(at: document),
+           count != settingsReloadAnchorAppliedCount {
+            settingsReloadAnchorAppliedCount = count
             settingsReloadPosition = nil
             settingsReloadPage = nil
-            let target = Int((position * Double(book.bookTotal - 1)).rounded())
+            let target = start + min(Int(fraction * Double(count) + 0.01), count - 1)
+            navigate(isRestore: true) {
+                await $0.showBookPage(target)
+                await $0.renderer?.showEdge(fraction)
+            }
+            return
+        } else if book.isMeasured, let position = settingsReloadPosition {
+            settingsReloadPosition = nil
+            settingsReloadPage = nil
+            let target = min(Int(position * Double(book.bookTotal) + 0.01), book.bookTotal - 1)
             if target != book.bookPage {
                 navigate(isRestore: true) { await $0.showBookPage(target) }
                 return
@@ -756,6 +830,8 @@ class ReaderEpubViewController: BaseObservingViewController {
             // The reader has taken over from wherever a rebuild was restoring them to.
             settingsReloadPage = nil
             settingsReloadPosition = nil
+            settingsReloadAnchor = nil
+            settingsReloadAnchorAppliedCount = nil
         }
         guard book != nil else { return }
         guard moveTask == nil else {
@@ -807,9 +883,9 @@ extension ReaderEpubViewController {
     func offerReturn() {
         guard let book, let page = book.bookPage else { return }
         returnBookPage = page
-        returnPosition = book.isMeasured && book.bookTotal > 1
-            ? Double(page) / Double(book.bookTotal - 1)
-            : nil
+        // The same mid-page fraction every other anchor in this reader carries, withheld until
+        // measured by `progression` itself.
+        returnPosition = book.progression
         returnButton.accessibilityLabel = String(
             format: NSLocalizedString("BACK_TO_PAGE_X", comment: ""),
             page + 1
@@ -841,8 +917,9 @@ extension ReaderEpubViewController {
     /// The book page to return to, resolved against the layout as it stands now rather than the one
     /// the offer was made in.
     private var returnTarget: Int? {
-        if let returnPosition, let book, book.isMeasured, book.bookTotal > 1 {
-            return Int((returnPosition * Double(book.bookTotal - 1)).rounded())
+        if let returnPosition, let book, book.isMeasured {
+            // The page containing the place, same as the restore in `report`.
+            return min(Int(returnPosition * Double(book.bookTotal) + 0.01), book.bookTotal - 1)
         }
         return returnBookPage
     }
@@ -991,6 +1068,8 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
         bookURL = nil
         settingsReloadPage = nil
         settingsReloadPosition = nil
+        settingsReloadAnchor = nil
+        settingsReloadAnchorAppliedCount = nil
         // The book being left goes with the chapter it belonged to.
         tearDownBook()
         openTask = Task { [weak self] in
