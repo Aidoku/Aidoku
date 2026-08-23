@@ -318,10 +318,10 @@ extension ReaderWebtoonPageNode {
 
         let imageTask = ImagePipeline.shared.loadImage(
             with: request,
-            progress: { [weak self] _, completed, total in
-                guard let self else { return }
+            progress: { [weak progressView] _, completed, total in
+                guard let progressView else { return }
                 Task { @MainActor in
-                    self.progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
+                    progressView.setProgress(value: Float(completed) / Float(total), withAnimation: false)
                 }
             },
             completion: { _ in }

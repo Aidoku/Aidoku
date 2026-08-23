@@ -262,7 +262,7 @@ class SourceViewController: OldMangaCollectionViewController {
     @objc func openFilterPopover() {
         // save current filters to compare with when done
         Task {
-            await viewModel.saveSelectedFilters()
+            viewModel.saveSelectedFilters()
             let vc = await FilterModalViewController(filters: viewModel.filters, selectedFilters: viewModel.selectedFilters)
             vc.delegate = self
             vc.resetButton.addTarget(self, action: #selector(resetSelectedFilters), for: .touchUpInside)
@@ -492,8 +492,8 @@ extension SourceViewController: MangaListSelectionHeaderDelegate {
 extension SourceViewController: MiniModalDelegate {
     func modalWillDismiss() {
         Task {
-            let shouldRefresh = await viewModel.savedFiltersDiffer()
-            await viewModel.clearSavedFilters()
+            let shouldRefresh = viewModel.savedFiltersDiffer()
+            viewModel.clearSavedFilters()
             if shouldRefresh {
                 await viewModel.setCurrentPage(nil)
                 await viewModel.setCurrentListing(nil)

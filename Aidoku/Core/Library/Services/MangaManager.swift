@@ -230,28 +230,37 @@ extension MangaManager {
         trackItems: [TrackItem],
         categories: [String]
     ) async {
+        let newManga = manga.toNew()
+        let newChapters = chapters.map { $0.toNew() }
+        let lastOpened = manga.lastOpened
+        let lastUpdated = manga.lastUpdated
+        let lastUpdatedChapters = manga.lastUpdatedChapters
+        let lastChapter = manga.lastChapter
+        let lastRead = manga.lastRead
+        let dateAdded = manga.dateAdded
+
         await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.addToLibrary(
-                manga: manga.toNew(),
-                chapters: chapters.map { $0.toNew() },
+                manga: newManga,
+                chapters: newChapters,
                 context: context
             )
 
             if let libraryObject = CoreDataManager.shared.getLibraryManga(
-                mangaId: manga.identifier,
+                mangaId: newManga.identifier,
                 context: context
             ) {
                 if
-                    let lastOpened = manga.lastOpened,
-                    let lastUpdated = manga.lastUpdated,
-                    let lastUpdatedChapters = manga.lastUpdatedChapters,
-                    let dateAdded = manga.dateAdded
+                    let lastOpened,
+                    let lastUpdated,
+                    let lastUpdatedChapters,
+                    let dateAdded
                 {
                     libraryObject.lastOpened = lastOpened
                     libraryObject.lastUpdated = lastUpdated
                     libraryObject.lastUpdatedChapters = lastUpdatedChapters
-                    libraryObject.lastChapter = manga.lastChapter
-                    libraryObject.lastRead = manga.lastRead
+                    libraryObject.lastChapter = lastChapter
+                    libraryObject.lastRead = lastRead
                     libraryObject.dateAdded = dateAdded
                 }
             }
@@ -273,7 +282,7 @@ extension MangaManager {
                 }
             }
             CoreDataManager.shared.addCategoriesToManga(
-                mangaId: manga.identifier,
+                mangaId: newManga.identifier,
                 categories: categories,
                 context: context
             )
@@ -598,10 +607,13 @@ extension MangaManager {
                     results[manga.hashValue] = newManga
                 }
 
+                let mangaId = manga.identifier
+                let mangaTitle = manga.title
+
                 let summary = await CoreDataManager.shared.container.performBackgroundTask { context -> NotificationManager.NewChaptersSummary? in
                     guard
                         let libraryObject = CoreDataManager.shared.getLibraryManga(
-                            mangaId: manga.identifier,
+                            mangaId: mangaId,
                             context: context
                         ),
                         let mangaObject = libraryObject.manga
@@ -619,7 +631,7 @@ extension MangaManager {
 
                     let newChapters = CoreDataManager.shared.setChapters(
                         chapters,
-                        mangaId: manga.identifier,
+                        mangaId: mangaId,
                         context: context
                     )
                     var notifiableCount = 0
@@ -632,7 +644,7 @@ extension MangaManager {
                             && !scanlatorFilter.isEmpty ? scanlatorFilter.contains(chapter.scanlator ?? "") : true
                         {
                             CoreDataManager.shared.createMangaUpdate(
-                                mangaId: manga.identifier,
+                                mangaId: mangaId,
                                 chapterObject: chapter,
                                 context: context
                             )
@@ -651,9 +663,9 @@ extension MangaManager {
                     }
 
                     guard notifiableCount > 0 else { return nil }
-                    let title = mangaObject.title.isEmpty ? (manga.title ?? "") : mangaObject.title
+                    let title = mangaObject.title.isEmpty ? (mangaTitle ?? "") : mangaObject.title
                     return NotificationManager.NewChaptersSummary(
-                        mangaIdentifier: MangaIdentifier(sourceKey: manga.sourceId, mangaKey: manga.id),
+                        mangaIdentifier: mangaId,
                         mangaTitle: title,
                         chapterCount: notifiableCount
                     )

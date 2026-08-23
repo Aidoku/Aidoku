@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum FilterType: Int {
+enum FilterType: Int, Sendable {
     case base = 0
     case group = 1
     case text = 2
@@ -269,3 +269,18 @@ class GenreFilter: CheckFilter {
         GenreFilter(name: name, canExclude: canExclude, id: id, value: value)
     }
 }
+
+// note: this code is not fully safe, but it is legacy code that will be removed when the
+// legacy source system is removed, so there is no reason for me to refactor it completely
+extension FilterBase: @unchecked Sendable {}
+extension Filter: @unchecked Sendable {}
+extension StringFilter: @unchecked Sendable {}
+extension TextFilter: @unchecked Sendable {}
+extension CheckFilter: @unchecked Sendable {}
+extension SelectFilter: @unchecked Sendable {}
+extension SortFilter: @unchecked Sendable {}
+extension GroupFilter: @unchecked Sendable {}
+extension TitleFilter: @unchecked Sendable {}
+extension AuthorFilter: @unchecked Sendable {}
+extension GenreFilter: @unchecked Sendable {}
+extension SortSelection: @unchecked Sendable {}

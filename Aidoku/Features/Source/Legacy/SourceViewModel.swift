@@ -15,12 +15,14 @@ actor SourceViewModel {
     var filters: [FilterBase] = []
 
     var currentListing: Listing?
+    @MainActor
     let selectedFilters = SelectedFilters() // TODO: improve filtering system
     var titleQuery: String?
 
     var currentPage: Int?
     var hasMore = true // indicates if there is more manga to load
 
+    @MainActor
     private var savedSelectedFilters: [FilterBase]?
     private var searchTask: Task<(), any Error>?
 
@@ -38,8 +40,8 @@ actor SourceViewModel {
         guard let source = source else { return }
         let reset = source.needsFilterRefresh
         filters = (try? await source.getFilters()) ?? []
-        if selectedFilters.filters.isEmpty || reset {
-            resetSelectedFilters()
+        if await selectedFilters.filters.isEmpty || reset {
+            await resetSelectedFilters()
         }
     }
 
@@ -90,7 +92,7 @@ actor SourceViewModel {
         return !task.isCancelled
     }
 
-    func resetFilters(filters: [FilterBase]) {
+    nonisolated func resetFilters(filters: [FilterBase]) {
         for filter in filters {
             if let filter = filter as? CheckFilter {
                 filter.value = filter.defaultValue
@@ -104,22 +106,28 @@ actor SourceViewModel {
         }
     }
 
-    func resetSelectedFilters() {
+    func resetSelectedFilters() async {
         guard let source = source else { return }
         resetFilters(filters: filters)
-        selectedFilters.filters = source.getDefaultFilters()
+        let defaultFilters = source.getDefaultFilters()
+        await MainActor.run {
+            selectedFilters.filters = defaultFilters
+        }
     }
 
+    @MainActor
     func saveSelectedFilters() {
         // deep clone filters to prevent being saved as references
         savedSelectedFilters = selectedFilters.filters.compactMap { $0.copy() as? FilterBase }
     }
 
+    @MainActor
     func clearSavedFilters() {
         savedSelectedFilters = nil
     }
 
     /// Returns a boolean indicating if saved filters differ from selected filters.
+    @MainActor
     func savedFiltersDiffer() -> Bool {
         guard let savedSelectedFilters = savedSelectedFilters else { return true }
         if savedSelectedFilters.count != selectedFilters.filters.count {

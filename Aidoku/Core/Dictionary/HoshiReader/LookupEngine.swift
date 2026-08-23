@@ -14,6 +14,7 @@ import CHoshiDicts
 import CxxStdlib
 
 @available(iOS 18.0, macOS 15.0, *)
+@MainActor
 class LookupEngine {
     static let shared = LookupEngine()
 

@@ -59,6 +59,7 @@ final class ReaderDictionaryCoordinator {
 
     @available(iOS 18.0, *)
     @discardableResult
+    @MainActor
     func performLookup(
         text: String,
         contextText: String? = nil,
@@ -238,6 +239,7 @@ final class ReaderDictionaryCoordinator {
     }
 
     @available(iOS 18.0, *)
+    @MainActor
     func updateSelectionHighlight(text: String, charRects: [CGRect]) {
         guard let owner else { return }
 
