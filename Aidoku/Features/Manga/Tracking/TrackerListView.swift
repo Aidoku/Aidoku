@@ -83,6 +83,9 @@ struct TrackerListView: View {
     }
 
     func loadTrackItems() {
-        trackItems = CoreDataManager.shared.getTracks(mangaId: manga.identifier).map { $0.toItem() }
+        trackItems = CoreDataManager.shared.getTracks(
+            mangaId: manga.identifier,
+            context: CoreDataManager.shared.context
+        ).map { $0.toItem() }
     }
 }

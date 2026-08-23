@@ -20,13 +20,8 @@ struct BackupCategory {
         self.data = object.data as? Data
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> CategoryObject {
-        let obj: CategoryObject
-        if let context = context {
-            obj = CategoryObject(context: context)
-        } else {
-            obj = CategoryObject()
-        }
+    func toObject(context: NSManagedObjectContext) -> CategoryObject {
+        let obj = CategoryObject(context: context)
         obj.title = title
         obj.sort = Int16(sort ?? 0)
         obj.group = group ?? false

@@ -16,8 +16,9 @@ struct CategoriesView: View {
     @State private var groupTitles: [String] = []
 
     init() {
-        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles())
-        self._groupTitles = State(initialValue: CoreDataManager.shared.getCategories(groupsOnly: true).compactMap { $0.title })
+        let context = CoreDataManager.shared.context
+        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles(context: context))
+        self._groupTitles = State(initialValue: CoreDataManager.shared.getCategories(groupsOnly: true, context: context).compactMap { $0.title })
     }
 
     var body: some View {
@@ -97,13 +98,17 @@ struct CategoriesView: View {
             adjustedDestination -= sourceIndices.count
         }
 
+        let context = CoreDataManager.shared.context
+
         for offset in sourceIndices.reversed() {
             let category = categories[offset]
-            CoreDataManager.shared.moveCategory(title: category, toPosition: adjustedDestination)
+            CoreDataManager.shared.moveCategory(title: category, toPosition: adjustedDestination, context: context)
         }
 
-        categories = CoreDataManager.shared.getCategoryTitles()
+        categories = CoreDataManager.shared.getCategoryTitles(context: context)
+
         CoreDataManager.shared.save()
+
         NotificationCenter.default.post(name: .updateCategories, object: nil)
     }
 

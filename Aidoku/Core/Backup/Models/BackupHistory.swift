@@ -26,13 +26,8 @@ struct BackupHistory: Codable, Hashable {
         completed = historyObject.completed
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> HistoryObject {
-        let obj: HistoryObject
-        if let context = context {
-            obj = HistoryObject(context: context)
-        } else {
-            obj = HistoryObject()
-        }
+    func toObject(context: NSManagedObjectContext) -> HistoryObject {
+        let obj = HistoryObject(context: context)
         obj.dateRead = dateRead
         obj.sourceId = sourceId
         obj.chapterId = chapterId

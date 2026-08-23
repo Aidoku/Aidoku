@@ -287,6 +287,7 @@ extension MangaManager {
         }
     }
 
+    @MainActor
     static func shouldAskForCategories() -> Bool {
         let categories = CoreDataManager.shared.getCategoryTitles()
         guard !categories.isEmpty else { return false }
@@ -461,7 +462,7 @@ extension MangaManager {
         manga: Manga,
         options: [String],
         excludedCategories: [String] = [],
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Bool {
         // update strategy is never
         if manga.updateStrategy == .never {

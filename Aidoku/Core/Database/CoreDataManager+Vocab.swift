@@ -9,24 +9,23 @@ import CoreData
 
 extension CoreDataManager {
     /// Removes all vocab objects.
-    func clearVocab(context: NSManagedObjectContext? = nil) {
+    func clearVocab(context: NSManagedObjectContext) {
         clear(request: VocabObject.fetchRequest(), context: context)
     }
 
     /// Gets all vocab objects.
-    func getVocab(sorted: Bool = true, context: NSManagedObjectContext? = nil) -> [VocabObject] {
+    func getVocab(sorted: Bool = true, context: NSManagedObjectContext) -> [VocabObject] {
         let request = VocabObject.fetchRequest()
         if sorted {
             request.sortDescriptors = [
                 NSSortDescriptor(key: "createdDate", ascending: false)
             ]
         }
-        return (try? (context ?? self.context).fetch(request)) ?? []
+        return (try? context.fetch(request)) ?? []
     }
 
     /// Checks if a vocab item for a specified word exists in the data store.
-    func hasVocab(word: String, reading: String? = nil, context: NSManagedObjectContext? = nil) -> Bool {
-        let context = context ?? self.context
+    func hasVocab(word: String, reading: String? = nil, context: NSManagedObjectContext) -> Bool {
         let request = VocabObject.fetchRequest()
         if let reading {
             request.predicate = NSPredicate(
@@ -44,8 +43,7 @@ extension CoreDataManager {
     }
 
     /// Gets a vocab item for a specified word.
-    func getVocab(word: String, reading: String? = nil, context: NSManagedObjectContext? = nil) -> VocabObject? {
-        let context = context ?? self.context
+    func getVocab(word: String, reading: String? = nil, context: NSManagedObjectContext) -> VocabObject? {
         let request = VocabObject.fetchRequest()
         if let reading {
             request.predicate = NSPredicate(
@@ -66,21 +64,20 @@ extension CoreDataManager {
     @discardableResult
     func createVocab(
         entry: VocabEntry,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> VocabObject {
-        let context = context ?? self.context
         let object = VocabObject(context: context)
         object.load(from: entry)
         return object
     }
 
     /// Removes a vocab item.
-    func removeVocab(word: String, reading: String? = nil, context: NSManagedObjectContext? = nil) {
+    func removeVocab(word: String, reading: String? = nil, context: NSManagedObjectContext) {
         guard let object = getVocab(
             word: word,
             reading: reading,
             context: context
         ) else { return }
-        (context ?? self.context).delete(object)
+        context.delete(object)
     }
 }

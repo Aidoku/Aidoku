@@ -5,51 +5,60 @@
 //  Created by Skitty on 8/2/22.
 //
 
+import Combine
 import CoreData
 
-final class CoreDataManager {
+final class CoreDataManager: @unchecked Sendable {
+    static let shared = CoreDataManager()
 
     static let containerID = Bundle.main
         .infoDictionary?["ICLOUD_CONTAINER_ID"] as? String ?? "iCloud.\(Bundle.main.bundleIdentifier!)"
 
-    static let shared = CoreDataManager()
+    let container: NSPersistentCloudKitContainer
 
-    private var observers: [NSObjectProtocol] = []
+    @MainActor
+    var context: NSManagedObjectContext {
+        container.viewContext
+    }
+
+    // only accessed from init
+    private var cancellables: Set<AnyCancellable> = []
+
+    private let remoteHistoryQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "com.aidoku.remote-history"
+        queue.maxConcurrentOperationCount = 1
+        return queue
+    }()
+    // only accessed from remoteHistoryQueue
     private var lastHistoryToken: NSPersistentHistoryToken?
 
-    private var shouldUseiCloud: Bool {
+    private static var shouldUseiCloud: Bool {
         UserDefaults.standard.bool(forKey: "General.icloudSync") && FileManager.default.ubiquityIdentityToken != nil
     }
 
-    deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
+    private init() {
+        self.container = Self.createContainer()
 
-    init() {
-        observers.append(NotificationCenter.default.addObserver(
-            forName: .NSPersistentStoreRemoteChange, object: container.persistentStoreCoordinator, queue: nil
-        ) { [weak self] _ in
+        NotificationCenter.default.publisher(
+            for: .NSPersistentStoreRemoteChange,
+            object: container.persistentStoreCoordinator
+        )
+        .sink { [weak self] _ in
             self?.storeRemoteChange()
-        })
+        }
+        .store(in: &cancellables)
 
-        observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name("General.icloudSync"), object: nil, queue: nil
-        ) { [weak self] _ in
-            guard
-                let self,
-                let cloudDescription = self.container.persistentStoreDescriptions.first
-            else { return }
-            if self.shouldUseiCloud {
-                cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: CoreDataManager.containerID)
-            } else {
-                cloudDescription.cloudKitContainerOptions = nil
+        NotificationCenter.default.publisher(for: .init("General.icloudSync"))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.updateCloudConfiguration()
+                }
             }
-        })
+            .store(in: &cancellables)
     }
 
-    lazy var container: NSPersistentCloudKitContainer = {
+    static func createContainer() -> NSPersistentCloudKitContainer {
         let container = NSPersistentCloudKitContainer(name: "Aidoku")
 
         let storeDirectory = FileManager.default.applicationSupportDirectory
@@ -95,18 +104,9 @@ final class CoreDataManager {
 //        }
 
         return container
-    }()
-
-    lazy var queue: OperationQueue = {
-        let queue = OperationQueue()
-        queue.maxConcurrentOperationCount = 1
-        return queue
-    }()
-
-    var context: NSManagedObjectContext {
-        container.viewContext
     }
 
+    @MainActor
     func save() {
         do {
             try context.save()
@@ -130,13 +130,22 @@ final class CoreDataManager {
     }
 
     /// Clear all objects from fetch request.
-    func clear<T: NSManagedObject>(request: NSFetchRequest<T>, context: NSManagedObjectContext? = nil) {
-        let context = context ?? self.context
+    func clear<T: NSManagedObject>(request: NSFetchRequest<T>, context: NSManagedObjectContext) {
         let deleteRequest = NSBatchDeleteRequest(fetchRequest: (request as? NSFetchRequest<NSFetchRequestResult>)!)
         do {
             _ = try context.execute(deleteRequest)
         } catch {
             LogManager.logger.error("CoreDataManager.clear: \(error.localizedDescription)")
+        }
+    }
+
+    @MainActor
+    func updateCloudConfiguration() {
+        guard let cloudDescription = self.container.persistentStoreDescriptions.first else { return }
+        if Self.shouldUseiCloud {
+            cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: CoreDataManager.containerID)
+        } else {
+            cloudDescription.cloudKitContainerOptions = nil
         }
     }
 
@@ -172,7 +181,8 @@ final class CoreDataManager {
 
 extension CoreDataManager {
     func storeRemoteChange() {
-        queue.addOperation {
+        remoteHistoryQueue.addOperation { [weak self] in
+            guard let self else { return }
             let context = self.container.newBackgroundContext()
             context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
             context.performAndWait {

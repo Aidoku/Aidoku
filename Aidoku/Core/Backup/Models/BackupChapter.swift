@@ -38,13 +38,8 @@ struct BackupChapter: Codable, Hashable {
         sourceOrder = Int(chapterObject.sourceOrder)
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> ChapterObject {
-        let obj: ChapterObject
-        if let context = context {
-            obj = ChapterObject(context: context)
-        } else {
-            obj = ChapterObject(context: CoreDataManager.shared.context)
-        }
+    func toObject(context: NSManagedObjectContext) -> ChapterObject {
+        let obj = ChapterObject(context: context)
         obj.sourceId = sourceId
         obj.mangaId = mangaId
         obj.id = id

@@ -305,11 +305,13 @@ extension MangaView.ViewModel {
         guard !fetchedDetails else { return }
         fetchedDetails = true
 
-        if let cachedManga = CoreDataManager.shared.getManga(mangaId: self.manga.identifier) {
+        let context = CoreDataManager.shared.context
+
+        if let cachedManga = CoreDataManager.shared.getManga(mangaId: self.manga.identifier, context: context) {
             self.manga = self.manga.copy(from: cachedManga.toNewManga())
         }
 
-        let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.identifier)
+        let filters = CoreDataManager.shared.getMangaChapterFilters(mangaId: manga.identifier, context: context)
         chapterSortOption = .init(flags: filters.flags)
         chapterSortAscending = filters.flags & ChapterFlagMask.sortAscending != 0
         chapterFilters = ChapterFilterOption.parseOptions(flags: filters.flags)

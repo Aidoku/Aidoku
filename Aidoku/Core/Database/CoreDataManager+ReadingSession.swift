@@ -10,26 +10,26 @@ import Foundation
 
 extension CoreDataManager {
     /// Remove all reading session objects.
-    func clearSessions(context: NSManagedObjectContext? = nil) {
+    func clearSessions(context: NSManagedObjectContext) {
         clear(request: ReadingSessionObject.fetchRequest(), context: context)
     }
 
     /// Gets all reading session objects.
-    func getSessions(context: NSManagedObjectContext? = nil) -> [ReadingSessionObject] {
-        (try? (context ?? self.context).fetch(ReadingSessionObject.fetchRequest())) ?? []
+    func getSessions(context: NSManagedObjectContext) -> [ReadingSessionObject] {
+        (try? context.fetch(ReadingSessionObject.fetchRequest())) ?? []
     }
 
     func createSession(
         chapterId: ChapterIdentifier,
         data: HistoryManager.ReadingSessionData,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) {
         let historyObject = self.getOrCreateHistory(chapterId: chapterId, context: context)
         if historyObject.dateRead == .distantPast {
             // if history object was just created, populate it with info we have
             historyObject.dateRead = data.endDate
         }
-        let session = ReadingSessionObject(context: context ?? self.context)
+        let session = ReadingSessionObject(context: context)
         session.startDate = data.startDate
         session.endDate = data.endDate
         session.pagesRead = Int16(data.pagesRead)
@@ -37,8 +37,7 @@ extension CoreDataManager {
     }
 
     // get longest and current count of consecutive days with reading sessions
-    func getStreakLengths(context: NSManagedObjectContext? = nil) -> (current: Int, longest: Int) {
-        let context = context ?? self.context
+    func getStreakLengths(context: NSManagedObjectContext) -> (current: Int, longest: Int) {
 
         let fetchRequest = NSFetchRequest<NSDictionary>(entityName: "ReadingSession")
         fetchRequest.resultType = .dictionaryResultType
@@ -95,9 +94,7 @@ extension CoreDataManager {
     }
 
     // get page, series, and hour read counts (total, current month, and current year)
-    func getBasicStats(context: NSManagedObjectContext?) -> BasicStats {
-        let context = context ?? self.context
-
+    func getBasicStats(context: NSManagedObjectContext) -> BasicStats {
         let fetchRequest = NSFetchRequest<NSDictionary>(entityName: "ReadingSession")
         fetchRequest.resultType = .dictionaryResultType
         fetchRequest.propertiesToFetch = [
@@ -166,9 +163,7 @@ extension CoreDataManager {
         )
     }
 
-    func getChapterYearlyReadingData(context: NSManagedObjectContext? = nil) -> [YearlyMonthData] {
-        let context = context ?? self.context
-
+    func getChapterYearlyReadingData(context: NSManagedObjectContext) -> [YearlyMonthData] {
         let fetchRequest = NSFetchRequest<NSDictionary>(entityName: "ReadingSession")
         fetchRequest.resultType = .dictionaryResultType
         fetchRequest.propertiesToFetch = [
@@ -262,9 +257,7 @@ extension CoreDataManager {
     }
 
     // get the number of history items with at least one reading session per day for the last year
-    func getReadingHeatmapData(context: NSManagedObjectContext? = nil) -> HeatmapData {
-        let context = context ?? self.context
-
+    func getReadingHeatmapData(context: NSManagedObjectContext) -> HeatmapData {
         let calendar = Calendar.current
         let startOfTomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: Date.now))!
         let (totalDays, startDate) = HeatmapData.getDaysAndStartDate()
