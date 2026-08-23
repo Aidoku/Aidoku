@@ -72,9 +72,7 @@ class SettingSelectViewController: UITableViewController {
 
         title = item.title
 
-        if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0
-        }
+        tableView.sectionHeaderTopPadding = 0
         tableView.delaysContentTouches = false
 
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")

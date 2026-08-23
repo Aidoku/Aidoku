@@ -47,10 +47,7 @@ class SettingsTableViewController: UITableViewController {
         title = NSLocalizedString("SETTINGS")
         navigationController?.navigationBar.prefersLargeTitles = true
 
-        if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0
-        }
-
+        tableView.sectionHeaderTopPadding = 0
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "UITableViewCell")
     }
 }

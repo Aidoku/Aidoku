@@ -31,9 +31,7 @@ class SourceInfoViewController: SettingsTableViewController {
             action: #selector(close)
         )
 
-        if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0
-        }
+        tableView.sectionHeaderTopPadding = 0
         tableView.delaysContentTouches = false
         tableView.keyboardDismissMode = .onDrag
 

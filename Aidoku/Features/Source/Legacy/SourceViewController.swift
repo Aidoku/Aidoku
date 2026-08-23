@@ -132,12 +132,10 @@ class SourceViewController: OldMangaCollectionViewController {
         super.viewWillAppear(animated)
 
         // fix tab bar background turning clear when presenting
-        if #available(iOS 15.0, *) {
-            storedTabBarAppearance = navigationController?.tabBarController?.tabBar.scrollEdgeAppearance
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = tabBarAppearance
-        }
+        storedTabBarAppearance = navigationController?.tabBarController?.tabBar.scrollEdgeAppearance
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = tabBarAppearance
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -149,9 +147,7 @@ class SourceViewController: OldMangaCollectionViewController {
         }
 
         // reset tab bar background fix
-        if #available(iOS 15.0, *) {
-            navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = storedTabBarAppearance
-        }
+        navigationController?.tabBarController?.tabBar.scrollEdgeAppearance = storedTabBarAppearance
     }
 
     override func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
@@ -203,15 +199,9 @@ class SourceViewController: OldMangaCollectionViewController {
         ]
         // show filter button in navbar if header is hidden
         if showFilterButton && source.filterable && (hidesListings || listingsHidden) {
-            let filterImage: UIImage?
-            if #available(iOS 15.0, *) {
-                filterImage = UIImage(systemName: "line.3.horizontal.decrease.circle")
-            } else {
-                filterImage = UIImage(systemName: "line.horizontal.3.decrease.circle")
-            }
             items.append(
                 UIBarButtonItem(
-                    image: filterImage,
+                    image: UIImage(systemName: "line.3.horizontal.decrease.circle"),
                     style: .plain,
                     target: self,
                     action: #selector(openFilterPopover)
@@ -443,11 +433,7 @@ extension SourceViewController {
 
     func refreshCells(for mangaInfo: [MangaInfo]) {
         var snapshot = dataSource.snapshot()
-        if #available(iOS 15.0, *) {
-            snapshot.reconfigureItems(mangaInfo)
-        } else {
-            snapshot.reloadItems(mangaInfo)
-        }
+        snapshot.reconfigureItems(mangaInfo)
         dataSource.apply(snapshot)
     }
 }

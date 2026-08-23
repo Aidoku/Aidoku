@@ -207,9 +207,7 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = navigationBarAppearance
         navigationController?.toolbar.standardAppearance = toolbarAppearance
         navigationController?.toolbar.compactAppearance = toolbarAppearance
-        if #available(iOS 15.0, *) {
-            navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
-        }
+        navigationController?.toolbar.scrollEdgeAppearance = toolbarAppearance
 
         loadNavbarTitle()
 

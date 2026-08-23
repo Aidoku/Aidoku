@@ -57,16 +57,10 @@ class MangaListSelectionHeader: UICollectionReusableView {
                                     withConfiguration: UIImage.SymbolConfiguration(pointSize: 13)), for: .normal)
 
         // Move chevron to right side
-        if #available(iOS 15.0, *) {
-            menuButton.configuration = .plain()
-            menuButton.configuration?.imagePadding = 3
-            menuButton.configuration?.imagePlacement = .trailing
-            menuButton.configuration?.contentInsets = .zero
-        } else {
-            menuButton.transform = CGAffineTransform(scaleX: -1, y: 1)
-            menuButton.titleLabel?.transform = CGAffineTransform(scaleX: -1, y: 1)
-            menuButton.imageView?.transform = CGAffineTransform(scaleX: -1, y: 1)
-        }
+        menuButton.configuration = .plain()
+        menuButton.configuration?.imagePadding = 3
+        menuButton.configuration?.imagePlacement = .trailing
+        menuButton.configuration?.contentInsets = .zero
 
         updateMenu()
         menuButton.showsMenuAsPrimaryAction = true
@@ -74,11 +68,7 @@ class MangaListSelectionHeader: UICollectionReusableView {
         addSubview(menuButton)
 
         filterButton.alpha = 0
-        if #available(iOS 15.0, *) {
-            filterButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
-        } else {
-            filterButton.setImage(UIImage(systemName: "line.horizontal.3.decrease"), for: .normal)
-        }
+        filterButton.setImage(UIImage(systemName: "line.3.horizontal.decrease"), for: .normal)
         filterButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(filterButton)
 
