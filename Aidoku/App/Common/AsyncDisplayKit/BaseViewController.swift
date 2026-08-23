@@ -13,7 +13,7 @@ class BaseViewController: ASDKViewController<ASDisplayNode> {
     private lazy var loadingAlert: UIAlertController = {
         let loadingAlert = UIAlertController(
             title: nil,
-            message: NSLocalizedString("LOADING_ELLIPSIS", comment: ""),
+            message: NSLocalizedString("LOADING_ELLIPSIS"),
             preferredStyle: .alert
         )
         let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
@@ -53,7 +53,7 @@ extension BaseViewController {
         title: String? = nil,
         message: String? = nil,
         actions: [UIAlertAction] = [],
-        continueActionName: String = NSLocalizedString("CONTINUE", comment: ""),
+        continueActionName: String = NSLocalizedString("CONTINUE"),
         destructive: Bool = true,
         sourceItem: Any? = nil,
         proceed: @escaping () -> Void
@@ -75,7 +75,7 @@ extension BaseViewController {
         }
         alertView.addAction(action)
 
-        alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel))
+        alertView.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel))
 
         if #available(iOS 16.0, *), let sourceItem = sourceItem as? UIPopoverPresentationControllerSourceItem {
             alertView.popoverPresentationController?.sourceItem = sourceItem

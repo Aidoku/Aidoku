@@ -59,15 +59,15 @@ enum MediaType: Int, Codable {
 
     func toString() -> String {
         switch self {
-            case .unknown: return NSLocalizedString("UNKNOWN", comment: "")
-            case .manga: return NSLocalizedString("MANGA", comment: "")
-            case .manhwa: return NSLocalizedString("MANHWA", comment: "")
-            case .manhua: return NSLocalizedString("MANHUA", comment: "")
-            case .novel: return NSLocalizedString("LIGHT_NOVEL", comment: "")
-            case .oneShot: return NSLocalizedString("ONESHOT", comment: "")
-            case .oel: return NSLocalizedString("OEL", comment: "")
-            case .comic: return NSLocalizedString("COMIC", comment: "")
-            case .book: return NSLocalizedString("BOOK", comment: "") // not really handled yet
+            case .unknown: return NSLocalizedString("UNKNOWN")
+            case .manga: return NSLocalizedString("MANGA")
+            case .manhwa: return NSLocalizedString("MANHWA")
+            case .manhua: return NSLocalizedString("MANHUA")
+            case .novel: return NSLocalizedString("LIGHT_NOVEL")
+            case .oneShot: return NSLocalizedString("ONESHOT")
+            case .oel: return NSLocalizedString("OEL")
+            case .comic: return NSLocalizedString("COMIC")
+            case .book: return NSLocalizedString("BOOK") // not really handled yet
         }
     }
 }

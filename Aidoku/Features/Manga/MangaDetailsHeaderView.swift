@@ -433,20 +433,20 @@ struct MangaDetailsHeaderView: View {
     func updateReadButtonText() {
         var title = ""
         if allChaptersLocked {
-            title = NSLocalizedString("ALL_CHAPTERS_LOCKED", comment: "")
+            title = NSLocalizedString("ALL_CHAPTERS_LOCKED")
             readButtonDisabled = true
         } else if allChaptersRead {
-            title = NSLocalizedString("ALL_CHAPTERS_READ", comment: "")
+            title = NSLocalizedString("ALL_CHAPTERS_READ")
             readButtonDisabled = true
         } else if source == nil {
-            title = NSLocalizedString("UNAVAILABLE", comment: "")
+            title = NSLocalizedString("UNAVAILABLE")
             readButtonDisabled = true
         } else {
             if let chapter = nextChapter {
                 if !readingInProgress {
-                    title = NSLocalizedString("START_READING", comment: "")
+                    title = NSLocalizedString("START_READING")
                 } else {
-                    title = NSLocalizedString("CONTINUE_READING", comment: "")
+                    title = NSLocalizedString("CONTINUE_READING")
                 }
                 switch chapterTitleDisplayMode {
                     case .volume:
@@ -472,7 +472,7 @@ struct MangaDetailsHeaderView: View {
                         }
                 }
             } else {
-                title = NSLocalizedString("NO_CHAPTERS_AVAILABLE", comment: "")
+                title = NSLocalizedString("NO_CHAPTERS_AVAILABLE")
             }
             readButtonDisabled = false
         }

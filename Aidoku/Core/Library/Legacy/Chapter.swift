@@ -104,19 +104,19 @@ extension Chapter {
     func makeTitle() -> String {
         if volumeNum == nil && title == nil, let chapterNum = chapterNum {
             // Chapter X
-            return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+            return String(format: NSLocalizedString("CHAPTER_X"), chapterNum)
         } else {
             var components: [String] = []
             // Vol.X
             if let volumeNum = volumeNum {
                 components.append(
-                    String(format: NSLocalizedString("VOL_X", comment: ""), volumeNum)
+                    String(format: NSLocalizedString("VOL_X"), volumeNum)
                 )
             }
             // Ch.X
             if let chapterNum = chapterNum {
                 components.append(
-                    String(format: NSLocalizedString("CH_X", comment: ""), chapterNum)
+                    String(format: NSLocalizedString("CH_X"), chapterNum)
                 )
             }
             // title

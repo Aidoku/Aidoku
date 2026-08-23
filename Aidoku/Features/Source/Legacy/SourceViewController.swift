@@ -67,8 +67,8 @@ class SourceViewController: OldMangaCollectionViewController {
                 let listings = await self.viewModel.listings
                 let currentListing = await self.viewModel.currentListing
                 header.delegate = self
-                header.title = NSLocalizedString("LIST_HEADER", comment: "")
-                header.options = listings.map { $0.name } + [NSLocalizedString("LIST_ALL", comment: "")]
+                header.title = NSLocalizedString("LIST_HEADER")
+                header.options = listings.map { $0.name } + [NSLocalizedString("LIST_ALL")]
                 header.selectedOption = currentListing != nil
                     ? listings.firstIndex(of: currentListing!) ?? 0
                     : listings.count

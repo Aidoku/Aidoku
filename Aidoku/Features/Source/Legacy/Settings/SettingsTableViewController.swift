@@ -44,7 +44,7 @@ class SettingsTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("SETTINGS", comment: "")
+        title = NSLocalizedString("SETTINGS")
         navigationController?.navigationBar.prefersLargeTitles = true
 
         if #available(iOS 15.0, *) {
@@ -88,7 +88,7 @@ extension SettingsTableViewController {
                 if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
                     context.evaluatePolicy(
                         .deviceOwnerAuthenticationWithBiometrics,
-                        localizedReason: NSLocalizedString("AUTH_TO_DISABLE", comment: "")
+                        localizedReason: NSLocalizedString("AUTH_TO_DISABLE")
                     ) { success, _ in
                         if !success {
                             Task { @MainActor in
@@ -325,7 +325,7 @@ extension SettingsTableViewController {
                     if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
                         context.evaluatePolicy(
                             .deviceOwnerAuthenticationWithBiometrics,
-                            localizedReason: NSLocalizedString("AUTH_TO_OPEN", comment: "")
+                            localizedReason: NSLocalizedString("AUTH_TO_OPEN")
                         ) { success, _ in
                             if success {
                                 Task { @MainActor in

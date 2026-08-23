@@ -32,7 +32,7 @@ extension UIViewController {
 
         // If no actions are provided, add a default 'OK' action
         if actions.isEmpty {
-            let okAction = UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel)
+            let okAction = UIAlertAction(title: NSLocalizedString("OK"), style: .cancel)
             alertController.addAction(okAction)
         } else {
             for action in actions {

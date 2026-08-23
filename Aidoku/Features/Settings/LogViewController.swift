@@ -16,7 +16,7 @@ class LogViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("LOGS", comment: "")
+        title = NSLocalizedString("LOGS")
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             title: NSLocalizedString("CLEAR"),

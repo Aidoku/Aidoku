@@ -22,7 +22,7 @@ class SourceInfoViewController: SettingsTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = NSLocalizedString("SOURCE_INFO", comment: "")
+        title = NSLocalizedString("SOURCE_INFO")
         navigationController?.navigationBar.prefersLargeTitles = true
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -81,9 +81,9 @@ extension SourceInfoViewController {
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         guard let source = source else { return nil }
         if !source.languages.isEmpty && section == 0 {
-            return NSLocalizedString("LANGUAGE", comment: "")
+            return NSLocalizedString("LANGUAGE")
         } else if source.settingItems.isEmpty || section == source.settingItems.count + (source.languages.isEmpty ? 0 : 1) {
-            return NSLocalizedString("INFO", comment: "")
+            return NSLocalizedString("INFO")
         }
         return source.settingItems[section + (source.languages.isEmpty ? 0 : -1)].title
     }
@@ -106,7 +106,7 @@ extension SourceInfoViewController {
                 cell = UITableViewCell(style: .value1, reuseIdentifier: "UITableViewCell.Value1")
             }
 
-            cell?.textLabel?.text = NSLocalizedString("LANGUAGE", comment: "")
+            cell?.textLabel?.text = NSLocalizedString("LANGUAGE")
 //            if let value = UserDefaults.standard.array(forKey: "\(source.id).languages").first,
 //               let index = source.languages.firstIndex(of: value) {
 //                cell?.detailTextLabel?.text = source.languages[index]
@@ -124,10 +124,10 @@ extension SourceInfoViewController {
 
             switch indexPath.row {
                 case 0:
-                    cell?.textLabel?.text = NSLocalizedString("VERSION", comment: "")
+                    cell?.textLabel?.text = NSLocalizedString("VERSION")
                     cell?.detailTextLabel?.text = String(source.manifest.info.version)
                 case 1:
-                    cell?.textLabel?.text = NSLocalizedString("LANGUAGE", comment: "")
+                    cell?.textLabel?.text = NSLocalizedString("LANGUAGE")
                     cell?.detailTextLabel?.text = source.manifest.info.lang
                 default:
                     break
@@ -156,7 +156,7 @@ extension SourceInfoViewController {
             let item = SettingItem(
                 type: source.manifest.languageSelectType == "single" ? "multi-single-select" : "multi-select",
                 key: "\(source.id).languages",
-                title: NSLocalizedString("LANGUAGE", comment: ""),
+                title: NSLocalizedString("LANGUAGE"),
                 values: source.languages.map { $0.value ?? $0.code },
                 titles: source.languages.map { Locale.current.localizedString(forIdentifier: $0.code) ?? $0.code },
                 notification: "languageChange"

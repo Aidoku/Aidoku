@@ -30,7 +30,7 @@ class ReaderPageViewController: BaseObservingViewController {
     private lazy var reloadButton = {
         let reloadButton = UIButton(type: .roundedRect)
         reloadButton.isHidden = true
-        reloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
+        reloadButton.setTitle(NSLocalizedString("RELOAD"), for: .normal)
         reloadButton.addTarget(self, action: #selector(reload), for: .touchUpInside)
         reloadButton.configuration = .borderless()
         reloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)

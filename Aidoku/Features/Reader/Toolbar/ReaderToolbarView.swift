@@ -114,7 +114,7 @@ class ReaderToolbarView: UIView {
         } else if page < 1 {
             page = 1
         }
-        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), page, totalPages)
+        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i"), page, totalPages)
         currentPageValue = page
     }
 
@@ -131,13 +131,13 @@ class ReaderToolbarView: UIView {
             currentPage = 1
         }
         let pagesLeft = totalPages - currentPage
-        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i", comment: ""), currentPage, totalPages)
+        currentPageLabel.text = String(format: NSLocalizedString("%i_OF_%i"), currentPage, totalPages)
         if pagesLeft < 1 {
             pagesLeftLabel.text = nil
         } else {
             pagesLeftLabel.text = pagesLeft == 1
-                ? NSLocalizedString("ONE_PAGE_LEFT", comment: "")
-                : String(format: NSLocalizedString("%i_PAGES_LEFT", comment: ""), pagesLeft)
+                ? NSLocalizedString("ONE_PAGE_LEFT")
+                : String(format: NSLocalizedString("%i_PAGES_LEFT"), pagesLeft)
         }
         incognitoModeLabel.text = NSLocalizedString("INCOGNITO_MODE")
     }

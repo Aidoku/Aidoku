@@ -51,7 +51,7 @@ extension Date {
             formatter.unitsStyle = .short
             formatter.allowedUnits = .day
             guard let timePhrase = formatter.string(from: difference) else { return "" }
-            return String(format: NSLocalizedString("%@_AGO", comment: ""), timePhrase)
+            return String(format: NSLocalizedString("%@_AGO"), timePhrase)
         } else { // mm/dd/yy
             let formatter = DateFormatter()
             formatter.locale = Locale.autoupdatingCurrent

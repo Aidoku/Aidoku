@@ -26,7 +26,7 @@ class BrowseViewController: BaseTableViewController {
     override func configure() {
         super.configure()
 
-        title = NSLocalizedString("BROWSE", comment: "")
+        title = NSLocalizedString("BROWSE")
 
         navigationController?.navigationBar.prefersLargeTitles = true
         navigationItem.hidesSearchBarWhenScrolling = false
@@ -79,9 +79,9 @@ class BrowseViewController: BaseTableViewController {
 
         // empty text
         emptyStackView.imageSystemName = "globe"
-        emptyStackView.title = NSLocalizedString("BROWSE_NO_SOURCES", comment: "")
-        emptyStackView.text = NSLocalizedString("BROWSE_NO_SOURCES_TEXT_NEW", comment: "")
-        emptyStackView.buttonText = NSLocalizedString("ADDING_SOURCES_GUIDE_BUTTON", comment: "")
+        emptyStackView.title = NSLocalizedString("BROWSE_NO_SOURCES")
+        emptyStackView.text = NSLocalizedString("BROWSE_NO_SOURCES_TEXT_NEW")
+        emptyStackView.buttonText = NSLocalizedString("ADDING_SOURCES_GUIDE_BUTTON")
         emptyStackView.addButtonTarget(self, action: #selector(openGuidePage))
         emptyStackView.showsButton = true
         emptyStackView.isHidden = true
@@ -219,7 +219,7 @@ extension BrowseViewController {
         let updateCount = viewModel.updatesSources.count
         UserDefaults.standard.set(updateCount, forKey: "Browse.updateCount")
         let tabBarItem = tabBarController?.tabBar.items?.first(
-            where: { $0.title == NSLocalizedString("BROWSE", comment: "") }
+            where: { $0.title == NSLocalizedString("BROWSE") }
         )
         tabBarItem?.badgeValue = updateCount > 0 ? String(updateCount) : nil
     }

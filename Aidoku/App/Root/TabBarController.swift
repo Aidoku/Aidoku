@@ -150,12 +150,12 @@ class TabBarController: UITabBarController {
             tabs = fixedTabs + [searchTab]
         } else {
             libraryViewController.tabBarItem = UITabBarItem(
-                title: NSLocalizedString("LIBRARY", comment: ""),
+                title: NSLocalizedString("LIBRARY"),
                 image: UIImage(systemName: "books.vertical.fill"),
                 tag: 0
             )
             browseViewController.tabBarItem = UITabBarItem(
-                title: NSLocalizedString("BROWSE", comment: ""),
+                title: NSLocalizedString("BROWSE"),
                 image: UIImage(systemName: "globe"),
                 tag: 1
             )
@@ -168,7 +168,7 @@ class TabBarController: UITabBarController {
                 tag: 3
             )
             settingsViewController.tabBarItem = UITabBarItem(
-                title: NSLocalizedString("SETTINGS", comment: ""),
+                title: NSLocalizedString("SETTINGS"),
                 image: UIImage(systemName: "gear"),
                 tag: 4
             )

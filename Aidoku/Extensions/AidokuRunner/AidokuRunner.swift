@@ -364,7 +364,7 @@ extension AidokuRunner.Chapter {
             formatter.unitsStyle = .short
             formatter.allowedUnits = .day
             guard let timePhrase = formatter.string(from: difference) else { return "" }
-            return String(format: NSLocalizedString("%@_AGO", comment: ""), timePhrase)
+            return String(format: NSLocalizedString("%@_AGO"), timePhrase)
         } else {
             return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .none)
         }

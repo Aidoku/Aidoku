@@ -58,7 +58,7 @@ class ReaderDoublePageViewController: BaseObservingViewController {
         zoomView.zoomView = pageStack
 
         firstReloadButton.isHidden = true
-        firstReloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
+        firstReloadButton.setTitle(NSLocalizedString("RELOAD"), for: .normal)
         firstReloadButton.addTarget(self, action: #selector(reload(_:)), for: .touchUpInside)
         firstReloadButton.configuration = .borderless()
         firstReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)
@@ -66,7 +66,7 @@ class ReaderDoublePageViewController: BaseObservingViewController {
         view.addSubview(firstReloadButton)
 
         secondReloadButton.isHidden = true
-        secondReloadButton.setTitle(NSLocalizedString("RELOAD", comment: ""), for: .normal)
+        secondReloadButton.setTitle(NSLocalizedString("RELOAD"), for: .normal)
         secondReloadButton.addTarget(self, action: #selector(reload(_:)), for: .touchUpInside)
         secondReloadButton.configuration = .borderless()
         secondReloadButton.configuration?.contentInsets = .init(top: 15, leading: 15, bottom: 15, trailing: 15)

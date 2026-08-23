@@ -888,8 +888,8 @@ extension KomgaSourceRunner {
                     } else if let series = item as? KomgaSeries {
                         let manga = series.intoManga(sourceKey: sourceKey, baseUrl: baseUrl)
                         let subtitle = series.booksCount == 1
-                            ? NSLocalizedString("1_BOOK", comment: "")
-                            : String(format: NSLocalizedString("%@_BOOKS", comment: ""), String(series.booksCount))
+                            ? NSLocalizedString("1_BOOK")
+                            : String(format: NSLocalizedString("%@_BOOKS"), String(series.booksCount))
                         link = HomeComponent.Value.Link(
                             title: series.metadata.title.isEmpty ? series.name : series.metadata.title,
                             imageUrl: manga.cover,

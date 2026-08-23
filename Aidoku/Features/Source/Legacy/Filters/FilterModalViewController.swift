@@ -59,12 +59,12 @@ class FilterModalViewController: MiniModalViewController {
         separatorView.translatesAutoresizingMaskIntoConstraints = false
         toolbarView.addSubview(separatorView)
 
-        resetButton.setTitle(NSLocalizedString("RESET", comment: ""), for: .normal)
+        resetButton.setTitle(NSLocalizedString("RESET"), for: .normal)
         resetButton.addTarget(self, action: #selector(animateDismissView), for: .touchUpInside)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
         toolbarView.addSubview(resetButton)
 
-        doneButton.setTitle(NSLocalizedString("BUTTON_FILTER", comment: ""), for: .normal)
+        doneButton.setTitle(NSLocalizedString("BUTTON_FILTER"), for: .normal)
         doneButton.setTitleColor(.white, for: .normal)
         doneButton.addTarget(self, action: #selector(animateDismissView), for: .touchUpInside)
         doneButton.backgroundColor = view.tintColor

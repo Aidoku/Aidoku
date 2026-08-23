@@ -553,13 +553,13 @@ extension AppDelegate {
                         let success = await SourceManager.shared.addSourceList(url: listUrl)
                         if success {
                             presentAlert(
-                                title: NSLocalizedString("SOURCE_LIST_ADDED", comment: ""),
-                                message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT", comment: "")
+                                title: NSLocalizedString("SOURCE_LIST_ADDED"),
+                                message: NSLocalizedString("SOURCE_LIST_ADDED_TEXT")
                             )
                         } else {
                             presentAlert(
-                                title: NSLocalizedString("SOURCE_LIST_ADD_FAIL", comment: ""),
-                                message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT", comment: "")
+                                title: NSLocalizedString("SOURCE_LIST_ADD_FAIL"),
+                                message: NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT")
                             )
                         }
                     }
@@ -627,8 +627,8 @@ extension AppDelegate {
                 let result = await SourceManager.shared.importSource(from: url)
                 if result == nil {
                     presentAlert(
-                        title: NSLocalizedString("IMPORT_FAIL", comment: ""),
-                        message: NSLocalizedString("SOURCE_IMPORT_FAIL_TEXT", comment: "")
+                        title: NSLocalizedString("IMPORT_FAIL"),
+                        message: NSLocalizedString("SOURCE_IMPORT_FAIL_TEXT")
                     )
                 }
             }
@@ -636,13 +636,13 @@ extension AppDelegate {
             Task {
                 if await BackupManager.shared.importBackup(from: url) {
                     presentAlert(
-                        title: NSLocalizedString("BACKUP_IMPORT_SUCCESS", comment: ""),
-                        message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT", comment: "")
+                        title: NSLocalizedString("BACKUP_IMPORT_SUCCESS"),
+                        message: NSLocalizedString("BACKUP_IMPORT_SUCCESS_TEXT")
                     )
                 } else {
                     presentAlert(
-                        title: NSLocalizedString("IMPORT_FAIL", comment: ""),
-                        message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT", comment: "")
+                        title: NSLocalizedString("IMPORT_FAIL"),
+                        message: NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT")
                     )
                 }
             }
@@ -659,8 +659,8 @@ extension AppDelegate {
                     )
                 } else {
                     presentAlert(
-                        title: NSLocalizedString("IMPORT_FAIL", comment: ""),
-                        message: NSLocalizedString("FILE_IMPORT_FAIL_TEXT", comment: "")
+                        title: NSLocalizedString("IMPORT_FAIL"),
+                        message: NSLocalizedString("FILE_IMPORT_FAIL_TEXT")
                     )
                 }
             }

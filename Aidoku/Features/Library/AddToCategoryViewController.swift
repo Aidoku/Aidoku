@@ -32,8 +32,8 @@ class AddToCategoryViewController: BaseTableViewController {
         super.configure()
 
         title = multiselect
-            ? NSLocalizedString("ADD_TO_CATEGORIES", comment: "")
-            : NSLocalizedString("ADD_TO_CATEGORY", comment: "")
+            ? NSLocalizedString("ADD_TO_CATEGORIES")
+            : NSLocalizedString("ADD_TO_CATEGORY")
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .cancel,

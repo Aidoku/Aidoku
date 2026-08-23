@@ -57,7 +57,7 @@ struct TrackerView: View {
                         }
                     } label: {
                         Label(
-                            NSLocalizedString("STOP_TRACKING", comment: ""),
+                            NSLocalizedString("STOP_TRACKING"),
                             systemImage: "xmark"
                         )
                     }
@@ -69,7 +69,7 @@ struct TrackerView: View {
                         }
                     } label: {
                         Label(
-                            NSLocalizedString("VIEW_ON_WEBSITE", comment: ""),
+                            NSLocalizedString("VIEW_ON_WEBSITE"),
                             systemImage: "safari"
                         )
                     }
@@ -77,7 +77,7 @@ struct TrackerView: View {
                         NotificationCenter.default.post(name: .syncTrackItem, object: item)
                     } label: {
                         Label(
-                            NSLocalizedString("SYNC_LOCAL_HISTORY", comment: ""),
+                            NSLocalizedString("SYNC_LOCAL_HISTORY"),
                             systemImage: "clock.arrow.circlepath"
                         )
                     }
@@ -103,25 +103,25 @@ struct TrackerView: View {
             }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 104))], spacing: 12) {
                 TrackerSettingOptionView(
-                    NSLocalizedString("STATUS", comment: ""),
+                    NSLocalizedString("STATUS"),
                     type: .menu,
                     options: info.supportedStatuses.map { $0.toString() },
                     selectedOption: $statusOption
                 )
                 TrackerSettingOptionView(
-                    NSLocalizedString("CHAPTERS", comment: ""),
+                    NSLocalizedString("CHAPTERS"),
                     type: .counter,
                     count: $lastReadChapter,
                     total: Binding.constant(state?.totalChapters != nil ? Float(state!.totalChapters!) : nil)
                 )
                 TrackerSettingOptionView(
-                    NSLocalizedString("VOLUMES", comment: ""),
+                    NSLocalizedString("VOLUMES"),
                     type: .counter,
                     count: $lastReadVolume,
                     total: Binding.constant(state?.totalVolumes != nil ? Float(state!.totalVolumes!) : nil)
                 )
-                TrackerSettingOptionView(NSLocalizedString("STARTED", comment: ""), type: .date, date: $startReadDate)
-                TrackerSettingOptionView(NSLocalizedString("FINISHED", comment: ""), type: .date, date: $finishReadDate)
+                TrackerSettingOptionView(NSLocalizedString("STARTED"), type: .date, date: $startReadDate)
+                TrackerSettingOptionView(NSLocalizedString("FINISHED"), type: .date, date: $finishReadDate)
 
                 switch info.scoreType {
                     case .tenPoint:

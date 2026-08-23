@@ -28,7 +28,7 @@ class GetButtonView: UIView {
                 }
             } else {
                 UIView.animate(withDuration: 0.3) {
-                    self.button.setTitle(self.buttonState == .fail ? NSLocalizedString("BUTTON_ERROR", comment: "") : self.title, for: .normal)
+                    self.button.setTitle(self.buttonState == .fail ? NSLocalizedString("BUTTON_ERROR") : self.title, for: .normal)
                     self.calculatePadding()
                     self.activityIndicator.stopAnimating()
 
@@ -40,7 +40,7 @@ class GetButtonView: UIView {
         }
     }
 
-    var title: String? = NSLocalizedString("BUTTON_GET", comment: "") {
+    var title: String? = NSLocalizedString("BUTTON_GET") {
         didSet {
             button.setTitle(title, for: .normal)
             calculatePadding()

@@ -564,16 +564,16 @@ extension ReaderViewController {
     func loadNavbarTitle() {
         let volume: String? =
             if chapter.chapterNumber != nil, let volumeNum = chapter.volumeNumber {
-                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+                String(format: NSLocalizedString("VOLUME_X"), volumeNum)
             } else {
                 nil
             }
 
         let title =
             if let chapterNum = chapter.chapterNumber {
-                String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+                String(format: NSLocalizedString("CHAPTER_X"), chapterNum)
             } else if let volumeNum = chapter.volumeNumber {
-                String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+                String(format: NSLocalizedString("VOLUME_X"), volumeNum)
             } else {
                 chapter.title ?? ""
             }
@@ -583,11 +583,11 @@ extension ReaderViewController {
 
     func showLoadFailAlert() {
         let alert = UIAlertController(
-            title: NSLocalizedString("FAILED_CHAPTER_LOAD", comment: ""),
-            message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO", comment: ""),
+            title: NSLocalizedString("FAILED_CHAPTER_LOAD"),
+            message: NSLocalizedString("FAILED_CHAPTER_LOAD_INFO"),
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .cancel))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .cancel))
         present(alert, animated: true)
     }
 

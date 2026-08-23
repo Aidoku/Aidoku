@@ -83,18 +83,18 @@ struct DownloadedChapterInfo: Identifiable, Hashable {
     var displayTitle: String {
         switch (volumeNumber, chapterNumber, title) {
             case (.some(let volumeNum), nil, nil):
-                return String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+                return String(format: NSLocalizedString("VOLUME_X"), volumeNum)
             case (nil, .some(let chapterNum), nil):
-                return String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+                return String(format: NSLocalizedString("CHAPTER_X"), chapterNum)
             case (nil, nil, .some(let chapterTitle)):
                 return chapterTitle
             default:
                 var arr = [String]()
                 if let volumeNumber {
-                    arr.append(String(format: NSLocalizedString("VOL_X", comment: ""), volumeNumber))
+                    arr.append(String(format: NSLocalizedString("VOL_X"), volumeNumber))
                 }
                 if let chapterNumber {
-                    arr.append(String(format: NSLocalizedString("CH_X", comment: ""), chapterNumber))
+                    arr.append(String(format: NSLocalizedString("CH_X"), chapterNumber))
                 }
                 if let title {
                     arr.append("-")

@@ -48,7 +48,7 @@ struct ReaderChapterListView: View {
                     proxy.scrollTo(chapter.id, anchor: .center)
                 }
             }
-            .navigationTitle(NSLocalizedString("CHAPTERS", comment: ""))
+            .navigationTitle(NSLocalizedString("CHAPTERS"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -64,15 +64,15 @@ struct ReaderChapterListView: View {
         if let chapterNum = chapter.chapterNumber {
             if let volumeNum = chapter.volumeNumber {
                 String(
-                    format: NSLocalizedString("VOL_X", comment: "") + " " + NSLocalizedString("CH_X", comment: ""),
+                    format: NSLocalizedString("VOL_X") + " " + NSLocalizedString("CH_X"),
                     volumeNum,
                     chapterNum
                 )
             } else {
-                String(format: NSLocalizedString("CHAPTER_X", comment: ""), chapterNum)
+                String(format: NSLocalizedString("CHAPTER_X"), chapterNum)
             }
         } else if let volumeNum = chapter.volumeNumber {
-            String(format: NSLocalizedString("VOLUME_X", comment: ""), volumeNum)
+            String(format: NSLocalizedString("VOLUME_X"), volumeNum)
         } else {
             chapter.title ?? ""
         }

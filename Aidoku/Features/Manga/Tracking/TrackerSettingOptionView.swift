@@ -173,11 +173,11 @@ struct TrackerSettingOptionView: View {
         coordinator.pickerView.widthAnchor.constraint(equalToConstant: 250).isActive = true
         coordinator.pickerView.heightAnchor.constraint(equalToConstant: 150).isActive = true
 
-        alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default) { _ in
+        alert.addAction(UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
             let pickerValue = coordinator.pickerView.selectedRow(inComponent: 0)
             count = numberType == .int ? Float(pickerValue) : Float(pickerValue) / 10
         })
-        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL", comment: ""), style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel, handler: nil))
         (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
     }
 }
