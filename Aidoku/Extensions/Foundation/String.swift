@@ -6,6 +6,21 @@
 //
 
 import Foundation
+import CxxStdlib
+
+// fix for xcode build failing due to this function from CxxStdlib missing
+extension String {
+    init(_ cxxString: std.string) {
+        let buffer = UnsafeBufferPointer<CChar>(
+            start: cxxString.__c_strUnsafe(),
+            count: cxxString.size()
+        )
+        self = buffer.withMemoryRebound(to: UInt8.self) {
+            String(bytes: $0, encoding: .utf8) ?? ""
+        }
+        withExtendedLifetime(cxxString) {}
+    }
+}
 
 extension String {
     func take(first: Int) -> String {
