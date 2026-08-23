@@ -77,12 +77,12 @@ enum EpubChapterCache {
         return pages
     }
 
+    // ponytail: a replacement with identical size and Last-Modified slips through — compare
+    // ETag if that ever bites.
     /// Whether the server holds a different file than the cached one, judged via a HEAD request
     /// by Last-Modified against what the download reported, and by size against the file itself.
     /// A server that cannot answer — offline, erroring, or without HEAD support — keeps the
     /// cached book readable rather than making freshness a requirement for reading at all.
-    // ponytail: a replacement with identical size and Last-Modified slips through — compare
-    // ETag if that ever bites.
     private static func isStale(request: URLRequest, file: URL) async -> Bool {
         var head = request
         head.httpMethod = "HEAD"
