@@ -69,16 +69,21 @@ extension HistoryView.ViewModel {
                     return
                 }
                 Task { @MainActor in
+                    var refreshingDays = Set<Int>()
                     if chapters.count == 1, let chapterId = chapters.first {
                         // check if there's existing history to remove first
                         if
                             self.chapterCache[chapterId] != nil
-                                || self.missingMangaQueue[chapterId.mangaIdentifier] != nil
+                                || self.missingMangaQueue[chapterId.mangaIdentifier] != nil,
+                            let day = self.removeStoredHistory(
+                                chapterId: chapterId,
+                                updateFilteredHistory: false
+                            )
                         {
-                            self.removeStoredHistory(chapterId: chapterId)
+                            refreshingDays.insert(day)
                         }
                     }
-                    await self.fetchNew(count: chapters.count)
+                    await self.fetchNew(count: chapters.count, refreshingDays: refreshingDays)
                 }
             }
             .store(in: &cancellables)
@@ -237,6 +242,7 @@ extension HistoryView.ViewModel {
     }
 
     // remove a cached history entry for a chapter
+    @discardableResult
     private func removeStoredHistory(chapterId: ChapterIdentifier, updateFilteredHistory: Bool = true) -> Int? {
         for section in historyData {
             for (index, entry) in section.value.enumerated() where entry.chapterId == chapterId {
