@@ -60,8 +60,16 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     }
     var onAutoScrollStateChange: ((Bool) -> Void)?
 
-    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
-        self.viewModel = ReaderWebtoonViewModel(source: source, manga: manga)
+    init(
+        source: AidokuRunner.Source?,
+        manga: AidokuRunner.Manga,
+        temporaryPageStore: ReaderTemporaryPageStore
+    ) {
+        self.viewModel = ReaderWebtoonViewModel(
+            source: source,
+            manga: manga,
+            temporaryPageStore: temporaryPageStore
+        )
         super.init(layout: VerticalContentOffsetPreservingLayout())
     }
 

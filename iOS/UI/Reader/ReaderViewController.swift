@@ -24,6 +24,7 @@ class ReaderViewController: BaseObservingViewController {
     var readingMode: ReadingMode = .rtl
     var defaultReadingMode: ReadingMode?
     private var tapZone: TapZone?
+    private let temporaryPageStore = ReaderTemporaryPageStore()
 
     private var chapterList: [AidokuRunner.Chapter]
     private var chaptersToMark: [AidokuRunner.Chapter] = []
@@ -153,6 +154,12 @@ class ReaderViewController: BaseObservingViewController {
         }
         self.forceStartPage = startPage
         super.init()
+    }
+
+    deinit {
+        Task { [temporaryPageStore] in
+            await temporaryPageStore.removeAll()
+        }
     }
 
     override func configure() {
@@ -632,6 +639,9 @@ extension ReaderViewController {
     }
 
     @objc func close() {
+        Task {
+            await temporaryPageStore.removeAll()
+        }
         dismiss(animated: true)
     }
 
@@ -726,14 +736,14 @@ extension ReaderViewController {
                     toolbarView.sliderView.direction = .forward
                 }
                 if !(reader is ReaderPagedViewController) {
-                    pageController = ReaderPagedViewController(source: source, manga: manga)
+                    pageController = ReaderPagedViewController(source: source, manga: manga, temporaryPageStore: temporaryPageStore)
                 } else {
                     pageController = nil
                 }
             case .scroll:
                 toolbarView.sliderView.direction = .forward
                 if !(reader is ReaderWebtoonViewController) {
-                    pageController = ReaderWebtoonViewController(source: source, manga: manga)
+                    pageController = ReaderWebtoonViewController(source: source, manga: manga, temporaryPageStore: temporaryPageStore)
                 } else {
                     pageController = nil
                 }

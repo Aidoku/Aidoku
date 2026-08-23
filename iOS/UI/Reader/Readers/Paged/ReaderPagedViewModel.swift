@@ -12,15 +12,22 @@ import AidokuRunner
 class ReaderPagedViewModel {
     let source: AidokuRunner.Source?
     let manga: AidokuRunner.Manga
+    let temporaryPageStore: ReaderTemporaryPageStore?
+
     var chapter: AidokuRunner.Chapter?
     var pages: [Page] = []
 
     var preloadedChapter: AidokuRunner.Chapter?
     var preloadedPages: [Page] = []
 
-    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
+    init(
+        source: AidokuRunner.Source?,
+        manga: AidokuRunner.Manga,
+        temporaryPageStore: ReaderTemporaryPageStore? = nil
+    ) {
         self.source = source
         self.manga = manga
+        self.temporaryPageStore = temporaryPageStore
     }
 
     func loadPages(chapter: AidokuRunner.Chapter) async {
@@ -60,15 +67,39 @@ class ReaderPagedViewModel {
                     $0.toOld(sourceId: sourceId, chapterId: chapter.key, language: language)
                 }
         } else {
-            return (try? await source?
-                .getPageList(
-                    manga: manga,
-                    chapter: chapter
+            guard var sourcePages = try? await source?.getPageList(
+                manga: manga,
+                chapter: chapter
+            ) else {
+                return []
+            }
+
+            var pages: [Page] = []
+            pages.reserveCapacity(sourcePages.count)
+
+            // iterate in reverse so pages with image data are dropped
+            while let sourcePage = sourcePages.popLast() {
+                var page = sourcePage.toOld(
+                    sourceId: sourceId,
+                    chapterId: chapter.key,
+                    language: language
                 )
-            )?
-                .map {
-                    $0.toOld(sourceId: sourceId, chapterId: chapter.key, language: language)
-                } ?? []
+                if
+                    let temporaryPageStore,
+                    let image = page.image,
+                    let fileURL = await temporaryPageStore.store(
+                        image,
+                        chapterKey: chapter.key,
+                        pageIndex: sourcePages.count
+                    )
+                {
+                    page.image = nil
+                    page.imageURL = fileURL.absoluteString
+                }
+                pages.append(page)
+            }
+
+            return pages.reversed()
         }
     }
 }

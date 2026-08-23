@@ -418,6 +418,8 @@
 		FB746FDA2FFE27C50033AF16 /* SuwayomiTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB746FD82FFE27C10033AF16 /* SuwayomiTracker.swift */; };
 		FB746FDC2FFE27CC0033AF16 /* SuwayomiApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB746FDB2FFE27C80033AF16 /* SuwayomiApi.swift */; };
 		FB746FDD2FFE27CC0033AF16 /* SuwayomiApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB746FDB2FFE27C80033AF16 /* SuwayomiApi.swift */; };
+		FB77C943303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB77C942303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift */; };
+		FB77C944303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB77C942303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift */; };
 		FB7864862848215500125DC0 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7864852848215500125DC0 /* Reachability.swift */; };
 		FB7864872848215500125DC0 /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7864852848215500125DC0 /* Reachability.swift */; };
 		FB792F762DC90C84001EC616 /* UserDefaultsObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */; };
@@ -1005,6 +1007,7 @@
 		FB72502727CC06AA0037F1C9 /* SegmentTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentTableViewCell.swift; sourceTree = "<group>"; };
 		FB746FD82FFE27C10033AF16 /* SuwayomiTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiTracker.swift; sourceTree = "<group>"; };
 		FB746FDB2FFE27C80033AF16 /* SuwayomiApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuwayomiApi.swift; sourceTree = "<group>"; };
+		FB77C942303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderTemporaryPageStore.swift; sourceTree = "<group>"; };
 		FB7864852848215500125DC0 /* Reachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		FB792F752DC90C84001EC616 /* UserDefaultsObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDefaultsObserver.swift; sourceTree = "<group>"; };
 		FB79839D2DFF77360044BC71 /* CloudflareHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareHandler.swift; sourceTree = "<group>"; };
@@ -1486,6 +1489,7 @@
 				FB14B1252DF4CFDC0067E4D4 /* UIKitShim.swift */,
 				FBE786E73014596900220CA6 /* RomajiConverter.swift */,
 				FB39A50D30037E1C006E3289 /* LookupEngine.swift */,
+				FB77C942303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -3086,6 +3090,7 @@
 				723D3AFE2E0DC5C4003ED4CF /* DownloadedMangaView.swift in Sources */,
 				FB67EE6327F3D2E300C468EA /* WasmAidoku.swift in Sources */,
 				FB4E579B2E352CAB006EF27C /* UIKeyModifierFlags.swift in Sources */,
+				FB77C943303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift in Sources */,
 				FB2E02522868A67500786F21 /* TrackerView.swift in Sources */,
 				FB261ED32ECA63DB00743F56 /* KeyboardOffsetDetector.swift in Sources */,
 				FB99591E2F6863A700B632D5 /* ReaderTextView.swift in Sources */,
@@ -3299,6 +3304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FBF059B62EF7013600907B0E /* InsightsData.swift in Sources */,
+				FB77C944303A685D00DF3DA3 /* ReaderTemporaryPageStore.swift in Sources */,
 				FB58C6B42999B5BC00A6F49F /* CoreDataManager+Source.swift in Sources */,
 				FB3164792FFCD16B004037C2 /* SuwayomiModels.swift in Sources */,
 				FB7F05FF2DDF79420036B116 /* KomgaSource.swift in Sources */,

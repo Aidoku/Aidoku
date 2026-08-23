@@ -81,6 +81,10 @@ extension FileManager {
         urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     }
 
+    var cachesDirectory: URL {
+        urls(for: .cachesDirectory, in: .userDomainMask)[0]
+    }
+
     func moveFiles(in sourceDirectory: URL, to destinationDirectory: URL) {
         if !destinationDirectory.exists {
             destinationDirectory.createDirectory()

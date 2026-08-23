@@ -69,8 +69,16 @@ class ReaderPagedViewController: BaseObservingViewController {
         )
     }
 
-    init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga) {
-        self.viewModel = ReaderPagedViewModel(source: source, manga: manga)
+    init(
+        source: AidokuRunner.Source?,
+        manga: AidokuRunner.Manga,
+        temporaryPageStore: ReaderTemporaryPageStore
+    ) {
+        self.viewModel = ReaderPagedViewModel(
+            source: source,
+            manga: manga,
+            temporaryPageStore: temporaryPageStore
+        )
         super.init()
     }
 

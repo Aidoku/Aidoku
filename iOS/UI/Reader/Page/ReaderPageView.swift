@@ -193,7 +193,7 @@ extension ReaderPageView {
                     request = imageTask.request
             }
         } else {
-            let urlRequest = if let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+            let urlRequest = if !url.isFileURL, let sourceId, let source = SourceManager.shared.source(for: sourceId) {
                 await source.getModifiedImageRequest(url: url, context: context)
             } else {
                 URLRequest(url: url)
@@ -206,6 +206,8 @@ extension ReaderPageView {
                 let newSource = SourceManager.shared.source(for: sourceId)
             {
                 // only process pages if the source supports it and the image isn't downloaded
+                // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
+                //       this should probably be changed in the future to be more correct though
                 if newSource.features.processesPages, !url.isFileURL {
                     processors.append(PageInterceptorProcessor(source: newSource, pageContext: context))
                     usePageProcessor = true

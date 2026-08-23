@@ -280,6 +280,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         BackupManager.shared.register()
         MangaManager.shared.register()
 
+        ReaderTemporaryPageStore.removeAllSessions()
+
         Task {
             await BackupManager.shared.scheduleAutoBackup()
             if #available(iOS 18.0, *) {
