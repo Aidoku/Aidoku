@@ -737,3 +737,13 @@
 "X_SERIES_HAVE_NEW_CHAPTERS" = "%d séries ont de nouveaux chapitres";
 "NEW_CHAPTER_NOTIFICATIONS" = "Notifications de nouveaux chapitres";
 "NEW_CHAPTER_NOTIFICATIONS_TEXT" = "Envoyer des notifications lorsque la bibliothèque est actualisée en arrière-plan.";
+"EPUB_NAME" = "EPUB";
+"SUWAYOMI" = "Suwayomi";
+"SUWAYOMI_TAGLINE" = "Serveur de lecture de manga";
+"SUWAYOMI_INFO" = "Suwayomi est un serveur de lecteur de manga auto-hébergé qui gère des extensions construites pour Mihon (Tachiyomi). Vous aurez besoin d'un serveur Suwayomi configuré et fonctionnel afin d'utiliser cette source.";
+"SUWAYOMI_SETUP" = "Configuration Suwayomi";
+"STATUS_LICENSED" = "Licence";
+"STATUS_PUBLISHING_FINISHED" = "Publication Terminée";
+"AUTHOR_NAME" = "Nom de l'auteur";
+"ARTIST_NAME" = "Nom de l'artiste";
+"INVALID_KEY" = "Clé invalide";
