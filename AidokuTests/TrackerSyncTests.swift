@@ -71,8 +71,7 @@ actor TestableTracker: Tracker {
     static let testTrackItem = TrackItem(
         id: Self.testId,
         trackerId: "test",
-        sourceId: "test",
-        mangaId: "test",
+        mangaId: .init(sourceKey: "test", mangaKey: "test"),
         title: nil,
         state: nil,
         chapterOffset: 0
