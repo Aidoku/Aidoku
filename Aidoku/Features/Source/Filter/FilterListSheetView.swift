@@ -65,9 +65,7 @@ struct FilterListSheetView: View {
             }
             .scrollDismissesKeyboardInteractively()
             .navigationTitle(NSLocalizedString("FILTERS"))
-#if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
-#endif
             .confirmationDialogOrAlert(
                 NSLocalizedString("CANCEL_CONFIRM"),
                 isPresented: $showConfirm,

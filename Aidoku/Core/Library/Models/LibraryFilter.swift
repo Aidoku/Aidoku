@@ -5,7 +5,7 @@
 //  Created by skitty on 3/17/26.
 //
 
-import Foundation
+import UIKit
 
 struct LibraryFilter: Codable, Hashable {
     var type: FilterMethod
@@ -48,11 +48,9 @@ struct LibraryFilter: Codable, Hashable {
             }
         }
 
-    #if canImport(UIKit)
-        var image: PlatformImage? {
-            PlatformImage(systemName: systemImageName)
+        var image: UIImage? {
+            UIImage(systemName: systemImageName)
         }
-    #endif
 
         var isAvailable: Bool {
             switch self {

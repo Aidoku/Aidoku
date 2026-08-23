@@ -7,10 +7,7 @@
 
 import AidokuRunner
 import Foundation
-
-#if canImport(UIKit)
 import UIKit
-#endif
 
 extension AidokuRunner.Source {
     static func komga(

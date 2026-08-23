@@ -7,10 +7,7 @@
 
 import BackgroundTasks
 import Foundation
-
-#if canImport(UIKit)
 import UIKit
-#endif
 
 actor BackupManager {
     static let shared = BackupManager()
@@ -283,12 +280,10 @@ extension BackupManager {
     @discardableResult
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func doRestore(from backup: Backup) async -> Bool {
-#if !os(macOS)
         await MainActor.run {
             (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
             UIApplication.shared.isIdleTimerDisabled = true
         }
-#endif
 
         Task {
             // restore settings
@@ -600,7 +595,6 @@ extension BackupManager {
         NotificationCenter.default.post(name: .updateCategories, object: nil)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
 
-#if !os(macOS)
         await Task { @MainActor [backupError] in
             let delegate = UIApplication.shared.delegate as? AppDelegate
             await delegate?.hideLoadingIndicator()
@@ -629,7 +623,6 @@ extension BackupManager {
                 }
             }
         }.value
-#endif
 
         return backupError == nil
     }
@@ -638,7 +631,7 @@ extension BackupManager {
 // MARK: Automatic Backups
 extension BackupManager {
     nonisolated func register() {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.backupTaskIdentifier, using: nil) { @Sendable [weak self] task in
             guard let self, let task = task as? BGProcessingTask else { return }
 
@@ -653,7 +646,7 @@ extension BackupManager {
 
     func scheduleAutoBackup() {
         guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backupTaskIdentifier)
 #endif
             return
@@ -676,7 +669,7 @@ extension BackupManager {
                 await createAutoBackup()
             }
         } else {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
             // schedule task for the future
             let request = BGProcessingTaskRequest(identifier: Self.backupTaskIdentifier)
             request.earliestBeginDate = nextUpdateTime

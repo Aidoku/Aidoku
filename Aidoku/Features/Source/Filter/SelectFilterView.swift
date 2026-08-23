@@ -75,9 +75,7 @@ struct SelectFilterView: View {
                     )
                 }
                 .navigationTitle(filter.title?.localizedCapitalized ?? "")
-#if !os(macOS)
                 .navigationBarTitleDisplayMode(.inline)
-#endif
             }
         }
         .onChange(of: selectedOption) { _ in

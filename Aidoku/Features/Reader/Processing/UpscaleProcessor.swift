@@ -5,17 +5,9 @@
 //  Created by Skitty on 6/24/25.
 //
 
-import Foundation
 import Nuke
-
-import Vision
-
-#if os(iOS) || os(tvOS)
 import UIKit
-#else
-import CoreGraphics
-import ImageIO
-#endif
+import Vision
 
 struct UpscaleProcessor: ImageProcessing {
     var identifier: String {
@@ -49,11 +41,7 @@ struct UpscaleProcessor: ImageProcessing {
                 LogManager.logger.error("Upscaling model failed to process image")
                 return image
             }
-#if os(iOS) || os(tvOS)
             return await PlatformImage(cgImage: output, scale: UIScreen.main.scale, orientation: image.imageOrientation)
-#else
-            return PlatformImage(cgImage: output, size: .init(width: image.size.width, height: image.size.height))
-#endif
         }.get()
     }
 

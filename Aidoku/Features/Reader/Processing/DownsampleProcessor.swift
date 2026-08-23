@@ -5,24 +5,13 @@
 //  Created by Skitty on 8/17/22.
 //
 
-import Foundation
 import Nuke
-
-#if os(iOS) || os(tvOS)
 import UIKit
-#else
-import CoreGraphics
-import ImageIO
-#endif
 
 struct DownsampleProcessor: ImageProcessing {
     private let size: CGSize
-#if os(iOS) || os(tvOS)
     @MainActor
     let scaleFactor = UIScreen.main.scale
-#else
-    let scaleFactor: CGFloat = 1
-#endif
 
     @MainActor
     init(size: CGSize) {
@@ -54,15 +43,9 @@ struct DownsampleProcessor: ImageProcessing {
             height: CGFloat(round(image.size.height * scale))
         )
 
-#if os(iOS) || os(tvOS)
         var data = image.pngData()
-#else
-        var data = image.tiffRepresentation
-#endif
         if data == nil {
-#if os(iOS) || os(tvOS)
             data = image.jpegData(compressionQuality: 1)
-#endif
             if data == nil {
                 return nil
             }
@@ -85,10 +68,6 @@ struct DownsampleProcessor: ImageProcessing {
             return nil
         }
 
-#if os(iOS) || os(tvOS)
         return PlatformImage(cgImage: output, scale: scaleFactor, orientation: image.imageOrientation)
-#else
-        return PlatformImage(cgImage: output, size: .init(width: finalSize.width, height: finalSize.height))
-#endif
     }
 }

@@ -5,15 +5,8 @@
 //  Created by Skitty on 12/20/21.
 //
 
-import Foundation
 import AidokuRunner
-
-#if os(OSX)
-    import AppKit
-//    public typealias UIColor = NSColor
-#else
-    import UIKit
-#endif
+import Foundation
 
 enum PublishingStatus: Int, Codable {
     case unknown = 0
