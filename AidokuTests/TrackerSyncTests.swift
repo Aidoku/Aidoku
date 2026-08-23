@@ -6,15 +6,15 @@
 //
 
 import AidokuRunner
-import Foundation
 import Testing
+import UIKit
 
 @testable import Aidoku
 
 actor TestableTracker: Tracker {
     let id = "test"
     let name = "Test"
-    let icon: Aidoku.PlatformImage? = nil
+    let icon: UIImage? = nil
     let isLoggedIn = true
 
     var lastReadChapter: Float?
@@ -71,8 +71,7 @@ actor TestableTracker: Tracker {
     static let testTrackItem = TrackItem(
         id: Self.testId,
         trackerId: "test",
-        sourceId: "test",
-        mangaId: "test",
+        mangaId: .init(sourceKey: "test", mangaKey: "test"),
         title: nil,
         state: nil,
         chapterOffset: 0
