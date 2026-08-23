@@ -19,7 +19,7 @@ jobs:
         id: commitinfo
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
       - name: Build
-        run: xcodebuild -scheme "Aidoku (iOS)" -configuration Release archive -archivePath build/Aidoku.xcarchive -skipPackagePluginValidation CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+        run: xcodebuild -scheme "Aidoku" -configuration Release archive -archivePath build/Aidoku.xcarchive -skipPackagePluginValidation CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
       - name: Package ipa
         run: |
           mkdir Payload

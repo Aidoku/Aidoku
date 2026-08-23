@@ -1,0 +1,406 @@
+//
+//  OldMangaCollectionViewController.swift
+//  Aidoku (iOS)
+//
+//  Created by Skitty on 8/1/22.
+//
+
+import UIKit
+
+class OldMangaCollectionViewController: BaseCollectionViewController {
+    static let itemSpacing: CGFloat = 12
+    static let sectionSpacing: CGFloat = 6 // extra spacing betweeen sections
+
+    var usesListLayout = false
+
+    lazy var dataSource = makeDataSource()
+
+    private var focusedIndexPath: IndexPath? {
+        didSet {
+            if let oldValue {
+                collectionView(collectionView, didUnhighlightItemAt: oldValue)
+            }
+            if let focusedIndexPath {
+                collectionView(collectionView, didHighlightItemAt: focusedIndexPath)
+            }
+        }
+    }
+
+    override func configure() {
+        super.configure()
+        collectionView.register(MangaGridCell.self, forCellWithReuseIdentifier: "MangaGridCell")
+        collectionView.register(MangaListCell.self, forCellWithReuseIdentifier: "MangaListCell")
+        collectionView.dataSource = dataSource
+        collectionView.contentInset = UIEdgeInsets(
+            top: 0,
+            left: 0,
+            bottom: 10,
+            right: 0
+        )
+    }
+
+    override func observe() {
+        let keys = ["Appearance.layout", "Appearance.customPortraitRows", "Appearance.customLandscapeRows"]
+        for key in keys {
+            addObserver(forName: key) { [weak self] _ in
+                Task { @MainActor in
+                    self?.collectionView.collectionViewLayout.invalidateLayout()
+                }
+            }
+        }
+    }
+
+    // MARK: Cell Registration
+    func configure(cell: MangaGridCell, info: MangaInfo, indexPath: IndexPath) {
+        cell.identifier = info.id
+        cell.title = info.title
+
+        Task {
+            await cell.loadImage(url: info.coverUrl)
+        }
+
+        cell.setSelected(cell.isSelected, animated: false)
+
+        if indexPath == focusedIndexPath {
+            cell.highlight()
+        }
+    }
+
+    func configure(cell: MangaListCell, info: MangaInfo, indexPath: IndexPath) {
+        cell.configure(with: info)
+        cell.setSelected(cell.isSelected, animated: false)
+
+        if indexPath == focusedIndexPath {
+            cell.highlight()
+        }
+    }
+
+    // MARK: Collection View Layout
+    override func makeCollectionViewLayout() -> UICollectionViewLayout {
+        let layout = UICollectionViewCompositionalLayout { [weak self] sectionIndex, environment in
+            guard let self else { return nil }
+            switch Section(rawValue: sectionIndex) {
+                case .pinned, .regular:
+                    if self.usesListLayout {
+                        return Self.makeListLayoutSection(environment: environment)
+                    } else {
+                        return Self.makeGridLayoutSection(environment: environment)
+                    }
+                case nil:
+                    return nil
+            }
+        }
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.interSectionSpacing = Self.itemSpacing + Self.sectionSpacing
+        layout.configuration = config
+        return layout
+    }
+}
+
+extension OldMangaCollectionViewController {
+    static func makeListLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+        let itemHeight: CGFloat = 100
+        let spacing: CGFloat = 10
+
+        let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1),
+            heightDimension: .absolute(itemHeight)
+        ))
+
+        let group = NSCollectionLayoutGroup.vertical(
+            layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .absolute(itemHeight)
+            ),
+            subitems: [item]
+        )
+        group.interItemSpacing = .fixed(spacing)
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        section.interGroupSpacing = spacing
+
+        return section
+    }
+
+    static func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
+        let layout = UserDefaults.standard.string(forKey: "Appearance.layout")
+        let containerWidth = environment.container.contentSize.width
+
+        let itemsPerRow: Int
+        switch layout {
+            case "standard":
+                let idealWidth: CGFloat = 180
+                itemsPerRow = max(1, Int(floor(containerWidth / idealWidth)))
+            case "compact":
+                let idealWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 150 : 120
+                itemsPerRow = max(1, Int(floor(containerWidth / idealWidth)))
+            default: // custom
+                let isLandscape = containerWidth > environment.container.contentSize.height
+                let key = isLandscape ? "Appearance.customLandscapeRows" : "Appearance.customPortraitRows"
+                itemsPerRow = UserDefaults.standard.integer(forKey: key)
+        }
+
+        let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
+            widthDimension: .fractionalWidth(1 / CGFloat(itemsPerRow)),
+            heightDimension: .fractionalWidth(3 / (2 * CGFloat(itemsPerRow)))
+        ))
+
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: NSCollectionLayoutSize(
+                widthDimension: .fractionalWidth(1),
+                heightDimension: .estimated(containerWidth * 3 / (2 * CGFloat(itemsPerRow)))
+            ),
+            subitem: item,
+            count: itemsPerRow
+        )
+        group.interItemSpacing = .fixed(itemSpacing)
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16)
+        section.interGroupSpacing = itemSpacing
+
+        return section
+    }
+}
+
+// MARK: - Collection View Delegate
+extension OldMangaCollectionViewController {
+    func collectionView(_ collectionView: UICollectionView, didHighlightItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath)
+        if let cell = cell as? MangaGridCell {
+            cell.highlight()
+        } else if let cell = cell as? MangaListCell {
+            cell.highlight()
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didUnhighlightItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath)
+        if let cell = cell as? MangaGridCell {
+            cell.unhighlight()
+        } else if let cell = cell as? MangaListCell {
+            cell.unhighlight()
+        }
+    }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard let info = dataSource.itemIdentifier(for: indexPath) else { return }
+        openInfoView(info: info)
+    }
+
+    func openInfoView(info: MangaInfo, zoom: Bool = true) {
+        let viewController = MangaViewController(manga: info, parent: self)
+        if zoom, #available(iOS 18.0, *) {
+            viewController.preferredTransition = .zoom { context in
+                guard
+                    let detailViewController = context.zoomedViewController as? MangaViewController,
+                    let info = detailViewController.mangaInfo,
+                    let indexPath = self.dataSource.indexPath(for: info),
+                    let cell = self.collectionView.cellForItem(at: indexPath)
+                else {
+                    return nil
+                }
+                if let cell = cell as? MangaListCell {
+                    return cell.coverImageView
+                } else {
+                    return cell.contentView
+                }
+            }
+        }
+        navigationController?.pushViewController(viewController, animated: true)
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfiguration configuration: UIContextMenuConfiguration,
+        highlightPreviewForItemAt indexPath: IndexPath
+    ) -> UITargetedPreview? {
+        guard let cell = collectionView.cellForItem(at: indexPath) else { return nil }
+
+        if cell is MangaListCell {
+            // add some padding to list cell
+            let parameters = UIPreviewParameters()
+            let padding: CGFloat = 8
+            let rect = cell.bounds.insetBy(dx: -padding, dy: -padding)
+            parameters.visiblePath = UIBezierPath(roundedRect: rect, cornerRadius: 12)
+
+            return UITargetedPreview(view: cell.contentView, parameters: parameters)
+        } else if cell is MangaGridCell {
+            // round the grid cell corners correctly
+            let parameters = UIPreviewParameters()
+            parameters.visiblePath = UIBezierPath(
+                roundedRect: cell.bounds,
+                cornerRadius: cell.contentView.layer.cornerRadius
+            )
+            return UITargetedPreview(view: cell.contentView, parameters: parameters)
+        } else {
+            return nil
+        }
+    }
+
+    func collectionView(
+        _ collectionView: UICollectionView,
+        contextMenuConfiguration configuration: UIContextMenuConfiguration,
+        dismissalPreviewForItemAt indexPath: IndexPath
+    ) -> UITargetedPreview? {
+        self.collectionView(
+            collectionView,
+            contextMenuConfiguration: configuration,
+            highlightPreviewForItemAt: indexPath
+        )
+    }
+}
+
+// MARK: - Data Source
+extension OldMangaCollectionViewController {
+    enum Section: Int, CaseIterable {
+        case pinned
+        case regular
+    }
+
+    func makeDataSource() -> UICollectionViewDiffableDataSource<Section, MangaInfo> {
+        UICollectionViewDiffableDataSource(
+            collectionView: collectionView
+        ) { [weak self] collectionView, indexPath, item in
+            // swiftlint:disable force_cast
+            if self?.usesListLayout ?? false {
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: "MangaListCell",
+                    for: indexPath
+                ) as! MangaListCell
+                self?.configure(cell: cell, info: item, indexPath: indexPath)
+                return cell
+            } else {
+                let cell = collectionView.dequeueReusableCell(
+                    withReuseIdentifier: "MangaGridCell",
+                    for: indexPath
+                ) as! MangaGridCell
+                self?.configure(cell: cell, info: item, indexPath: indexPath)
+                return cell
+            }
+            // swiftlint:enable force_cast
+        }
+    }
+}
+
+// MARK: - Keyboard Shortcuts
+extension OldMangaCollectionViewController {
+    override var canBecomeFirstResponder: Bool { true }
+
+    override var keyCommands: [UIKeyCommand]? {
+        [
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_LEFT"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputLeftArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_RIGHT"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputRightArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_ABOVE"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputUpArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("FOCUS_ITEM_BELOW"),
+                action: #selector(arrowKeyPressed(_:)),
+                input: UIKeyCommand.inputDownArrow,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("OPEN_FOCUS_ITEM"),
+                action: #selector(enterKeyPressed),
+                input: "\r",
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            ),
+            UIKeyCommand(
+                title: NSLocalizedString("RESET_FOCUS"),
+                action: #selector(escapeKeyPressed),
+                input: UIKeyCommand.inputEscape,
+                modifierFlags: [],
+                alternates: [],
+                attributes: [],
+                state: .off
+            )
+        ]
+    }
+
+    @objc func escapeKeyPressed() {
+        focusedIndexPath = nil
+    }
+
+    @objc func enterKeyPressed() {
+        guard let focusedIndexPath else { return }
+        collectionView.delegate?.collectionView?(collectionView, didSelectItemAt: focusedIndexPath)
+    }
+
+    @objc func arrowKeyPressed(_ sender: UIKeyCommand) {
+        guard let focusedIndexPath else {
+            self.focusedIndexPath = IndexPath(item: 0, section: 0)
+            return
+        }
+
+        var position = focusedIndexPath.row
+        var section = focusedIndexPath.section
+        let itemsPerRow = if usesListLayout {
+            1
+        } else {
+            UserDefaults.standard.integer(
+                forKey: UIScreen.main.bounds.width > UIScreen.main.bounds.height
+                    ? "Appearance.customLandscapeRows"
+                    : "Appearance.customPortraitRows"
+            )
+        }
+        switch sender.input {
+            case UIKeyCommand.inputLeftArrow: position -= 1
+            case UIKeyCommand.inputRightArrow: position += 1
+            case UIKeyCommand.inputUpArrow: position -= itemsPerRow
+            case UIKeyCommand.inputDownArrow: position += itemsPerRow
+            default: return
+        }
+        if position < 0 {
+            guard section > 0 else { return }
+            section -= 1
+            let itemsInPrevSection = collectionView.numberOfItems(inSection: section)
+            position += itemsInPrevSection / itemsPerRow * itemsPerRow
+            if position < itemsInPrevSection - itemsPerRow {
+                position += itemsPerRow
+            }
+        } else if position >= collectionView.numberOfItems(inSection: section) {
+            guard section < collectionView.numberOfSections - 1 else { return }
+            section += 1
+            position -= collectionView.numberOfItems(inSection: section - 1) / itemsPerRow * itemsPerRow
+            if position >= itemsPerRow {
+               position -= itemsPerRow
+            }
+        }
+
+        position = min(position, collectionView.numberOfItems(inSection: section) - 1)
+        let newFocusedndexPath = IndexPath(row: position, section: section)
+
+        self.collectionView.scrollToItem(at: newFocusedndexPath, at: .centeredVertically, animated: true)
+        self.focusedIndexPath = newFocusedndexPath
+    }
+}
