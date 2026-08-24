@@ -564,16 +564,12 @@ extension ReaderSettingsView {
     @ViewBuilder
     var textSection: some View {
         let title = String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER"))
-        // The two readers keep separate styles. An ePub is a book and is read paged; the text
-        // reader scrolled, which is what it did before it could paginate. One control, and which
-        // key it writes follows what is open.
-        let styleKey = reader == .epub ? "Reader.epubReaderStyle" : "Reader.textReaderStyle"
         Section(title) {
             SettingView(
                 setting: .init(
-                    key: styleKey,
+                    key: "Reader.textReaderStyle",
                     title: NSLocalizedString("TEXT_READER_STYLE"),
-                    notification: .init(styleKey),
+                    notification: .init("Reader.textReaderStyle"),
                     value: .select(.init(
                         values: ["paged", "scroll"],
                         titles: [
