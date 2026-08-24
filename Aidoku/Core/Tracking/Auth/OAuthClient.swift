@@ -5,12 +5,8 @@
 //  Created by Koding Dev on 19/7/2022.
 //
 
-import Foundation
 import CryptoKit
-
-#if canImport(UIKit)
 import UIKit
-#endif
 
 actor OAuthClient {
     let id: String
@@ -198,14 +194,12 @@ extension OAuthClient {
         if !tokens.askedForRefresh {
             tokens.askedForRefresh = true
             setTokens(tokens)
-#if !os(macOS)
             await MainActor.run {
                 (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
                     title: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED"), trackerName),
                     message: String(format: NSLocalizedString("%@_TRACKER_LOGIN_NEEDED_TEXT"), trackerName)
                 )
             }
-#endif
         }
     }
 }

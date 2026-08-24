@@ -46,7 +46,7 @@ extension LocalFileImportView {
         @State private var volume: Float?
         @State private var chapter: Float? = 1
 
-        @State private var coverImage: PlatformImage?
+        @State private var coverImage: UIImage?
         @State private var seriesName: String = ""
         @State private var seriesDescription: String = ""
 
@@ -368,7 +368,7 @@ extension LocalFileImportView.ContentView {
     }
 
     func previewImageView(
-        _ image: PlatformImage,
+        _ image: UIImage,
         imageHeight: CGFloat = 130,
         scale: CGFloat = 1,
         offset: CGFloat = 0,

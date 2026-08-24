@@ -33,11 +33,7 @@ final class Reachability {
 
         guard gotFlags, flags.contains(.reachable) else { return .none }
 
-        #if os(OSX)
-            return .wifi
-        #else
-            return flags.contains(.isWWAN) ? .cellular : .wifi
-        #endif
+        return flags.contains(.isWWAN) ? .cellular : .wifi
     }
 
     static func registerConnectionTypeObserver(

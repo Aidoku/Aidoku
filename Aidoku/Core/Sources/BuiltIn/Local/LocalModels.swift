@@ -5,7 +5,7 @@
 //  Created by Skitty on 6/10/25.
 //
 
-import Foundation
+import UIKit
 
 enum LocalFileManagerError: Error {
     case invalidFileType
@@ -36,7 +36,7 @@ enum LocalFileType {
 
 struct ImportFileInfo: Hashable {
     let url: URL
-    let previewImages: [PlatformImage]
+    let previewImages: [UIImage]
     let name: String
     let pageCount: Int
     let fileType: LocalFileType

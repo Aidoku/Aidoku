@@ -24,8 +24,8 @@ struct FilterInfo: Codable {
     let type: String
 
     let name: String?
-    let defaultValue: JsonAnyValue?
-    let id: JsonAnyValue?
+    let defaultValue: JSONAnyValue?
+    let id: JSONAnyValue?
 
     let filters: [FilterInfo]?
     let options: [String]?

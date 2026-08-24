@@ -1528,8 +1528,6 @@ extension SettingView {
             }
         }
         .navigationTitle("Settings")
-#if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
-#endif
     }
 }

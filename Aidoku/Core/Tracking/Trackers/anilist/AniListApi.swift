@@ -5,11 +5,7 @@
 //  Created by Koding Dev on 19/7/2022.
 //
 
-import Foundation
-
-#if canImport(UIKit)
 import UIKit
-#endif
 
 actor AniListApi {
     private let encoder = JSONEncoder()

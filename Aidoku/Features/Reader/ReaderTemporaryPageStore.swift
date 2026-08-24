@@ -24,18 +24,11 @@ actor ReaderTemporaryPageStore {
         chapterKey: String,
         pageIndex: Int
     ) -> URL? {
-#if os(macOS)
-        guard let data = image.tiffRepresentation else {
-            return nil
-        }
-        let fileExtension = "tiff"
-#else
         guard let data = image.pngData() else {
             return nil
         }
-        let fileExtension = "png"
-#endif
 
+        let fileExtension = "png"
         let filename = "\(chapterKey.hashValue)-\(pageIndex).\(fileExtension)"
         let url = directory.appendingPathComponent(filename)
 

@@ -40,31 +40,14 @@ actor CloudflareHandler: NSObject {
     @MainActor
     private lazy var webView = WKWebView(frame: .zero)
 
-#if !os(macOS)
     @MainActor
     private var popupController: WebViewViewController?
-#endif
 
     @MainActor
     private var popupShown: Bool {
-#if !os(macOS)
         popupController?.presentingViewController != nil
-#else
-        false
-#endif
     }
 
-#if os(macOS)
-    @MainActor
-    private var parent: NSWindow? {
-        NSApplication.shared.windows.first
-    }
-
-    @MainActor
-    private var parentView: NSView? {
-        parent?.contentView
-    }
-#else
     @MainActor
     private var parent: UIViewController? {
         (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController
@@ -74,7 +57,6 @@ actor CloudflareHandler: NSObject {
     private var parentView: UIView? {
         parent?.view
     }
-#endif
 
     enum HandleError: Error {
         case invalidRequest
@@ -155,10 +137,8 @@ extension CloudflareHandler {
 
         Task { @MainActor in
             webView.removeFromSuperview()
-#if !os(macOS)
             popupController?.dismiss(animated: true)
             popupController = nil
-#endif
         }
 
         timeoutTask?.cancel()
@@ -299,7 +279,6 @@ extension CloudflareHandler {
     nonisolated func navigated(webView: WKWebView, for request: URLRequest) async {
         guard let url = request.url, let host = url.host?.lowercased() else { return }
 
-#if !os(macOS)
         await MainActor.run {
             if self.popupController == nil {
                 // delay captcha check by 3s (so it loads in)
@@ -312,7 +291,6 @@ extension CloudflareHandler {
                 }
             }
         }
-#endif
 
         var webViewCookies = await WKWebsiteDataStore.default().httpCookieStore.allCookies()
 
@@ -343,9 +321,7 @@ extension CloudflareHandler {
         guard !isCaptcha else { return }
 
         await webView.removeFromSuperview()
-#if !os(macOS)
         await self.popupController?.dismiss(animated: true)
-#endif
 
         await self.finishChallenge()
     }
@@ -369,10 +345,6 @@ extension CloudflareHandler {
         // don't timeout while popup is shown
         await disableTimeout()
 
-#if os(macOS)
-        // todo
-        await finishChallenge()
-#else
         guard let parent else {
             await self.finishChallenge(with: .failure(HandleError.missingParentView))
             return
@@ -394,7 +366,6 @@ extension CloudflareHandler {
         ])
 
         parent.present(popup, animated: true)
-#endif
     }
 
     // check if captcha or verify button is shown, and show the popup if it is

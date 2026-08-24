@@ -8,7 +8,6 @@
 import Foundation
 
 class SemanticVersion {
-
     private var components: [String]
 
     init(_ string: String) {

@@ -100,13 +100,13 @@ class TextFilter: Filter<String> {
 // MARK: Check
 class CheckFilter: Filter<Bool?> {
     var canExclude: Bool
-    var id: JsonAnyValue?
+    var id: JSONAnyValue?
 
     override var type: FilterType {
         .check
     }
 
-    init(name: String, canExclude: Bool, id: JsonAnyValue? = nil, value: Bool? = nil) {
+    init(name: String, canExclude: Bool, id: JSONAnyValue? = nil, value: Bool? = nil) {
         self.canExclude = canExclude
         self.id = id
         super.init(name: name, value: value)

@@ -20,7 +20,7 @@ struct SettingItem: Codable {
     var placeholder: String?
     var values: [String]?
     var titles: [String]?
-    var defaultValue: JsonAnyValue?
+    var defaultValue: JSONAnyValue?
     var notification: String?
 
     var requires: String?

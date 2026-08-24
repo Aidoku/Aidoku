@@ -9,10 +9,7 @@ import AidokuRunner
 import BackgroundTasks
 import CoreData
 import Nuke
-
-#if canImport(UIKit)
 import UIKit
-#endif
 
 actor MangaManager {
     static let shared = MangaManager()
@@ -320,7 +317,7 @@ extension MangaManager {
 // MARK: - Library Updating
 extension MangaManager {
     nonisolated func register() {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
         BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.taskIdentifier, using: nil) { @Sendable [weak self] task in
             guard let self else { return }
 
@@ -350,7 +347,7 @@ extension MangaManager {
             default: 0
         }
         guard interval > 0 else {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.taskIdentifier)
 #endif
             return
@@ -364,7 +361,7 @@ extension MangaManager {
                 await refreshLibrary()
             }
         } else {
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
             // schedule task for the future
             let request = BGProcessingTaskRequest(identifier: Self.taskIdentifier)
             request.earliestBeginDate = nextUpdateTime
@@ -386,7 +383,7 @@ extension MangaManager {
         targetCategory = category
         self.skipReachabilityCheck = skipReachabilityCheck
 
-#if !os(macOS) && !targetEnvironment(simulator)
+#if !targetEnvironment(simulator)
         if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Library.backgroundRefresh"), !ProcessInfo.processInfo.isMacCatalystApp {
             let request = BGContinuedProcessingTaskRequest(
                 identifier: Self.taskIdentifier,
@@ -411,9 +408,7 @@ extension MangaManager {
         forceAll: Bool = false,
         task: (ProgressReporting & Sendable)? = nil
     ) async {
-#if !os(macOS)
         let tabController = await UIApplication.shared.firstKeyWindow?.rootViewController as? TabBarController
-#endif
 
         if libraryRefreshTask != nil {
             // wait for already running library refresh
@@ -428,7 +423,6 @@ extension MangaManager {
                     forceAll: forceAll,
                     task: task,
                     refreshStarted: {
-#if !os(macOS)
                         await tabController?.showLibraryRefreshView()
 
                         self.onLibraryRefreshProgress = { progress in
@@ -442,7 +436,6 @@ extension MangaManager {
                                 )
                             }
                         }
-#endif
                     }
                 )
                 libraryRefreshTask = nil
@@ -454,11 +447,9 @@ extension MangaManager {
         self.targetCategory = nil
         self.skipReachabilityCheck = false
 
-#if !os(macOS)
         // wait 0.5s for final progress animation to complete
         try? await Task.sleep(nanoseconds: 500_000_000)
         await tabController?.hideAccessoryView()
-#endif
 
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
 
@@ -581,11 +572,7 @@ extension MangaManager {
         let total = filteredManga.count
         var completed = 0
 
-#if !os(macOS)
         let isBackground = await UIApplication.shared.applicationState != .active
-#else
-        let isBackground = false
-#endif
         let notificationsEnabled = isBackground && NotificationManager.shared.isEnabled()
         var pendingNotifications: [NotificationManager.NewChaptersSummary] = []
 
@@ -731,11 +718,7 @@ extension MangaManager {
         targetDirectory.createDirectory()
         do {
             let data = if #available(iOS 17.0, *) {
-#if !os(macOS)
                 cover.heicData()
-#else
-                cover.pngData()
-#endif
             } else {
                 cover.pngData()
             }

@@ -10,10 +10,6 @@ import CoreData
 import Foundation
 import ZIPFoundation
 
-#if os(macOS)
-import AppKit
-#endif
-
 /// Manages local files stored in the documents directory for the local files source.
 actor LocalFileManager {
     static let shared = LocalFileManager()

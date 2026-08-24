@@ -19,13 +19,8 @@ struct ListButtonStyle: ButtonStyle {
             .background(
                 Group {
                     if configuration.isPressed {
-#if !os(macOS)
                         Color(UIColor.systemGray4)
                             .animation(nil, value: configuration.isPressed)
-#else
-                        Color(UIColor.systemGray)
-                            .animation(nil, value: configuration.isPressed)
-#endif
                     } else {
                         Color(UIColor.systemBackground)
                             .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)

@@ -10,7 +10,6 @@ import UIKit
 
 extension iOSVersion {
     public static let v27 = iOSVersion {
-        #if os(iOS)
         if #available(iOS 28, *) {
             return .past
         }
@@ -18,9 +17,6 @@ extension iOSVersion {
             return .current
         }
         return .future
-        #else
-        return nil
-        #endif
     }
 }
 

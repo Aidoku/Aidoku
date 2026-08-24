@@ -61,11 +61,7 @@ extension Page {
         } else if let text {
             .text(text)
         } else if let image {
-#if os(macOS)
-            .image(AidokuRunner.PlatformImage(image))
-#else
             .image(image)
-#endif
         } else if let zipURL, let url = URL(string: zipURL), let imageURL {
             .zipFile(url: url, filePath: imageURL)
         } else {
