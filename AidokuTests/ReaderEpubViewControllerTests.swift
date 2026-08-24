@@ -577,15 +577,15 @@ struct ReaderEpubViewControllerTests {
         defer { EpubFixture.remove(book.url) }
 
         let defaults = UserDefaults.standard
-        let original = defaults.string(forKey: "Reader.epubReaderStyle")
+        let original = defaults.string(forKey: "Reader.textReaderStyle")
         defer {
             if let original {
-                defaults.set(original, forKey: "Reader.epubReaderStyle")
+                defaults.set(original, forKey: "Reader.textReaderStyle")
             } else {
-                defaults.removeObject(forKey: "Reader.epubReaderStyle")
+                defaults.removeObject(forKey: "Reader.textReaderStyle")
             }
         }
-        defaults.removeObject(forKey: "Reader.epubReaderStyle")
+        defaults.removeObject(forKey: "Reader.textReaderStyle")
 
         // Landscape, so that on an iPad this exercises the two-column spread layout whose page
         // counts differ most from scroll mode's. On an iPhone it is one column either way.
@@ -602,8 +602,8 @@ struct ReaderEpubViewControllerTests {
         let countBefore = try #require(before.index.pageCount(forDocumentAt: documentBefore))
         let edgeBefore = Double(pageInDocumentBefore) / Double(countBefore)
 
-        defaults.set("scroll", forKey: "Reader.epubReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+        defaults.set("scroll", forKey: "Reader.textReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
 
         // The rebuild replaces the view model; the refinement settles through the navigation
         // queue once the new layout is measured. Reaching the right document is not it having
@@ -635,8 +635,8 @@ struct ReaderEpubViewControllerTests {
         // And back again. The scroll side seeds from its exact offset rather than from its page
         // number, whose rounding — offset to the nearest boundary, trailing partial screen up —
         // resumed the paged layout a page early.
-        defaults.removeObject(forKey: "Reader.epubReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+        defaults.removeObject(forKey: "Reader.textReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
 
         try await EpubFixture.waitUntil(timeout: 30) {
             reader.book !== after && reader.book?.isMeasured == true
@@ -650,8 +650,8 @@ struct ReaderEpubViewControllerTests {
         // `q / count` understates where the reader is.
         let anchorBack = try #require(after.edgeInDocument)
 
-        defaults.removeObject(forKey: "Reader.epubReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+        defaults.removeObject(forKey: "Reader.textReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
 
         try await EpubFixture.waitUntil(timeout: 30) {
             reader.book !== after && reader.book?.isMeasured == true
