@@ -29,13 +29,8 @@ struct BackupUpdate: Codable, Hashable {
         self.chapterId = chapterId
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> MangaUpdateObject {
-        let object: MangaUpdateObject
-        if let context {
-            object = MangaUpdateObject(context: context)
-        } else {
-            object = MangaUpdateObject()
-        }
+    func toObject(context: NSManagedObjectContext) -> MangaUpdateObject {
+        let object = MangaUpdateObject(context: context)
         object.date = date
         object.viewed = viewed
         object.sourceId = sourceId

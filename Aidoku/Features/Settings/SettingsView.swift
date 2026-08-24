@@ -234,14 +234,14 @@ extension SettingsView {
                     message: "This will migrate leftover reading history from old versions that are not currently linked with stored chapters in the local database. This should've happened automatically upon updating, but if it didn't complete, it can be re-executed this way."
                 ) {
                     Task {
-                        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator(style: .progress)
+                        UIApplication.shared.appDelegate?.showLoadingIndicator(style: .progress)
                         await CoreDataManager.shared.migrateChapterHistory { progress in
                             Task { @MainActor in
-                                (UIApplication.shared.delegate as? AppDelegate)?.indicatorProgress = progress
+                                UIApplication.shared.appDelegate?.indicatorProgress = progress
                             }
                         }
                         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
-                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }
             case "Advanced.resetSettings":
@@ -256,7 +256,7 @@ extension SettingsView {
                     title: NSLocalizedString("RESET"),
                     message: NSLocalizedString("RESET_TEXT")
                 ) {
-                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                    UIApplication.shared.appDelegate?.showLoadingIndicator()
                     Task {
                         resetSettings()
                         await clearNetworkCache()
@@ -275,7 +275,7 @@ extension SettingsView {
                         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
-                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }
 #if DEBUG

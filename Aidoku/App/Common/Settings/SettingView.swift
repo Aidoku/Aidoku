@@ -896,7 +896,7 @@ extension SettingView {
 
     // use uikit alert for ios 15, since it doesn't support text fields in alerts
     private func showLoginAlertView(value: LoginSetting) {
-        guard let delegate = UIApplication.shared.delegate as? AppDelegate else {
+        guard let delegate = UIApplication.shared.appDelegate else {
             return
         }
         var usernameTextField: UITextField?
@@ -1422,7 +1422,7 @@ extension SettingView {
 
     func showListAddPrompt(value: EditableListSetting) {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: setting.title,
             actions: [
                 UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),

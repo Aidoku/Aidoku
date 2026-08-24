@@ -281,7 +281,7 @@ extension BackupManager {
     // swiftlint:disable:next cyclomatic_complexity function_body_length
     private func doRestore(from backup: Backup) async -> Bool {
         await MainActor.run {
-            (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+            UIApplication.shared.appDelegate?.showLoadingIndicator()
             UIApplication.shared.isIdleTimerDisabled = true
         }
 
@@ -311,7 +311,9 @@ extension BackupManager {
                 }
 
                 if needsMigrate {
-                    await (UIApplication.shared.delegate as? AppDelegate)?.migrateSettings()
+                    await MainActor.run {
+                        UIApplication.shared.appDelegate?.migrateSettings()
+                    }
                 }
             }
 
@@ -596,7 +598,7 @@ extension BackupManager {
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
 
         await Task { @MainActor [backupError] in
-            let delegate = UIApplication.shared.delegate as? AppDelegate
+            let delegate = UIApplication.shared.appDelegate
             await delegate?.hideLoadingIndicator()
 
             UIApplication.shared.isIdleTimerDisabled = false

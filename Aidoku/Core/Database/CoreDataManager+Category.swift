@@ -9,13 +9,12 @@ import CoreData
 
 extension CoreDataManager {
     /// Remove all category objects.
-    func clearCategories(context: NSManagedObjectContext? = nil) {
+    func clearCategories(context: NSManagedObjectContext) {
         clear(request: CategoryObject.fetchRequest(), context: context)
     }
 
     /// Get category object with title.
-    func getCategory(title: String, context: NSManagedObjectContext? = nil) -> CategoryObject? {
-        let context = context ?? self.context
+    func getCategory(title: String, context: NSManagedObjectContext) -> CategoryObject? {
         let request = CategoryObject.fetchRequest()
         request.predicate = NSPredicate(format: "title == %@", title)
         request.fetchLimit = 1
@@ -23,8 +22,7 @@ extension CoreDataManager {
     }
 
     /// Get all category objects.
-    func getCategories(sorted: Bool = true, groupsOnly: Bool = false, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
-        let context = context ?? self.context
+    func getCategories(sorted: Bool = true, groupsOnly: Bool = false, context: NSManagedObjectContext) -> [CategoryObject] {
         let request = CategoryObject.fetchRequest()
         if groupsOnly {
             request.predicate = NSPredicate(format: "group == %@", NSNumber(value: true))
@@ -40,22 +38,27 @@ extension CoreDataManager {
     }
 
     /// Get category objects for a library manga.
-    func getCategories(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> [CategoryObject] {
+    func getCategories(mangaId: MangaIdentifier, context: NSManagedObjectContext) -> [CategoryObject] {
         let libraryObject = getLibraryManga(mangaId: mangaId, context: context)
         return (libraryObject?.categories?.allObjects as? [CategoryObject]) ?? []
+    }
+
+    @MainActor
+    func getCategoryTitles(sorted: Bool = true, excludeFilterGroups: Bool = true) -> [String] {
+        getCategoryTitles(sorted: sorted, excludeFilterGroups: excludeFilterGroups, context: context)
     }
 
     func getCategoryTitles(
         sorted: Bool = true,
         excludeFilterGroups: Bool = true,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> [String] {
         getCategories(sorted: sorted, context: context)
             .filter { excludeFilterGroups ? !$0.group : true }
             .compactMap { $0.title }
     }
 
-    func getFilterGroups(context: NSManagedObjectContext? = nil) -> [FilterGroup] {
+    func getFilterGroups(context: NSManagedObjectContext) -> [FilterGroup] {
         let decoder = JSONDecoder()
         return CoreDataManager.shared.getCategories(groupsOnly: true, context: context)
             .compactMap { (object: CategoryObject) -> FilterGroup? in
@@ -71,8 +74,7 @@ extension CoreDataManager {
     }
 
     /// Check if category exists.
-    func hasCategory(title: String, context: NSManagedObjectContext? = nil) -> Bool {
-        let context = context ?? self.context
+    func hasCategory(title: String, context: NSManagedObjectContext) -> Bool {
         let request = CategoryObject.fetchRequest()
         request.predicate = NSPredicate(format: "title == %@", title)
         request.fetchLimit = 1
@@ -81,8 +83,7 @@ extension CoreDataManager {
 
     /// Create a category object.
     @discardableResult
-    func createCategory(title: String, group: Bool = false, context: NSManagedObjectContext? = nil) -> CategoryObject {
-        let context = context ?? self.context
+    func createCategory(title: String, group: Bool = false, context: NSManagedObjectContext) -> CategoryObject {
 
         let request = CategoryObject.fetchRequest()
         request.predicate = NSPredicate(format: "group == %@", NSNumber(value: group))
@@ -98,8 +99,7 @@ extension CoreDataManager {
     }
 
     /// Removes a category with the given title.
-    func removeCategory(title: String, context: NSManagedObjectContext? = nil) {
-        let context = context ?? self.context
+    func removeCategory(title: String, context: NSManagedObjectContext) {
         if let object = self.getCategory(title: title, context: context) {
             context.delete(object)
         }
@@ -111,7 +111,7 @@ extension CoreDataManager {
     }
 
     /// Sets a new title for a category object with the given title.
-    func renameCategory(title: String, newTitle: String, context: NSManagedObjectContext? = nil) -> Bool {
+    func renameCategory(title: String, newTitle: String, context: NSManagedObjectContext) -> Bool {
         guard
             !hasCategory(title: newTitle, context: context),
             let object = getCategory(title: title, context: context)
@@ -126,9 +126,8 @@ extension CoreDataManager {
     func moveCategory(
         title: String,
         toPosition: Int,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) {
-        let context = context ?? self.context
 
         guard let categoryObject = getCategory(title: title, context: context) else {
             return
@@ -156,7 +155,7 @@ extension CoreDataManager {
     }
 
     /// Add categories to library manga.
-    func addCategoriesToManga(mangaId: MangaIdentifier, categories: [String], context: NSManagedObjectContext? = nil) {
+    func addCategoriesToManga(mangaId: MangaIdentifier, categories: [String], context: NSManagedObjectContext) {
         guard let libraryObject = getLibraryManga(mangaId: mangaId, context: context) else { return }
         for category in categories {
             guard let categoryObject = getCategory(title: category, context: context) else { continue }

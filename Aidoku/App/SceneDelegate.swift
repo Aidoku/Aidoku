@@ -49,11 +49,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             ])
         }
 
-        if
-            let url = connectionOptions.urlContexts.first?.url,
-            let delegate = UIApplication.shared.delegate as? AppDelegate
-        {
-            delegate.handleUrl(url: url)
+        if let url = connectionOptions.urlContexts.first?.url {
+            UIApplication.shared.appDelegate?.handleUrl(url: url)
         }
     }
 
@@ -80,8 +77,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        if let url = URLContexts.first?.url, let delegate = UIApplication.shared.delegate as? AppDelegate {
-            delegate.handleUrl(url: url)
+        if let url = URLContexts.first?.url {
+            UIApplication.shared.appDelegate?.handleUrl(url: url)
         }
     }
 

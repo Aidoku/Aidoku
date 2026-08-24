@@ -9,21 +9,20 @@ import CoreData
 
 extension CoreDataManager {
     /// Remove all update objects.
-    func clearUpdates(context: NSManagedObjectContext? = nil) {
+    func clearUpdates(context: NSManagedObjectContext) {
         clear(request: MangaUpdateObject.fetchRequest(), context: context)
     }
 
     /// Gets all update objects.
-    func getUpdates(context: NSManagedObjectContext? = nil) -> [MangaUpdateObject] {
-        (try? (context ?? self.context).fetch(MangaUpdateObject.fetchRequest())) ?? []
+    func getUpdates(context: NSManagedObjectContext) -> [MangaUpdateObject] {
+        (try? context.fetch(MangaUpdateObject.fetchRequest())) ?? []
     }
 
     /// Get a particular manga update object.
     func getMangaUpdate(
         chapterId: ChapterIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> MangaUpdateObject? {
-        let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "chapterId == %@ AND mangaId == %@ AND sourceId == %@ ",
@@ -34,17 +33,17 @@ extension CoreDataManager {
     }
 
     /// Gets sorted manga update objects.
-    func getRecentMangaUpdates(limit: Int, offset: Int, context: NSManagedObjectContext? = nil) -> [MangaUpdateObject] {
+    func getRecentMangaUpdates(limit: Int, offset: Int, context: NSManagedObjectContext) -> [MangaUpdateObject] {
         let request = MangaUpdateObject.fetchRequest()
         request.sortDescriptors = [NSSortDescriptor(key: "date", ascending: false)]
         request.fetchLimit = limit
         request.fetchOffset = offset
-        return (try? (context ?? self.context).fetch(request)) ?? []
+        return (try? context.fetch(request)) ?? []
     }
 
     func hasMangaUpdate(
         chapterId: ChapterIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Bool {
         getMangaUpdate(
             chapterId: chapterId,
@@ -56,7 +55,7 @@ extension CoreDataManager {
     func createMangaUpdate(
         mangaId: MangaIdentifier,
         chapterObject: ChapterObject,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) {
         if hasMangaUpdate(
             chapterId: .init(
@@ -68,7 +67,7 @@ extension CoreDataManager {
         ) {
             return
         }
-        let mangaUpdateObject = MangaUpdateObject(context: context ?? self.context)
+        let mangaUpdateObject = MangaUpdateObject(context: context)
         mangaUpdateObject.sourceId = mangaId.sourceKey
         mangaUpdateObject.mangaId = mangaId.mangaKey
         mangaUpdateObject.chapterId = chapterObject.id
@@ -79,9 +78,8 @@ extension CoreDataManager {
     /// Removes manga update objects by their composite keys
     func removeMangaUpdates(
         updates: [ChapterIdentifier],
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) {
-        let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
 
         var predicates: [NSPredicate] = []
@@ -103,9 +101,8 @@ extension CoreDataManager {
     /// Gets all unviewed updates of a manga
     func getUnviewedMangaUpdates(
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> [MangaUpdateObject] {
-        let context = context ?? self.context
         let request = MangaUpdateObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@ AND viewed == false",
@@ -120,9 +117,8 @@ extension CoreDataManager {
     func setMangaUpdatesViewed(
         viewed: Bool = true,
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> [MangaUpdateObject] {
-        let context = context ?? self.context
         let unviewedUpdates = getUnviewedMangaUpdates(mangaId: mangaId, context: context)
         if unviewedUpdates.isEmpty { return [] }
         for update in unviewedUpdates {

@@ -36,13 +36,8 @@ struct BackupReadingSession: Codable, Hashable {
         chapterId = history.chapterId
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> ReadingSessionObject {
-        let object: ReadingSessionObject
-        if let context {
-            object = ReadingSessionObject(context: context)
-        } else {
-            object = ReadingSessionObject()
-        }
+    func toObject(context: NSManagedObjectContext) -> ReadingSessionObject {
+        let object = ReadingSessionObject(context: context)
         object.pagesRead = Int16(pagesRead)
         object.startDate = startDate
         object.endDate = endDate

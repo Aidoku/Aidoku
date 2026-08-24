@@ -7,6 +7,7 @@
 
 import UIKit
 
+@MainActor
 class SelectedFilters {
     var filters: [FilterBase] = []
 }

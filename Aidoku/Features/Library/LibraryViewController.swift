@@ -1474,7 +1474,7 @@ extension LibraryViewController {
             bottomMenuChildren.append(UIMenu(title: NSLocalizedString("MARK_ALL"), image: nil, children: [
                 // read chapters
                 UIAction(title: NSLocalizedString("READ"), image: UIImage(systemName: "checkmark.circle")) { _ in
-                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                    UIApplication.shared.appDelegate?.showLoadingIndicator()
 
                     Task {
                         for manga in mangaInfo {
@@ -1487,12 +1487,12 @@ extension LibraryViewController {
                             )
                         }
 
-                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 },
                 // unread chapters
                 UIAction(title: NSLocalizedString("UNREAD"), image: UIImage(systemName: "minus.circle")) { _ in
-                    (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                    UIApplication.shared.appDelegate?.showLoadingIndicator()
 
                     Task {
                         for manga in mangaInfo {
@@ -1502,7 +1502,7 @@ extension LibraryViewController {
                             )
                         }
 
-                        await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+                        await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }
             ]))
@@ -1610,10 +1610,11 @@ extension LibraryViewController {
         undoManager.setActionName(actionName)
 
         let removedManga = mangaInfo.map {
-            let manga = CoreDataManager.shared.getManga(mangaId: $0.id)?.toManga()
-            let chapters = CoreDataManager.shared.getChapters(mangaId: $0.id).map { $0.toChapter() }
-            let trackItems = CoreDataManager.shared.getTracks(mangaId: $0.id).map { $0.toItem() }
-            let categories = CoreDataManager.shared.getCategories(mangaId: $0.id).compactMap { $0.title }
+            let context = CoreDataManager.shared.context
+            let manga = CoreDataManager.shared.getManga(mangaId: $0.id, context: context)?.toManga()
+            let chapters = CoreDataManager.shared.getChapters(mangaId: $0.id, context: context).map { $0.toChapter() }
+            let trackItems = CoreDataManager.shared.getTracks(mangaId: $0.id, context: context).map { $0.toItem() }
+            let categories = CoreDataManager.shared.getCategories(mangaId: $0.id, context: context).compactMap { $0.title }
             return (manga, chapters, trackItems, categories)
         }
 
@@ -1626,8 +1627,11 @@ extension LibraryViewController {
                 for (manga, chapters, trackItems, categories) in removedManga {
                     guard let manga = manga else { continue }
                     await MangaManager.shared.restoreToLibrary(
-                        manga: manga, chapters: chapters, trackItems: trackItems,
-                        categories: categories)
+                        manga: manga,
+                        chapters: chapters,
+                        trackItems: trackItems,
+                        categories: categories
+                    )
                 }
 
                 NotificationCenter.default.post(name: .updateLibrary, object: nil)
@@ -1638,7 +1642,6 @@ extension LibraryViewController {
             for manga in mangaInfo {
                 await viewModel.removeFromLibrary(manga: manga)
             }
-
             updateDataSource()
         }
     }

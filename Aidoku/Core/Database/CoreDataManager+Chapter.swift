@@ -10,26 +10,24 @@ import AidokuRunner
 
 extension CoreDataManager {
     /// Remove all chapter objects.
-    func clearChapters(context: NSManagedObjectContext? = nil) {
+    func clearChapters(context: NSManagedObjectContext) {
         clear(request: ChapterObject.fetchRequest(), context: context)
     }
 
     /// Gets all chapter objects.
-    func getChapters(context: NSManagedObjectContext? = nil) -> [ChapterObject] {
-        (try? (context ?? self.context).fetch(ChapterObject.fetchRequest())) ?? []
+    func getChapters(context: NSManagedObjectContext) -> [ChapterObject] {
+        (try? context.fetch(ChapterObject.fetchRequest())) ?? []
     }
 
     /// Gets all chapter objects for a source.
-    func getChapters(sourceKey: String, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
-        let context = context ?? self.context
+    func getChapters(sourceKey: String, context: NSManagedObjectContext) -> [ChapterObject] {
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(format: "sourceId == %@", sourceKey)
         return (try? context.fetch(request)) ?? []
     }
 
     /// Get a particular chapter object.
-    func getChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext? = nil) -> ChapterObject? {
-        let context = context ?? self.context
+    func getChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext) -> ChapterObject? {
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
@@ -40,8 +38,7 @@ extension CoreDataManager {
     }
 
     /// Get the chapter objects for a manga.
-    func getChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> [ChapterObject] {
-        let context = context ?? self.context
+    func getChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext) -> [ChapterObject] {
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "mangaId == %@ AND sourceId == %@",
@@ -65,9 +62,8 @@ extension CoreDataManager {
         mangaId: MangaIdentifier,
         sourceOrder: Int,
         mangaObject: MangaObject? = nil,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> ChapterObject? {
-        let context = context ?? self.context
         guard let mangaObject = mangaObject ?? getManga(
             mangaId: mangaId,
             context: context
@@ -93,8 +89,7 @@ extension CoreDataManager {
     }
 
     /// Check if a chapter exists in the data store.
-    func hasChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext? = nil) -> Bool {
-        let context = context ?? self.context
+    func hasChapter(chapterId: ChapterIdentifier, context: NSManagedObjectContext) -> Bool {
         let request = ChapterObject.fetchRequest()
         request.predicate = NSPredicate(
             format: "id == %@ AND mangaId == %@ AND sourceId == %@ ",
@@ -105,8 +100,7 @@ extension CoreDataManager {
     }
 
     /// Removes chapters for manga.
-    func removeChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) {
-        let context = context ?? self.context
+    func removeChapters(mangaId: MangaIdentifier, context: NSManagedObjectContext) {
         let chapters = getChapters(mangaId: mangaId, context: context)
         for chapter in chapters where chapter.fileInfo == nil {
             context.delete(chapter)
@@ -119,9 +113,8 @@ extension CoreDataManager {
     func setChapters(
         _ chapters: [AidokuRunner.Chapter],
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> [ChapterObject] {
-        let context = context ?? self.context
         guard let manga = getManga(mangaId: mangaId, context: context) else { return [] }
 
         var newChapters = Array(chapters.enumerated())
@@ -180,14 +173,13 @@ extension CoreDataManager {
         mangaId: MangaIdentifier,
         lang: String?,
         scanlators: [String]?,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Int {
         let scanlators: [String]? = if scanlators?.isEmpty ?? true {
             nil
         } else {
             scanlators
         }
-        let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         if let scanlators, let lang {
             request.predicate = NSPredicate(
@@ -242,9 +234,8 @@ extension CoreDataManager {
         mangaId: MangaIdentifier,
         lang: String?,
         scanlators: [String]?,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Int {
-        let context = context ?? self.context
         let request = ChapterObject.fetchRequest()
         if let scanlators, let lang {
             request.predicate = NSPredicate(

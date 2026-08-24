@@ -776,12 +776,12 @@ extension MangaView {
     }
 
     func showLoadingIndicator() {
-        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+        UIApplication.shared.appDelegate?.showLoadingIndicator()
     }
 
     func hideLoadingIndicator() {
         Task {
-            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+            await UIApplication.shared.appDelegate?.hideLoadingIndicator()
         }
     }
 }

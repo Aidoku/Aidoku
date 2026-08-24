@@ -10,21 +10,25 @@ import AidokuRunner
 
 extension CoreDataManager {
     /// Remove all history objects.
-    func clearManga(context: NSManagedObjectContext? = nil) {
+    func clearManga(context: NSManagedObjectContext) {
         clear(request: MangaObject.fetchRequest(), context: context)
     }
 
     /// Gets all manga objects.
-    func getManga(context: NSManagedObjectContext? = nil) -> [MangaObject] {
-        (try? (context ?? self.context).fetch(MangaObject.fetchRequest())) ?? []
+    func getManga(context: NSManagedObjectContext) -> [MangaObject] {
+        (try? context.fetch(MangaObject.fetchRequest())) ?? []
+    }
+
+    @MainActor
+    func getManga(mangaId: MangaIdentifier) -> MangaObject? {
+        getManga(mangaId: mangaId, context: context)
     }
 
     /// Get a particular manga object.
     func getManga(
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> MangaObject? {
-        let context = context ?? self.context
         let request = MangaObject.fetchRequest()
         request.predicate = NSPredicate(format: "sourceId == %@ AND id == %@", mangaId.sourceKey, mangaId.mangaKey)
         request.fetchLimit = 1
@@ -35,9 +39,8 @@ extension CoreDataManager {
     @discardableResult
     func createManga(
         _ manga: AidokuRunner.Manga,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> MangaObject {
-        let context = context ?? self.context
         let object = MangaObject(context: context)
         object.load(from: manga, sourceId: manga.sourceKey)
         return object
@@ -45,7 +48,7 @@ extension CoreDataManager {
 
     func getOrCreateManga(
         _ manga: AidokuRunner.Manga,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> MangaObject {
         if let mangaObject = getManga(mangaId: manga.identifier, context: context) {
             return mangaObject
@@ -53,12 +56,16 @@ extension CoreDataManager {
         return createManga(manga, context: context)
     }
 
+    @MainActor
+    func hasManga(mangaId: MangaIdentifier) -> Bool {
+        hasManga(mangaId: mangaId, context: context)
+    }
+
     /// Check if a manga object exists.
     func hasManga(
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Bool {
-        let context = context ?? self.context
         let request = MangaObject.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId.mangaKey, mangaId.sourceKey)
         request.fetchLimit = 1
@@ -66,14 +73,14 @@ extension CoreDataManager {
     }
 
     /// Removes a manga object.
-    func removeManga(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) {
+    func removeManga(mangaId: MangaIdentifier, context: NSManagedObjectContext) {
         guard let object = getManga(mangaId: mangaId, context: context) else { return }
         if object.fileInfo != nil {
             if let libraryObject = object.libraryObject {
-                (context ?? self.context).delete(libraryObject)
+                context.delete(libraryObject)
             }
         } else {
-            (context ?? self.context).delete(object)
+            context.delete(object)
         }
     }
 
@@ -115,11 +122,11 @@ extension CoreDataManager {
     func hasEditedKey(
         mangaId: MangaIdentifier,
         key: EditedKeys,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> Bool {
         guard let object = self.getManga(
             mangaId: mangaId,
-            context: context ?? self.context
+            context: context
         ) else { return false }
         let editedKeys = EditedKeys(rawValue: object.editedKeys)
         return editedKeys.contains(key)
@@ -145,8 +152,12 @@ extension CoreDataManager {
         }
     }
 
-    func getMangaSourceReadingMode(mangaId: MangaIdentifier, context: NSManagedObjectContext? = nil) -> Int {
-        let context = context ?? self.context
+    @MainActor
+    func getMangaSourceReadingMode(mangaId: MangaIdentifier) -> Int {
+        getMangaSourceReadingMode(mangaId: mangaId, context: context)
+    }
+
+    func getMangaSourceReadingMode(mangaId: MangaIdentifier, context: NSManagedObjectContext) -> Int {
         let request = MangaObject.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId.mangaKey, mangaId.sourceKey)
         request.fetchLimit = 1
@@ -162,9 +173,8 @@ extension CoreDataManager {
 
     func getMangaChapterFilters(
         mangaId: MangaIdentifier,
-        context: NSManagedObjectContext? = nil
+        context: NSManagedObjectContext
     ) -> ChapterFilters {
-        let context = context ?? self.context
         let request = MangaObject.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@ AND sourceId == %@", mangaId.mangaKey, mangaId.sourceKey)
         request.fetchLimit = 1

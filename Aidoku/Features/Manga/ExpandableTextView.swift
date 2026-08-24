@@ -45,7 +45,7 @@ struct ExpandableTextView: View {
                 .environment(
                     \.openURL,
                     OpenURLAction { url in
-                        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else {
+                        guard let appDelegate = UIApplication.shared.appDelegate else {
                             return .systemAction
                         }
 

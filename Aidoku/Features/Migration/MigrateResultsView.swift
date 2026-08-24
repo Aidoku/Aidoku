@@ -202,7 +202,7 @@ extension MigrateResultsView {
     }
 
     func startMigration(copy: Bool, forceRemoveFromLibrary: Bool = false) {
-        guard let appDelegate = UIApplication.shared.delegate as? AppDelegate else { return }
+        guard let appDelegate = UIApplication.shared.appDelegate else { return }
         appDelegate.showLoadingIndicator(style: .progress) {
             Task {
                 UIApplication.shared.isIdleTimerDisabled = true
@@ -215,7 +215,7 @@ extension MigrateResultsView {
                     withChapters: newChapters,
                     progressReport: { progress in
                         Task { @MainActor in
-                            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                            if let appDelegate = UIApplication.shared.appDelegate {
                                 appDelegate.indicatorProgress = progress
                             }
                         }

@@ -18,14 +18,9 @@ struct BackupSource {
         self.config = object.customSource as? Data
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> SourceObject? {
+    func toObject(context: NSManagedObjectContext) -> SourceObject? {
         guard let config, let apiVersion else { return nil }
-        let obj: SourceObject
-        if let context {
-            obj = SourceObject(context: context)
-        } else {
-            obj = SourceObject()
-        }
+        let obj = SourceObject(context: context)
         obj.id = id
         obj.apiVersion = apiVersion
         obj.customSource = config as NSObject

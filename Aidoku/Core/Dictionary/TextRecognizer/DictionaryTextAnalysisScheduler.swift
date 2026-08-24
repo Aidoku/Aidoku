@@ -55,7 +55,7 @@ enum DictionaryTextAnalysisScheduler {
         recognizer: inout TextRecognizer?,
         image: UIImage?,
         language: String?,
-        onFinish: @MainActor @escaping () -> Void
+        onFinish: @MainActor @Sendable @escaping () -> Void
     ) {
         task?.cancel()
         guard

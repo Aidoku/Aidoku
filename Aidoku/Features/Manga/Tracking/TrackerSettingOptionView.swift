@@ -178,6 +178,6 @@ struct TrackerSettingOptionView: View {
             count = numberType == .int ? Float(pickerValue) : Float(pickerValue) / 10
         })
         alert.addAction(UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel, handler: nil))
-        (UIApplication.shared.delegate as? AppDelegate)?.visibleViewController?.present(alert, animated: true)
+        UIApplication.shared.appDelegate?.visibleViewController?.present(alert, animated: true)
     }
 }

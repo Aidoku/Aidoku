@@ -288,7 +288,7 @@ extension SourceManager {
             {
                 // if there was a breaking change, prompt for migration
                 Task { @MainActor in
-                    (UIApplication.shared.delegate as? AppDelegate)?.handleSourceMigration(source: newSource)
+                    UIApplication.shared.appDelegate?.handleSourceMigration(source: newSource)
                 }
             }
 

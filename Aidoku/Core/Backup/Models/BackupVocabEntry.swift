@@ -58,13 +58,8 @@ struct BackupVocabEntry: Codable, Hashable {
         self.createdDate = createdDate
     }
 
-    func toObject(context: NSManagedObjectContext? = nil) -> VocabObject {
-        let object: VocabObject
-        if let context {
-            object = VocabObject(context: context)
-        } else {
-            object = VocabObject()
-        }
+    func toObject(context: NSManagedObjectContext) -> VocabObject {
+        let object = VocabObject(context: context)
         object.sourceId = sourceId
         object.mangaId = mangaId
         object.chapterId = chapterId

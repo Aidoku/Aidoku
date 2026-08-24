@@ -10,18 +10,22 @@ import AidokuRunner
 
 extension CoreDataManager {
     /// Remove all source objects.
-    func clearSources(context: NSManagedObjectContext? = nil) {
+    func clearSources(context: NSManagedObjectContext) {
         clear(request: SourceObject.fetchRequest(), context: context)
     }
 
     /// Gets all source objects.
-    func getSources(context: NSManagedObjectContext? = nil) -> [SourceObject] {
-        (try? (context ?? self.context).fetch(SourceObject.fetchRequest())) ?? []
+    func getSources(context: NSManagedObjectContext) -> [SourceObject] {
+        (try? context.fetch(SourceObject.fetchRequest())) ?? []
+    }
+
+    @MainActor
+    func hasSource(key: String) -> Bool {
+        hasSource(key: key, context: context)
     }
 
     /// Check if a source exists in the data store.
-    func hasSource(key: String, context: NSManagedObjectContext? = nil) -> Bool {
-        let context = context ?? self.context
+    func hasSource(key: String, context: NSManagedObjectContext) -> Bool {
         let request = SourceObject.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", key)
         request.fetchLimit = 1
@@ -29,8 +33,7 @@ extension CoreDataManager {
     }
 
     /// Get a particular source object.
-    func getSource(key: String, context: NSManagedObjectContext? = nil) -> SourceObject? {
-        let context = context ?? self.context
+    func getSource(key: String, context: NSManagedObjectContext) -> SourceObject? {
         let request = SourceObject.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", key)
         request.fetchLimit = 1
@@ -39,25 +42,23 @@ extension CoreDataManager {
 
     /// Creates a new source item.
     @discardableResult
-    func createSource(source: Source, context: NSManagedObjectContext? = nil) -> SourceObject {
-        let context = context ?? self.context
+    func createSource(source: Source, context: NSManagedObjectContext) -> SourceObject {
         let object = SourceObject(context: context)
         object.load(from: source)
         return object
     }
 
     @discardableResult
-    func createSource(source: AidokuRunner.Source, context: NSManagedObjectContext? = nil) -> SourceObject {
-        let context = context ?? self.context
+    func createSource(source: AidokuRunner.Source, context: NSManagedObjectContext) -> SourceObject {
         let object = SourceObject(context: context)
         object.load(from: source)
         return object
     }
 
     /// Removes a source object.
-    func removeSource(key: String, context: NSManagedObjectContext? = nil) {
+    func removeSource(key: String, context: NSManagedObjectContext) {
         guard let object = getSource(key: key, context: context) else { return }
-        (context ?? self.context).delete(object)
+        context.delete(object)
     }
 
     func setListing(sourceKey: String, listing: Int) async {

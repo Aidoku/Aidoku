@@ -143,14 +143,14 @@ struct SourceListsView: View {
                 let finished = await done.value
                 if !finished {
                     await MainActor.run {
-                        (UIApplication.shared.delegate as? AppDelegate)?.showLoadingIndicator()
+                        UIApplication.shared.appDelegate?.showLoadingIndicator()
                     }
                 }
             }
 
             let success = await SourceManager.shared.addSourceList(url: url)
             await done.set()
-            await (UIApplication.shared.delegate as? AppDelegate)?.hideLoadingIndicator()
+            await UIApplication.shared.appDelegate?.hideLoadingIndicator()
 
             if success {
                 withAnimation {
@@ -171,7 +171,7 @@ struct SourceListsView: View {
 
     func showAlert() {
         var alertTextField: UITextField?
-        (UIApplication.shared.delegate as? AppDelegate)?.presentAlert(
+        UIApplication.shared.appDelegate?.presentAlert(
             title: NSLocalizedString("SOURCE_LIST_ADD"),
             message: NSLocalizedString("SOURCE_LIST_ADD_TEXT"),
             actions: [
