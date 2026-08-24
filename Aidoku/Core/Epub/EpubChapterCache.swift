@@ -18,11 +18,11 @@ enum EpubChapterCache {
         guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw SourceError.message("EPUB_DOWNLOAD_FAILED")
         }
-        let directory = cachesDirectory
-            .appendingPathComponent("EpubCache", isDirectory: true)
-            .appendingPathComponent(sanitized(sourceKey), isDirectory: true)
+        let root = cachesDirectory.appendingPathComponent("EpubCache", isDirectory: true)
+        let directory = root.appendingPathComponent(sanitized(sourceKey), isDirectory: true)
         let file = directory.appendingPathComponent("\(sanitized(chapterId)).epub")
         if FileManager.default.fileExists(atPath: file.path), await !isStale(request: request, file: file) {
+            markAccessed(file)
             return file
         }
 
@@ -52,7 +52,83 @@ enum EpubChapterCache {
             }
             throw sourceError
         }
+        markAccessed(file)
+        evict(in: root, capacity: capacity, keeping: file)
         return file
+    }
+
+    /// The most the cache may hold before the least recently read books are reclaimed.
+    ///
+    /// The same figure the image data cache is given in `AppDelegate`. A remote book runs from
+    /// tens to a couple of hundred megabytes, so this holds several of them, and a reader moving
+    /// between the books they are part way through does not pay for a download each time.
+    static let capacity = 500 * 1024 * 1024
+
+    /// Deletes the least recently read books until the cache is within `capacity`, and clears
+    /// sidecars whose book is gone.
+    ///
+    /// `keeping` is never a victim. It is the book the caller is about to read, and evicting it
+    /// would mean downloading it again on the very next open, for ever, once one book on its own
+    /// exceeds the capacity.
+    ///
+    /// Failures are not reported. A cache that cannot be trimmed is still a cache, and the caches
+    /// directory is purgeable by the system regardless, so nothing about reading depends on this
+    /// succeeding.
+    static func evict(in root: URL, capacity: Int, keeping: URL?) {
+        let manager = FileManager.default
+        let keys: [URLResourceKey] = [.contentAccessDateKey, .fileSizeKey, .isRegularFileKey]
+        guard let enumerator = manager.enumerator(at: root, includingPropertiesForKeys: keys) else { return }
+
+        var books: [CachedBook] = []
+        var total = 0
+        for case let url as URL in enumerator {
+            guard url.pathExtension == "epub" else {
+                // A sidecar can outlive its book: `pages` discards one that holds no readable
+                // pages and leaves the sidecar where it was. Cleared here so that a directory
+                // whose books have all been evicted does not keep a file per book for ever.
+                if url.pathExtension == "lastmodified",
+                   !manager.fileExists(atPath: url.deletingPathExtension().path) {
+                    try? manager.removeItem(at: url)
+                }
+                continue
+            }
+            // Sized from the file rather than from what was downloaded, since a book the system
+            // has already purged the contents of is no longer occupying what it once did.
+            guard
+                let values = try? url.resourceValues(forKeys: Set(keys)),
+                values.isRegularFile == true,
+                let size = values.fileSize
+            else { continue }
+            total += size
+            books.append(CachedBook(url: url, size: size, accessed: values.contentAccessDate ?? .distantPast))
+        }
+        guard total > capacity else { return }
+
+        for book in books.sorted(by: { $0.accessed < $1.accessed }) where total > capacity {
+            guard book.url != keeping else { continue }
+            try? manager.removeItem(at: book.url)
+            try? manager.removeItem(at: lastModifiedSidecar(for: book.url))
+            total -= book.size
+        }
+    }
+
+    /// A book in the cache, as eviction needs to see it.
+    private struct CachedBook {
+        let url: URL
+        let size: Int
+        let accessed: Date
+    }
+
+    /// Records that a book has been read, so eviction can tell one in use from one abandoned.
+    ///
+    /// Written rather than read back from the volume: a cache hit returns the file without opening
+    /// it, so nothing else would move the access time, and how faithfully a volume maintains one
+    /// on its own is not a thing to depend on.
+    private static func markAccessed(_ file: URL) {
+        var file = file
+        var values = URLResourceValues()
+        values.contentAccessDate = Date()
+        try? file.setResourceValues(values)
     }
 
     /// Fetches the book unless it is already cached, and reads the spine pages out of it.
