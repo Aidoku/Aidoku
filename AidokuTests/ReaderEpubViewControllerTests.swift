@@ -57,6 +57,38 @@ final class RecordingDelegate: NSObject, ReaderHoldingDelegate {
     func setCompleted() {}
 }
 
+private let readerStyleKey = "Reader.textReaderStyle"
+
+/// The style in force before `open` pinned it, so `dismantle` can put it back.
+@MainActor private var styleBeforeOpen: String??
+
+/// Pins the reader style to the app's registered default for the duration of a test.
+///
+/// The reader builds its pagination from `UserDefaults.standard`, which this target shares with the
+/// app, so whichever style was last chosen in the simulator decided how these books paginated. A
+/// book opened scrolled counts its pages differently from a paged one and every position assertion
+/// here moves with it, which is not a failure any of them are written to describe. Clearing the key
+/// rather than writing one leaves the default `AppDelegate` registers as the single source of it.
+///
+/// A test that is *about* the style sets it after opening, and its own restore still wins: this
+/// puts back what it read before opening, which is the value that restore then overwrites.
+@MainActor
+private func pinReaderStyle() {
+    styleBeforeOpen = UserDefaults.standard.string(forKey: readerStyleKey)
+    UserDefaults.standard.removeObject(forKey: readerStyleKey)
+}
+
+@MainActor
+private func unpinReaderStyle() {
+    guard let saved = styleBeforeOpen else { return }
+    styleBeforeOpen = nil
+    if let saved {
+        UserDefaults.standard.set(saved, forKey: readerStyleKey)
+    } else {
+        UserDefaults.standard.removeObject(forKey: readerStyleKey)
+    }
+}
+
 /// The reader in a window at a given size, opened on a book.
 ///
 /// Window membership rather than a detached view, because the reader insets its web view by the
@@ -67,6 +99,7 @@ private func open(
     startPage: Int = 1,
     size: CGSize = viewport
 ) throws -> (reader: ReaderEpubViewController, delegate: RecordingDelegate) {
+    pinReaderStyle()
     let manga = AidokuRunner.Manga(sourceKey: "local", key: bookURL.lastPathComponent, title: "")
     let reader = ReaderEpubViewController(source: nil, manga: manga, bookURL: bookURL)
     let delegate = RecordingDelegate()
@@ -87,6 +120,7 @@ private func open(
 private func dismantle(_ reader: ReaderEpubViewController) {
     reader.book?.renderer?.webView.stopLoading()
     reader.view.removeFromSuperview()
+    unpinReaderStyle()
 }
 
 @MainActor
@@ -577,15 +611,15 @@ struct ReaderEpubViewControllerTests {
         defer { EpubFixture.remove(book.url) }
 
         let defaults = UserDefaults.standard
-        let original = defaults.string(forKey: "Reader.textReaderStyle")
+        let original = defaults.string(forKey: readerStyleKey)
         defer {
             if let original {
-                defaults.set(original, forKey: "Reader.textReaderStyle")
+                defaults.set(original, forKey: readerStyleKey)
             } else {
-                defaults.removeObject(forKey: "Reader.textReaderStyle")
+                defaults.removeObject(forKey: readerStyleKey)
             }
         }
-        defaults.removeObject(forKey: "Reader.textReaderStyle")
+        defaults.removeObject(forKey: readerStyleKey)
 
         // Landscape, so that on an iPad this exercises the two-column spread layout whose page
         // counts differ most from scroll mode's. On an iPhone it is one column either way.
@@ -602,8 +636,8 @@ struct ReaderEpubViewControllerTests {
         let countBefore = try #require(before.index.pageCount(forDocumentAt: documentBefore))
         let edgeBefore = Double(pageInDocumentBefore) / Double(countBefore)
 
-        defaults.set("scroll", forKey: "Reader.textReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
+        defaults.set("scroll", forKey: readerStyleKey)
+        NotificationCenter.default.post(name: NSNotification.Name(readerStyleKey), object: nil)
 
         // The rebuild replaces the view model; the refinement settles through the navigation
         // queue once the new layout is measured. Reaching the right document is not it having
@@ -635,8 +669,8 @@ struct ReaderEpubViewControllerTests {
         // And back again. The scroll side seeds from its exact offset rather than from its page
         // number, whose rounding — offset to the nearest boundary, trailing partial screen up —
         // resumed the paged layout a page early.
-        defaults.removeObject(forKey: "Reader.textReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
+        defaults.removeObject(forKey: readerStyleKey)
+        NotificationCenter.default.post(name: NSNotification.Name(readerStyleKey), object: nil)
 
         try await EpubFixture.waitUntil(timeout: 30) {
             reader.book !== after && reader.book?.isMeasured == true
@@ -650,8 +684,8 @@ struct ReaderEpubViewControllerTests {
         // `q / count` understates where the reader is.
         let anchorBack = try #require(after.edgeInDocument)
 
-        defaults.removeObject(forKey: "Reader.textReaderStyle")
-        NotificationCenter.default.post(name: NSNotification.Name("Reader.textReaderStyle"), object: nil)
+        defaults.removeObject(forKey: readerStyleKey)
+        NotificationCenter.default.post(name: NSNotification.Name(readerStyleKey), object: nil)
 
         try await EpubFixture.waitUntil(timeout: 30) {
             reader.book !== after && reader.book?.isMeasured == true
