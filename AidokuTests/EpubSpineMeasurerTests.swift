@@ -209,10 +209,13 @@ struct EpubSpineMeasurerTests {
 
         #expect(index.isComplete)
         #expect(index.total == counts.values.reduce(0, +))
-        #expect(index.progression(forDocumentAt: 0, page: 0) == 0)
+        #expect(index.progression(forDocumentAt: 0, page: 0, anchor: 0) == 0)
         let lastDocument = book.paths.count - 1
         let lastPage = try #require(index.pageCount(forDocumentAt: lastDocument)) - 1
-        #expect(index.progression(forDocumentAt: lastDocument, page: lastPage) == 1)
+        #expect(
+            index.progression(forDocumentAt: lastDocument, page: lastPage, anchor: 0)
+                == Double(index.total - 1) / Double(index.total)
+        )
     }
 
     /// A pass may not touch the renderer until the pass it superseded has let go of it.

@@ -146,17 +146,35 @@ struct EpubPageIndexTests {
         #expect(index.total == 10)
     }
 
-    /// `index / (count - 1)`, so the end of the book is exactly 1, matching both text readers and
-    /// the same `HistoryObject.scrollPosition` column they write to.
-    @Test func progressionReachesOneAtTheEndOfTheBook() throws {
+    /// `(page + anchor) / total` — the caller says where within the page the reading position
+    /// sits (the leading edge for one column or scroll, the last column's edge for a spread), and
+    /// the index turns it into a place in the book.
+    @Test func progressionPlacesTheAnchorWithinThePage() throws {
         let index = Self.measured([4, 3, 5])
 
-        #expect(try #require(index.progression(forDocumentAt: 0, page: 0)) == 0)
-        #expect(try #require(index.progression(forDocumentAt: 2, page: 4)) == 1)
+        #expect(try #require(index.progression(forDocumentAt: 0, page: 0, anchor: 0)) == 0)
+        #expect(try #require(index.progression(forDocumentAt: 2, page: 4, anchor: 0.5)) == 11.5 / 12)
 
-        let middle = try #require(index.progression(forDocumentAt: 1, page: 0))
-        // Document 1 starts at book page 4, and the last of the book's 12 pages is 11.
-        #expect(abs(middle - Double(4) / Double(11)) < 0.000_001)
+        // Document 1 starts at book page 4 of the book's 12.
+        let anchored = try #require(index.progression(forDocumentAt: 1, page: 0, anchor: 0.5))
+        #expect(abs(anchored - 4.5 / 12) < 0.000_001)
+    }
+
+    /// The restore path computes `floor(fraction * total + ε)` — the page containing the place —
+    /// so the same layout must land on the same page for every page of the book and every anchor;
+    /// the anchor is a claim about other layouts, not a drift on this one.
+    @Test func progressionRoundTripsExactlyOnTheSameLayout() throws {
+        let index = Self.measured([4, 3, 5])
+        let anchors: [Double] = [0, 0.5]
+        for anchor in anchors {
+            for page in 0..<12 {
+                let position = try #require(index.position(ofBookPage: page))
+                let fraction = try #require(
+                    index.progression(forDocumentAt: position.document, page: position.page, anchor: anchor)
+                )
+                #expect(min(Int(fraction * Double(index.total) + 0.01), index.total - 1) == page)
+            }
+        }
     }
 
     /// A fraction of a lower bound overstates how far through the book the reader is, and this
@@ -167,10 +185,10 @@ struct EpubPageIndexTests {
         index.setPageCount(3, forDocumentAt: 1)
 
         #expect(index.bookPage(forDocumentAt: 1, page: 2) == 6)
-        #expect(index.progression(forDocumentAt: 1, page: 2) == nil)
+        #expect(index.progression(forDocumentAt: 1, page: 2, anchor: 0) == nil)
 
         index.setPageCount(5, forDocumentAt: 2)
-        #expect(index.progression(forDocumentAt: 1, page: 2) != nil)
+        #expect(index.progression(forDocumentAt: 1, page: 2, anchor: 0) != nil)
     }
 
     @Test func aSinglePageBookDoesNotDivideByZero() throws {
@@ -178,7 +196,7 @@ struct EpubPageIndexTests {
         index.setPageCount(1, forDocumentAt: 0)
 
         #expect(index.total == 1)
-        #expect(try #require(index.progression(forDocumentAt: 0, page: 0)) == 0)
+        #expect(try #require(index.progression(forDocumentAt: 0, page: 0, anchor: 0)) == 0)
     }
 
     @Test func anEmptySpineIsNotComplete() {

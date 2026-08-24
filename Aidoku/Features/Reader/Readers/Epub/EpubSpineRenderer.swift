@@ -76,6 +76,20 @@ final class EpubSpineRenderer: NSObject {
     /// in the spine together with this.
     private(set) var progression: Double = 0
 
+    /// Where the top of the viewport sits, as a fraction of the loaded document's whole content.
+    /// `nil` for a paged document or before one is laid out.
+    ///
+    /// Scroll mode's precise counterpart to `currentPage / pageCount`: the page rounds the offset
+    /// to the nearest boundary and the count rounds the trailing partial screen *up*, so together
+    /// they understate the position by up to a page, which resumed a mode switch a page early.
+    /// The offset is the position, so nothing here needs to quantize.
+    var scrollEdgeFraction: Double? {
+        guard !settings.paged else { return nil }
+        let contentHeight = Double(webView.scrollView.contentSize.height)
+        guard contentHeight > 0 else { return nil }
+        return min(max(currentPageOffset / contentHeight, 0), 1)
+    }
+
     /// Called when a loaded document re-paginates, carrying the new page count.
     ///
     /// Two things cause it: an image that decoded after navigation ended, and a change to the size
@@ -382,6 +396,34 @@ final class EpubSpineRenderer: NSObject {
         // this fraction, and restoring must not then rewrite it: rounding to the nearest page each
         // time would let the position wander across repeated rotations.
         progression = Double(currentPage) / Double(max(pageCount - 1, 1))
+    }
+
+    /// Rests a scroll-mode viewport with its top exactly `fraction` of the way through the
+    /// document's content, off the page grid. Does nothing to a paged document, whose pages are
+    /// the only places a viewport can rest.
+    ///
+    /// A restore into scroll mode has no reason to land on a page boundary: the boundary sits
+    /// *before* the place being restored, that being what floor means, and a later switch back to
+    /// paged mode floored a second time from that already-behind boundary, walking every
+    /// paged → scroll → paged round trip one page back. Resting on the exact fraction makes the
+    /// round trip exact: `scrollEdgeFraction` reads back precisely what was set here.
+    func showEdge(_ fraction: Double) async {
+        guard !settings.paged, pageCount > 0 else { return }
+        let script = """
+        var offset = Math.max(0, Math.min(
+            \(fraction) * document.documentElement.scrollHeight,
+            document.documentElement.scrollHeight - window.innerHeight
+        ));
+        window.scrollTo({left: 0, top: offset, behavior: 'auto'});
+        String(offset);
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let offset = Double((result as? String) ?? "") else { return }
+        currentPageOffset = offset
+        let viewportHeight = Double(webView.scrollView.bounds.height)
+        if viewportHeight > 0 {
+            currentPage = min(max(Int((offset / viewportHeight).rounded()), 0), max(pageCount - 1, 0))
+        }
     }
 
     /// Which page of the loaded document each of `fragments` begins on.

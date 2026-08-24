@@ -198,6 +198,7 @@ struct ReaderEpubViewModelTests {
         try await waitUntilMeasured(viewModel)
 
         #expect(viewModel.bookTotal > 0)
+        // One column, so the anchor is the page's leading edge and the first page is the start.
         #expect(viewModel.progression == 0, "the first page of the book is the start of it")
 
         let sum = (0..<viewModel.spinePaths.count).reduce(0) { total, document in
@@ -206,9 +207,9 @@ struct ReaderEpubViewModelTests {
         #expect(viewModel.bookTotal == sum)
     }
 
-    /// The end of the book is exactly 1, matching the `index / (count - 1)` convention the text
-    /// readers already write into the same `scrollPosition` column.
-    @Test func theEndOfTheBookIsProgressionOne() async throws {
+    /// The last page's fraction is that page's own leading edge in a one-column layout,
+    /// `(total - 1) / total`, so a restore on any layout floors into the final page, never past it.
+    @Test func theEndOfTheBookIsTheLastPagesEdge() async throws {
         let url = try Self.makeBook()
         defer { EpubFixture.remove(url) }
 
@@ -223,7 +224,7 @@ struct ReaderEpubViewModelTests {
 
         #expect(viewModel.currentDocument == last)
         #expect(viewModel.pageInDocument == count - 1)
-        #expect(viewModel.progression == 1)
+        #expect(viewModel.progression == (Double(viewModel.bookTotal) - 1) / Double(viewModel.bookTotal))
     }
 
     /// The discriminator that routes a chapter to this reader, since the reading-mode picker does

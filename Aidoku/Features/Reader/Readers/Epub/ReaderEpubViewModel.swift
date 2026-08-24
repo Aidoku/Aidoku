@@ -106,6 +106,20 @@ final class ReaderEpubViewModel {
         index.bookPage(forDocumentAt: currentDocument, page: pageInDocument)
     }
 
+    /// How far through the current document the reading position's leading edge sits, or `nil`
+    /// while the document is uncounted.
+    ///
+    /// The anchor an in-session rebuild restores from. Paged, the edge is the page boundary,
+    /// `page / count`; scrolling, it is the exact top of the viewport, which
+    /// `EpubSpineRenderer.scrollEdgeFraction` knows more precisely than any page number.
+    var edgeInDocument: Double? {
+        guard let count = index.pageCount(forDocumentAt: currentDocument), count > 0 else { return nil }
+        if !settings.paged, let precise = renderer?.scrollEdgeFraction {
+            return precise
+        }
+        return Double(pageInDocument) / Double(count)
+    }
+
     /// The book's page count, which is a lower bound until `isMeasured`.
     var bookTotal: Int {
         index.total
@@ -122,7 +136,13 @@ final class ReaderEpubViewModel {
     /// through the book the reader is. `EpubSpineRenderer.progression` is the fraction within one
     /// spine document and is not this.
     var progression: Double? {
-        index.progression(forDocumentAt: currentDocument, page: pageInDocument)
+        // Where within the page the reading position sits; see `EpubPageIndex.progression`.
+        // Scroll mode reads from the top of the page, an n-column spread has been read up to
+        // its last column.
+        let anchor = settings.paged
+            ? Double(settings.columnCount - 1) / Double(settings.columnCount)
+            : 0
+        return index.progression(forDocumentAt: currentDocument, page: pageInDocument, anchor: anchor)
     }
 
     /// Pagination settings for the reading renderer and the measurement pass alike: a count is

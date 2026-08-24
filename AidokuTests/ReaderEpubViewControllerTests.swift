@@ -18,68 +18,93 @@ import WebKit
 /// was not: two measurement passes overlapped because the host lays its web view out before the
 /// book is opened in it, which no test below the view controller could see. These drive the real
 /// view controller in a window, with a delegate that records everything it is handed.
+private let viewport = CGSize(width: 320, height: 480)
+
+/// Records the conversation rather than acting on it, so a call that should never happen is
+/// visible as a value rather than as a side effect.
+///
+/// At file scope with the harness below so `type_body_length` counts the suite's tests rather
+/// than its scaffolding.
+@MainActor
+final class RecordingDelegate: NSObject, ReaderHoldingDelegate {
+    var barsHidden = false
+    /// Every page count handed over, in order. An empty list is what the host reads as a
+    /// chapter that failed to load.
+    var reportedTotals: [Int] = []
+    var currentPage = 0
+
+    func hideBars() {}
+    func getNextChapter() -> AidokuRunner.Chapter? { nil }
+    func getPreviousChapter() -> AidokuRunner.Chapter? { nil }
+    func setChapter(_ chapter: AidokuRunner.Chapter) {}
+    /// Every position handed over, in order, so a correct one followed by a stale one is
+    /// visible as a sequence rather than as a final value.
+    var reportedPages: [Int] = []
+    /// Every page list handed over, in order, since what a list says about itself is how the
+    /// host decides which reader shows it.
+    var reportedPageLists: [[Aidoku.Page]] = []
+    func setCurrentPage(_ page: Int, position: Double?) {
+        currentPage = page
+        reportedPages.append(page)
+    }
+    func setCurrentPages(_ pages: ClosedRange<Int>) { currentPage = pages.lowerBound }
+    func setPages(_ pages: [Aidoku.Page]) {
+        reportedTotals.append(pages.count)
+        reportedPageLists.append(pages)
+    }
+    func displayPage(_ page: Int) {}
+    func setSliderOffset(_ offset: CGFloat) {}
+    func setCompleted() {}
+}
+
+/// The reader in a window at a given size, opened on a book.
+///
+/// Window membership rather than a detached view, because the reader insets its web view by the
+/// window's safe area and reads its own bounds back as the size every page count belongs to.
+@MainActor
+private func open(
+    bookURL: URL,
+    startPage: Int = 1,
+    size: CGSize = viewport
+) throws -> (reader: ReaderEpubViewController, delegate: RecordingDelegate) {
+    let manga = AidokuRunner.Manga(sourceKey: "local", key: bookURL.lastPathComponent, title: "")
+    let reader = ReaderEpubViewController(source: nil, manga: manga, bookURL: bookURL)
+    let delegate = RecordingDelegate()
+    reader.delegate = delegate
+
+    let window = UIApplication.shared.connectedScenes
+        .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+        .first
+    try #require(window).addSubview(reader.view)
+    reader.view.frame = CGRect(origin: .zero, size: size)
+    reader.view.layoutIfNeeded()
+
+    reader.setChapter(AidokuRunner.Chapter(key: bookURL.lastPathComponent), startPage: startPage)
+    return (reader, delegate)
+}
+
+@MainActor
+private func dismantle(_ reader: ReaderEpubViewController) {
+    reader.book?.renderer?.webView.stopLoading()
+    reader.view.removeFromSuperview()
+}
+
+@MainActor
+private func waitUntilMeasured(
+    _ reader: ReaderEpubViewController,
+    timeout: TimeInterval = 30
+) async throws {
+    let deadline = Date().addingTimeInterval(timeout)
+    while Date() < deadline {
+        if reader.book?.isMeasured == true { return }
+        try? await Task.sleep(nanoseconds: 20_000_000)
+    }
+    Issue.record("the book was not measured within \(timeout)s")
+}
+
 @Suite(.serialized)
 @MainActor
 struct ReaderEpubViewControllerTests {
-    private static let viewport = CGSize(width: 320, height: 480)
-
-    /// Records the conversation rather than acting on it, so a call that should never happen is
-    /// visible as a value rather than as a side effect.
-    final class RecordingDelegate: NSObject, ReaderHoldingDelegate {
-        var barsHidden = false
-        /// Every page count handed over, in order. An empty list is what the host reads as a
-        /// chapter that failed to load.
-        var reportedTotals: [Int] = []
-        var currentPage = 0
-
-        func hideBars() {}
-        func getNextChapter() -> AidokuRunner.Chapter? { nil }
-        func getPreviousChapter() -> AidokuRunner.Chapter? { nil }
-        func setChapter(_ chapter: AidokuRunner.Chapter) {}
-        /// Every position handed over, in order, so a correct one followed by a stale one is
-        /// visible as a sequence rather than as a final value.
-        var reportedPages: [Int] = []
-        /// Every page list handed over, in order, since what a list says about itself is how the
-        /// host decides which reader shows it.
-        var reportedPageLists: [[Aidoku.Page]] = []
-        func setCurrentPage(_ page: Int, position: Double?) {
-            currentPage = page
-            reportedPages.append(page)
-        }
-        func setCurrentPages(_ pages: ClosedRange<Int>) { currentPage = pages.lowerBound }
-        func setPages(_ pages: [Aidoku.Page]) {
-            reportedTotals.append(pages.count)
-            reportedPageLists.append(pages)
-        }
-        func displayPage(_ page: Int) {}
-        func setSliderOffset(_ offset: CGFloat) {}
-        func setCompleted() {}
-    }
-
-    /// The reader in a window at a given size, opened on a book.
-    ///
-    /// Window membership rather than a detached view, because the reader insets its web view by the
-    /// window's safe area and reads its own bounds back as the size every page count belongs to.
-    private func open(
-        bookURL: URL,
-        startPage: Int = 1,
-        size: CGSize = ReaderEpubViewControllerTests.viewport
-    ) throws -> (reader: ReaderEpubViewController, delegate: RecordingDelegate) {
-        let manga = AidokuRunner.Manga(sourceKey: "local", key: bookURL.lastPathComponent, title: "")
-        let reader = ReaderEpubViewController(source: nil, manga: manga, bookURL: bookURL)
-        let delegate = RecordingDelegate()
-        reader.delegate = delegate
-
-        let window = UIApplication.shared.connectedScenes
-            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
-            .first
-        try #require(window).addSubview(reader.view)
-        reader.view.frame = CGRect(origin: .zero, size: size)
-        reader.view.layoutIfNeeded()
-
-        reader.setChapter(AidokuRunner.Chapter(key: bookURL.lastPathComponent), startPage: startPage)
-        return (reader, delegate)
-    }
 
     /// A source that hands back a fixed page list per chapter key.
     ///
@@ -228,7 +253,7 @@ struct ReaderEpubViewControllerTests {
         chapter: AidokuRunner.Chapter,
         source: AidokuRunner.Source,
         startPage: Int = 1,
-        size: CGSize = ReaderEpubViewControllerTests.viewport
+        size: CGSize = viewport
     ) throws -> (reader: ReaderEpubViewController, delegate: RecordingDelegate) {
         let manga = AidokuRunner.Manga(sourceKey: source.key, key: "folder", title: "")
         let reader = ReaderEpubViewController(source: source, manga: manga)
@@ -244,23 +269,6 @@ struct ReaderEpubViewControllerTests {
 
         reader.setChapter(chapter, startPage: startPage)
         return (reader, delegate)
-    }
-
-    private func dismantle(_ reader: ReaderEpubViewController) {
-        reader.book?.renderer?.webView.stopLoading()
-        reader.view.removeFromSuperview()
-    }
-
-    private func waitUntilMeasured(
-        _ reader: ReaderEpubViewController,
-        timeout: TimeInterval = 30
-    ) async throws {
-        let deadline = Date().addingTimeInterval(timeout)
-        while Date() < deadline {
-            if reader.book?.isMeasured == true { return }
-            try? await Task.sleep(nanoseconds: 20_000_000)
-        }
-        Issue.record("the book was not measured within \(timeout)s")
     }
 
     /// The book's total is the sum of every document, measured once.
@@ -554,6 +562,125 @@ struct ReaderEpubViewControllerTests {
         // The old behaviour: the page number was restored verbatim, which the fraction check above
         // would also catch, but this says which mistake was made.
         #expect(pageAfter != pageBefore, "the page number was restored rather than the position")
+    }
+
+    /// Switching between paged and scroll mode restores per document, not by a fraction of the
+    /// whole book.
+    ///
+    /// A book fraction assumes pages hold equal shares of the text, and the per-document rounding
+    /// breaks that across modes: scroll mode rounds every document's count *up*, so a long spine
+    /// inflates the scroll total by up to a page per document, and a fraction carried between the
+    /// modes landed several pages away. The document is the unit both layouts agree on, and the
+    /// within-document edge is what must survive the switch.
+    @Test func aModeSwitchKeepsTheReaderInTheSameDocument() async throws {
+        let book = try EpubFixture.makeBook(documents: [1, 1, 40, 6, 25])
+        defer { EpubFixture.remove(book.url) }
+
+        let defaults = UserDefaults.standard
+        let original = defaults.string(forKey: "Reader.epubReaderStyle")
+        defer {
+            if let original {
+                defaults.set(original, forKey: "Reader.epubReaderStyle")
+            } else {
+                defaults.removeObject(forKey: "Reader.epubReaderStyle")
+            }
+        }
+        defaults.removeObject(forKey: "Reader.epubReaderStyle")
+
+        // Landscape, so that on an iPad this exercises the two-column spread layout whose page
+        // counts differ most from scroll mode's. On an iPhone it is one column either way.
+        let (reader, _) = try open(bookURL: book.url, size: CGSize(width: 480, height: 320))
+        defer { dismantle(reader) }
+        try await waitUntilMeasured(reader)
+
+        // Deep enough into the third document that a whole-book fraction, skewed by the other
+        // documents' rounding, would miss it.
+        let before = try #require(reader.book)
+        await before.showBookPage(Int(Double(before.bookTotal) * 0.4))
+        let documentBefore = before.currentDocument
+        let pageInDocumentBefore = before.pageInDocument
+        let countBefore = try #require(before.index.pageCount(forDocumentAt: documentBefore))
+        let edgeBefore = Double(pageInDocumentBefore) / Double(countBefore)
+
+        defaults.set("scroll", forKey: "Reader.epubReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+
+        // The rebuild replaces the view model; the refinement settles through the navigation
+        // queue once the new layout is measured. Reaching the right document is not it having
+        // settled: the coarse page-number landing gets there first, so the wait is for the edge,
+        // and a `try?` leaves a timeout to the assertions below, which then show where the reader
+        // actually ended up.
+        try await EpubFixture.waitUntil(timeout: 30) {
+            reader.book !== before && reader.book?.isMeasured == true
+        }
+        try? await EpubFixture.waitUntil(timeout: 10) {
+            guard
+                let book = reader.book, book.currentDocument == documentBefore,
+                let count = book.index.pageCount(forDocumentAt: documentBefore)
+            else { return false }
+            return abs(Double(book.pageInDocument) / Double(count) - edgeBefore) < 1.011 / Double(count)
+        }
+
+        let after = try #require(reader.book)
+        let countAfter = try #require(after.index.pageCount(forDocumentAt: documentBefore))
+        let edgeAfter = Double(after.pageInDocument) / Double(countAfter)
+        // The scroll viewport rests on the exact edge, off the page grid, and the page *reported*
+        // for it rounds to the nearest boundary — so the reported edge may sit up to half a page
+        // to either side, and no further.
+        #expect(
+            abs(edgeBefore - edgeAfter) < 1.000_001 / Double(countAfter),
+            "left the document edge at \(edgeBefore), landed at \(edgeAfter) of \(countAfter) pages"
+        )
+
+        // And back again. The scroll side seeds from its exact offset rather than from its page
+        // number, whose rounding — offset to the nearest boundary, trailing partial screen up —
+        // resumed the paged layout a page early.
+        defaults.removeObject(forKey: "Reader.epubReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+
+        try await EpubFixture.waitUntil(timeout: 30) {
+            reader.book !== after && reader.book?.isMeasured == true
+        }
+        try await EpubFixture.waitUntil(timeout: 10) {
+            reader.book?.currentDocument == documentBefore
+        }
+
+        // The anchor the return trip departs from is the scroll offset itself, which is more
+        // precise than the page edge: the page's count rounds the trailing partial screen up, so
+        // `q / count` understates where the reader is.
+        let anchorBack = try #require(after.edgeInDocument)
+
+        defaults.removeObject(forKey: "Reader.epubReaderStyle")
+        NotificationCenter.default.post(name: NSNotification.Name("Reader.epubReaderStyle"), object: nil)
+
+        try await EpubFixture.waitUntil(timeout: 30) {
+            reader.book !== after && reader.book?.isMeasured == true
+        }
+        try? await EpubFixture.waitUntil(timeout: 10) {
+            reader.book?.currentDocument == documentBefore
+                && reader.book?.pageInDocument == pageInDocumentBefore
+        }
+
+        let back = try #require(reader.book)
+        let countBack = try #require(back.index.pageCount(forDocumentAt: documentBefore))
+        let edgeBack = Double(back.pageInDocument) / Double(countBack)
+        // The landed page must *contain* the anchor: its edge at or before the anchor, the anchor
+        // within one page of it. Landing a page early — the bug this guards — puts the anchor a
+        // full page or more past the landed edge. The anchor reads a scroll offset back through
+        // the scroll view, which rounds it by a few pixels, so containment holds to a hundredth of
+        // a page rather than exactly.
+        #expect(
+            anchorBack - edgeBack >= -0.011 / Double(countBack)
+                && anchorBack - edgeBack < 1.011 / Double(countBack),
+            "left the scroll anchor at \(anchorBack), landed back at \(edgeBack) of \(countBack) pages"
+        )
+        // And exactly: the scroll viewport rested on the exact edge the paged layout left, so the
+        // switch back floors onto the very page it departed from. Landing one page back is the
+        // double floor this round trip existed to catch.
+        #expect(
+            back.pageInDocument == pageInDocumentBefore,
+            "departed page \(pageInDocumentBefore) of the document, returned to \(back.pageInDocument)"
+        )
     }
 
     /// A resize never reports an empty page list.
