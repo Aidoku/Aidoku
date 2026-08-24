@@ -15,12 +15,12 @@ enum EpubChapterCache {
     /// A book replaced on the server must not keep being served from the previously downloaded
     /// file, so a cache hit is first checked against the server's file size.
     static func fetch(request: URLRequest, sourceKey: String, chapterId: String) async throws -> URL {
-        guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else {
+        guard let root = directory else {
             throw SourceError.message("EPUB_DOWNLOAD_FAILED")
         }
-        let root = cachesDirectory.appendingPathComponent("EpubCache", isDirectory: true)
-        let directory = root.appendingPathComponent(sanitized(sourceKey), isDirectory: true)
-        let file = directory.appendingPathComponent("\(sanitized(chapterId)).epub")
+        let file = root
+            .appendingPathComponent(sanitized(sourceKey), isDirectory: true)
+            .appendingPathComponent("\(sanitized(chapterId)).epub")
         if FileManager.default.fileExists(atPath: file.path), await !isStale(request: request, file: file) {
             markAccessed(file)
             return file
@@ -55,6 +55,34 @@ enum EpubChapterCache {
         markAccessed(file)
         evict(in: root, capacity: capacity, keeping: file)
         return file
+    }
+
+    /// Where every downloaded book lives, `nil` when the caches directory cannot be reached.
+    static var directory: URL? {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("EpubCache", isDirectory: true)
+    }
+
+    /// What the cache occupies, for the settings screen to report alongside the other caches.
+    ///
+    /// Everything in the directory counts, sidecars included, since the question here is how much
+    /// storage clearing it would return rather than how many books are held.
+    static var totalSize: Int {
+        guard
+            let directory,
+            let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: [.fileSizeKey])
+        else { return 0 }
+        var total = 0
+        for case let url as URL in enumerator {
+            total += (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        }
+        return total
+    }
+
+    /// Discards every downloaded book, so that clearing the app's caches reaches this one too.
+    static func removeAll() {
+        guard let directory else { return }
+        try? FileManager.default.removeItem(at: directory)
     }
 
     /// The most the cache may hold before the least recently read books are reclaimed.
