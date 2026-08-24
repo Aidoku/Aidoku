@@ -62,6 +62,14 @@ class ReaderEpubViewController: BaseObservingViewController {
     /// The one turn held while another is in flight. See `navigate`.
     private var pendingMove: ((ReaderEpubViewModel) async -> Void)?
 
+    /// Whether the held turn is a restore rather than one the reader asked for.
+    ///
+    /// Carried alongside the work because the slot is drained by starting the move again, and a
+    /// restore that came back through that route as a reader's own move dropped the anchor it was
+    /// restoring to: a rebuild whose anchor arrived while an earlier move was still running lost
+    /// it, and the settings change after that re-seeded from the coarse landing.
+    private var pendingMoveIsRestore = false
+
     /// The size the book was last laid out at, so a layout pass that changes nothing does not
     /// invalidate every page count.
     private var lastViewport: CGSize = .zero
@@ -296,10 +304,27 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private func scheduleSettingsReload() {
         withdrawUnanchoredReturnOffer()
+        // Only from a reader who is where the last rebuild put them. A rebuild lands them on the
+        // old layout's page number and refines that onto the anchor once the new counts arrive, and
+        // between the two the reader is at a coarse landing rather than at their place: capturing
+        // then divided a landing by the new layout's count and recorded a reader at 0.667 of their
+        // document as 0.467, resuming twelve pages early. A move still in flight is worse than
+        // coarse, since scroll mode's fraction is read from an offset the move has not yet set: a
+        // capture during one recorded 0.954.
+        //
+        // The anchor already held is what a reader in either state belongs at, so it is kept rather
+        // than replaced. Settled means no move in flight and the anchor applied against the count
+        // its document currently holds; a run with no anchor yet has nothing to keep and captures,
+        // except mid-move, where no anchor restores nearer than a wrong one.
+        let anchorSettled = moveTask == nil && settingsReloadAnchor.map {
+            settingsReloadAnchorAppliedCount == book?.index.pageCount(forDocumentAt: $0.document)
+        } ?? true
         if settingsReloadPage == nil {
             settingsReloadPage = (book?.bookPage).map { $0 + 1 }
-            settingsReloadAnchor = book.flatMap { book in
-                book.edgeInDocument.map { (book.currentDocument, $0) }
+            if anchorSettled {
+                settingsReloadAnchor = book.flatMap { book in
+                    book.edgeInDocument.map { (book.currentDocument, $0) }
+                }
             }
             settingsReloadAnchorAppliedCount = nil
         }
@@ -353,6 +378,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         moveTask?.cancel()
         moveTask = nil
         pendingMove = nil
+        pendingMoveIsRestore = false
         isNavigating = false
         isSliding = false
         reportedTotal = 0
@@ -836,6 +862,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         guard book != nil else { return }
         guard moveTask == nil else {
             pendingMove = work
+            pendingMoveIsRestore = isRestore
             return
         }
         isNavigating = true
@@ -849,7 +876,7 @@ class ReaderEpubViewController: BaseObservingViewController {
                 // The queued turn continues the same navigation, so the position stays withheld
                 // until the last of them has settled rather than surfacing between them.
                 pendingMove = nil
-                navigate(next)
+                navigate(isRestore: pendingMoveIsRestore, next)
             } else {
                 isNavigating = false
                 // A completed move is the definitive end of the drag that asked for it, since
