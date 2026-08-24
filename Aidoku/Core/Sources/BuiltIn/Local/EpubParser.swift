@@ -89,7 +89,9 @@ enum EpubParser {
         let metadata = elements("metadata", in: opf).first
         let title = metadata.flatMap { elements("title", in: $0).first.flatMap { try? $0.text() } }
         let author = metadata.flatMap { elements("creator", in: $0).first.flatMap { try? $0.text() } }
-        let description = metadata.flatMap { elements("description", in: $0).first.flatMap { try? $0.text() } }
+        let description = metadata
+            .flatMap { elements("description", in: $0).first.flatMap { try? $0.text() } }
+            .map(plainText(fromDescription:))
 
         // manifest: id -> href
         var manifestHrefs: [String: String] = [:]
@@ -285,6 +287,43 @@ enum EpubParser {
     // MARK: - XML Helpers
 
     /// The tag name without any namespace prefix, lowercased.
+    /// Prose from an OPF description, which is frequently escaped HTML rather than text.
+    ///
+    /// The package document is XML, so `text()` on the element unescapes one level and a
+    /// description authored as markup arrives here as literal tags. Block boundaries become
+    /// newlines before the tags are dropped, since an anthology listing one title per `<br>` reads
+    /// as a list rather than as one run-on line. Parsing also decodes what a second escaping left
+    /// behind, which is how `&#8212;` becomes an em dash rather than five visible characters.
+    private static func plainText(fromDescription raw: String) -> String {
+        // Prose with neither a tag nor an entity is left alone, since running an HTML parse over it
+        // would swallow the word after any stray `<`.
+        guard raw.contains("<") || raw.contains("&") else { return raw }
+        let broken = raw
+            // a paragraph earns a blank line, a line break and a list item only a new line
+            .replacingOccurrences(
+                of: "(?i)</(?:p|div|h[1-6]|blockquote)>",
+                with: "\n\n",
+                options: .regularExpression
+            )
+            .replacingOccurrences(of: "(?i)<br[^>]*>|</li>", with: "\n", options: .regularExpression)
+        guard
+            let body = try? SwiftSoup.parseBodyFragment(broken).body(),
+            let text = try? body.text(trimAndNormaliseWhitespace: false)
+        else {
+            return raw
+        }
+        return text
+            .replacingOccurrences(of: "[ \t]+", with: " ", options: .regularExpression)
+            .replacingOccurrences(of: " *\n *", with: "\n", options: .regularExpression)
+            .replacingOccurrences(of: "\n{3,}", with: "\n\n", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            // A description renders as markdown, where a lone newline is a soft break and comes out
+            // as a space. A break inside a paragraph therefore needs the two-space form, which is
+            // what `ExpandableTextView.textUntilNewline` already relies on. Blank lines are left
+            // alone, being paragraph separators in their own right.
+            .replacingOccurrences(of: "(?<!\n)\n(?!\n)", with: "  \n", options: .regularExpression)
+    }
+
     private static func localName(_ element: Element) -> String {
         let tag = element.tagName().lowercased()
         return tag.split(separator: ":").last.map(String.init) ?? tag
