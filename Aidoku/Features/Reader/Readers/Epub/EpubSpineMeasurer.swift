@@ -8,43 +8,29 @@
 import Foundation
 import WebKit
 
-/// Counts the pages of every spine document of a book, in the background, while it is being read.
-///
-/// One ePub is one chapter, so the reader's page counter and slider describe a whole book, and a
-/// book's total is the sum of counts that only exist once each document has been laid out. This
-/// walks the spine and produces them. It does not hold the counts; `EpubPageIndex` does, and this
-/// reports each one as it lands so a caller can decide what a partial total means.
-///
-/// **It counts at `load` and never calls `settle()`.** Measured across 53 documents of the two most
-/// illustrated books in the corpus: settling costs a flat 507 to 514 ms per document, being
-/// `holdCurrentPage`'s half-second window, and it changed no count at all. Every count taken at
-/// `didFinish` already equalled the settled one. Settling would turn a four-second pass into half a
-/// minute and buy nothing. Images cost little for the same reason, 39 ms against 22 ms for
-/// text-only documents on the most illustrated book and inside the noise on the next.
-///
-/// **Its web view is never added to a view hierarchy.** A frame and a layout are what a viewport
-/// needs; window membership is not. Verified by loading one document into a view installed in the
-/// key window, a detached view with a frame, one at `alpha` zero and one hidden, all four of which
-/// reported the same count, viewport and scroll width. A walk of 217 documents on a detached view
-/// then reported correct counts throughout with no failures.
-///
-/// **A pass belongs to a viewport.** A count describes a document laid out at a size, so a size
-/// change cancels the pass in flight and starts another. Nothing measured under the old size may be
-/// published afterwards, which is why cancellation is checked after each load rather than only
-/// before it.
+// counts the pages of every spine document in the background, reporting each as it lands.
+// EpubPageIndex holds them, not this.
+//
+// it counts at load and never calls settle(): measured across 53 documents of the two most
+// illustrated books in the corpus, settling cost a flat 507 to 514ms each and changed no count at
+// all, since every count taken at didFinish already equalled the settled one.
+//
+// its web view is never added to a view hierarchy. a frame and a layout are what a viewport needs;
+// window membership is not.
+//
+// a pass belongs to a viewport, so a size change cancels the one in flight. nothing measured under
+// the old size may be published afterwards, which is why cancellation is checked after each load
+// rather than only before it
 @MainActor
 final class EpubSpineMeasurer {
-    /// What a finished pass did, whether or not it ran to the end.
     struct Outcome {
-        /// Documents whose count was measured and published by this pass.
         let measured: Int
-        /// Spine paths that could not be laid out, in spine order.
+        // spine paths that could not be laid out, in spine order
         let failed: [String]
-        /// True when the pass was cancelled or superseded rather than reaching the end.
+        // true when the pass was cancelled or superseded rather than reaching the end
         let cancelled: Bool
     }
 
-    /// The three ways a pass reports, bundled so that handing them on stays one argument.
     private struct Reports {
         let count: (Int, Int) -> Void
         let failure: (Int) -> Void
@@ -54,27 +40,18 @@ final class EpubSpineMeasurer {
     private let provider: any EpubResourceProvider
     private let settings: EpubPaginationSettings
 
-    /// Built on the first pass and kept afterwards.
-    ///
-    /// Its configuration carries a scheme handler bound to one provider and therefore to one book,
-    /// so a measurer serves the book it was made for. Keeping it costs one idle web view: walking a
-    /// whole spine moved peak footprint by +0.6 MB in stage 1, because the view is reused rather
-    /// than made per document.
+    // built on the first pass and kept afterwards. its configuration carries a scheme handler bound
+    // to one provider, so a measurer serves the book it was made for
     private var renderer: EpubSpineRenderer?
     private var task: Task<Void, Never>?
 
-    /// Checked between documents, so a pause takes effect within one document rather than at once.
+    // checked between documents, so a pause takes effect within one document rather than at once
     private var isPaused = false
 
-    /// How long to wait before looking at `isPaused` again.
-    ///
-    /// A poll rather than a continuation, matching the renderer, where polling was judged
-    /// preferable to running a state machine against WebKit's callbacks. At this interval the cost
-    /// is immaterial next to the load it is waiting for.
     private static let pausePollNanoseconds: UInt64 = 20_000_000
 
-    /// Which pass is current, so that a pass finishing can tell whether it is still the one whose
-    /// task is stored, rather than clearing a successor's.
+    // so a pass finishing can tell whether it is still the one whose task is stored, rather than
+    // clearing a successor's
     private var generation = 0
 
     var isMeasuring: Bool {
@@ -91,20 +68,9 @@ final class EpubSpineMeasurer {
         task?.cancel()
     }
 
-    /// Walks `spinePaths` in order, reporting each count through `onCount` as it lands.
-    ///
-    /// In order because a position in a book needs every *earlier* document counted: the answers
-    /// `EpubPageIndex` gives become available from the front of the spine, so measuring forwards
-    /// makes the reader's own position available soonest.
-    ///
-    /// `skipping` holds spine positions whose count is already known, which is at least the
-    /// document the reader has open, since the reading renderer measured it on the way in. Cancels
-    /// any pass already running.
-    ///
-    /// `onFailure` reports a document that could not be laid out, by spine position, as the failure
-    /// happens rather than at the end of the pass. Every answer about a position *after* that
-    /// document waits on whatever the caller decides to do about it, so it is worth telling them at
-    /// once rather than after the remaining documents have been walked.
+    // walked in order because a position needs every earlier document counted, so measuring
+    // forwards makes the reader's own position available soonest. skipping holds positions already
+    // counted, which is at least the document the reader has open. cancels any pass already running
     func start(
         spinePaths: [String],
         viewport: CGSize,
@@ -125,21 +91,16 @@ final class EpubSpineMeasurer {
         }
 
         task = Task { [weak self] in
-            // A cancelled pass is not a finished one. Cancellation is cooperative and the pass is
-            // suspended inside `renderer.load`, which it keeps waiting on; the renderer is reused
-            // across passes, and it tracks one navigation at a time. Loading into the same web view
-            // while the old load is still settling therefore makes the two indistinguishable: one
-            // of them is resumed with `superseded` and its document is recorded as unmeasurable,
-            // while the other measures whichever document the web view ended up holding and files
-            // that count under its own path. Both were seen on a 217 document book opened at a size
-            // that settled after the first pass had begun, as a total seven pages long and as one a
-            // document short. Waiting for the old pass to leave the renderer costs one document's
-            // load, a 9 ms median, and removes the overlap rather than detecting it.
+            // a cancelled pass is not a finished one: cancellation is cooperative and the pass is
+            // suspended inside renderer.load, and the renderer is shared across passes and tracks
+            // one navigation at a time. two passes in the same web view are indistinguishable, one
+            // being resumed with superseded while the other files its count under the wrong path,
+            // which showed up on a 217 document book as a total seven pages long. waiting costs one
+            // document's load and removes the overlap rather than detecting it
             await superseded?.value
             guard let self, !Task.isCancelled else {
-                // Every other exit from a pass reports an outcome. A caller that waits on
-                // `onFinish`, which is how the tests observe a pass, would otherwise wait for ever
-                // on one that was replaced while it queued behind the pass before it.
+                // every other exit reports an outcome, so a caller waiting on onFinish would
+                // otherwise wait for ever on a pass replaced while it queued
                 onFinish(Outcome(measured: 0, failed: [], cancelled: true))
                 return
             }
@@ -149,8 +110,8 @@ final class EpubSpineMeasurer {
                 skipping: skipping,
                 reports: Reports(count: onCount, failure: onFailure, finish: onFinish)
             )
-            // A pass that has run to completion is no longer measuring. Cleared only while it is
-            // still the current one, since a later pass may have replaced it in the meantime.
+            // cleared only while it is still the current pass, since a later one may have replaced
+            // it in the meantime
             if self.generation == generation {
                 self.task = nil
             }
@@ -162,13 +123,8 @@ final class EpubSpineMeasurer {
         task = nil
     }
 
-    /// Suspends the pass between documents.
-    ///
-    /// Provider reads serialise onto one file handle, so a pass and a reader contend for them. A
-    /// page turn that stays within a loaded document never touches the provider and needs no pause;
-    /// one that crosses into another spine document does, and is worth pausing around, since a
-    /// reader waiting on a background count is a visible stall while a count waiting on a reader is
-    /// invisible.
+    // provider reads serialise onto one file handle, so a pass and a reader contend for them. a
+    // reader waiting on a background count is a visible stall; the reverse is not
     func pause() {
         isPaused = true
     }
@@ -188,9 +144,8 @@ final class EpubSpineMeasurer {
             renderer = try await makeRenderer()
         } catch {
             LogManager.logger.error("EpubSpineMeasurer: could not build a renderer: \(error)")
-            // Reported one by one as well as in the outcome: every path this pass gives up on
-            // reaches `onFailure`, so a caller placing failures in an index does not need a second
-            // route for the case where the pass never started.
+            // reported one by one as well as in the outcome, so a caller placing failures in an
+            // index needs no second route for a pass that never started
             for index in spinePaths.indices { reports.failure(index) }
             reports.finish(Outcome(measured: 0, failed: spinePaths, cancelled: false))
             return
@@ -201,13 +156,10 @@ final class EpubSpineMeasurer {
             return
         }
 
-        // Set once per pass rather than per document. The count itself is read from the document,
-        // as `scrollWidth` over `innerWidth`, so this size is what the document is laid out at
-        // rather than a width any arithmetic here depends on.
         renderer.webView.frame = CGRect(origin: .zero, size: viewport)
-        // Laid out immediately rather than at the next pass, since the first document is loaded
-        // before a detached view would otherwise be given a chance to adopt the frame, and a view
-        // still at its default zero size reports a viewport that means nothing.
+        // laid out immediately, since the first document is loaded before a detached view would
+        // otherwise adopt the frame, and a view at its default zero size reports a meaningless
+        // viewport
         renderer.webView.layoutIfNeeded()
 
         var measured = 0
@@ -226,10 +178,8 @@ final class EpubSpineMeasurer {
 
             do {
                 let count = try await renderer.load(spinePath: path)
-                // Checked after the load as well as before it. A pass superseded while this
-                // document was loading measured it at a viewport that no longer applies, and
-                // publishing that count would put a stale number into the index the new pass is
-                // filling.
+                // checked after the load as well as before it: a pass superseded mid-load measured
+                // the document at a viewport that no longer applies
                 guard !Task.isCancelled else {
                     reports.finish(Outcome(measured: measured, failed: failed, cancelled: true))
                     return
@@ -237,16 +187,14 @@ final class EpubSpineMeasurer {
                 measured += 1
                 reports.count(index, count)
             } catch {
-                // A document that cannot be laid out cannot be read either, so this is reported
-                // rather than substituted for. What a book with an unreadable document should show
-                // as its total is the caller's decision, not this type's.
+                // what a book with an unreadable document should show as its total is the caller's
+                // decision, not this type's
                 LogManager.logger.error("EpubSpineMeasurer: could not lay out \(path): \(error)")
                 failed.append(path)
                 reports.failure(index)
             }
 
-            // Between documents, so a reader waiting on the provider is not held for the length of
-            // a whole spine.
+            // between documents, so a reader waiting on the provider is not held for a whole spine
             await Task.yield()
         }
 
