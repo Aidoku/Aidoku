@@ -22,26 +22,15 @@ extension URLRequest {
 extension URLSession {
     enum URLSessionError: Error {
         case noData
-        /// The server answered, and answered with a status that is not a success.
         case httpError(statusCode: Int)
     }
 
-    /// Downloads a request to `destination`, replacing whatever is there only once the whole body
-    /// has arrived.
-    ///
-    /// Two properties the plain `data(for:)` form does not have. The body is streamed to disk
-    /// rather than held in memory, so the size of the thing being fetched stops mattering. And the
-    /// file appears at `destination` in one step, by a move within the same volume, so an
-    /// interrupted or failed download leaves nothing behind for the next reader to mistake for a
-    /// complete file: it is either wholly there or not there at all.
-    ///
-    /// A response outside the 2xx range throws before anything is written, since an error page is
-    /// a body like any other and would otherwise be saved as though it were the file asked for.
+    // streams the body to disk instead of holding it in memory, and appears at destination in one
+    // move, so an interrupted download leaves nothing for the next reader to mistake for a complete
+    // file. a non-2xx response throws before anything is written, since an error page is a body too
     @discardableResult
     func download(for request: URLRequest, to destination: URL) async throws -> URLResponse {
         let (temporaryFile, response) = try await download(for: request)
-        // The temporary file belongs to this call and is ours to clean up on every path out that
-        // does not consume it.
         defer { try? FileManager.default.removeItem(at: temporaryFile) }
 
         if let response = response as? HTTPURLResponse, !(200..<300).contains(response.statusCode) {

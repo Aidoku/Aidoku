@@ -110,10 +110,9 @@ struct ReaderSettingsView: View {
                     Text(NSLocalizedString("TAP_ZONES"))
                 }
 
-                // The text-like readers, which is `.text` and `.epub`. Written as the negation of the
-                // image readers rather than as `== .text || == .epub` so that a future reader has to
-                // choose a side; `||` between two inequalities here is always true, which is what
-                // hid the image settings below and showed these on top of a manga.
+                // the text-like readers, .text and .epub. written as the negation of the image
+                // readers because || between two inequalities is always true, which once hid the
+                // image settings below and showed these on top of a manga
                 if reader != .paged && reader != .scroll {
                     textSection
                 } else {

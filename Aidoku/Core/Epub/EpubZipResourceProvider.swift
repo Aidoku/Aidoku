@@ -8,10 +8,8 @@
 import Foundation
 import ZIPFoundation
 
-/// Serves ePub resources straight out of a zip archive on disk.
-///
-/// Nothing is extracted to disk; entries are read on demand. Reads are serialised by the actor,
-/// which suits `Archive` holding a single file handle.
+// nothing is extracted; entries are read on demand, and the actor serialises reads to suit
+// Archive holding a single file handle
 final actor EpubZipResourceProvider: EpubResourceProvider {
     private let archive: Archive
 

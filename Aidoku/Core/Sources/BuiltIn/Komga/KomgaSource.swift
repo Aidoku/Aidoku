@@ -103,8 +103,8 @@ actor KomgaSourceRunner: Runner {
     private var storedTags: [String] = []
     private var lastWorkingMirror: URL?
 
-    /// Whether a book is an ePub the reader has to download whole, remembered as the chapter list
-    /// is read so that opening an ordinary chapter needs no request of its own to find out.
+    // remembered as the chapter list is read, so opening an ordinary chapter needs no request of
+    // its own to find out
     private var epubChapters: [String: Bool] = [:]
 
     init(sourceKey: String, name: String, server: String) {
@@ -202,9 +202,8 @@ actor KomgaSourceRunner: Runner {
             lastWorkingMirror = lastWorkingMirrorCopy
         }
 
-        // The chapter list already carries every book's media profile, so the common path costs no
-        // request of its own. Only a chapter this source has not listed this launch, reached by
-        // resuming straight into the reader, has to ask.
+        // only a chapter this source has not listed this launch, reached by resuming straight into
+        // the reader, has to ask
         let isEpub: Bool
         if let known = epubChapters[chapter.id] {
             isEpub = known
@@ -934,11 +933,6 @@ extension KomgaSourceRunner {
 }
 
 extension KomgaSourceRunner {
-    /// Downloads a book Komga cannot serve as image pages, and reads its spine.
-    ///
-    /// Extracted from `getPageList` rather than written inline: the download answers with bytes
-    /// instead of JSON, so it cannot go through `helper.request`, and walking the base URLs itself
-    /// is enough code to push the actor past what it should hold.
     private func epubPages(chapterId: String, lastWorkingMirror: inout URL?) async throws -> [AidokuRunner.Page] {
         var lastWorkingMirrorCopy = lastWorkingMirror
         defer { lastWorkingMirror = lastWorkingMirrorCopy }
@@ -946,10 +940,9 @@ extension KomgaSourceRunner {
         guard let auth = helper.getAuthorizationHeader() else {
             throw SourceError.message("NOT_LOGGED_IN")
         }
-        // The download answers with bytes rather than JSON, so it cannot go through
-        // `helper.request`. It walks the same base URLs in the same order instead: without that
-        // a stale last-working mirror leaves ePub chapters failing while the image chapters
-        // beside them still open, because those fail over and this did not.
+        // the download answers with bytes rather than json, so it can't go through helper.request.
+        // it walks the same base urls in the same order instead: without that, a stale last-working
+        // mirror leaves epub chapters failing while the image chapters beside them still open
         let mainUrl = try helper.getConfiguredServer()
         let baseUrls = try helper.baseUrls(lastWorkingMirror: lastWorkingMirrorCopy)
         var lastError: any Error = SourceError.networkError
@@ -968,8 +961,8 @@ extension KomgaSourceRunner {
                 lastWorkingMirrorCopy = baseUrl == mainUrl ? nil : baseUrl
                 return pages
             } catch SourceError.message("NOT_LOGGED_IN") {
-                // Refusals of the account rather than of the server. Every mirror answers them
-                // the same way, so asking the next one spends a request to be told again.
+                // a refusal of the account rather than of the server: every mirror answers the
+                // same way, so asking the next one spends a request to be told again
                 throw SourceError.message("NOT_LOGGED_IN")
             } catch SourceError.message("EPUB_DOWNLOAD_FORBIDDEN") {
                 throw SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")

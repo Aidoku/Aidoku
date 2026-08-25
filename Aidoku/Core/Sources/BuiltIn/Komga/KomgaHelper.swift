@@ -41,11 +41,9 @@ struct KomgaHelper: Sendable {
             .compactMap { $0.urlWithTrailingSlash() } ?? []
     }
 
-    /// The base URLs a request tries, in order: the mirror that last worked, the configured
-    /// server, then the remaining mirrors.
-    ///
-    /// Shared with `request` rather than rebuilt, so that anything which cannot go through it,
-    /// such as a file download that answers with bytes instead of JSON, fails over the same way.
+    // in order: the mirror that last worked, the configured server, then the rest. shared with
+    // request so a caller that can't use it, such as a download answering with bytes instead of
+    // json, fails over the same way
     func baseUrls(lastWorkingMirror: URL?) throws(SourceError) -> [URL] {
         var urls: [URL] = []
         if let lastWorkingMirror {

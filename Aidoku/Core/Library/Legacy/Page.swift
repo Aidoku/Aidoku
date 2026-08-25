@@ -39,11 +39,8 @@ struct Page: Hashable {
         text != nil || (zipURL != nil && imageURL?.lowercased().hasSuffix(".txt") == true)
     }
 
-    /// A page served from inside an ePub, which the ePub reader renders rather than the image or
-    /// text readers.
-    ///
-    /// The archive rather than the entry decides this: every spine document lives inside the one
-    /// `.epub`, and the entry itself is an XHTML path with no extension worth testing.
+    // the archive decides this rather than the entry, since every spine document lives inside the
+    // one .epub and the entry is an xhtml path with no extension worth testing
     var isEpubPage: Bool {
         zipURL?.lowercased().hasSuffix(".epub") == true
     }

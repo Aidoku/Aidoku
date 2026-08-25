@@ -246,8 +246,7 @@ struct KavitaVolume: Codable, Sendable {
     let seriesId: Int
     let chapters: [Chapter]
 
-    /// The volume number; the legacy `number` field truncates fractional
-    /// volumes (e.g. 9.5 -> 9), so prefer `minNumber` where available.
+    // the legacy number field truncates fractional volumes (9.5 -> 9), so prefer minNumber
     var resolvedNumber: Float {
         minNumber ?? Float(number)
     }

@@ -22,14 +22,9 @@ protocol ReaderReaderDelegate: UIViewController {
     func sliderStopped(value: CGFloat)
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
 
-    /// Whether the tap being handled has already been answered by the reader itself, and so should
-    /// not also toggle the bars or turn a page.
-    ///
-    /// Asked once, when a tap arrives, and consumed by the asking. Only a reader whose content
-    /// handles taps of its own needs it: an ePub's web view follows links, and the tap zones do not
-    /// cancel touches over it, so one tap on a footnote both navigates and reaches the host. A
-    /// control can be exempted by `gestureRecognizer(_:shouldReceive:)` instead, but nothing inside
-    /// a web view is one.
+    // true when the reader's own content already answered the tap, so the host should not also
+    // toggle the bars or turn a page. nothing inside a web view can be exempted with
+    // gestureRecognizer(_:shouldReceive:), so an epub link tap would otherwise do both
     func consumesTap() -> Bool
 }
 
@@ -43,36 +38,22 @@ extension ReaderReaderDelegate {
     }
 }
 
-/// A reader whose content has a table of contents of its own.
-///
-/// The host's chapter list describes the chapters of a manga, and one ePub is one chapter, so a
-/// book's own contents are the only way to move about inside it besides the slider. Refining the
-/// reader protocol rather than adding to it keeps every other reader unchanged, the way
-/// `ReaderDictionaryReader` does for text recognition.
+// a reader whose content carries its own table of contents
 protocol ReaderTableOfContentsReader: ReaderReaderDelegate {
-    /// The contents of what is open, empty where it declares none.
     var tableOfContents: EpubTableOfContents { get }
 
-    /// Whether the contents have been read, which a book declaring none satisfies with an empty
-    /// table.
-    ///
-    /// Separate from `tableOfContents.isEmpty` because the two questions have different answers and
-    /// the host needs this one: it disables the button that reaches the contents until they have
-    /// arrived, and reading emptiness as "not yet" left the button disabled for the whole of a book
-    /// that has no contents to read.
+    // not the same question as tableOfContents.isEmpty: a book that declares no contents has read
+    // them and has none, and reading emptiness as "not yet" left the contents button disabled for
+    // the whole of such a book
     var hasReadTableOfContents: Bool { get }
 
-    /// The entry the reader is currently inside, or nil where the contents begin after them.
-    ///
-    /// Asynchronous because several entries may share a spine document, and telling those apart
-    /// means asking the laid-out document where each of them begins.
+    // async because entries can share a spine document, so telling them apart means asking the
+    // laid-out document where each begins. nil where the contents begin after the current page
     func currentTableOfContentsEntry() async -> EpubTableOfContents.Entry?
 
-    /// The page of the whole book an entry begins at, one-based, or nil while the pages before it
-    /// are still being counted.
+    // one-based, nil while the pages before the entry are still being counted
     func bookPage(ofTableOfContentsEntry entry: EpubTableOfContents.Entry) -> Int?
 
-    /// Takes the reader to an entry.
     func goToTableOfContentsEntry(_ entry: EpubTableOfContents.Entry)
 }
 

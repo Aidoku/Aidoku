@@ -47,8 +47,6 @@ enum Settings {
     }()
 
     #if DEBUG
-    /// Reaches the ePub resource layer before there is a reader to host it. Expected to be
-    /// removed once the reader lands.
     private static let debugSettings = Setting(
         title: "Debug",
         value: .group(.init(items: [

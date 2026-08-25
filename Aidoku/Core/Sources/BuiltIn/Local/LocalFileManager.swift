@@ -152,9 +152,8 @@ extension LocalFileManager {
         return readPages(from: archiveURL)
     }
 
-    // read the pages for an epub, which is a single chapter spanning the whole book:
-    // one page per spine document, so the epub reader can resolve the archive from
-    // the first page and paginate across the spine itself
+    // one page per spine document, so the epub reader can resolve the archive from the first page
+    // and paginate across the spine itself
     nonisolated func readEpubPages(from archiveURL: URL) -> [AidokuRunner.Page] {
         guard let book = EpubParser.parse(url: archiveURL) else {
             LogManager.logger.error("Failed to read epub \(archiveURL.lastPathComponent)")
