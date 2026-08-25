@@ -524,6 +524,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     // the toolbar takes its total from the page count, so a book's length reaches it as pages.
     // they carry the archive, so isEpubPage stays true of them
     private func placeholderPages(count: Int) -> [Page] {
+        // swiftlint:disable:next empty_count
         guard count > 0 else { return [] }
         let sourceId = source?.key ?? manga.sourceKey
         let chapterId = chapter?.key ?? ""
