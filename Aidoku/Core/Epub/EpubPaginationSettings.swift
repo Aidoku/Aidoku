@@ -8,46 +8,27 @@
 import Foundation
 import UIKit
 
-/// The readium-css injection and the reading-system variables that drive pagination.
-///
-/// readium-css specifies the injection order, and it is load-bearing:
-///   1. `ReadiumCSS-before.css`, which must precede the author's own styles
-///   2. the publication's own stylesheets, or `ReadiumCSS-default.css` when it has none
-///   3. `ReadiumCSS-after.css`, which must come last
-///
-/// Injection happens at document end, so "before" is spliced in as the first child of `<head>`,
-/// ahead of the author's `<link>` elements, and "after" is appended.
-///
-/// Paged mode needs no enabling. `after.css` sets `--RS__colCount` and `--RS__colWidth`
-/// unconditionally, and `readium-scroll-on` is the opt-out rather than the opt-in.
-///
-/// Every value injected here is independent of the size of the viewport. `--RS__viewportWidth` in
-/// particular is left at the `100%` readium-css gives it, since it is the width of `:root` and a
-/// pixel value measured at load survives a rotation while the `100vw` columns inside it do not:
-/// the two then disagree, every page boundary moves off the viewport, and no later measurement
-/// puts it right because the width is frozen.
+// readium-css specifies the injection order and it is load-bearing: ReadiumCSS-before.css, then
+// the publication's own stylesheets or ReadiumCSS-default.css where it has none, then
+// ReadiumCSS-after.css. injection happens at document end, so "before" is spliced in as the first
+// child of <head> and "after" is appended.
+//
+// every value injected here is independent of the viewport size. --RS__viewportWidth is left at the
+// 100% readium-css gives it, since a pixel value measured at load survives a rotation while the
+// 100vw columns inside it do not, and no later measurement puts a frozen width right
 struct EpubPaginationSettings {
     var columnCount: Int = 1
 
-    /// Two columns on an iPad in landscape, one column everywhere else.
-    ///
-    /// Derived from the viewport rather than from `UIDevice.current.orientation`, which is
-    /// `.unknown` until the device has physically moved and so cannot answer at init time.
+    // derived from the viewport rather than UIDevice.current.orientation, which is .unknown until
+    // the device has physically moved and so cannot answer at init time
     static func columnCount(for viewport: CGSize) -> Int {
         UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
     }
 
-    /// The space between two columns, which is what separates the two pages an iPad shows in
-    /// landscape. A gutter alone cannot do that: it pads the body, so it sits outside both columns
-    /// rather than between them.
-    ///
-    /// A page therefore begins every `viewportWidth + columnGapPx` rather than every
-    /// `viewportWidth`, and `n` pages span `n * (viewportWidth + gap) - gap`, the last page
-    /// carrying no gap after it. Every count and every offset here is written that way; nothing
-    /// may divide a scroll offset by the viewport width alone.
-    ///
-    /// This was held at zero while a page was always one column, to keep that arithmetic trivial.
-    /// Two columns is what changed the answer.
+    // separates the two pages an iPad shows in landscape, which a gutter cannot do since it pads
+    // the body and so sits outside both columns. a page therefore begins every
+    // viewportWidth + columnGapPx, and n pages span n * (viewportWidth + gap) - gap. every count and
+    // offset here is written that way; nothing may divide a scroll offset by the viewport width
     var columnGapPx: Int = 10
 
     var pageGutterPx: Int = 20
@@ -56,29 +37,22 @@ struct EpubPaginationSettings {
 
     var fontSizePercent: Int = 100
 
-    /// A unitless `line-height` multiple, injected only when set so the publication's own leading
-    /// wins by default.
+    // injected only when set, so the publication's own leading wins by default
     var lineHeight: Double?
 
     var paged: Bool = true
 
-    /// Applies `--USER__fontSize` through `-webkit-text-size-adjust` rather than `zoom`.
-    ///
-    /// `zoom` scales the whole box, the multi-column geometry included, which corrupts both
-    /// `scrollWidth` and the page offsets derived from it. `-webkit-text-size-adjust` scales text
-    /// and leaves layout alone. The rule fires only when `--USER__fontSize` is present, and at
-    /// 100% neither mechanism does anything, so this changes nothing until font size becomes a
-    /// user setting. Its absence at that point would break pagination rather than the font size.
-    /// For whatever reason Readium made two different settings  for iOS and iPadOS
+    // applies --USER__fontSize through -webkit-text-size-adjust rather than zoom, which would scale
+    // the multi-column geometry too and corrupt both scrollWidth and the offsets derived from it.
+    // readium splits the patch into separate iOS and iPadOS settings
     var applyIOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? false : true
 
     var applyIPadOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? true : false
 
     static let `default` = EpubPaginationSettings()
 
-    /// The text readers' settings, mapped onto readium-css user variables, so an epub follows the
-    /// same reader settings the text readers already follow. `viewport` decides the column count;
-    /// pass the reader's size.
+    // the text readers' settings mapped onto readium-css user variables, so an epub follows the
+    // reader settings they already follow. pass the reader's size as the viewport
     static func fromUserDefaults(for viewport: CGSize) -> EpubPaginationSettings {
         var settings = EpubPaginationSettings()
         settings.columnCount = columnCount(for: viewport)
@@ -95,16 +69,12 @@ struct EpubPaginationSettings {
         settings.lineHeight = ((fontSize + lineSpacing) / fontSize * 100).rounded() / 100
         let padding = defaults.object(forKey: "Reader.textHorizontalPadding") as? Double ?? 24
         settings.pageGutterPx = Int(padding)
-        // In readium's scroll mode a document is one column of natural height, read by scrolling
-        // vertically; the renderer counts its pages in viewport heights instead of columns.
+        // in readium's scroll mode a document is one column of natural height, and the renderer
+        // counts its pages in viewport heights instead of columns
         settings.paged = defaults.string(forKey: "Reader.textReaderStyle") != "scroll"
         return settings
     }
 
-    /// The single script injected into every spine document.
-    ///
-    /// The viewport element and the stylesheets arrive together rather than as two scripts,
-    /// because two would make the order between them significant for no benefit.
     func injectionScript() -> String {
         let before = Self.stylesheet(named: "ReadiumCSS-before")
         let after = Self.stylesheet(named: "ReadiumCSS-after")
@@ -115,21 +85,18 @@ struct EpubPaginationSettings {
             var head = document.head || document.getElementsByTagName('head')[0];
             if (!head) { return; }
 
-            // ePub XHTML carries no viewport meta element, causing WebKit to lay out at a 980 px
-            // desktop viewport. 100vw then resolves to 980 px, a whole document fits in one
-            // column, and the page count comes back as 1 with no error of any kind.
+            // epub xhtml carries no viewport meta element, so WebKit lays out at a 980px desktop
+            // viewport, a whole document fits one column, and the count comes back as 1 with no
+            // error of any kind
             var viewport = head.querySelector('meta[name="viewport"]');
             if (!viewport) {
                 viewport = document.createElement('meta');
                 viewport.setAttribute('name', 'viewport');
                 head.appendChild(viewport);
             }
-            // User scaling is disabled because a double tap in the reader's tap zones zooms the
-            // document, and a zoomed document no longer shows the page the offsets describe: the
-            // reader is left partway between two columns until the next page turn resets it.
-            // Scaling is a visual-viewport transform, so it corrupts neither `scrollWidth` nor the
-            // counts, only what is on screen, which is why the book survives it. `width` and
-            // `initial-scale` are unchanged, so the layout viewport is exactly what it was.
+            // user scaling is off because a double tap in the reader's tap zones zooms the
+            // document, which then no longer shows the page the offsets describe and leaves the
+            // reader partway between two columns until the next turn resets it
             viewport.setAttribute(
                 'content',
                 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
@@ -165,37 +132,20 @@ struct EpubPaginationSettings {
             root.style.setProperty('--USER__backgroundColor', 'light-dark(#FFFFFF, #000000)');
             root.style.setProperty('--USER__textColor', 'light-dark(#000000, #FFFFFF)');
 
-            // readium-css toggles are substring matches against the inline style attribute
-            // (`:root[style*="readium-…-on"]`) rather than classes, so `classList.add` does
-            // nothing. A flag is activated by setting a custom property whose value is the flag.
-            //
-            // This one reads as a double negative and is worth stating outright: every rule it
-            // gates is written `:not([style*="readium-noOverflow-on"])`, six of them and no
-            // positive selector, so **setting** it removes readium-css's `overflow: hidden` and
-            // `overflow: clip` from `body` and `:root`.
-            //
-            // Kept deliberately. Measured on Project Gutenberg 20871, whose tables run to 450px in
-            // a 280px column: clipping changes neither `scrollWidth` nor the page count, so it
-            // hides content the column has already lost rather than making it reachable. Cutting a
-            // table at the column edge leaves nothing to show for it, while content that bleeds
-            // onto the following pages is at least visible, and the table pass below scales the
-            // tables that would do it. Removing this line breaks no test, so it is not load-bearing
-            // for pagination; it is a choice about which failure a reader is better served by.
-            //
-            // Tracked upstream at readium/readium-css#138, where the clipping these rules apply was
-            // added deliberately for this complaint and gated so a reading system handling overflow
-            // itself can opt out, which is what setting this does. Worth reading before changing it.
+            // readium-css toggles are substring matches against the inline style attribute rather
+            // than classes, so a flag is activated by setting a custom property whose value is the
+            // flag. this one is a double negative: every rule it gates is written
+            // :not([style*="readium-noOverflow-on"]), so setting it removes readium-css's overflow
+            // clipping from body and :root. that trades a table cut off at the column edge for one
+            // that bleeds onto the following pages, which the table pass below then scales.
+            // see readium/readium-css#138 before changing it
             root.style.setProperty('--USER__noOverflow', 'readium-noOverflow-on');
             \(applyIOSPatch ? "root.style.setProperty('--USER__iOSPatch', 'readium-iOSPatch-on');" : "")
             \(applyIPadOSPatch ? "root.style.setProperty('--USER__iPadOSPatch', 'readium-iPadOSPatch-on');" : "")
 
-            // A table wider than its column would paint across the page boundary onto the
-            // following pages, since noOverflow disables readium-css's body clipping. Each one is
-            // scaled down to fit a single page whole instead, and marked so a tap on it can open
-            // the reader's fullscreen table preview. `transform` shrinks only the painting, so a
-            // wrapper carries the scaled height for the column layout and clips whatever the
-            // transform did not cover. Measured after the stylesheets and the variables above,
-            // which is what decides the column geometry the tables must fit.
+            // scaled to fit one page whole, and marked so a tap can open the fullscreen preview.
+            // transform shrinks only the painting, so a wrapper carries the scaled height for the
+            // column layout. runs after the variables above, which decide the geometry to fit
             var tables = Array.prototype.slice.call(document.querySelectorAll('table'))
                 .filter(function(table) {
                     // a nested table is part of its outer table's width
@@ -214,8 +164,8 @@ struct EpubPaginationSettings {
                     wrap.parentNode.removeChild(wrap);
                     return;
                 }
-                // In paged mode the whole table must land on one page, so the scale also fits
-                // the column height; scrolled documents only need the width.
+                // in paged mode the whole table must land on one page, so the scale fits the
+                // column height too; scrolled documents only need the width
                 var availHeight = \(paged ? "window.innerHeight * 0.95" : "Infinity");
                 var scale = Math.min(avail / width, availHeight / height);
                 table.style.transform = 'scale(' + scale + ')';
@@ -230,11 +180,8 @@ struct EpubPaginationSettings {
         """
     }
 
-    /// A bundled stylesheet, JSON-encoded so that it embeds in a JavaScript string literal without
-    /// regard for quotes, backslashes or newlines.
-    ///
-    /// The files sit in a `readium-css` directory rather than at the root of the bundle so that
-    /// the BSD-3 licence notice stays beside the stylesheets it covers.
+    // the files sit in a readium-css directory rather than at the bundle root so the BSD-3 licence
+    // notice stays beside the stylesheets it covers
     private static func stylesheet(named name: String) -> String {
         guard
             let url = Bundle.main.url(
@@ -251,12 +198,9 @@ struct EpubPaginationSettings {
         return jsLiteral(css)
     }
 
-    /// A JavaScript string literal, quotes included, for a value that is not ours to choose.
-    ///
-    /// `Reader.textFontFamily` is picked from `UIFont.familyNames`, which includes families the
-    /// user has installed, so a name carrying an apostrophe would close the literal early and make
-    /// the whole injected script a syntax error. That failure is silent: no viewport element, no
-    /// readium-css, and a page count measured against a 980px layout that looks plausible.
+    // Reader.textFontFamily comes from UIFont.familyNames, which includes families the user has
+    // installed, so a name carrying an apostrophe would close the literal early and make the whole
+    // script a syntax error: no viewport element, no readium-css, and a plausible 980px page count
     private static func jsLiteral(_ value: String) -> String {
         guard
             let encoded = try? JSONEncoder().encode(value),
