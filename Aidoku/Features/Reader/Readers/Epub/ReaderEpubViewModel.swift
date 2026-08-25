@@ -53,11 +53,6 @@ final class ReaderEpubViewModel {
         return index.position(ofBookPage: pendingBookPage) != nil
     }
 
-    // the first spine document with no count, nil once the book is complete; only the tests read it
-    var firstUnmeasured: Int? {
-        (0..<spinePaths.count).first { index.pageCount(forDocumentAt: $0) == nil }
-    }
-
     var pageInDocument: Int {
         renderer?.currentPage ?? 0
     }

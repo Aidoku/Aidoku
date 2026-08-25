@@ -322,7 +322,6 @@ struct ReaderEpubViewControllerTests {
         let model = try #require(reader.book)
         #expect(model.index.measuredDocumentCount == book.spinePaths.count)
         #expect(model.unmeasurable.isEmpty)
-        #expect(model.firstUnmeasured == nil)
 
         // Against the documents rather than against itself: the sum has to equal what each document
         // reports at this size, which is the only check a mis-attributed count cannot pass.
