@@ -75,6 +75,8 @@ final class EpubSpineRenderer: NSObject {
         // a free scroll would leave a paged column boundary mid-viewport
         webView.scrollView.alwaysBounceVertical = !settings.paged
         webView.scrollView.isScrollEnabled = !settings.paged
+        webView.scrollView.showsVerticalScrollIndicator = false
+        webView.scrollView.showsHorizontalScrollIndicator = false
 
         // no page turn reports a scroll-mode position; 1% steps keep a drag off the toolbar
         if !settings.paged {
