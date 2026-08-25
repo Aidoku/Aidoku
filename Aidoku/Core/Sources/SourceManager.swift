@@ -16,7 +16,7 @@ actor SourceManager {
     static let directory = FileManager.default.applicationSupportDirectory.appendingPathComponent("Sources", isDirectory: true)
     static let oldDirectory = FileManager.default.documentDirectory.appendingPathComponent("Sources", isDirectory: true) // used for migration
 
-    @MainActor let store: SourceStore = .init()
+    @MainActor var store: SourceStore { SourceStore.shared }
 
     private var sourcesByKey: [String: AidokuRunner.Source] = [:]
     private var disabledSourceKeys: Set<String> = []

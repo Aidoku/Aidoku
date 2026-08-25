@@ -698,7 +698,7 @@ extension BrowseViewController {
     }
 }
 
-extension BrowseViewController: SourceCellDelegate {
+extension BrowseViewController: @MainActor SourceCellDelegate {
     func getButtonPressed(cell: SourceTableViewCell) {
         guard
             let externalInfo = cell.info?.externalInfo,

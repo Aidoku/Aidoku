@@ -50,21 +50,36 @@ struct WebView: UIViewRepresentable {
         }
     }
 
+    static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
+        coordinator.stopObservingCookies()
+    }
+
     func makeCoordinator() -> Coordinator {
         .init(parent: self)
     }
 
+    @MainActor
     class Coordinator: NSObject, WKNavigationDelegate, WKHTTPCookieStoreObserver {
         var parent: WebView
 
+        private let cookieStore: WKHTTPCookieStore
+        private var isObservingCookies = false
+
         init(parent: WebView) {
             self.parent = parent
+            self.cookieStore = parent.webView.configuration.websiteDataStore.httpCookieStore
+
             super.init()
-            parent.webView.configuration.websiteDataStore.httpCookieStore.add(self)
+
+            cookieStore.add(self)
+            isObservingCookies = true
         }
 
-        deinit {
-            parent.webView.configuration.websiteDataStore.httpCookieStore.remove(self)
+        @MainActor
+        func stopObservingCookies() {
+            guard isObservingCookies else { return }
+            cookieStore.remove(self)
+            isObservingCookies = false
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

@@ -10,6 +10,8 @@ import Foundation
 
 @MainActor
 final class SourceStore: ObservableObject {
+    static let shared = SourceStore()
+
     @Published private(set) var sourcesByKey: [String: AidokuRunner.Source] = [:]
     @Published private(set) var disabledSourceKeys: Set<String> = []
 
