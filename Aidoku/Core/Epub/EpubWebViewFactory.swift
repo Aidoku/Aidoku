@@ -8,22 +8,18 @@
 import Foundation
 import WebKit
 
-// a scheme handler cannot be replaced once a configuration is built, so a configuration belongs to
-// one provider and therefore to one book
+// a scheme handler cannot be replaced once built, so a configuration belongs to one book
 @MainActor
 enum EpubWebViewFactory {
     enum ConfigurationError: Error {
         case remoteBlockingUnavailable((any Error)?)
     }
 
-    // our own scripts run here, unaffected by allowsContentJavaScript = false, which disables only
-    // scripts belonging to the page
+    // unaffected by allowsContentJavaScript = false, which disables only the page's own scripts
     static let contentWorld = WKContentWorld.world(name: "aidoku-epub")
 
-    // throws rather than returning a configuration the rule list is missing from: a subresource
-    // load never reaches the navigation policy delegate, so the rule list is the only thing left
-    // between a book and the network, and without it a tracking pixel fires with the reader's ip
-    // while the page renders exactly as it would have done
+    // throws rather than returning a configuration without the rule list: a subresource load never
+    // reaches the navigation policy delegate, so the list is all that stands between book and network
     static func makeConfiguration(
         provider: any EpubResourceProvider,
         settings: EpubPaginationSettings = .default
@@ -42,8 +38,7 @@ enum EpubWebViewFactory {
         return configuration
     }
 
-    // requests carrying a custom scheme never reach the content blocker, so the book's own
-    // resources are unaffected while a remote image, font or stylesheet is stopped
+    // a custom scheme never reaches the content blocker, so the book's own resources still load
     private static func makeRemoteBlockingRuleList() async throws -> WKContentRuleList {
         let rules = """
         [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}}]
@@ -71,8 +66,7 @@ enum EpubWebViewFactory {
         return compiled
     }
 
-    // omitting any part of this injection produces no error of any kind, only a document laid out
-    // at 980px reporting a plausible and wrong page count
+    // omitting any part of this errors nowhere, it just reports a plausible and wrong page count
     private static func makeInjectionScript(settings: EpubPaginationSettings) -> WKUserScript {
         WKUserScript(
             source: settings.injectionScript(),

@@ -7,10 +7,8 @@
 
 import Foundation
 
-// the one boundary at which a downloaded book and a remotely served one diverge, so everything
-// above it is transport-agnostic. one instance per book, per reader session
+// the one boundary at which a downloaded book and a remote one diverge
 protocol EpubResourceProvider: Sendable {
-    // path is epub-internal, such as OEBPS/chapter1.xhtml, rather than a url or a file path
     func data(at path: String) async throws -> Data
 }
 

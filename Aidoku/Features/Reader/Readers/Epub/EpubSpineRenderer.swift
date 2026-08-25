@@ -8,7 +8,6 @@
 import Foundation
 import WebKit
 
-// a page count belongs to a viewport size, since a column is 100vh by 100vw
 @MainActor
 final class EpubSpineRenderer: NSObject {
     enum RenderError: Error {
@@ -18,18 +17,15 @@ final class EpubSpineRenderer: NSObject {
         case measurementFailed(String)
     }
 
-    // its size is the viewport every count is measured against
     let webView: WKWebView
 
     private(set) var pageCount = 0
     private(set) var currentPage = 0
 
-    // survives a relayout where a page index does not, and divides by one less than the page count
-    // as the text readers' HistoryObject.scrollPosition does. belongs to one spine document
+    // divides by one less than the page count, as the text readers' scrollPosition does
     private(set) var progression: Double = 0
 
-    // currentPage / pageCount understates the position by up to a page, rounding the offset to a
-    // boundary and the trailing partial screen up, which resumed a mode switch early
+    // exact where currentPage / pageCount understates the position by up to a page
     var scrollEdgeFraction: Double? {
         guard !settings.paged else { return nil }
         let contentHeight = Double(webView.scrollView.contentSize.height)
@@ -39,21 +35,18 @@ final class EpubSpineRenderer: NSObject {
 
     var onRepaginate: ((Int) -> Void)?
 
-    // reported as a request rather than followed: a navigation that loaded itself would leave the
-    // counts and the spine position describing a document no longer on screen
+    // reported rather than followed; a self-loading navigation would strand the counts
     var onLinkActivated: ((String, String?) -> Void)?
 
     private let settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
 
-    // WebKit reports a replaced navigation as cancelled after the replacement is installed, so
-    // without an identity to compare, the superseded one's failure resumes the healthy one
+    // without this identity, a superseded navigation's failure resumes the healthy one
     private var pendingNavigation: WKNavigation?
     private var confirmationTask: Task<Void, Never>?
     private var sizeChangeTask: Task<Void, Never>?
 
-    // read back from the document rather than computed here, since a width held on this side goes
-    // stale: at a remembered 412 against a document laid out at 449, every page arrived 37px early
+    // read back from the document; a width held here goes stale and lands every page short
     private var currentPageOffset: Double = 0
 
     private static let pageOffsetTolerance: Double = 1
@@ -61,8 +54,7 @@ final class EpubSpineRenderer: NSObject {
     private var pageRequests = 0
     private var pagesInFlight = 0
 
-    // throws where the content rule list cannot be compiled, which would show the book while
-    // letting it reach the network
+    // throws without the rule list, which would show the book while it reached the network
     init(provider: any EpubResourceProvider, settings: EpubPaginationSettings = .default) async throws {
         self.settings = settings
 
@@ -78,16 +70,13 @@ final class EpubSpineRenderer: NSObject {
         webView.navigationDelegate = self
         webView.onSizeChange = { [weak self] in self?.handleSizeChange() }
 
-        // WebKit resolves 100vh against the bounds rather than the area insets leave visible, so a
-        // self-insetting scroll view puts the foot of every page under the chrome
+        // 100vh resolves against the bounds, not the area insets leave visible
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        // a free scroll would leave a paged document's column boundary mid-viewport, where the
-        // offsets no longer describe what is on screen
+        // a free scroll would leave a paged column boundary mid-viewport
         webView.scrollView.alwaysBounceVertical = !settings.paged
         webView.scrollView.isScrollEnabled = !settings.paged
 
-        // no page turn reports a scroll-mode position, so the offset is observed directly, at 1%
-        // steps to keep a drag from rewriting the toolbar once per frame
+        // no page turn reports a scroll-mode position; 1% steps keep a drag off the toolbar
         if !settings.paged {
             scrollObservation = webView.scrollView.observe(\.contentOffset) { [weak self] _, _ in
                 Task { @MainActor in self?.handleScroll() }
@@ -98,7 +87,6 @@ final class EpubSpineRenderer: NSObject {
     private var scrollObservation: NSKeyValueObservation?
 
     private func handleScroll() {
-        // offsets seen while loading belong to the document being replaced
         guard navigationContinuation == nil else { return }
         let scrollView = webView.scrollView
         let viewportHeight = Double(scrollView.bounds.height)
@@ -106,19 +94,15 @@ final class EpubSpineRenderer: NSObject {
         let maxOffset = Double(scrollView.contentSize.height) - viewportHeight
         let fraction = maxOffset > 0 ? min(max(offsetY / maxOffset, 0), 1) : 0
 
-        // adopted as the current target too, so holdCurrentPage does not scroll the reader back
         if pagesInFlight == 0, viewportHeight > 0, pageCount > 0 {
-            // the bottom counts as the last page even though its grid offset sits past the
-            // scrollable range: the scroll view rests a few points short of its maximum, and a 1pt
-            // tolerance left the counter one page shy
+            // the scroll view rests short of its maximum, so the bottom needs a line's tolerance
             currentPage = offsetY >= maxOffset - 24
                 ? pageCount - 1
                 : min(max(Int((offsetY / viewportHeight).rounded()), 0), pageCount - 1)
             currentPageOffset = min(max(offsetY, 0), max(maxOffset, 0))
         }
 
-        // re-armed only once the offset is back inside the scrollable range, so the bounce-back
-        // cannot fire this twice
+        // re-armed inside the range, so the bounce-back cannot fire this twice
         if offsetY > maxOffset + Self.overscrollThreshold || offsetY < -Self.overscrollThreshold {
             if !overscrollTriggered {
                 overscrollTriggered = true
@@ -133,13 +117,11 @@ final class EpubSpineRenderer: NSObject {
         onScroll?()
     }
 
-    // above the overshoot a normal flick's bounce reaches on an iPad, so momentum alone does not
-    // cross into the next chapter
+    // above the overshoot a normal flick reaches, so momentum alone does not cross documents
     private static let overscrollThreshold: Double = 120
 
     private var overscrollTriggered = false
 
-    // walks up, so a tap inside a linked or captioned image still finds it
     func imageSource(at point: CGPoint) async -> String? {
         let script = """
         (function() {
@@ -189,7 +171,6 @@ final class EpubSpineRenderer: NSObject {
 
     // MARK: - Rendering
 
-    // scrollWidth is already correct at didFinish, measured across the whole corpus
     @discardableResult
     func load(spinePath: String) async throws -> Int {
         guard let url = EpubSchemeHandler.url(forResourcePath: spinePath) else {
@@ -198,20 +179,17 @@ final class EpubSpineRenderer: NSObject {
 
         cancelPendingWork()
 
-        // a fling's momentum keeps scrolling after the next document loads, showing its bottom
-        // instead of its start. toggling the recognizer cancels a drag still in the finger
+        // a fling would keep scrolling into the next document; toggling cancels a live drag
         webView.scrollView.panGestureRecognizer.isEnabled = false
         webView.scrollView.panGestureRecognizer.isEnabled = true
         webView.scrollView.setContentOffset(webView.scrollView.contentOffset, animated: false)
 
-        // cleared before the navigation, or a throw leaves the old document's count beside this
-        // one's page
+        // before the navigation, or a throw leaves the old count beside this page
         currentPage = 0
         progression = 0
         pageCount = 0
         currentPageOffset = 0
 
-        // relative subresource requests resolve against the custom scheme and come back here
         let navigation = webView.load(URLRequest(url: url))
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
             pendingNavigation = navigation
@@ -225,24 +203,20 @@ final class EpubSpineRenderer: NSObject {
         return count
     }
 
-    // buys a document WebKit has finished laying out, so nothing moves under a caller about to
-    // read it. the resize is waited on too, having cancelled the old layout's confirmation
+    // waits out the layout, so nothing moves under a caller about to read it
     func settle() async {
         await confirmationTask?.value
         await sizeChangeTask?.value
     }
 
-    // the scroll view carries out a scroll requested from javascript, so the document reports the
-    // previous offset for 20 to 35ms afterwards and it has to be read back
+    // the document reports the previous offset for ~30ms after the script returns
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
         guard await goToPage(index, animated: animated, timeout: timeout) else { return }
-        // from the reader's own turns only: a restore reads this fraction back, and rounding it
-        // each time would let the position wander across rotations
+        // the reader's own turns only, or the position wanders across repeated restores
         progression = Double(currentPage) / Double(max(pageCount - 1, 1))
     }
 
-    // off the page grid: a boundary sits before the place restored, so switching back to paged
-    // floored a second time from it and walked every round trip a page back
+    // off the page grid, or a second floor on the way back walks the position backwards
     func showEdge(_ fraction: Double) async {
         guard !settings.paged, pageCount > 0 else { return }
         let script = """
@@ -262,8 +236,7 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // measured from this renderer's own offset rather than the document's pageXOffset, which lags
-    // what is on screen. a fragment the document lacks is absent rather than defaulted to page one
+    // from this renderer's offset, pageXOffset lagging. a missing fragment is absent, not 0
     func fragmentPages(_ fragments: [String]) async -> [String: Int] {
         guard !fragments.isEmpty, pageCount > 0 else { return [:] }
         guard
@@ -295,11 +268,9 @@ final class EpubSpineRenderer: NSObject {
             let json = (result as? String)?.data(using: .utf8),
             let pages = try? JSONSerialization.jsonObject(with: json) as? [String: Int]
         else { return [:] }
-        // a page past the end was measured while the document was being laid out again
         return pages.mapValues { min(max($0, 0), max(pageCount - 1, 0)) }
     }
 
-    // false where a newer request overtook this one, which then owns the document
     @discardableResult
     private func goToPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async -> Bool {
         pageRequests += 1
@@ -309,8 +280,7 @@ final class EpubSpineRenderer: NSObject {
         let request = pageRequests
         currentPage = min(max(index, 0), max(pageCount - 1, 0))
 
-        // computed inside the document and returned, so the check below verifies the scroll that
-        // was performed rather than one recomputed from a size this side believes in
+        // returned so the check verifies the scroll performed, not one recomputed here
         let behavior = animated ? "smooth" : "auto"
         let script = settings.paged ? """
         var offset = \(currentPage) * (window.innerWidth + \(settings.columnGapPx));
@@ -331,20 +301,16 @@ final class EpubSpineRenderer: NSObject {
 
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            // waiting on an offset nobody wants would hold up whoever asked for the newer page
             guard request == pageRequests, !Task.isCancelled else { return false }
             if await isShowingCurrentPage() { return true }
             try? await Task.sleep(nanoseconds: 8_000_000)
         }
-        // nothing overtook it, so it stands even though the offset was never confirmed
         return true
     }
 
-    // the scroll view holds what is on screen, where pageXOffset lags a rendering update
     private func isShowingCurrentPage() async -> Bool {
         let target = currentPageOffset
-        // points and css pixels are the same size here, the viewport element mapping the document
-        // to the device width at a scale of one
+        // points and css pixels are the same size here, the viewport being at scale one
         let offset = settings.paged
             ? Double(webView.scrollView.contentOffset.x)
             : Double(webView.scrollView.contentOffset.y)
@@ -358,9 +324,7 @@ final class EpubSpineRenderer: NSObject {
         let viewportExtent: Double
     }
 
-    // paged: n columns span n * width + (n - 1) * gap, so the gap belongs in the expression even at
-    // zero, or the count drifts low across a long document. scrolled: one viewport height a page,
-    // rounded up, with an epsilon against float fuzz at exact multiples
+    // n columns span n * width + (n - 1) * gap; dropping the gap drifts low over a long document
     private func measurePageCount() async throws -> Int {
         let metrics = try await readMetrics()
         guard metrics.viewportExtent > 0 else {
@@ -374,9 +338,8 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // a size change reaches the view before the web content process has acted on it, so measuring
-    // when layoutSubviews fires describes the layout being replaced and each resize reported the
-    // resize before it. the bounds are the expectation, the document the authority
+    // the view resizes before the content process does, so measuring at layoutSubviews described
+    // the layout being replaced and each resize reported the one before it
     private func waitForViewport(timeout: TimeInterval = 1) async {
         let expected = Double(webView.bounds.width)
         guard expected > 0 else { return }
@@ -386,8 +349,7 @@ final class EpubSpineRenderer: NSObject {
             guard !Task.isCancelled else { return }
             let script = "String(window.innerWidth)"
             let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
-            // innerWidth is an integer and the bounds can be fractional, so they agree to within a
-            // point rather than exactly
+            // innerWidth is an integer and the bounds fractional, so they agree within a point
             if let width = Double((result as? String) ?? ""), abs(width - expected) <= 1 {
                 return
             }
@@ -396,7 +358,6 @@ final class EpubSpineRenderer: NSObject {
     }
 
     private func readMetrics() async throws -> Metrics {
-        // paged documents extend along x, scrolled along y
         let script = settings.paged
             ? "String(document.documentElement.scrollWidth) + ',' + String(window.innerWidth)"
             : "String(document.documentElement.scrollHeight) + ',' + String(window.innerHeight)"
@@ -414,13 +375,11 @@ final class EpubSpineRenderer: NSObject {
         return Metrics(scrollExtent: values[0], viewportExtent: values[1])
     }
 
-    // progression is restored, not the page index: a document of 29 pages at 320px became 32 at
-    // 480px, with the paragraph on page 10 moving to page 12
+    // progression, not the page index: a relayout moves text across the pages that hold it
     private func repaginate() async {
         await waitForViewport()
         guard let count = try? await measurePageCount() else { return }
-        // measuring suspends, so a host loading the next chapter mid-resize would otherwise show
-        // the previous chapter's progression in the new one
+        // measuring suspends, so the document may no longer be the one on screen
         guard !Task.isCancelled else { return }
 
         let changed = count != pageCount
@@ -432,9 +391,8 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // WebKit lays a document out again shortly after it loads, returning a multi-column one to its
-    // first column a frame or two later, so a page applied before that is silently lost. a page
-    // turn still settling is left alone, since a correction alongside it would land after it
+    // WebKit relayouts a moment after load and returns a multi-column document to its first
+    // column, silently losing a page applied before that. a turn still settling is left alone
     private func holdCurrentPage(through window: TimeInterval = 0.5) async {
         let deadline = Date().addingTimeInterval(window)
         while Date() < deadline {
@@ -442,7 +400,6 @@ final class EpubSpineRenderer: NSObject {
             try? await Task.sleep(nanoseconds: 32_000_000)
             guard !Task.isCancelled else { return }
 
-            // reading the offset suspends, so the quiet is checked on both sides of it
             guard pagesInFlight == 0, request == pageRequests else { continue }
             guard await !isShowingCurrentPage() else { continue }
             guard pagesInFlight == 0, request == pageRequests else { continue }
@@ -451,9 +408,7 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // covers an image that decodes after navigation ends and reflows the document behind a count
-    // already reported. a document whose images have arrived cannot, and measuring it again would
-    // provoke the very layout holdCurrentPage absorbs
+    // covers an image that decodes after navigation ends and reflows behind the reported count
     private func makeConfirmationTask() -> Task<Void, Never> {
         Task { [weak self] in
             guard let self else { return }
@@ -475,7 +430,6 @@ final class EpubSpineRenderer: NSObject {
         return pending == "true"
     }
 
-    // a blocked image reports itself complete too, so this settles either way
     private func waitForImages(timeout: TimeInterval = 2) async {
         let script = "String(Array.prototype.every.call(document.images, function(i) { return i.complete; }))"
         let deadline = Date().addingTimeInterval(timeout)
@@ -492,15 +446,12 @@ final class EpubSpineRenderer: NSObject {
     // MARK: - Viewport
 
     private func handleSizeChange() {
-        // the first layout of an empty web view is a size change like any other
         guard webView.url != nil else { return }
 
-        // a confirmation belongs to the layout it was started for, and would otherwise hold the
-        // document to an offset computed against the old width
+        // a confirmation belongs to the layout it started for, and holds an offset from it
         confirmationTask?.cancel()
         sizeChangeTask?.cancel()
         sizeChangeTask = Task { [weak self] in
-            // the bounds have changed, which is not the document having been laid out again
             try? await Task.sleep(nanoseconds: 50_000_000)
             guard let self, !Task.isCancelled else { return }
             await repaginate()
@@ -508,7 +459,6 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // a continuation left unresumed is a leak
     private func cancelPendingWork() {
         confirmationTask?.cancel()
         confirmationTask = nil
@@ -519,8 +469,7 @@ final class EpubSpineRenderer: NSObject {
         pendingNavigation = nil
     }
 
-    // only a definite mismatch is ignored: WebKit types these as implicitly unwrapped, and a nil
-    // treated as a mismatch would risk a load that never returns
+    // only a definite mismatch: these are implicitly unwrapped, and a nil must not strand a load
     private func finishNavigation(_ navigation: WKNavigation?, with error: (any Error)?) {
         if let navigation, let pendingNavigation, navigation !== pendingNavigation { return }
         pendingNavigation = nil
@@ -540,16 +489,12 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction
     ) async -> WKNavigationActionPolicy {
-        // the content rule list is what stops subresource loads
         guard let url = navigationAction.request.url, url.scheme == EpubSchemeHandler.scheme else {
             return .cancel
         }
-        // only the navigation type tells a followed link from the load this renderer asked for.
-        // handed to the book and cancelled, since even a link into the loaded document restarts it
+        // handed to the book and cancelled; even a link into the loaded document restarts it
         guard navigationAction.navigationType != .linkActivated else {
-            // decoded, unlike the path beside it: URL.fragment hands back the encoded form where
-            // URL.path hands back a decoded one, so a CJK anchor would disagree with the decoded
-            // one the table of contents holds. fragment(percentEncoded:) is iOS 16, this ships to 15
+            // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
             let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
             onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
             return .cancel

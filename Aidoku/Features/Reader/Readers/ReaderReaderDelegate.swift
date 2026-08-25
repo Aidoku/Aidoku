@@ -22,9 +22,8 @@ protocol ReaderReaderDelegate: UIViewController {
     func sliderStopped(value: CGFloat)
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int)
 
-    // true when the reader's own content already answered the tap, so the host should not also
-    // toggle the bars or turn a page. nothing inside a web view can be exempted with
-    // gestureRecognizer(_:shouldReceive:), so an epub link tap would otherwise do both
+    // the reader's content already answered the tap, so the host should not also act on it.
+    // nothing in a web view can be exempted with gestureRecognizer(_:shouldReceive:)
     func consumesTap() -> Bool
 }
 
@@ -38,20 +37,15 @@ extension ReaderReaderDelegate {
     }
 }
 
-// a reader whose content carries its own table of contents
 protocol ReaderTableOfContentsReader: ReaderReaderDelegate {
     var tableOfContents: EpubTableOfContents { get }
 
-    // not the same question as tableOfContents.isEmpty: a book that declares no contents has read
-    // them and has none, and reading emptiness as "not yet" left the contents button disabled for
-    // the whole of such a book
+    // not tableOfContents.isEmpty: a book declaring no contents has read them and has none
     var hasReadTableOfContents: Bool { get }
 
-    // async because entries can share a spine document, so telling them apart means asking the
-    // laid-out document where each begins. nil where the contents begin after the current page
+    // async because entries can share a spine document, only the layout telling them apart
     func currentTableOfContentsEntry() async -> EpubTableOfContents.Entry?
 
-    // one-based, nil while the pages before the entry are still being counted
     func bookPage(ofTableOfContentsEntry entry: EpubTableOfContents.Entry) -> Int?
 
     func goToTableOfContentsEntry(_ entry: EpubTableOfContents.Entry)

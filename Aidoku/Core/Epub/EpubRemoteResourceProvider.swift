@@ -7,10 +7,8 @@
 
 import Foundation
 
-// the caller supplies the path-to-request mapping because sources address book resources
-// differently and build their own authentication: komga exposes resource/, kavita book-page
+// the caller supplies the path-to-request mapping, sources addressing resources differently
 final actor EpubRemoteResourceProvider: EpubResourceProvider {
-    // nil where the source cannot address the path
     typealias RequestBuilder = @Sendable (String) -> URLRequest?
 
     private let buildRequest: RequestBuilder
@@ -32,11 +30,9 @@ final actor EpubRemoteResourceProvider: EpubResourceProvider {
         }
     }
 
-    // collapses dot segments and clamps at the root of the book: appendingPathComponent keeps a ..
-    // literally and the server resolves what arrives, so a book naming ../../admin as a resource
-    // would otherwise aim the source's credentials outside the book. clamped rather than
-    // standardised, since URL.standardized resolves the segments against the base and lets them
-    // leave it
+    // clamps at the root of the book: appendingPathComponent keeps a .. literally, so a book naming
+    // ../../admin would aim the source's credentials outside it. clamped, not standardised, since
+    // URL.standardized resolves against the base and lets the path leave it
     nonisolated static func confined(_ path: String) -> String {
         var components: [String] = []
         for part in path.split(separator: "/") {
@@ -53,8 +49,7 @@ final actor EpubRemoteResourceProvider: EpubResourceProvider {
     }
 
     func data(at path: String) async throws -> Data {
-        // confined here rather than in either initialiser, so a source building its own requests
-        // is covered as well as the base-url form
+        // here rather than in an initialiser, so a source building its own requests is covered too
         let path = Self.confined(path)
         guard let request = buildRequest(path) else {
             throw EpubResourceError.notFound(path)

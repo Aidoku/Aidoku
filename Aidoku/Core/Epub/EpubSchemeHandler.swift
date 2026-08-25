@@ -8,7 +8,6 @@
 import Foundation
 import WebKit
 
-// relative links inside a spine document resolve against the same scheme and arrive here too.
 // nothing is extracted to disk, and the web view is never given a file origin
 @MainActor
 final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
@@ -17,9 +16,8 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
 
     private let provider: any EpubResourceProvider
 
-    // delivering a completion to a task WebKit has stopped traps. the task object is the value,
-    // not just its identifier: ObjectIdentifier is an address, and a stalled request would leave
-    // its identifier for the next task allocated there to inherit
+    // delivering to a task WebKit has stopped traps. the task is the value, not just its id:
+    // ObjectIdentifier is an address, and a later task can be allocated at a stalled one's
     private var activeTasks: [ObjectIdentifier: any WKURLSchemeTask] = [:]
 
     init(provider: any EpubResourceProvider) {
@@ -77,8 +75,7 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         activeTasks.removeValue(forKey: identifier) != nil
     }
 
-    // URL.path has already decoded the percent encoding, so decoding again would corrupt a name
-    // that legitimately contains one: a%41b.png would turn into aAb.png and miss the file
+    // URL.path is already decoded; decoding again turns a%41b.png into aAb.png
     nonisolated static func resourcePath(from url: URL) -> String {
         var path = url.path
         if path.hasPrefix("/") {
@@ -87,9 +84,8 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         return path
     }
 
-    // two extensions are not taken at face value. an .xml spine document the manifest declares
-    // xhtml, served as generic xml, lays out at 980px with no error, so the contents decide. .html
-    // goes to the html parser, epub 2 permitting a document the xml parser refuses outright
+    // two extensions are not taken at face value: .xml served as generic xml lays out at 980px
+    // with no error, and .html may not be well-formed, which the xml parser refuses outright
     nonisolated static func mimeType(forPath path: String, contents: Data = Data()) -> String {
         switch (path as NSString).pathExtension.lowercased() {
             case "xml": declaresXHTML(contents) ? "application/xhtml+xml" : "application/xml"
@@ -112,7 +108,6 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         }
     }
 
-    // the namespace is ascii, so the latin-1 fallback finds it whatever the real encoding is
     nonisolated private static func declaresXHTML(_ contents: Data) -> Bool {
         let head = contents.prefix(1024)
         let text = String(bytes: head, encoding: .utf8) ?? String(bytes: head, encoding: .isoLatin1)

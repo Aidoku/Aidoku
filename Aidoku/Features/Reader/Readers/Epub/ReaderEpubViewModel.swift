@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 // a page turn at the end of a spine document continues into the next rather than ending the
-// chapter. nothing here draws, which keeps the part that crosses spine boundaries testable
+// chapter, one epub being one chapter
 @MainActor
 final class ReaderEpubViewModel {
     enum LoadError: Error {
@@ -30,31 +30,30 @@ final class ReaderEpubViewModel {
     private let measurer: EpubSpineMeasurer
     private var viewport: CGSize = .zero
 
-    // a host lays the web view out before opening the book, and measuring from there would start
-    // a second pass over the same renderer while the first was still walking it
+    // measuring before open would start a second pass over the same renderer
     private var isOpen = false
 
     var onChange: (() -> Void)?
 
-    // reported rather than followed, since the host runs one navigation at a time
     var onLink: ((String, String?) -> Void)?
 
-    // true past the end, false past the start
     var onOverscroll: ((Bool) -> Void)?
 
+    // spine paths the pass could not lay out; each is still counted as one page, so a book with one
+    // in it can be finished
     private(set) var unmeasurable: [String] = []
 
-    // a resume asks for a page whose document has not been counted yet, and dropping the request
-    // leaves the reader at page 1, which then overwrites the progress being resumed to
+    // held, not dropped: a dropped resume leaves the reader at page 1, which then overwrites the
+    // progress being resumed to
     private(set) var pendingBookPage: Int?
 
-    // exposed so the host asks through the same serialised path its page turns use, a resume
-    // racing a turn being two navigations on one renderer
+    // the host asks, so the resume goes through the same serialised path its page turns use
     var canShowPendingBookPage: Bool {
         guard let pendingBookPage else { return false }
         return index.position(ofBookPage: pendingBookPage) != nil
     }
 
+    // the first spine document with no count, nil once the book is complete; only the tests read it
     var firstUnmeasured: Int? {
         (0..<spinePaths.count).first { index.pageCount(forDocumentAt: $0) == nil }
     }
@@ -67,8 +66,7 @@ final class ReaderEpubViewModel {
         index.bookPage(forDocumentAt: currentDocument, page: pageInDocument)
     }
 
-    // the anchor an in-session rebuild restores from: the page boundary when paged, the exact top
-    // of the viewport when scrolling
+    // the anchor an in-session rebuild restores from
     var edgeInDocument: Double? {
         guard let count = index.pageCount(forDocumentAt: currentDocument), count > 0 else { return nil }
         if !settings.paged, let precise = renderer?.scrollEdgeFraction {
@@ -85,8 +83,7 @@ final class ReaderEpubViewModel {
         index.isComplete
     }
 
-    // withheld until the book is measured, since a fraction of a lower bound overstates how far
-    // through it the reader is
+    // withheld until measured; a fraction of a lower bound overstates how far the reader is
     var progression: Double? {
         // where within the page the position sits, per EpubPageIndex.progression
         let anchor = settings.paged
@@ -95,8 +92,7 @@ final class ReaderEpubViewModel {
         return index.progression(forDocumentAt: currentDocument, page: pageInDocument, anchor: anchor)
     }
 
-    // shared with the measurement pass, a count being meaningful only at the settings it was
-    // measured with
+    // shared with the measurement pass; a count is only valid at the settings it was measured with
     private let settings: EpubPaginationSettings
 
     init(bookURL: URL, settings: EpubPaginationSettings = .default) throws {
@@ -112,7 +108,6 @@ final class ReaderEpubViewModel {
         self.measurer = EpubSpineMeasurer(provider: provider, settings: settings)
     }
 
-    // separate from open, so the size the book is measured at is the size the web view ends up at
     func prepareRenderer() async throws -> EpubSpineRenderer {
         if let renderer { return renderer }
         let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
@@ -158,13 +153,11 @@ final class ReaderEpubViewModel {
         }
     }
 
-    // recorded before the book is open, so the first counts to land do not read as the reader
-    // sitting at its head, which saved page 1 over the progress being resumed to
+    // before open, or the first counts to land read as the reader sitting at the head of the book
     func holdBookPage(_ page: Int) {
         pendingBookPage = page
     }
 
-    // a page beyond the run of documents counted so far is held rather than guessed at
     func showBookPage(_ page: Int) async {
         guard let position = index.position(ofBookPage: page) else {
             pendingBookPage = page
@@ -179,7 +172,6 @@ final class ReaderEpubViewModel {
         }
     }
 
-    // through the provider rather than the web view, so the preview is at full resolution
     func imageData(at point: CGPoint) async -> Data? {
         guard
             let source = await renderer?.imageSource(at: point),
@@ -195,7 +187,6 @@ final class ReaderEpubViewModel {
         await showBookPage(page)
     }
 
-    // every count belongs to a viewport, so all are dropped and counted again
     func viewportChanged(to size: CGSize) {
         guard isOpen, size != viewport, size.width > 0, size.height > 0 else { return }
         viewport = size
@@ -217,8 +208,7 @@ final class ReaderEpubViewModel {
         await show(document: entry.document, fragment: entry.fragment)
     }
 
-    // a path outside the spine is logged rather than navigated to, there being no page in the
-    // book that corresponds to it
+    // a path outside the spine has no page in the book, so it is logged rather than navigated to
     func showLocation(path: String, fragment: String?) async {
         guard let document = spinePaths.firstIndex(of: path) else {
             LogManager.logger.warn("ReaderEpubViewModel: link to \(path) is not in the spine")
@@ -228,8 +218,7 @@ final class ReaderEpubViewModel {
         await show(document: document, fragment: fragment)
     }
 
-    // asked of the loaded document, since a book converted from a single file shares one spine
-    // index across every entry and only the layout tells them apart
+    // asked of the layout: a book converted from one file shares a spine index across every entry
     func currentEntry() async -> EpubTableOfContents.Entry? {
         let fragments = toc.entries(inDocument: currentDocument).compactMap(\.fragment)
         guard !fragments.isEmpty, let renderer else {
@@ -239,7 +228,6 @@ final class ReaderEpubViewModel {
         return toc.entry(inDocument: currentDocument, atOrBefore: pageInDocument, fragmentPages: pages)
     }
 
-    // the entry's document, not the element inside it, which would cost a load and a layout each
     func bookPage(ofEntry entry: EpubTableOfContents.Entry) -> Int? {
         index.startOfDocument(at: entry.document).map { $0 + 1 }
     }
@@ -271,8 +259,7 @@ final class ReaderEpubViewModel {
         guard spinePaths.indices.contains(document) else { return }
         let forward = document > currentDocument
 
-        // the turn replaces the document inside the web view, so a snapshot of the outgoing page
-        // stands in and covers the load
+        // the turn replaces the document, so a snapshot of the outgoing page covers the load
         var snapshot: UIView?
         if animated, let webView = renderer?.webView, webView.window != nil,
            let cover = webView.snapshotView(afterScreenUpdates: false) {
@@ -281,13 +268,11 @@ final class ReaderEpubViewModel {
             snapshot = cover
         }
 
-        // provider reads serialise onto one file handle, so this contends with the pass
         measurer.pause()
         defer { measurer.resume() }
 
-        // a document shows its first page as it loads and is only then scrolled to the one asked
-        // for, so turning back into one would visibly run through it. hidden across both steps,
-        // except when landing on page 0, where a load already leaves it
+        // a load lands on page 0 and is only then scrolled, so turning back into a document would
+        // visibly run through it; hidden across both steps unless page 0 is the target
         let target = landingOnLastPage ? Int.max : page
         let hides = (target != 0 || fragment != nil) && snapshot == nil
         if hides {
@@ -356,15 +341,13 @@ final class ReaderEpubViewModel {
             },
             onFailure: { [weak self] document in
                 guard let self else { return }
-                // counted as one page rather than left unknown: EpubPageIndex answers nothing
-                // about a position after an unmeasured document, so the toolbar froze for the rest
-                // of the book and isMeasured stayed false, which gates marking the chapter read
+                // one page rather than unknown: the index answers nothing about a position after
+                // an unmeasured document, which froze the toolbar and never marked the book read
                 index.setPageCount(1, forDocumentAt: document)
                 onChange?()
             },
             onFinish: { [weak self] outcome in
                 guard let self else { return }
-                // a superseded pass reports only what it had failed on so far
                 guard !outcome.cancelled else { return }
                 if !outcome.failed.isEmpty {
                     LogManager.logger.error(

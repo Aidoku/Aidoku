@@ -8,8 +8,7 @@
 import Foundation
 import ZIPFoundation
 
-// nothing is extracted; entries are read on demand, and the actor serialises reads to suit
-// Archive holding a single file handle
+// entries are read on demand, the actor serialising reads onto Archive's single file handle
 final actor EpubZipResourceProvider: EpubResourceProvider {
     private let archive: Archive
 
