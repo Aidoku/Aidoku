@@ -46,8 +46,12 @@ class ReaderEpubViewController: BaseObservingViewController {
         let trailing: NSLayoutConstraint
 
         var constants: UIEdgeInsets {
-            UIEdgeInsets(top: top.constant, left: leading.constant,
-                         bottom: bottom.constant, right: trailing.constant)
+            UIEdgeInsets(
+                top: top.constant,
+                left: leading.constant,
+                bottom: bottom.constant,
+                right: trailing.constant
+            )
         }
 
         func apply(_ insets: UIEdgeInsets) {
