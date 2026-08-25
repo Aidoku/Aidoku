@@ -7,45 +7,44 @@
 
 import WebKit
 
-class UserAgentProvider {
+actor UserAgentProvider {
     static let shared = UserAgentProvider()
 
-    private var task: Task<String?, Never>?
     private var userAgent: String?
+    private var loadTask: Task<String?, Never>?
 
-    private init() {
-        // start fetching user agent immediately
-        task = Task {
-            await fetchUserAgent()
-        }
-    }
+    private init() {}
 
-    @MainActor
-    private func fetchUserAgent() async -> String? {
-        let webView = WKWebView()
-        do {
-            let userAgent = try await webView.evaluateJavaScript("navigator.userAgent") as? String
-            self.userAgent = userAgent
-            return userAgent
-        } catch {
-            LogManager.logger.error("Error getting user agent: \(error)")
-            return nil
-        }
-    }
-
-    func getUserAgent() async -> String {
+    func getUserAgent() async -> String? {
         if let userAgent {
             return userAgent
         }
-        return await task?.value ?? ""
-    }
 
-    func getUserAgentBlocking() -> String {
-        if let userAgent {
-            return userAgent
+        if let loadTask {
+            return await loadTask.value
         }
-        return BlockingTask {
-            await self.getUserAgent()
-        }.get()
+
+        let task = Task<String?, Never> { @MainActor in
+            let webView = WKWebView()
+
+            do {
+                return try await webView.evaluateJavaScript(
+                    "navigator.userAgent"
+                ) as? String
+            } catch {
+                LogManager.logger.error(
+                    "Error getting user agent: \(error)"
+                )
+                return nil
+            }
+        }
+        loadTask = task
+
+        let userAgent = await task.value
+
+        self.userAgent = userAgent
+        loadTask = nil
+
+        return userAgent
     }
 }
