@@ -9,27 +9,17 @@ import AidokuRunner
 import UIKit
 import WebKit
 
-/// Hosts an ePub, reading a whole book across its spine.
-///
-/// One ePub is one chapter, so this reader spans a book rather than a document: page turns continue
-/// across spine boundaries and the toolbar describes the book. `ReaderEpubViewModel` owns that
-/// state and the navigation; this owns the view, the chrome and the conversation with
-/// `ReaderHoldingDelegate`.
-///
-/// It does not use `UIPageViewController`, unlike the paged image reader. One web view carries a
-/// whole spine document and its pages are scroll offsets within it, so there is no per-page view
-/// controller to give a data source. `ReaderWebtoonViewController` is the sibling precedent for a
-/// reader shaped this way, and its `moveLeft`/`moveRight` are likewise plain moves rather than
-/// page-view-controller transitions. A web view per page inside a `UIPageViewController`, which is
-/// what would restore transition parity with the paged reader, is recorded as the end goal in
-/// `SLICE-3-SPEC.md`.
+// ReaderEpubViewModel owns the reading state and the navigation; this owns the view, the chrome
+// and the conversation with ReaderHoldingDelegate.
+//
+// no UIPageViewController, unlike the paged image reader: one web view carries a whole spine
+// document and its pages are scroll offsets within it, so there is no per-page view controller to
+// give a data source. ReaderWebtoonViewController is the sibling precedent
 class ReaderEpubViewController: BaseObservingViewController {
     weak var delegate: ReaderHoldingDelegate?
 
-    /// ePub text reads left to right regardless of the manga setting, as the text reader does.
-    ///
-    /// A right-to-left publication is a readium-css concern rather than a gesture one, and is out
-    /// of scope for v1.
+    // epub text reads left to right regardless of the manga setting, as the text reader does. a
+    // right-to-left publication is a readium-css concern rather than a gesture one
     var readingMode: ReadingMode = .ltr
 
     var chapter: AidokuRunner.Chapter?
@@ -37,45 +27,32 @@ class ReaderEpubViewController: BaseObservingViewController {
     private let source: AidokuRunner.Source?
     private let manga: AidokuRunner.Manga
 
-    /// The `.epub` every spine document of the open chapter lives inside.
-    ///
-    /// Resolved from the chapter's own page list rather than fixed when the reader is built, and
-    /// held only until the chapter changes. A manga folder may hold several epubs, one chapter
-    /// each, so the archive belongs to the chapter rather than to the reader: a reader that kept
-    /// the archive it was born with reopened the first book on a chapter change while the host
-    /// marked the second read and, with `Library.deleteDownloadAfterReading`, deleted it.
-    ///
-    /// Cached so that reopening the same chapter, which a settings change does, costs no fetch.
+    // resolved from the chapter's own page list rather than fixed when the reader is built, since a
+    // manga folder may hold several epubs, one chapter each: a reader that kept the archive it was
+    // born with reopened the first book on a chapter change while the host marked the second read
+    // and, with Library.deleteDownloadAfterReading, deleted it
     private var bookURL: URL?
 
-    /// An archive supplied by the host instead of one resolved from the chapter's pages.
-    ///
-    /// For a host that has a file and no source to ask for a page list, which is the debug host
-    /// opening a book straight from the documents directory. Used for every chapter, which is
-    /// correct only because such a host never changes chapter. The shipping host leaves it nil.
+    // for a host that has a file and no source to ask for a page list, which is the debug host.
+    // used for every chapter, which is correct only because such a host never changes chapter
     private let providedBookURL: URL?
 
     private(set) var book: ReaderEpubViewModel?
     private var openTask: Task<Void, Never>?
     private var moveTask: Task<Void, Never>?
 
-    /// The one turn held while another is in flight. See `navigate`.
+    // the one turn held while another is in flight. see navigate
     private var pendingMove: ((ReaderEpubViewModel) async -> Void)?
 
-    /// Whether the held turn is a restore rather than one the reader asked for.
-    ///
-    /// Carried alongside the work because the slot is drained by starting the move again, and a
-    /// restore that came back through that route as a reader's own move dropped the anchor it was
-    /// restoring to: a rebuild whose anchor arrived while an earlier move was still running lost
-    /// it, and the settings change after that re-seeded from the coarse landing.
+    // carried alongside the work because the slot is drained by starting the move again, and a
+    // restore that came back through that route as a reader's own move dropped the anchor it was
+    // restoring to
     private var pendingMoveIsRestore = false
 
-    /// The size the book was last laid out at, so a layout pass that changes nothing does not
-    /// invalidate every page count.
+    // so a layout pass that changes nothing does not invalidate every page count
     private var lastViewport: CGSize = .zero
 
-    /// The web view's inset constraints, held so their constants can be updated as the device's
-    /// safe area changes without rebuilding them.
+    // held so their constants can be updated as the safe area changes, without rebuilding them
     private struct WebViewInsets {
         let top: NSLayoutConstraint
         let bottom: NSLayoutConstraint
@@ -97,67 +74,39 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private var webViewInsets: WebViewInsets?
 
-    /// True while the slider is being dragged, so the total firming up does not move the thumb
-    /// under the finger.
+    // so the total firming up does not move the thumb under the finger
     private var isSliding = false
 
-    /// True while a navigation is in flight, so the states it passes through are not published as
-    /// positions.
-    ///
-    /// A move that crosses into another spine document reports twice on its way: once when the
-    /// document loads, which is a real count but a position of its first page, and once when the
-    /// page asked for is shown. A reader dragging the slider across a document boundary therefore
-    /// saw the thumb land near their target, jump to the head of that document, and only then
-    /// settle, while a drag within the loaded document moved once and looked correct.
+    // a move crossing into another spine document reports twice on its way, once when the document
+    // loads at its first page and once when the page asked for is shown, so a drag across a
+    // document boundary landed near the target, jumped to the head of that document, then settled
     private var isNavigating = false
 
-    /// The total last handed to the toolbar, so it is rewritten when it changes rather than on
-    /// every count that lands.
+    // so the toolbar is rewritten when the total changes rather than on every count that lands
     private var reportedTotal = 0
 
-    /// When something in the reader last handled a tap itself, so the page turn the same tap
-    /// produces in the host is not also performed.
-    ///
-    /// The tap zones sit over the web view and do not cancel its touches, which is what lets the
-    /// document keep text selection and links at all. One tap therefore reaches both: WebKit
-    /// activates a link, or the return button fires, and the host's tap zone asks for a page turn
-    /// besides. The reader's own handling is the earlier of the two, since the host's single tap
-    /// waits for its double tap to fail, so the turn is the one that can be suppressed.
+    // the tap zones sit over the web view and do not cancel its touches, which is what lets the
+    // document keep text selection and links at all, so one tap reaches both. the reader's own
+    // handling is the earlier of the two, since the host's single tap waits for its double tap to
+    // fail, so the turn is the one that can be suppressed
     private var suppressedPageTurnAt: Date?
 
-    /// How long after that a page turn is taken to belong to the same tap.
-    ///
-    /// Longer than the double-tap failure the host's single tap waits on, and short enough that a
-    /// reader who follows a link and then deliberately taps to turn is not ignored.
+    // longer than the double-tap failure the host's single tap waits on, and short enough that a
+    // reader who follows a link and then deliberately taps to turn is not ignored
     private static let suppressedPageTurnWindow: TimeInterval = 0.75
 
-    /// The book page a jump left, offered back to the reader while `returnButton` is showing.
+    // offered back to the reader while returnButton is showing
     private var returnBookPage: Int?
 
-    /// The same place as a fraction of the whole book, which is what survives the book being laid
-    /// out again.
-    ///
-    /// A page index is not a position: re-fragmenting moves text between pages, so the page number
-    /// captured before a jump names somewhere else entirely after a rotation or a change of font
-    /// size, by a margin that grows with depth. The fraction is only available once the book has
-    /// been measured, since a total that is still a lower bound would place it too far in, so the
-    /// page number carries the offer until then and `withdrawUnanchoredReturnOffer` takes it away
-    /// if the layout changes first.
+    // the same place as a fraction, which is what survives the book being laid out again: a page
+    // number captured before a jump names somewhere else entirely after a rotation. only available
+    // once the book is measured, so the page number carries the offer until then and
+    // withdrawUnanchoredReturnOffer takes it away if the layout changes first
     private var returnPosition: Double?
 
-    /// The offer to go back to where a jump was made from.
-    ///
-    /// A footnote is the case that needs it: the link takes the reader across the book, and the only
-    /// other way back is the slider, which does not know where they were.
-    ///
-    /// Shaped after the readers that have solved this. Apple Books and Play Books both show a small
-    /// opaque circle in a bottom corner; Kindle shows a pill with the page number in it. Two
-    /// properties are common to all of them and each was got wrong first time: it is **opaque**, so
-    /// it is legible over text rather than showing it through, and it is **cornered**, so it covers
-    /// as little of the page as possible.
-    ///
-    /// Where they were followed and should not have been is how long it stays: they leave it until
-    /// it is used, and in use here that was intrusive, so it expires. See `returnOfferLifetime`.
+    // a footnote is the case that needs it: the link takes the reader across the book, and the only
+    // other way back is the slider, which does not know where they were. opaque so it is legible
+    // over text, and cornered so it covers as little of the page as possible
     private lazy var returnButton: UIButton = {
         var configuration = UIButton.Configuration.plain()
         configuration.image = UIImage(
@@ -193,28 +142,20 @@ class ReaderEpubViewController: BaseObservingViewController {
         return button
     }()
 
-    /// A full touch target, which the icon alone is not.
+    // a full touch target, which the icon alone is not
     private static let returnButtonDiameter: CGFloat = 44
 
-    /// How long the offer stands before it withdraws itself.
-    ///
-    /// The readers this was shaped after leave it until it is used, and that is what shipped first.
-    /// Measured against the real thing that was wrong: a jump is a moment, and a control that
-    /// outlives it by the rest of the chapter is in the corner of every page the reader turns. Five
-    /// seconds covers the glance that follows an unexpected arrival without becoming furniture.
+    // the readers this was shaped after leave the offer until it is used, which in use here was a
+    // control in the corner of every page for the rest of the chapter
     private static let returnOfferLifetime: TimeInterval = 5
 
-    /// The withdrawal `returnOfferLifetime` schedules, cancelled if the offer goes before it fires.
+    // cancelled if the offer goes before it fires
     private var returnOfferTask: Task<Void, Never>?
 
-    /// The return button's distance from the bottom of the view.
-    ///
-    /// Held so it can be kept at the **window's** safe area rather than the view's. The view's
-    /// insets include the bars and change when they toggle, and a control that moves between a
-    /// touch going down and coming up never reports the touch at all: the first version was pinned
-    /// to `view.safeAreaLayoutGuide` and every tap on it toggled the bars, which relaid it out from
-    /// under the finger. It read as a button that did nothing. `applySafeArea` already avoids this
-    /// for the web view and for the same reason.
+    // kept at the window's safe area rather than the view's, whose insets include the bars and
+    // change when they toggle: a control that moves between a touch going down and coming up never
+    // reports the touch at all, and pinned to view.safeAreaLayoutGuide every tap on this toggled
+    // the bars and relaid it out from under the finger, reading as a button that did nothing
     private var returnButtonBottom: NSLayoutConstraint?
 
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, bookURL: URL? = nil) {
@@ -235,7 +176,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         returnOfferTask?.cancel()
     }
 
-    /// The debounced rebuild a settings change schedules; see `scheduleSettingsReload`.
+    // the debounced rebuild a settings change schedules
     private var settingsReloadTask: Task<Void, Never>?
 
     override func observe() {
@@ -253,53 +194,31 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// The reader's place, captured before the first rebuild of a run and held until the reader
-    /// navigates somewhere themselves.
-    ///
-    /// Held across the whole run rather than per rebuild: a second settings change arrives while
-    /// the rebuild for the first is still opening the book, and a mid-open book reports the start
-    /// of the book rather than the place the reader was. Clearing this after one rebuild let the
-    /// second capture that start, which put a reader who tapped a stepper twice back on page one.
-    /// Only a navigation the reader performs makes the captured place stale, so only `navigate`
-    /// and a chapter change clear it.
-    ///
-    /// The page number is the immediate landing, since it is the only anchor available before the
-    /// new layout has been counted. It is not where the reader belongs: a page number means a
-    /// different place in a layout of a different length, and the error grows with depth. Changing
-    /// 18pt to 20pt took a 456 page book to 520, which puts page 27 about four pages of text early
-    /// and page 400 about fifty-six.
+    // held across the whole run rather than per rebuild: a second settings change arrives while the
+    // rebuild for the first is still opening the book, and a mid-open book reports the start of the
+    // book, so clearing this after one rebuild put a reader who tapped a stepper twice on page one.
+    //
+    // the page number is the immediate landing, being the only anchor available before the new
+    // layout is counted, and is not where the reader belongs: 18pt to 20pt took a 456 page book to
+    // 520, which puts page 400 about fifty-six pages out
     private var settingsReloadPage: Int?
 
-    /// Where the reader belongs after a fresh open, as `EpubPageIndex.progression`'s fraction of
-    /// the whole book out of history, refined onto a page once the new layout has been measured.
-    ///
-    /// Only for a place saved by another layout entirely, where the book fraction is all that was
-    /// kept. An in-session rebuild has something better — see `settingsReloadAnchor`.
+    // only for a place saved by another layout entirely, where the book fraction is all that was
+    // kept. an in-session rebuild has settingsReloadAnchor instead
     private var settingsReloadPosition: Double?
 
-    /// Where the reader belongs across an in-session rebuild: the spine document they are in, and
-    /// how far through it their page's leading edge sits.
-    ///
-    /// Per document rather than as a fraction of the whole book, because a book fraction assumes
-    /// pages hold equal shares of the text and the per-document rounding breaks that across modes:
-    /// scroll mode rounds every document's count *up*, so a long spine inflates the scroll total
-    /// by half a page per document, and a book fraction carried between modes drifted by several
-    /// pages. The document is the unit both layouts agree on. The leading edge rather than the
-    /// column anchor the history uses, because on the same device nothing may be skipped: the
-    /// column anchor put a reader who was still in an iPad spread's left column onto the right
-    /// column's text when they switched to scroll mode.
+    // per document rather than as a fraction of the whole book: scroll mode rounds every document's
+    // count up, so a long spine inflates the scroll total by half a page per document and a book
+    // fraction carried between modes drifted by several pages. the leading edge rather than the
+    // column anchor the history uses, since the column anchor put a reader still in an iPad
+    // spread's left column onto the right column's text when they switched to scroll mode
     private var settingsReloadAnchor: (document: Int, fraction: Double)?
 
-    /// The page count of the anchor's document as of the last time the anchor was applied.
-    ///
-    /// The anchor outlives its first application because the count it was applied against can be
-    /// provisional: WebKit lays a freshly loaded document out again a moment later, a two-column
-    /// layout all but always, and the repagination moves every boundary the landing was computed
-    /// from — an anchor at 0.675 of a document applied at 32 pages landed on page 21 of what
-    /// settled at 40. A changed count is the signal to apply the anchor again, and an unchanged
-    /// one is what keeps re-applying from looping: a navigation this controller performs cannot
-    /// change a count. Keyed on the anchor's own document; a count change in an *earlier* document
-    /// shifts the landing too, but the document being re-laid-out is the one on screen.
+    // the anchor outlives its first application because the count it was applied against can be
+    // provisional: WebKit lays a freshly loaded document out again a moment later, and an anchor at
+    // 0.675 applied at 32 pages landed on page 21 of what settled at 40. a changed count is the
+    // signal to apply it again, and an unchanged one keeps re-applying from looping, since a
+    // navigation this controller performs cannot change a count
     private var settingsReloadAnchorAppliedCount: Int?
 
     private func scheduleSettingsReload() {
@@ -336,11 +255,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Shows a fullscreen preview when a tap landed on an image or a scaled-down table of the
-    /// book, and reports whether it did, so the host runs its tap zones only for taps that hit
-    /// neither.
-    ///
-    /// `point` is in this controller's view coordinates.
+    // reports whether it did, so the host runs its tap zones only for taps that hit neither.
+    // point is in this controller's view coordinates
     func presentImagePreview(forTapAt point: CGPoint) async -> Bool {
         guard let book, let webView = book.renderer?.webView else { return false }
         let clientPoint = view.convert(point, to: webView)
@@ -356,7 +272,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         return false
     }
 
-    /// Tears the book down and opens it again at the same place, picking up the current settings.
+    // tears the book down and opens it again at the same place, with the current settings
     private func rebuildBook() {
         guard book != nil else { return }
         // The page numbers of the old layout are the best available guess at a place in the
@@ -368,11 +284,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Takes the open book out of the reader, leaving it ready for `open` to build another.
-    ///
-    /// The web view is a subview and the counts it produced are in the toolbar, so a book that is
-    /// being replaced has to be removed rather than merely dropped: `install` adds a web view
-    /// without taking the previous one out, and a total is only rewritten when it changes.
+    // a book being replaced has to be removed rather than merely dropped: install adds a web view
+    // without taking the previous one out, and a total is only rewritten when it changes
     private func tearDownBook() {
         openTask?.cancel()
         moveTask?.cancel()
@@ -413,10 +326,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         installReturnButton()
     }
 
-    /// Places the return button in the leading bottom corner, where it covers the least text.
-    ///
-    /// Its distance from the bottom is set in `applySafeArea`, from the window's insets, so that
-    /// showing or hiding the bars does not move it.
+    // its distance from the bottom is set in applySafeArea, from the window's insets, so showing
+    // or hiding the bars does not move it
     private func installReturnButton() {
         view.addSubview(returnButton)
         let bottom = returnButton.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -429,11 +340,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         ])
     }
 
-    /// How far the return button sits from the leading edge and from the safe area below it.
-    ///
-    /// Clear of the toolbar in both bar states, since the button appears in both: from the contents
-    /// sheet, which is opened from a visible bar, and from a link tapped while reading with the bars
-    /// hidden. Overlapping the toolbar would be cosmetic; moving to avoid it would not be.
+    // clear of the toolbar in both bar states, since the button appears in both
     private static let returnButtonMargin: CGFloat = 16
     private static let returnButtonToolbarClearance: CGFloat = 60
 
@@ -449,18 +356,13 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// The column count the open book was laid out with, so a rotation that changes it rebuilds
-    /// the book. The count is baked into the renderer's injection script, so a re-measure alone
-    /// cannot change it.
+    // the column count is baked into the renderer's injection script, so a re-measure alone cannot
+    // change it and a rotation that changes it has to rebuild the book
     private var appliedColumnCount = 1
 
-    /// The horizontal margin the view supplies because the stylesheet does not.
-    ///
-    /// readium-css scopes its page gutter to a paged document — `:root:not([style*="readium-scroll-on"])
-    /// body { padding: 0 var(--RS__pageGutter) }` — so a scrolling document has no horizontal padding
-    /// at all and its text runs to both edges of the screen. Answered by insetting the view, not by
-    /// adding a rule to the injection: a scrolling document's length is measured in viewport heights,
-    /// and the view's own size is the one input the renderer already re-measures against.
+    // readium-css scopes its page gutter to a paged document, so a scrolling one has no horizontal
+    // padding at all and its text runs to both edges. answered by insetting the view rather than by
+    // adding a rule, since the view's own size is the one input the renderer re-measures against
     private var appliedHorizontalGutter: CGFloat = 0
 
     override func viewDidLayoutSubviews() {
@@ -480,16 +382,11 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Adds the web view, inset from the device's safe area.
-    ///
-    /// Nothing about the safe area is expressed in CSS. readium-css is followed as it is, and its
-    /// own `--RS__pageGutter` continues to be the only padding inside the document. An earlier
-    /// attempt injected `env(safe-area-inset-*)` rules, which worked in the sense that they applied
-    /// to every page, and broke pagination: a web view's safe area depends on where it sits in its
-    /// window, so resizing it changes `env()`, which re-fragments the document on a different tick
-    /// from the one the renderer waits for. The count then described a layout that had already been
-    /// replaced. Insetting the view instead leaves the document with exactly one thing that decides
-    /// its layout, its own size, which is the input the renderer already handles.
+    // nothing about the safe area is expressed in css. an earlier attempt injected
+    // env(safe-area-inset-*) rules and broke pagination: a web view's safe area depends on where it
+    // sits in its window, so resizing it changes env(), which re-fragments the document on a
+    // different tick from the one the renderer waits for. insetting the view instead leaves the
+    // document with exactly one thing deciding its layout, its own size
     private func install(_ webView: UIView) {
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
@@ -504,30 +401,19 @@ class ReaderEpubViewController: BaseObservingViewController {
         applySafeArea()
     }
 
-    /// Insets the web view by the **window's** safe area rather than the view's.
-    ///
-    /// The window's insets are the physical notch and home indicator and do not change when the
-    /// bars are shown or hidden; the view's include the bars and do. A column is `100vh` by
-    /// `100vw`, so a web view that resized on every tap that toggled the chrome would re-fragment
-    /// the document and move every page boundary. This is the same distinction, and the same
-    /// reason, as `ReaderPagedTextViewController`'s use of `view.window?.safeAreaInsets`.
-    ///
-    /// A rotation does change these, and also changes the view's size, so the renderer re-measures
-    /// once for both rather than twice.
-    /// Fixed space reserved above and below the document for the translucent nav bar and toolbar,
-    /// as `ReaderPagedTextViewController`'s `toolbarBuffer` reserves. The bars overlay the reader,
-    /// so without it the first and last lines of every page sit behind them whenever they are
-    /// shown; a constant reservation keeps the text clear of them without the viewport changing
-    /// when they are toggled, which is what would re-fragment the document.
+    // the window's insets are the notch and home indicator and do not change when the bars toggle;
+    // the view's include the bars and do. a column is 100vh by 100vw, so a web view that resized on
+    // every tap toggling the chrome would move every page boundary. same distinction, and reason,
+    // as ReaderPagedTextViewController's use of view.window?.safeAreaInsets.
+    //
+    // the buffer reserves fixed space for the translucent bars, which overlay the reader, without
+    // the viewport changing when they are toggled
     private static let chromeBuffer: CGFloat = 50
 
-    /// The view size the insets were last read for, so they are re-read only when it changes.
-    ///
-    /// On an iPhone the window's insets are the notch and stay put when the bars toggle, but an
-    /// iPad has no notch: its top window inset is the status bar, which hides with the bars. Read
-    /// on every layout pass, that resized the web view on every toggle, and every resize
-    /// re-fragments the document — the text visibly jumped. A rotation or split-view change is
-    /// the case the insets genuinely have to follow, and both change the view's size.
+    // an iPad has no notch, so its top window inset is the status bar, which hides with the bars:
+    // read on every layout pass, that resized the web view on every toggle and the text visibly
+    // jumped. a rotation or split-view change is the case the insets have to follow, and both
+    // change the view's size
     private var insetsAppliedForSize: CGSize = .zero
 
     private func applySafeArea() {
@@ -548,25 +434,20 @@ class ReaderEpubViewController: BaseObservingViewController {
         view.layoutIfNeeded()
     }
 
-    /// The size the document is laid out at, which is the web view's rather than the reader's.
+    // the web view's size rather than the reader's
     private func webViewSize() -> CGSize {
         book?.renderer?.webView.bounds.size ?? .zero
     }
 
-    /// The archive the open chapter lives in, loaded once per chapter.
-    ///
-    /// The page list is asked for the way every other reader asks for it, since the archive is
-    /// known only to the source: the ePub reader differs from its siblings in showing a whole book
-    /// rather than those pages, not in where it learns what the chapter is.
-    ///
-    /// What the chapter being opened turned out to hold.
+    // the page list is asked for the way every other reader asks for it, since the archive is known
+    // only to the source: this reader differs from its siblings in showing a whole book rather than
+    // those pages, not in where it learns what the chapter is
     private enum ChapterContent {
-        /// The `.epub` every spine document of the chapter lives inside.
+        // the .epub every spine document of the chapter lives inside
         case epub(URL)
-        /// A chapter that is not an ePub at all, carrying its pages for the host to route.
+        // not an epub at all, carrying its pages for the host to route
         case pages([Page])
-        /// An answer that describes a chapter the reader has already left, and so describes
-        /// nothing the caller should act on.
+        // describes a chapter the reader has already left, so nothing the caller should act on
         case superseded
     }
 
@@ -599,7 +480,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         return .epub(url)
     }
 
-    /// Opens the book and shows the page the reader left off at.
+    // opens the book and shows the page the reader left off at
     private func open(startPage: Int) async {
         let bookURL: URL
         switch await chapterContent() {
@@ -706,10 +587,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         report()
     }
 
-    /// The fraction of the book the reader left off at, from history.
-    ///
-    /// `ReaderPagedTextViewController.loadReadingProgress` is the sibling: both readers reflow, so
-    /// both persist a fraction alongside the page number and resume from the fraction.
+    // ReaderPagedTextViewController.loadReadingProgress is the sibling: both readers reflow, so
+    // both persist a fraction alongside the page number and resume from the fraction
     private func savedScrollPosition() async -> Double? {
         guard let chapterKey = chapter?.key else { return nil }
         let chapterId = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapterKey)
@@ -719,26 +598,17 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Whether the reader is still being taken to the page the book was opened at.
-    ///
-    /// While it is, the position this reader reports describes the head of the book rather than the
-    /// reader: the first page is what is on screen, and the page being resumed to is waiting for the
-    /// counts that place it. Reporting it is right, because the toolbar has nothing else to show and
-    /// a bar with no numbers reads as a book that has hung. Writing it is not: it saves page 1 over
-    /// the very progress being resumed to. The host asks this before it persists a position.
+    // while it is, the position reported describes the head of the book rather than the reader.
+    // reporting it is right, since the toolbar has nothing else to show; writing it is not, since it
+    // saves page 1 over the very progress being resumed to, so the host asks before it persists
     var isAwaitingResume: Bool {
         book?.pendingBookPage != nil
     }
 
-    /// Tells the toolbar where the reader is and how long the book is.
-    ///
-    /// The total grows as the measurement pass fills it in, so it is rewritten when it changes
-    /// rather than on every count. It is **not** withheld while the slider is dragged. A total is a
-    /// label: `setPages` reaches `ReaderToolbarView.totalPages`, whose `didSet` updates the page
-    /// count text and nothing else. The thumb is moved by `setCurrentPage`, which is where the
-    /// guard belongs and now is. Withholding the total instead bought nothing and cost a book whose
-    /// total froze at whatever it held when a drag began, for the rest of the book, whenever the
-    /// flag outlived the drag by any route.
+    // the total is not withheld while the slider is dragged: it is a label, and setPages only
+    // updates the page count text, while the thumb is moved by setCurrentPage, which is where the
+    // guard belongs. withholding it froze a book's total at whatever it held when a drag began,
+    // for the rest of the book, whenever the flag outlived the drag by any route
     private func report() {
         guard let book else { return }
 
@@ -821,15 +691,9 @@ class ReaderEpubViewController: BaseObservingViewController {
         delegate?.setCurrentPage(page + 1, position: book.progression)
     }
 
-    /// The toolbar takes its total from the number of pages it holds, so a book's length reaches it
-    /// as pages.
-    ///
-    /// The paged text reader does the same once it has paginated, for the same reason: a reflowable
-    /// document's page count is not known until it has been laid out, so the reader supplies it
-    /// rather than the source.
-    /// They carry the archive they came out of, so `isEpubPage` is true of what the reader reports.
-    /// The host routes a page list by its content, and a page list that does not say it is an ePub
-    /// takes a branch meant for something else.
+    // the toolbar takes its total from the number of pages it holds, so a book's length reaches it
+    // as pages, as the paged text reader does once it has paginated. they carry the archive they
+    // came out of, so isEpubPage is true of what the reader reports and the host routes it correctly
     private func placeholderPages(count: Int) -> [Page] {
         guard count > 0 else { return [] }
         let sourceId = source?.key ?? manga.sourceKey
@@ -840,17 +704,13 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
     }
 
-    /// Runs one navigation at a time, holding at most one more behind it.
-    ///
-    /// A turn crossing into another spine document has to load one, which takes long enough for a
-    /// second tap to arrive during it. Dropping that tap outright makes quick paging feel broken;
-    /// queuing every tap makes a burst of ten replay as ten turns after the fact. One slot gives
-    /// the responsiveness without the replay, and a third tap replaces the one waiting rather than
-    /// joining it.
-    /// `isRestore` distinguishes a move the reader asked for from one made on their behalf while a
-    /// book is being reopened. Only the former means they have taken over from where a rebuild was
-    /// putting them, and only the former may therefore drop the anchor the rebuild is restoring to.
-    /// Getting this wrong is silent: the restore still runs, and still lands on the wrong page.
+    // one navigation at a time, holding at most one more behind it: dropping a tap that arrives
+    // during a load makes quick paging feel broken, and queuing every tap makes a burst of ten
+    // replay as ten turns after the fact, so a third tap replaces the one waiting.
+    //
+    // isRestore separates a move the reader asked for from one made on their behalf during a
+    // rebuild. only the former may drop the anchor the rebuild is restoring to, and getting it
+    // wrong is silent: the restore still runs, and still lands on the wrong page
     private func navigate(isRestore: Bool = false, _ work: @escaping (ReaderEpubViewModel) async -> Void) {
         if !isRestore {
             // The reader has taken over from wherever a rebuild was restoring them to.
@@ -898,15 +758,9 @@ class ReaderEpubViewController: BaseObservingViewController {
 // MARK: - Returning from a jump
 
 extension ReaderEpubViewController {
-    /// Remembers where the reader is and offers to bring them back.
-    ///
-    /// Called before the jump, since afterwards the page it would return to is the destination. A
-    /// place the index cannot name yet is not offered: the offer is a book page, and one that
-    /// cannot be named cannot be returned to either.
-    ///
-    /// The page number reaches the reader as the button's accessibility label rather than as a
-    /// title. An icon alone is what the readers that solved this show, and a corner button that
-    /// grows with the page number would cover a different amount of text at each end of a book.
+    // called before the jump, since afterwards the page it would return to is the destination. the
+    // page number reaches the reader as the button's accessibility label rather than as a title,
+    // since a corner button that grew with it would cover a different amount of text in each book
     func offerReturn() {
         guard let book, let page = book.bookPage else { return }
         returnBookPage = page
@@ -941,8 +795,7 @@ extension ReaderEpubViewController {
         navigate { await $0.showBookPage(target) }
     }
 
-    /// The book page to return to, resolved against the layout as it stands now rather than the one
-    /// the offer was made in.
+    // resolved against the layout as it stands now rather than the one the offer was made in
     private var returnTarget: Int? {
         if let returnPosition, let book, book.isMeasured {
             // The page containing the place, same as the restore in `report`.
@@ -951,17 +804,14 @@ extension ReaderEpubViewController {
         return returnBookPage
     }
 
-    /// Withdraws an offer that the book being laid out again has invalidated.
-    ///
-    /// Only one held as a bare page number, which is an offer made before the book finished being
-    /// measured. Taking the reader to a page of a layout that no longer exists is worse than not
-    /// offering to take them anywhere.
+    // only an offer held as a bare page number, made before the book finished being measured:
+    // taking the reader to a page of a layout that no longer exists is worse than not offering
     func withdrawUnanchoredReturnOffer() {
         guard returnBookPage != nil, returnPosition == nil else { return }
         hideReturnOffer()
     }
 
-    /// Withdraws the offer, whether it was taken, invalidated, or simply ran out.
+    // whether it was taken, invalidated, or simply ran out
     func hideReturnOffer() {
         returnOfferTask?.cancel()
         returnOfferTask = nil
@@ -983,7 +833,7 @@ extension ReaderEpubViewController: ReaderTableOfContentsReader {
         book?.toc ?? EpubTableOfContents(entries: [])
     }
 
-    /// The contents are parsed as the book is opened, so an open book has read whatever it has.
+    // the contents are parsed as the book is opened, so an open book has read whatever it has
     var hasReadTableOfContents: Bool {
         book != nil
     }
@@ -1025,22 +875,17 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
         turn(forward: true)
     }
 
-    /// True when the tap arriving now is the one that just followed a link.
-    ///
-    /// Consumed either way: a tap that arrives late enough to be an intent of its own has also
-    /// proved that the link before it is no longer the last thing that happened.
-    ///
-    /// Asked by the host rather than acted on inside `moveLeft`/`moveRight`, so that it covers
-    /// everything one tap would otherwise do — the bars toggling as well as the page turning — and
-    /// so that it covers nothing else: a keypress and a swipe do not pass through the host's tap
-    /// handling and are never suppressed by it.
+    // consumed either way, since a tap late enough to be an intent of its own has also proved the
+    // link before it is no longer the last thing that happened. asked by the host rather than acted
+    // on inside moveLeft/moveRight, so it covers the bars toggling as well as the page turning, and
+    // covers nothing else: a keypress and a swipe never pass through the host's tap handling
     func consumesTap() -> Bool {
         guard let suppressedPageTurnAt else { return false }
         self.suppressedPageTurnAt = nil
         return Date().timeIntervalSince(suppressedPageTurnAt) < Self.suppressedPageTurnWindow
     }
 
-    /// A page turn, whichever gesture or key asked for it.
+    // a page turn, whichever gesture or key asked for it
     private func turn(forward: Bool) {
         endSliding()
         let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
@@ -1053,24 +898,17 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
         }
     }
 
-    /// Clears the dragging flag on any interaction that cannot coexist with a held thumb.
-    ///
-    /// The reader's position is withheld while the slider is being dragged so the thumb does not
-    /// move under the finger. That makes the flag load-bearing: left set, the toolbar stops being
-    /// told where the reader is. It is cleared by `sliderStopped`, but that depends on a single
-    /// callback arriving, and a cancelled touch does not send one. A page turn proves no drag is in
-    /// progress, so it heals the state rather than trusting the host to have reported the end of
-    /// it. The book's **total** deliberately does not depend on this flag; see `report`.
+    // left set, the flag stops the toolbar being told where the reader is. sliderStopped clears it,
+    // but that depends on a single callback arriving and a cancelled touch does not send one, so a
+    // page turn, which proves no drag is in progress, heals the state instead
     private func endSliding() {
         guard isSliding else { return }
         isSliding = false
         report()
     }
 
-    /// Previews a page while the thumb is moving, without loading anything.
-    ///
-    /// Dragging across a book of several thousand pages crosses many spine documents, and loading
-    /// each one it passes over would make the slider unusable. The book moves once the thumb stops.
+    // dragging across a book of several thousand pages crosses many spine documents, and loading
+    // each one it passes over would make the slider unusable, so the book moves once the thumb stops
     func sliderMoved(value: CGFloat) {
         isSliding = true
         guard reportedTotal > 0 else { return }
@@ -1104,10 +942,8 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
         }
     }
 
-    /// The book page a slider position stands for, zero-based.
-    ///
-    /// `value` is a fraction of the whole book, matching the `index / (count - 1)` convention the
-    /// toolbar and both text readers already use.
+    // value is a fraction of the whole book, matching the index / (count - 1) convention the
+    // toolbar and both text readers already use
     private func bookPage(for value: CGFloat) -> Int {
         let last = max(reportedTotal - 1, 0)
         return min(max(Int((value * CGFloat(last)).rounded()), 0), last)
@@ -1116,8 +952,8 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
 
 // MARK: - Image Preview
 
-/// Fullscreen viewer for one image of the book: pinch and double-tap zoom via
-/// `ZoomableScrollView`, a single tap or the close button dismisses.
+// fullscreen viewer for one image of the book: pinch and double-tap zoom via ZoomableScrollView,
+// a single tap or the close button dismisses
 private final class EpubImagePreviewController: UIViewController {
     private let image: UIImage
     private let scrollView = ZoomableScrollView()
@@ -1165,8 +1001,8 @@ private final class EpubImagePreviewController: UIViewController {
         view.addGestureRecognizer(tap)
     }
 
-    /// The size the image was last fitted to, so only a genuine size change (a rotation) re-fits
-    /// and resets the zoom — not a layout pass that fires while the reader is pinching.
+    // so only a genuine size change, a rotation, re-fits and resets the zoom, rather than a layout
+    // pass firing while the reader is pinching
     private var fittedSize: CGSize = .zero
 
     override func viewDidLayoutSubviews() {
@@ -1194,8 +1030,8 @@ private final class EpubImagePreviewController: UIViewController {
 
 // MARK: - Table Preview
 
-/// Fullscreen viewer for one table of the book, at its natural size inside a web view that
-/// scrolls both axes and pinch-zooms; pulling the sheet down or the close button dismisses.
+// fullscreen viewer for one table, at its natural size inside a web view that scrolls both axes
+// and pinch-zooms
 private final class EpubTablePreviewController: UIViewController {
     private let tableHTML: String
 
@@ -1229,9 +1065,9 @@ private final class EpubTablePreviewController: UIViewController {
         ])
     }
 
-    /// The table in a plain readable shell of its own: the book's stylesheets are not carried
-    /// over, and the scale the injection script left inline on the table is undone. The viewport
-    /// is user-scalable, so a pinch zooms the way the book itself deliberately cannot.
+    // a plain shell of its own: the book's stylesheets are not carried over, and the scale the
+    // injection script left inline is undone. user-scalable, so a pinch zooms the way the book
+    // itself deliberately cannot
     private static func shell(around tableHTML: String) -> String {
         """
         <!DOCTYPE html>

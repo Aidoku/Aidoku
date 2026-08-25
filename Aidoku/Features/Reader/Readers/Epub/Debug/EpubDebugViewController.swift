@@ -11,12 +11,8 @@ import AidokuRunner
 import UIKit
 import WebKit
 
-/// Debug-only entry point for the ePub resource layer.
-///
-/// Lists the ePubs stored in the documents directory, then the spine of a chosen book, and
-/// renders a selected spine document through `EpubZipResourceProvider`. It exists to exercise the
-/// resource layer before there is a reader to host it, and is expected to be deleted once the
-/// reader itself lands.
+// debug-only entry point for the epub resource layer: lists the epubs in the documents directory,
+// then the spine of a chosen book, and renders a selected document through EpubZipResourceProvider
 class EpubDebugViewController: UITableViewController {
     private var books: [URL] = []
 
@@ -29,8 +25,7 @@ class EpubDebugViewController: UITableViewController {
         books = Self.findBooks()
     }
 
-    /// Every ePub under the documents directory, which covers both the local source's `Local`
-    /// folder and files staged directly into the container.
+    // covers both the local source's Local folder and files staged into the container
     private static func findBooks() -> [URL] {
         let root = FileManager.default.documentDirectory
         guard
@@ -69,7 +64,7 @@ class EpubDebugViewController: UITableViewController {
     }
 }
 
-/// The spine of one book, in reading order.
+// the spine of one book, in reading order
 private class EpubDebugSpineViewController: UITableViewController {
     private let bookURL: URL
     private var spinePaths: [String] = []
@@ -122,10 +117,7 @@ private class EpubDebugSpineViewController: UITableViewController {
         )
     }
 
-    /// Opens the whole book in the real reader rather than one document in the renderer.
-    ///
-    /// Until slice 4 makes local ePubs produce ePub pages, nothing routes a chapter to
-    /// `ReaderEpubViewController`, so this is the only way to exercise it by hand.
+    // opens the whole book in the real reader rather than one document in the renderer
     override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let button = UIButton(type: .system)
         button.setTitle("Read the whole book", for: .normal)
@@ -146,12 +138,8 @@ private class EpubDebugSpineViewController: UITableViewController {
     }
 }
 
-/// Stands in for `ReaderViewController` so the ePub reader can be driven by hand before slice 4
-/// makes it reachable.
-///
-/// It implements only the parts of `ReaderHoldingDelegate` the ePub reader uses, and shows what it
-/// reports: the page and total in the title, and the slider position. Everything else is a stub.
-/// Deleted with the rest of the debug entry point.
+// stands in for ReaderViewController so the epub reader can be driven by hand, implementing only
+// the parts of ReaderHoldingDelegate it uses and showing what it reports. everything else is a stub
 private class EpubDebugReaderHostViewController: UIViewController {
     private let bookURL: URL
     private let reader: ReaderEpubViewController
@@ -250,8 +238,8 @@ private class EpubDebugReaderHostViewController: UIViewController {
         reader.sliderStopped(value: CGFloat(slider.value))
     }
 
-    /// Shows the measurement pass's progress alongside the page, so that a total which stops
-    /// moving can be told apart from a pass which restarted and is counting the book again.
+    // shows the measurement pass's progress alongside the page, so a total that stops moving can
+    // be told apart from a pass that restarted and is counting the book again
     private func updateTitle() {
         let measured = reader.book.map { book -> String in
             var text = "\(book.index.measuredDocumentCount)/\(book.spinePaths.count)"
@@ -334,7 +322,7 @@ extension EpubDebugReaderHostViewController: ReaderHoldingDelegate {
     }
 }
 
-/// Renders one spine document, paginated, with controls for walking its pages.
+// renders one spine document, paginated, with controls for walking its pages
 private class EpubDebugRenderViewController: UIViewController {
     private let bookURL: URL
     private let spinePath: String
@@ -449,8 +437,7 @@ private class EpubDebugRenderViewController: UIViewController {
         }
     }
 
-    /// The page comes first because the bar truncates the tail of a title to fit its buttons, and
-    /// the page is the number being read off this screen.
+    // the page comes first because the bar truncates the tail of a title to fit its buttons
     private func updateTitle() {
         let name = (spinePath as NSString).lastPathComponent
         guard let renderer, renderer.pageCount > 0 else {
@@ -465,9 +452,8 @@ private class EpubDebugRenderViewController: UIViewController {
         nextItem.isEnabled = renderer.map { $0.currentPage < $0.pageCount - 1 } ?? false
     }
 
-    /// Reports whether remote resources were blocked, which is the posture slice 1 established. A
-    /// blocked image never decodes, so its `naturalWidth` stays at zero, and a blocked stylesheet
-    /// never enters `document.styleSheets`.
+    // a blocked image never decodes, so its naturalWidth stays at zero, and a blocked stylesheet
+    // never enters document.styleSheets
     @objc private func runChecks() {
         guard let renderer else { return }
         Task {

@@ -15,9 +15,8 @@ class ReaderViewController: BaseObservingViewController {
         case paged
         case scroll
         case text
-        /// Chosen by inference from page content, as `text` is, rather than by the reading-mode
-        /// picker. Those entries are directional layout for images and an ePub entry among them
-        /// would be selectable for manga, where it means nothing.
+        // inferred from page content, as text is, rather than offered in the reading-mode picker,
+        // whose entries are directional layout for images
         case epub
     }
 
@@ -121,13 +120,9 @@ class ReaderViewController: BaseObservingViewController {
             constant: -16
         )
 
-    /// What the bar items were last built for, so they are rebuilt only when one of those answers
-    /// changes.
-    ///
-    /// The ePub reader reports a new total for every spine document the measurement pass counts,
-    /// which is 217 calls in five seconds on the largest book in the corpus. Rebuilding the items
-    /// each time replaced the very `UIBarButtonItem` a finger was resting on, so its action never
-    /// fired and the button read as dead for the whole of pagination.
+    // the epub reader reports a new total for every spine document counted, 217 calls in five
+    // seconds on the largest book in the corpus, and rebuilding the items each time replaced the
+    // UIBarButtonItem a finger was resting on, so its action never fired
     private struct BarButtonState: Equatable {
         let hostsContents: Bool
         let contentsRead: Bool
@@ -136,7 +131,7 @@ class ReaderViewController: BaseObservingViewController {
 
     private var builtBarState: BarButtonState?
 
-    /// The chapter-list button, held so that it can be disabled while contents are being read.
+    // held so it can be disabled while contents are being read
     private var chapterListButton: UIBarButtonItem?
 
     private var barToggleTapGesture: UITapGestureRecognizer?
@@ -491,11 +486,10 @@ extension ReaderViewController {
             return
         }
 
-        // An epub still being taken to the page it was opened at is showing the head of the book,
-        // and reports that so the toolbar has numbers to display while the spine is counted. It is
-        // not where the reader is, and writing it saves page 1 over the progress being resumed to.
-        // The sibling of the guard in `setCompleted`, for the same reason: what an epub reports
-        // before its counts land describes the book rather than the reader.
+        // an epub still being taken to the page it opened at reports the head of the book so the
+        // toolbar has numbers while the spine is counted, but writing that saves page 1 over the
+        // progress being resumed to
+        // the sibling of the guard in setCompleted, for the same reason
         if (reader as? ReaderEpubViewController)?.isAwaitingResume == true {
             return
         }
@@ -575,9 +569,8 @@ extension ReaderViewController {
             }
         }
         reader?.setChapter(chapter, startPage: currentPage)
-        // The contents belong to the chapter being left. Refreshed here so the button goes with it
-        // rather than standing over the next chapter's load, where it opens nothing; `setPages`
-        // brings it back once the new chapter has contents of its own.
+        // the contents belong to the chapter being left, so the button goes with it rather than
+        // standing over the next chapter's load, where it opens nothing. setPages brings it back
         updateBarButtonItems()
     }
 
@@ -770,11 +763,10 @@ extension ReaderViewController {
                     pageController = nil
                 }
             case .epub:
-                // An ePub reads left-to-right regardless of the manga setting, as text does
+                // an epub reads left to right regardless of the manga setting, as text does
                 toolbarView.sliderView.direction = .forward
-                // Which archive to open is the reader's to resolve, from the chapter it is given:
-                // the archive belongs to the chapter rather than to the reader, and a manga folder
-                // may hold several epubs, one chapter each.
+                // which archive to open is the reader's to resolve from the chapter it is given,
+                // since a manga folder may hold several epubs, one chapter each
                 if !(reader is ReaderEpubViewController) {
                     pageController = ReaderEpubViewController(source: source, manga: manga)
                 } else {
@@ -806,17 +798,16 @@ extension ReaderViewController {
             if let webtoonReader = reader as? ReaderWebtoonViewController {
                 webtoonReader.stopAutoScroll()
             }
-            // Severed, not just removed: the reader being replaced still finishes its in-flight
-            // work. The paged reader that hands an epub over completes its own move afterwards,
-            // and the page it then delivered — against the one-page placeholder list — read as
-            // the last page of the chapter and marked it completed, or overwrote its progress.
+            // severed, not just removed: the reader being replaced still finishes its in-flight
+            // work, and the page the paged reader then delivered against the one-page placeholder
+            // list read as the last page of the chapter and marked it completed
             reader?.delegate = nil
             reader?.remove()
             pageController.delegate = self
             reader = pageController
             add(child: pageController, below: descriptionButtonController.view)
-            // The bar toggle tap is built differently for a reader hosting a web view, so it is
-            // rebuilt whenever which reader is hosted changes rather than only on a chapter change.
+            // the bar toggle tap is built differently for a reader hosting a web view, so it is
+            // rebuilt whenever which reader is hosted changes
             configureBarToggleTapGestures()
             updateBarButtonItems()
         }
@@ -1029,8 +1020,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
         self.pages = pages
         toolbarView.totalPages = pages.count
         activityIndicator.stopAnimating()
-        // A reader with contents of its own only has them once it has opened what it was given, and
-        // this is the call it makes when it has.
+        // a reader with contents of its own only has them once it has opened what it was given
         updateBarButtonItems()
         if pages.isEmpty {
             // no pages, show error
@@ -1085,13 +1075,10 @@ extension ReaderViewController: ReaderHoldingDelegate {
     func setCompleted() {
         guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
 
-        // An epub is one chapter spanning a whole spine, and its total is a lower bound until
-        // every spine document has been counted — and unknown entirely while the book is still
-        // opening, when the reader that handed the chapter over delivers one last position against
-        // the single placeholder page. Completing on either marks a book read from its first
-        // document and, with deleteDownloadAfterReading, deletes it. Guarded here rather than at
-        // the last-page check so a completion no reader may claim yet is refused whichever
-        // delegate path it arrives by.
+        // an epub's total is a lower bound until every spine document is counted, and unknown
+        // while the book is still opening. completing on either marks a book read from its first
+        // document and, with deleteDownloadAfterReading, deletes it. guarded here rather than at
+        // the last-page check, so it is refused whichever delegate path it arrives by
         if let epubReader = reader as? ReaderEpubViewController, epubReader.book?.isMeasured != true {
             return
         }
@@ -1119,9 +1106,8 @@ extension ReaderViewController: ReaderHoldingDelegate {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
         tap.delegate = self
-        // The epub reader is the only one with a web view under the tap zones, and the only one
-        // whose tap must not cancel touches in its view: that is what lets the web view keep text
-        // selection and links.
+        // the epub reader is the only one with a web view under the tap zones, and its tap must
+        // not cancel touches, which is what lets the web view keep text selection and links
         if reader is ReaderEpubViewController {
             tap.cancelsTouchesInView = false
         }
@@ -1299,9 +1285,8 @@ extension ReaderViewController {
             return
         }
 
-        // a tap the reader has already answered for itself, such as a link inside an ePub. Asked
-        // before anything here acts on it, because the alternative is undoing what was done: the
-        // bars were toggled and a page turned by the same tap that followed a footnote.
+        // a tap the reader has already answered for itself, such as a link inside an epub. asked
+        // before anything here acts on it, since the alternative is undoing what was done
         if reader?.consumesTap() == true {
             return
         }
