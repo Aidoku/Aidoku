@@ -14,33 +14,33 @@ struct AddSourceFilterMenu: View {
         let title: String
     }
 
-    @State private var languages: [LanguageItem] = [LanguageItem(id: "multi", title: NSLocalizedString("MULTI_LANGUAGE"))]
-    @State private var contentRatings: [String]
-    @State private var selectedLanguages: [String]
+    @State private var languages: [LanguageItem] = []
+    @State private var contentRatings: Set<AidokuRunner.SourceContentRating>
+    @State private var selectedLanguages: Set<String>
 
     @Environment(\.dismiss) private var dismiss
 
     init() {
-        self._contentRatings = State(initialValue: SettingsStore.shared.get(key: "Browse.contentRatings"))
-        self._selectedLanguages = State(initialValue: SettingsStore.shared.get(key: "Browse.languages"))
+        self._contentRatings = State(initialValue: AppSettings.browse.contentRatings.get())
+        self._selectedLanguages = State(initialValue: AppSettings.browse.languages.get())
     }
 
     var body: some View {
         Menu {
             Menu {
                 ForEach(SourceContentRating.allCases, id: \.rawValue) { rating in
-                    let index = contentRatings.firstIndex(where: { $0 == rating.stringValue })
+                    let isEnabled = contentRatings.contains(rating)
                     Button {
-                        if let index {
-                            contentRatings.remove(at: index)
+                        if isEnabled {
+                            contentRatings.remove(rating)
                         } else {
-                            contentRatings.append(rating.stringValue)
+                            contentRatings.insert(rating)
                         }
                     } label: {
                         HStack {
                             Text(rating.title)
                             Spacer()
-                            if index != nil {
+                            if isEnabled {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.tint)
                             }
@@ -54,18 +54,19 @@ struct AddSourceFilterMenu: View {
             }
             Menu {
                 ForEach(languages) { language in
-                    let index = selectedLanguages.firstIndex(where: { $0 == language.id })
+                    let code = SourceLanguage.normalized(language.id)
+                    let isEnabled = selectedLanguages.contains(code)
                     Button {
-                        if let index {
-                            selectedLanguages.remove(at: index)
+                        if isEnabled {
+                            selectedLanguages.remove(code)
                         } else {
-                            selectedLanguages.append(language.id)
+                            selectedLanguages.insert(code)
                         }
                     } label: {
                         HStack {
                             Text(language.title)
                             Spacer()
-                            if index != nil {
+                            if isEnabled {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.tint)
                             }
@@ -85,24 +86,19 @@ struct AddSourceFilterMenu: View {
             }
         }
         .onChange(of: contentRatings) { _ in
-            SettingsStore.shared.set(key: "Browse.contentRatings", value: contentRatings)
+            AppSettings.browse.contentRatings.set(contentRatings)
             NotificationCenter.default.post(name: .filterExternalSources, object: nil)
         }
         .onChange(of: selectedLanguages) { _ in
-            SettingsStore.shared.set(key: "Browse.languages", value: selectedLanguages)
+            AppSettings.browse.languages.set(selectedLanguages)
             NotificationCenter.default.post(name: .filterExternalSources, object: nil)
         }
         .task {
-            guard languages.count == 1 else { return }
+            guard languages.isEmpty else { return }
 
-            var languageCodes = await Array(SourceManager.shared.getSourceListLanguages())
-
-            // sort alphabetically
-            languageCodes.sort(by: {
-                let lhs = Locale.current.localizedString(forIdentifier: $0)
-                let rhs = Locale.current.localizedString(forIdentifier: $1)
-                return lhs ?? $0 < rhs ?? $1
-            })
+            var languageCodes = await SourceManager.shared.getSourceListLanguages().sorted {
+                SourceLanguage.compare($0, $1) == .orderedAscending
+            }
 
             // bring local language to top
             languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
@@ -110,12 +106,10 @@ struct AddSourceFilterMenu: View {
                 languageCodes.insert(code, at: 0)
             }
 
-            self.languages = [
-                .init(id: "multi", title: NSLocalizedString("MULTI_LANGUAGE"))
-            ] + languageCodes.map { code in
+            self.languages = ([SourceLanguage.multi] + languageCodes).map { code in
                 .init(
                     id: code,
-                    title: Locale.current.localizedString(forIdentifier: code) ?? code
+                    title: SourceLanguage.displayName(for: code)
                 )
             }
         }

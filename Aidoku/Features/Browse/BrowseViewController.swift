@@ -142,7 +142,7 @@ class BrowseViewController: BaseTableViewController {
         dataSource.onReorder = { [weak self] snapshot in
             guard let self = self else { return }
             let sourceList = snapshot.itemIdentifiers(inSection: .pinned).map { $0.info.sourceId }
-            UserDefaults.standard.set(sourceList, forKey: "Browse.pinnedList")
+            AppSettings.browse.pinnedList.set(sourceList)
 
             if sourceList.isEmpty { self.stopEditing() }
             Task { @MainActor in
@@ -217,7 +217,7 @@ extension BrowseViewController {
     // store update count and display badge
     func checkUpdateCount() {
         let updateCount = viewModel.updatesSources.count
-        UserDefaults.standard.set(updateCount, forKey: "Browse.updateCount")
+        AppSettings.browse.updateCount.set(updateCount)
         let tabBarItem = tabBarController?.tabBar.items?.first(
             where: { $0.title == NSLocalizedString("BROWSE") }
         )

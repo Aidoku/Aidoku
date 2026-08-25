@@ -39,9 +39,7 @@ struct SourceTableCell: View {
                     }
                 }
                 Text(
-                    (source.languages.count > 1 || source.languages.first == "multi")
-                        ? NSLocalizedString("MULTI_LANGUAGE")
-                        : Locale.current.localizedString(forIdentifier: source.languages[0]) ?? ""
+                    SourceLanguage.displayName(for: SourceLanguage.primaryCode(for: source.languages))
                 )
                 .foregroundStyle(.secondary)
             }

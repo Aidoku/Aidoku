@@ -14,19 +14,15 @@ enum SourceLanguage {
         languages.count == 1 ? languages[0] : multi
     }
 
-    static func compare(
-        _ lhs: [String],
-        _ rhs: [String],
-        preferredCodes: [String] = []
-    ) -> ComparisonResult {
-        compare(primaryCode(for: lhs), primaryCode(for: rhs), preferredCodes: preferredCodes)
+    static func preferredCodes() -> Set<String> {
+        Set([multi] + Locale.preferredLanguages.map(normalized))
     }
 
-    static func compare(
-        _ lhs: String,
-        _ rhs: String,
-        preferredCodes: [String] = []
-    ) -> ComparisonResult {
+    static func compare(_ lhs: [String], _ rhs: [String]) -> ComparisonResult {
+        compare(primaryCode(for: lhs), primaryCode(for: rhs))
+    }
+
+    static func compare(_ lhs: String, _ rhs: String) -> ComparisonResult {
         let lhs = normalized(lhs)
         let rhs = normalized(rhs)
 
@@ -41,36 +37,23 @@ enum SourceLanguage {
             return .orderedDescending
         }
 
-        let preferredCodes = unique(
-            preferredCodes.map(normalized)
-                + Locale.preferredLanguages.map(normalized)
-        )
+        let lhsName = displayName(for: lhs)
+        let rhsName = displayName(for: rhs)
 
-        let lhsPriority = preferredCodes.firstIndex(of: lhs)
-        let rhsPriority = preferredCodes.firstIndex(of: rhs)
+        let result = lhsName.localizedCaseInsensitiveCompare(rhsName)
 
-        switch (lhsPriority, rhsPriority) {
-            case let (lhsPriority?, rhsPriority?):
-                if lhsPriority != rhsPriority {
-                    return lhsPriority < rhsPriority
-                        ? .orderedAscending
-                        : .orderedDescending
-                }
-
-            case (.some, nil):
-                return .orderedAscending
-
-            case (nil, .some):
-                return .orderedDescending
-
-            case (nil, nil):
-                break
+        if result == .orderedSame {
+            return lhs.localizedCaseInsensitiveCompare(rhs)
         }
 
-        let lhsName = Locale.current.localizedString(forIdentifier: lhs) ?? lhs
-        let rhsName = Locale.current.localizedString(forIdentifier: rhs) ?? rhs
+        return result
+    }
 
-        return lhsName.localizedCaseInsensitiveCompare(rhsName)
+    static func displayName(for code: String) -> String {
+        if normalized(code) == multi {
+            return NSLocalizedString("MULTI_LANGUAGE")
+        }
+        return Locale.current.localizedString(forIdentifier: code) ?? code
     }
 
     static func normalized(_ code: String) -> String {

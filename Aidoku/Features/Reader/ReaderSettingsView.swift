@@ -162,20 +162,18 @@ struct ReaderSettingsView: View {
             .task {
                 guard sourceLanguageCodes.isEmpty else { return }
 
-                var languageCodes = await Array(SourceManager.shared.getSourceLanguages())
-                // sort alphabetically
-                languageCodes.sort(by: {
-                    let lhs = Locale.current.localizedString(forIdentifier: $0)
-                    let rhs = Locale.current.localizedString(forIdentifier: $1)
-                    return lhs ?? $0 < rhs ?? $1
-                })
+                var languageCodes = await SourceManager.shared.getSourceLanguages().sorted {
+                    SourceLanguage.compare($0, $1) == .orderedAscending
+                }
+
                 // bring local language to top
                 languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
                 if let code = Locale.current.languageCode {
                     languageCodes.insert(code, at: 0)
                 }
+
                 sourceLanguageCodes = languageCodes
-                sourceLanguageTitles = languageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
+                sourceLanguageTitles = languageCodes.map { SourceLanguage.displayName(for: $0) }
             }
         }
     }

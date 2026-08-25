@@ -88,7 +88,7 @@ class SearchViewController: UIViewController {
                 value: .multiselect(.init(
                     canExclude: true,
                     options: SourceContentRating.allCases.map { $0.title },
-                    ids: SourceContentRating.allCases.map { $0.stringValue }
+                    ids: SourceContentRating.allCases.map { $0.toString() }
                 ))
             )
         ]
@@ -280,13 +280,7 @@ class SearchViewController: UIViewController {
         }
         sourceLanguages = sortedLanguages.map { code in
             (
-                title: {
-                    if code == "multi" {
-                        NSLocalizedString("MULTI_LANGUAGE")
-                    } else {
-                        Locale.current.localizedString(forIdentifier: code) ?? code
-                    }
-                }(),
+                title: SourceLanguage.displayName(for: code),
                 value: code
             )
         }

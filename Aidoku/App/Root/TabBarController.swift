@@ -181,7 +181,7 @@ class TabBarController: UITabBarController {
             ]
         }
 
-        let updateCount = UserDefaults.standard.integer(forKey: "Browse.updateCount")
+        let updateCount = AppSettings.browse.updateCount.get()
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
 
         NotificationCenter.default.publisher(for: .incognitoMode)

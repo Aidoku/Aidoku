@@ -24,12 +24,9 @@ enum Settings {
             Locale.isoLanguageCodes
         }
 
-        // sort alphabetically
-        languageCodes.sort(by: {
-            let lhs = Locale.current.localizedString(forIdentifier: $0)
-            let rhs = Locale.current.localizedString(forIdentifier: $1)
-            return lhs ?? $0 < rhs ?? $1
-        })
+        languageCodes.sort {
+            SourceLanguage.compare($0, $1) == .orderedAscending
+        }
 
         // bring local language to top
         languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
@@ -40,7 +37,7 @@ enum Settings {
         return languageCodes
     }()
 
-    private static let sourceLanguageTitles = sourceLanguageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
+    private static let sourceLanguageTitles = sourceLanguageCodes.map { SourceLanguage.displayName(for: $0) }
 
     static let settings: [Setting] = [
         .init(value: .group(.init(items: [

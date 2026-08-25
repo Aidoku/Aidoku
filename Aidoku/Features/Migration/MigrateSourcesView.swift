@@ -77,9 +77,7 @@ extension MigrateSourcesView {
                     }
                     if
                         !item.langs.isEmpty,
-                        let langString = (item.langs.count > 1 || item.langs.first == "multi")
-                            ? NSLocalizedString("MULTI_LANGUAGE")
-                            : Locale.current.localizedString(forIdentifier: item.langs[0])
+                        case let langString = SourceLanguage.displayName(for: SourceLanguage.primaryCode(for: item.langs))
                     {
                         Text(langString)
                             .foregroundStyle(.secondary)
@@ -103,7 +101,6 @@ extension MigrateSourcesView {
             }
             return manga
         }
-        let preferredCodes = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         sources = manga.keys
             .map { id in
                 let source = SourceManager.shared.store.source(for: id)
@@ -117,11 +114,7 @@ extension MigrateSourcesView {
                 )
             }
             .sorted { lhs, rhs in
-                let languageOrder = SourceLanguage.compare(
-                    lhs.langs,
-                    rhs.langs,
-                    preferredCodes: preferredCodes
-                )
+                let languageOrder = SourceLanguage.compare(lhs.langs, rhs.langs)
                 if languageOrder != .orderedSame {
                     return languageOrder == .orderedAscending
                 }

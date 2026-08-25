@@ -337,14 +337,12 @@ struct AddSourceView: View {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         else { return ([], true) }
         let appVersion = SemanticVersion(appVersionString)
-        let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-        let contentRatings = (UserDefaults.standard.stringArray(forKey: "Browse.contentRatings") ?? [])
-            .compactMap { SourceContentRating(stringValue: $0) }
+        let selectedLanguages = AppSettings.browse.languages.get()
+        let contentRatings = AppSettings.browse.contentRatings.get()
 
         var allSourcesInstalled = true
 
         let installedSources = await SourceManager.shared.getSourceInfos()
-        let preferredCodes = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         let result = allExternalSources
             .compactMap { info -> SourceInfo? in
                 // strip installed sources from external list
@@ -368,7 +366,7 @@ struct AddSourceView: View {
                 }
                 // hide unselected content ratings
                 let contentRating = info.resolvedContentRating
-                if !contentRatings.contains(where: { $0 == contentRating }) {
+                if !contentRatings.contains(contentRating) {
                     return nil
                 }
                 // hide unselected languages
@@ -378,11 +376,7 @@ struct AddSourceView: View {
                 return info.toInfo()
             }
             .sorted { lhs, rhs in
-                let languageOrder = SourceLanguage.compare(
-                    lhs.languages,
-                    rhs.languages,
-                    preferredCodes: preferredCodes
-                )
+                let languageOrder = SourceLanguage.compare(lhs.languages, rhs.languages)
                 if languageOrder != .orderedSame {
                     return languageOrder == .orderedAscending
                 }

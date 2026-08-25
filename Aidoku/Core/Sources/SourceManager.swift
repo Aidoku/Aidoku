@@ -23,16 +23,15 @@ actor SourceManager {
     private var sourceLanguageCodes: Set<String> = []
 
     private var sourceLists: [SourceList] = []
-    private var sourceListURLs: [URL]
+    private var sourceListURLs: Set<URL>
     private var sourceListLanguageCodes: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
 
     private init() {
-        sourceListURLs = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? [])
-            .compactMap { URL(string: $0) }
-        disabledSourceKeys = Set(UserDefaults.standard.array(forKey: "Browse.disabledSources") as? [String] ?? [])
+        sourceListURLs = AppSettings.browse.sourceLists.get()
+        disabledSourceKeys = AppSettings.browse.disabledSources.get()
     }
 
     // queue the loading of sources and source lists
@@ -116,6 +115,7 @@ extension SourceManager {
             }
             return results
         }
+        sourceLists.sort { $0.name < $1.name }
 
         await loadSourceListLanguages()
 
@@ -195,14 +195,8 @@ extension SourceManager {
                 return info
             }
         if sorted {
-            let preferredCodes = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-
             infos.sort { lhs, rhs in
-                let languageOrder = SourceLanguage.compare(
-                    lhs.languages,
-                    rhs.languages,
-                    preferredCodes: preferredCodes
-                )
+                let languageOrder = SourceLanguage.compare(lhs.languages, rhs.languages)
                 if languageOrder != .orderedSame {
                     return languageOrder == .orderedAscending
                 }
@@ -222,7 +216,7 @@ extension SourceManager {
         return sourceLists
     }
 
-    func getSourceListURLs() -> [URL] {
+    func getSourceListURLs() -> Set<URL> {
         sourceListURLs
     }
 
@@ -498,8 +492,8 @@ extension SourceManager {
         }
 
         // remove pinned and disabled sources
-        UserDefaults.standard.set([String](), forKey: "Browse.pinnedList")
-        UserDefaults.standard.set([String](), forKey: "Browse.disabledSources")
+        AppSettings.browse.pinnedList.reset()
+        AppSettings.browse.disabledSources.reset()
 
         sourcesByKey = [:]
 
@@ -559,29 +553,26 @@ extension SourceManager {
 extension SourceManager {
     /// Gets a list of pinned sources.
     func getPinned() -> [AidokuRunner.Source] {
-        let key = "Browse.pinnedList"
-        let pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
-        return pinnedList.compactMap { sourcesByKey[$0] }
+        AppSettings.browse.pinnedList.get()
+            .compactMap { sourcesByKey[$0] }
     }
 
     // Pin a source in browse tab.
     nonisolated func pin(sourceKey: String) {
-        let key = "Browse.pinnedList"
-        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        var pinnedList = AppSettings.browse.pinnedList.get()
         if !pinnedList.contains(sourceKey) {
             pinnedList.append(sourceKey)
-            UserDefaults.standard.set(pinnedList, forKey: key)
+            AppSettings.browse.pinnedList.set(pinnedList)
             NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
     }
 
     // Unpin a source in browse tab.
     nonisolated func unpin(sourceKey: String, skipUpdateNotification: Bool = false) {
-        let key = "Browse.pinnedList"
-        var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        var pinnedList = AppSettings.browse.pinnedList.get()
         if let index = pinnedList.firstIndex(of: sourceKey) {
             pinnedList.remove(at: index)
-            UserDefaults.standard.set(pinnedList, forKey: key)
+            AppSettings.browse.pinnedList.set(pinnedList)
             if !skipUpdateNotification {
                 NotificationCenter.default.post(name: .updateSourceList, object: nil)
             }
@@ -592,20 +583,19 @@ extension SourceManager {
 // MARK: Disabled Sources
 extension SourceManager {
     func disable(sourceKey: String) async {
-        let key = "Browse.disabledSources"
         let (inserted, _) = disabledSourceKeys.insert(sourceKey)
         if inserted {
+            AppSettings.browse.disabledSources.set(disabledSourceKeys)
             sourcesByKey.removeValue(forKey: sourceKey)
-            UserDefaults.standard.set(Array(disabledSourceKeys), forKey: key)
             await publishSourceState()
-            notifySourcesUnloaded(keys: [key])
+            notifySourcesUnloaded(keys: [sourceKey])
         }
     }
 
     func enable(sourceKey: String, skipUpdateNotification: Bool = false) async {
-        let key = "Browse.disabledSources"
         let removed = disabledSourceKeys.remove(sourceKey) != nil
         if removed {
+            AppSettings.browse.disabledSources.set(disabledSourceKeys)
             let object: SourceObjectData? = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getSource(key: sourceKey, context: context)?.toData()
             }
@@ -614,9 +604,8 @@ extension SourceManager {
                 return
             }
             sourcesByKey[source.key] = source
-            UserDefaults.standard.set(Array(disabledSourceKeys), forKey: key)
             await publishSourceState()
-            notifySourcesLoaded(keys: [key], skipUpdateNotification: skipUpdateNotification)
+            notifySourcesLoaded(keys: [source.key], skipUpdateNotification: skipUpdateNotification)
         }
     }
 
@@ -661,7 +650,8 @@ extension SourceManager {
             return false
         }
 
-        sourceListURLs.append(url)
+        sourceListURLs.insert(url)
+        AppSettings.browse.sourceLists.set(sourceListURLs)
 
         if let result {
             sourceLists.append(result)
@@ -674,8 +664,6 @@ extension SourceManager {
             }
         }
 
-        let sourceListsStrings = sourceListURLs.map { $0.absoluteString }
-        UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
 
         return true
@@ -683,10 +671,9 @@ extension SourceManager {
 
     func removeSourceList(url: URL) async {
         sourceLists.removeAll { $0.url == url }
-        sourceListURLs.removeAll { $0 == url }
+        sourceListURLs.remove(url)
+        AppSettings.browse.sourceLists.set(sourceListURLs)
         await loadSourceListLanguages()
-        let sourceListsStrings = sourceListURLs.map { $0.absoluteString }
-        UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 
@@ -694,7 +681,7 @@ extension SourceManager {
         sourceLists = []
         sourceListURLs = []
         sourceListLanguageCodes = []
-        UserDefaults.standard.set([String](), forKey: "Browse.sourceLists")
+        AppSettings.browse.sourceLists.reset()
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 }
