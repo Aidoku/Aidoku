@@ -114,36 +114,43 @@ class BrowseViewModel {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
         let appVersion = SemanticVersion(appVersionString)
 
-        updatesSources = unfilteredExternalSources.compactMap { info -> SourceInfo? in
-            // check version availability
-            if let minAppVersion = info.minAppVersion {
-                let minAppVersion = SemanticVersion(minAppVersion)
-                if minAppVersion > appVersion {
-                    return nil
+        updatesSources = unfilteredExternalSources
+            .compactMap { info -> SourceInfo? in
+                // check version availability
+                if let minAppVersion = info.minAppVersion {
+                    let minAppVersion = SemanticVersion(minAppVersion)
+                    if minAppVersion > appVersion {
+                        return nil
+                    }
                 }
-            }
-            if let maxAppVersion = info.maxAppVersion {
-                let maxAppVersion = SemanticVersion(maxAppVersion)
-                if maxAppVersion < appVersion {
-                    return nil
+                if let maxAppVersion = info.maxAppVersion {
+                    let maxAppVersion = SemanticVersion(maxAppVersion)
+                    if maxAppVersion < appVersion {
+                        return nil
+                    }
                 }
-            }
 
-            if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
-                if info.version > installedSource.version {
-                    return info.toInfo()
+                if let installedSource = installedSources.first(where: { $0.sourceId == info.id }) {
+                    if info.version > installedSource.version {
+                        return info.toInfo()
+                    }
+                    return nil
+                }
+                if let pinnedSource = pinnedSources.first(where: { $0.sourceId == info.id }) {
+                    if info.version > pinnedSource.version {
+                        return info.toInfo()
+                    }
+                    return nil
                 }
                 return nil
             }
-            if let pinnedSource = pinnedSources.first(where: { $0.sourceId == info.id }) {
-                if info.version > pinnedSource.version {
-                    return info.toInfo()
+            .sorted { lhs, rhs in
+                let languageOrder = SourceLanguage.compare(lhs.languages, rhs.languages)
+                if languageOrder != .orderedSame {
+                    return languageOrder == .orderedAscending
                 }
-                return nil
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
             }
-            return nil
-        }
-
     }
 
     // filter sources by search query
