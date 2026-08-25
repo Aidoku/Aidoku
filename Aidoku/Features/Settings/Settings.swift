@@ -38,28 +38,7 @@ enum Settings {
 
     private static let sourceLanguageTitles = sourceLanguageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
 
-    static let settings: [Setting] = {
-        var settings = defaultSettings
-        #if DEBUG
-        settings.append(debugSettings)
-        #endif
-        return settings
-    }()
-
-    #if DEBUG
-    private static let debugSettings = Setting(
-        title: "Debug",
-        value: .group(.init(items: [
-            .init(
-                key: "Debug.epubResourceLayer",
-                title: "ePub Resource Layer",
-                value: .button(.init())
-            )
-        ]))
-    )
-    #endif
-
-    private static let defaultSettings: [Setting] = [
+    static let settings: [Setting] = [
         .init(value: .group(.init(items: [
             .init(
                 key: "General.incognitoMode",

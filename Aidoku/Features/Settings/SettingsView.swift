@@ -279,11 +279,6 @@ extension SettingsView {
                         await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }
-#if DEBUG
-            case "Debug.epubResourceLayer":
-                path.push(EpubDebugViewController())
-#endif
-
             default:
                 break
         }
