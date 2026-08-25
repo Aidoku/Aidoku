@@ -370,7 +370,9 @@ actor SuwayomiSourceRunner: Runner {
                 if newValue != name {
                     // update db source config with new name
                     name = newValue
-                    updateSourceConfig(updateSourceList: true)
+                    Task {
+                        await updateSourceConfig(updateSourceList: true)
+                    }
                 }
 
             case "server_change":
@@ -388,7 +390,9 @@ actor SuwayomiSourceRunner: Runner {
                 if newValue != server {
                     // update db source config with new server url
                     server = newValue
-                    updateSourceConfig()
+                    Task {
+                        await updateSourceConfig()
+                    }
                 }
 
             default:
@@ -396,9 +400,9 @@ actor SuwayomiSourceRunner: Runner {
         }
     }
 
-    private func updateSourceConfig(updateSourceList: Bool = false) {
+    private func updateSourceConfig(updateSourceList: Bool = false) async {
         let config = CustomSourceConfig.suwayomi(.init(key: sourceKey, name: name, server: server))
-        SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
+        await SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }
 

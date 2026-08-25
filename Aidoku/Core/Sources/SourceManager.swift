@@ -7,66 +7,84 @@
 
 import AidokuRunner
 import Foundation
-import ZIPFoundation
 import UIKit
+import ZIPFoundation
 
-class SourceManager {
+actor SourceManager {
     static let shared = SourceManager()
 
     static let directory = FileManager.default.applicationSupportDirectory.appendingPathComponent("Sources", isDirectory: true)
     static let oldDirectory = FileManager.default.documentDirectory.appendingPathComponent("Sources", isDirectory: true) // used for migration
 
-    var sources: [AidokuRunner.Source] = []
-    var sourceLists: [SourceList] = []
-    var sourceListURLs: [URL]
-    var sourceListLanguages: Set<String> = []
-    var sourceLanguages: Set<String> = []
-    var disabledSources: Set<String> = []
+    @MainActor let store: SourceStore = .init()
+
+    private var sourcesByKey: [String: AidokuRunner.Source] = [:]
+    private var disabledSourceKeys: Set<String> = []
+    private var sourceLanguageCodes: Set<String> = []
+
+    private var sourceLists: [SourceList] = []
+    private var sourceListURLs: [URL]
+    private var sourceListLanguageCodes: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
 
-    static let languageCodes = [
-        "multi", "en", "ca", "de", "es", "fr", "id", "it", "pl", "pt-br", "vi", "tr", "ru", "ar", "zh", "zh-hans", "ja", "ko"
-    ]
-
-    var sourceListsStrings: [String] {
-        sourceListURLs.map { $0.absoluteString }
-    }
-
-    var localSourceInstalled: Bool {
-        sources.contains(where: { $0.id == LocalSourceRunner.sourceKey })
-    }
-
-    init() {
+    private init() {
         sourceListURLs = (UserDefaults.standard.array(forKey: "Browse.sourceLists") as? [String] ?? [])
             .compactMap { URL(string: $0) }
-        disabledSources = Set(UserDefaults.standard.array(forKey: "Browse.disabledSources") as? [String] ?? [])
+        disabledSourceKeys = Set(UserDefaults.standard.array(forKey: "Browse.disabledSources") as? [String] ?? [])
+    }
 
+    // queue the loading of sources and source lists
+    func start() {
         loadSourcesTask = Task {
             await reloadSources()
         }
-
-        Task {
-            await loadSourceLists(reload: true)
+        loadSourceListsTask = Task {
+            await reloadSourceLists()
         }
+    }
+}
+
+// MARK: Source Loading
+extension SourceManager {
+    func waitForSourcesLoad() async {
+        await loadSourcesTask?.value
     }
 
     func reloadSources() async {
-        // load installed sources
-        sources = await getInstalledSources()
-        sortSources()
+        sourcesByKey = await getInstalledSources()
         loadSourceLanguages()
-        await MainActor.run {
-            for source in sources {
-                NotificationCenter.default.post(name: .sourceLoaded, object: source.key)
-            }
-            NotificationCenter.default.post(name: .updateSourceList, object: nil)
-        }
 
-        // load source filters
+        await publishSourceState()
+        notifySourcesLoaded(keys: sourcesByKey.keys)
+
+        await loadLegacySourceFilters()
+    }
+
+    private func getInstalledSources() async -> [String: AidokuRunner.Source] {
+        let objects: [SourceObjectData] = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getSources(context: context).map { $0.toData() }
+        }
+        var sourcesByKey: [String: AidokuRunner.Source] = [:]
+        for dbSource in objects where !disabledSourceKeys.contains(dbSource.id) {
+            if let source = await dbSource.toNewSource() {
+                if sourcesByKey[source.key] != nil {
+                    // remove duplicate coredata sources
+                    CoreDataManager.shared.remove(dbSource.objectID)
+                } else {
+                    sourcesByKey[source.key] = source
+                }
+            } else {
+                LogManager.logger.error("Failed to load source \(dbSource.id)")
+            }
+        }
+        return sourcesByKey
+    }
+
+    private func loadLegacySourceFilters() async {
         await withTaskGroup(of: Void.self) { group in
-            for source in sources {
+            for source in sourcesByKey.values {
                 if let legacySource = source.legacySource {
                     group.addTask {
                         _ = try? await legacySource.getFilters()
@@ -74,70 +92,82 @@ class SourceManager {
                 }
             }
         }
-        await MainActor.run {
-            NotificationCenter.default.post(name: .loadedSourceFilters, object: nil)
-        }
+        NotificationCenter.default.post(name: .loadedSourceFilters, object: nil)
+    }
+}
+
+// MARK: Source List Loading
+extension SourceManager {
+    func waitForSourceListsLoad() async {
+        await loadSourceListsTask?.value
     }
 
-    func waitForSourcesLoad() async {
-        await loadSourcesTask?.value
-    }
-
-    func loadSourceLists(reload: Bool = false, skipUpdateNotification: Bool = false) async {
-        if let loadSourceListsTask {
-            await loadSourceListsTask.value
-            self.loadSourceListsTask = nil
-        }
-        if reload {
-            loadSourceListsTask = Task {
-                sourceLists = await withTaskGroup(of: SourceList?.self) { group in
-                    for url in sourceListURLs {
-                        // load sources from list
-                        group.addTask {
-                            await self.loadSourceList(url: url)
-                        }
-                    }
-                    var results: [SourceList] = []
-                    for await result in group {
-                        guard let result else { continue }
-                        results.append(result)
-                    }
-                    return results
-                }
-                loadSourceListLanguages()
-                if !skipUpdateNotification {
-                    NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+    func reloadSourceLists(skipUpdateNotification: Bool = false) async {
+        sourceLists = await withTaskGroup(of: SourceList?.self) { group in
+            for url in sourceListURLs {
+                group.addTask {
+                    await self.loadSourceList(url: url)
                 }
             }
-            await loadSourceListsTask?.value
+            var results: [SourceList] = []
+            for await result in group {
+                guard let result else { continue }
+                results.append(result)
+            }
+            return results
+        }
+
+        await loadSourceListLanguages()
+
+        if !skipUpdateNotification {
+            notifySourceListsLoaded()
         }
     }
 
-    func getInstalledSources() async -> [AidokuRunner.Source] {
-        let objects: [SourceObjectData] = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getSources(context: context).map { $0.toData() }
+    private func loadSourceList(url: URL) async -> SourceList? {
+        let session = URLSession.withTimeoutInterval(15)
+        guard let (data, _) = try? await session.data(from: url) else { return nil }
+        let sourceList = try? JSONDecoder().decode(CodableSourceList.self, from: data)
+
+        if let sourceList {
+            return sourceList.into(url: url)
+        } else {
+            return await loadLegacySourceList(url: url, session: session, data: data)
         }
-        var sources: [AidokuRunner.Source] = []
-        for dbSource in objects where !disabledSources.contains(dbSource.id) {
-            if let source = await dbSource.toNewSource() {
-                if sources.contains(where: { $0.id == source.id }) {
-                    // remove duplicate coredata sources
-                    CoreDataManager.shared.remove(dbSource.objectID)
-                } else {
-                    sources.append(source)
-                }
+    }
+
+    private func loadLegacySourceList(url: URL, session: URLSession, data: Data) async -> SourceList? {
+        let externalSources: [ExternalSourceInfo]? = if !url.pathExtension.isEmpty {
+            try? JSONDecoder().decode([ExternalSourceInfo].self, from: data)
+        } else {
+            if let sources = try? await session.object(
+                from: url.appendingPathComponent("index.min.json")
+            ) as [ExternalSourceInfo] {
+                sources
             } else {
-                LogManager.logger.error("Failed to load source \(dbSource.id)")
+                nil
             }
         }
-        return sources
+        guard var externalSources else { return nil }
+        for index in externalSources.indices {
+            externalSources[index].sourceUrl = url
+        }
+        return SourceList(
+            url: url,
+            name: NSLocalizedString("LEGACY_SOURCE_LIST"),
+            sources: externalSources,
+            legacy: true
+        )
     }
+}
 
-    func getSourceInfos() async -> [SourceInfo2] {
+// MARK: Source Info Fetching
+extension SourceManager {
+    func getSourceInfos(sorted: Bool = true, includeDisabled: Bool = true) async -> [SourceInfo] {
         await waitForSourcesLoad()
 
         var sourceById: [String: ExternalSourceInfo] = [:]
-        for sourceList in SourceManager.shared.sourceLists {
+        for sourceList in sourceLists {
             for source in sourceList.sources {
                 if let existing = sourceById[source.id] {
                     // if a newer version exists, replace it
@@ -153,41 +183,78 @@ class SourceManager {
         let objects: [SourceObjectData] = await CoreDataManager.shared.container.performBackgroundTask { context in
             CoreDataManager.shared.getSources(context: context).map { $0.toData() }
         }
-        var infos: [SourceInfo2] = objects
+        var infos: [SourceInfo] = objects
             .compactMap { source in
                 guard var info = source.toInfo() else { return nil }
-                info.disabled = disabledSources.contains(info.sourceId)
+                let disabled = disabledSourceKeys.contains(info.sourceId)
+                if !includeDisabled {
+                    return nil
+                }
+                info.disabled = disabled
                 info.externalInfo = sourceById[info.sourceId]
                 return info
             }
-        infos.sort { $0.name < $1.name }
-        infos.sort {
-            let lhs = Self.languageCodes.firstIndex(of: $0.languages.count == 1 ? $0.languages[0] : "multi") ?? Int.max
-            let rhs = Self.languageCodes.firstIndex(of: $1.languages.count == 1 ? $1.languages[0] : "multi") ?? Int.max
-            return lhs < rhs
+        if sorted {
+            let preferredCodes = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
+
+            infos.sort { lhs, rhs in
+                let languageOrder = SourceLanguage.compare(
+                    lhs.languages,
+                    rhs.languages,
+                    preferredCodes: preferredCodes
+                )
+                if languageOrder != .orderedSame {
+                    return languageOrder == .orderedAscending
+                }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
         }
         return infos
+    }
+
+    func getLoadedSources() async -> [AidokuRunner.Source] {
+        await waitForSourcesLoad()
+        return Array(sourcesByKey.values)
+    }
+
+    func getSourceLists() async -> [SourceList] {
+        await waitForSourceListsLoad()
+        return sourceLists
+    }
+
+    func getSourceListURLs() -> [URL] {
+        sourceListURLs
+    }
+
+    func getMissingSourceLists() async -> [URL] {
+        await waitForSourceListsLoad()
+        return sourceListURLs.filter { url in
+            !sourceLists.contains(where: { $0.url == url })
+        }
+    }
+
+    func getSourceLanguages() -> Set<String> {
+        sourceLanguageCodes
+    }
+
+    func getSourceListLanguages() -> Set<String> {
+        sourceListLanguageCodes
+    }
+
+    func source(for key: String) async -> AidokuRunner.Source? {
+        await waitForSourcesLoad()
+        return sourcesByKey[key]
     }
 }
 
 // MARK: - Source Management
 extension SourceManager {
-    func source(for id: String) -> AidokuRunner.Source? {
-        sources.first { $0.id == id }
-    }
-
-    func hasSourceInstalled(id: String) -> Bool {
-        sources.contains { $0.id == id }
-    }
-
     func importSource(from url: URL) async -> AidokuRunner.Source? {
-        Self.directory.createDirectory()
-
         // download and unzip source aix
         guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }
         var secured = false
         var fileUrl = url
-        if fileUrl.scheme != "file" {
+        if !fileUrl.isFileURL {
             do {
                 let (location, _) = try await URLSession.shared.download(for: URLRequest.from(url))
                 fileUrl = location
@@ -228,23 +295,23 @@ extension SourceManager {
             }
         }
 
-        let id: String
+        // ensure source key is valid
+        let sourceKey: String
         if let newSource {
-            id = newSource.id
+            sourceKey = newSource.key
         } else if let legacySource {
-            id = legacySource.id
+            sourceKey = legacySource.id
         } else {
             return nil
         }
-
-        // ensure id is valid
-        guard isValidSourceKey(id) else {
-            LogManager.logger.error("Invalid source key: \(id)")
+        guard isValidSourceKey(sourceKey) else {
+            LogManager.logger.error("Invalid source key: \(sourceKey)")
             return nil
         }
 
         // move to final location
-        let destination = Self.directory.appendingPathComponent(id)
+        Self.directory.createDirectory()
+        let destination = Self.directory.appendingPathComponent(sourceKey)
         if destination.exists {
             try? FileManager.default.removeItem(at: destination)
         }
@@ -257,101 +324,121 @@ extension SourceManager {
         try? FileManager.default.removeItem(at: temporaryDirectory)
 
         // update initialized location
+        let result: AidokuRunner.Source
         if newSource != nil {
-            newSource = try? await AidokuRunner.Source(id: id, url: destination)
+            do {
+                result = try await AidokuRunner.Source(key: sourceKey, url: destination)
+            } catch {
+                LogManager.logger.error("Failed to load moved source: \(error)")
+                return nil
+            }
         } else if let legacySource {
             legacySource.url = destination
-        }
-
-        // remove old source version (on update)
-        let installedSource = sources
-            .firstIndex { $0.id == id }
-            .flatMap { sources.remove(at: $0) }
-        await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.removeSource(key: id, context: context)
-            try? context.save()
-        }
-
-        // add to coredata
-        let result: AidokuRunner.Source
-
-        if let newSource {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.createSource(source: newSource, context: context)
-                try? context.save()
-            }
-
-            if
-                let installedVersion = installedSource?.version,
-                let breakingChangeVersion = newSource.config?.breakingChangeVersion,
-                installedVersion < breakingChangeVersion
-            {
-                // if there was a breaking change, prompt for migration
-                Task { @MainActor in
-                    UIApplication.shared.appDelegate?.handleSourceMigration(source: newSource)
-                }
-            }
-
-            result = newSource
-        } else if let legacySource {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.createSource(source: legacySource, context: context)
-                try? context.save()
-            }
-
-            Task {
-                _ = try? await legacySource.getFilters()
-            }
-
             result = .legacy(source: legacySource)
         } else {
             return nil
         }
 
-        sources.append(result)
-        sortSources()
-        sourceLanguages.formUnion(result.languages)
+        // remove old source version (on update) and add new version to coredata
+        let installedSource = sourcesByKey.removeValue(forKey: sourceKey)
 
-        NotificationCenter.default.post(name: .sourceLoaded, object: result.key)
-        NotificationCenter.default.post(name: .updateSourceList, object: nil)
+        await CoreDataManager.shared.container.performBackgroundTask { [result] context in
+            CoreDataManager.shared.removeSource(key: sourceKey, context: context)
+            CoreDataManager.shared.createSource(source: result, context: context)
+            try? context.save()
+        }
+
+        // if there was a breaking change, prompt for migration
+        if
+            let installedVersion = installedSource?.version,
+            let breakingChangeVersion = result.config?.breakingChangeVersion,
+            installedVersion < breakingChangeVersion
+        {
+            Task { @MainActor in
+                UIApplication.shared.appDelegate?.handleSourceMigration(source: result)
+            }
+        }
+
+        if let legacySource {
+            Task {
+                _ = try? await legacySource.getFilters()
+            }
+        }
+
+        sourcesByKey[result.key] = result
+        sourceLanguageCodes.formUnion(result.languages)
+
+        await publishSourceState()
+        notifySourcesLoaded(keys: [result.key])
 
         return result
     }
 
     enum CustomSourceKind {
-        case komga
-        case kavita
-        case suwayomi
+        case local
+        case komga(ServerConfig)
+        case kavita(ServerConfig)
+        case suwayomi(ServerConfig)
+
+        struct ServerConfig {
+            let name: String
+            let server: URL
+            var username: String?
+            var password: String?
+        }
     }
 
     @discardableResult
-    func createCustomSource(
-        kind: CustomSourceKind,
-        name: String,
-        server: URL,
-        username: String? = nil,
-        password: String? = nil,
-    ) async -> String {
-        let keyPrefix = switch kind {
-            case .komga: KomgaSourceRunner.sourceKeyPrefix
-            case .kavita: KavitaSourceRunner.sourceKeyPrefix
-            case .suwayomi: SuwayomiSourceRunner.sourceKeyPrefix
-        }
-        let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
-        var key = "\(keyPrefix).\(nameEncoded)"
+    func createCustomSource(_ kind: CustomSourceKind) async -> String? {
+        let config: CustomSourceConfig
+        switch kind {
+            case .local:
+                config = CustomSourceConfig.local
+            case .komga(let serverConfig), .kavita(let serverConfig), .suwayomi(let serverConfig):
+                let name = serverConfig.name
+                let server = serverConfig.server
+                let username = serverConfig.username
+                let password = serverConfig.password
 
-        // make sure key is unique
-        var counter = 1
-        while SourceManager.shared.hasSourceInstalled(id: key) {
-            key = "\(keyPrefix).\(nameEncoded)-\(counter)"
-            counter += 1
-        }
+                let keyPrefix = switch kind {
+                    case .komga: KomgaSourceRunner.sourceKeyPrefix
+                    case .kavita: KavitaSourceRunner.sourceKeyPrefix
+                    case .suwayomi: SuwayomiSourceRunner.sourceKeyPrefix
+                    case .local: unreachable()
+                }
+                let nameEncoded = name.lowercased().replacingOccurrences(of: " ", with: "-")
+                var key = "\(keyPrefix).\(nameEncoded)"
 
-        let configValues = CustomSourceConfig.KeyNameServer(key: key, name: name, server: server.absoluteString)
-        let config = switch kind {
-            case .komga: CustomSourceConfig.komga(configValues)
-            case .kavita: CustomSourceConfig.kavita(configValues)
-            case .suwayomi: CustomSourceConfig.suwayomi(configValues)
+                // make sure key is unique
+                var counter = 1
+                while sourcesByKey[key] != nil || disabledSourceKeys.contains(key) {
+                    key = "\(keyPrefix).\(nameEncoded)-\(counter)"
+                    counter += 1
+                }
+
+                let configValues = CustomSourceConfig.KeyNameServer(key: key, name: name, server: server.absoluteString)
+                config = switch kind {
+                    case .komga: CustomSourceConfig.komga(configValues)
+                    case .kavita: CustomSourceConfig.kavita(configValues)
+                    case .suwayomi: CustomSourceConfig.suwayomi(configValues)
+                    case .local: unreachable()
+                }
+
+                // register details
+                var url = server.absoluteString
+                if url.last == "/" {
+                    url.removeLast()
+                }
+                UserDefaults.standard.setValue(url, forKey: "\(key).server")
+                if username != nil || password != nil {
+                    UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
+                }
+                if let username {
+                    UserDefaults.standard.setValue(username, forKey: "\(key).login.username")
+                }
+                if let password {
+                    UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
+                }
         }
         let source = config.toSource()
 
@@ -362,56 +449,62 @@ extension SourceManager {
             try? context.save()
         }
 
-        // register details
-        var url = server.absoluteString
-        if url.last == "/" {
-            url.removeLast()
-        }
-        UserDefaults.standard.setValue(url, forKey: "\(key).server")
-        if username != nil || password != nil {
-            UserDefaults.standard.setValue("logged_in", forKey: "\(key).login")
-        }
-        if let username {
-            UserDefaults.standard.setValue(username, forKey: "\(key).login.username")
-        }
-        if let password {
-            UserDefaults.standard.setValue(password, forKey: "\(key).login.password")
-        }
+        sourcesByKey[source.key] = source
 
-        sources.append(source)
-        sortSources()
+        await publishSourceState()
+        notifySourcesLoaded(keys: [source.key])
 
-        NotificationCenter.default.post(name: .updateSourceList, object: nil)
-
-        return key
+        return source.key
     }
 
-    func sortSources() {
-        sources.sort { $0.name < $1.name }
-        sources.sort {
-            let lhs = Self.languageCodes.firstIndex(of: $0.languages.count == 1 ? $0.languages[0] : "multi") ?? Int.max
-            let rhs = Self.languageCodes.firstIndex(of: $1.languages.count == 1 ? $1.languages[0] : "multi") ?? Int.max
-            return lhs < rhs
+    func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) async {
+        let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
+            let source = CoreDataManager.shared.getSource(key: key, context: context)
+            source?.customSource = config.encode() as NSObject
+            try? context.save()
+            return source?.toData()
+        }
+        if updateSourceList, let newSource = await newDbSource?.toNewSource() {
+            sourcesByKey[newSource.key] = newSource
+            await publishSourceState()
+            notifySourcesLoaded(keys: [newSource.key])
         }
     }
 
-    func clearSources() {
-        let sourceKeys = sources.map { $0.key }
-        for source in sources {
-            guard let url = source.url else { continue }
-            try? FileManager.default.removeItem(at: url)
+    func clearSources() async {
+        let objects: [SourceObjectData] = await CoreDataManager.shared.container.performBackgroundTask { context in
+            let objects = CoreDataManager.shared.getSources(context: context).map { $0.toData() }
+
+            CoreDataManager.shared.clearSources(context: context)
+            try? context.save()
+
+            return objects
         }
-        sources = []
-        Task {
-            await CoreDataManager.shared.container.performBackgroundTask { context in
-                CoreDataManager.shared.clearSources(context: context)
-                try? context.save()
+
+        var sourceKeys: [String] = []
+        sourceKeys.reserveCapacity(objects.count)
+
+        for object in objects {
+            sourceKeys.append(object.id)
+
+            removeSettings(from: object.id)
+            await removeEnhancedTrackerItems(for: object.id)
+
+            // remove from filesystem
+            if let path = object.path {
+                let url = FileManager.default.applicationSupportDirectory.appendingPathComponent(path)
+                url.removeItem()
             }
-            for key in sourceKeys {
-                NotificationCenter.default.post(name: .sourceUnloaded, object: key)
-            }
-            NotificationCenter.default.post(name: .updateSourceList, object: nil)
         }
+
+        // remove pinned and disabled sources
+        UserDefaults.standard.set([String](), forKey: "Browse.pinnedList")
+        UserDefaults.standard.set([String](), forKey: "Browse.disabledSources")
+
+        sourcesByKey = [:]
+
+        await publishSourceState()
+        notifySourcesUnloaded(keys: sourceKeys)
     }
 
     func remove(sourceKey: String, skipUpdateNotification: Bool = false) async {
@@ -430,26 +523,19 @@ extension SourceManager {
             try? FileManager.default.removeItem(at: url)
         }
 
-        sources.removeAll { $0.id == sourceKey }
+        sourcesByKey.removeValue(forKey: sourceKey)
         removeSettings(from: sourceKey)
         unpin(sourceKey: sourceKey, skipUpdateNotification: true)
         await enable(sourceKey: sourceKey, skipUpdateNotification: true)
+        await removeEnhancedTrackerItems(for: sourceKey)
 
-        if sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
-            await TrackerManager.komga.removeTrackItems(sourceKey: sourceKey)
-        } else if sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
-            await TrackerManager.kavita.removeTrackItems(sourceKey: sourceKey)
-        } else if sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
-            await TrackerManager.suwayomi.removeTrackItems(sourceKey: sourceKey)
-        }
-
-        NotificationCenter.default.post(name: .sourceUnloaded, object: sourceKey)
         if !skipUpdateNotification {
-            NotificationCenter.default.post(name: .updateSourceList, object: nil)
+            await publishSourceState()
+            notifySourcesUnloaded(keys: [sourceKey])
         }
     }
 
-    func removeSettings(from sourceKey: String) {
+    nonisolated func removeSettings(from sourceKey: String) {
         let userDefaults = UserDefaults.standard
         let keys = userDefaults.dictionaryRepresentation().keys
 
@@ -458,8 +544,28 @@ extension SourceManager {
         }
     }
 
+    private func removeEnhancedTrackerItems(for sourceKey: String) async {
+        if sourceKey.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.komga.removeTrackItems(sourceKey: sourceKey)
+        } else if sourceKey.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.kavita.removeTrackItems(sourceKey: sourceKey)
+        } else if sourceKey.hasPrefix(SuwayomiSourceRunner.sourceKeyPrefix) {
+            await TrackerManager.suwayomi.removeTrackItems(sourceKey: sourceKey)
+        }
+    }
+}
+
+// MARK: Pinned Sources
+extension SourceManager {
+    /// Gets a list of pinned sources.
+    func getPinned() -> [AidokuRunner.Source] {
+        let key = "Browse.pinnedList"
+        let pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
+        return pinnedList.compactMap { sourcesByKey[$0] }
+    }
+
     // Pin a source in browse tab.
-    func pin(sourceKey: String) {
+    nonisolated func pin(sourceKey: String) {
         let key = "Browse.pinnedList"
         var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
         if !pinnedList.contains(sourceKey) {
@@ -469,15 +575,8 @@ extension SourceManager {
         }
     }
 
-    /// Gets a list of pinned sources.
-    func getPinned() -> [AidokuRunner.Source] {
-        let key = "Browse.pinnedList"
-        let pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
-        return self.sources.filter { pinnedList.contains($0.id) }
-    }
-
     // Unpin a source in browse tab.
-    func unpin(sourceKey: String, skipUpdateNotification: Bool = false) {
+    nonisolated func unpin(sourceKey: String, skipUpdateNotification: Bool = false) {
         let key = "Browse.pinnedList"
         var pinnedList = UserDefaults.standard.stringArray(forKey: key) ?? []
         if let index = pinnedList.firstIndex(of: sourceKey) {
@@ -488,61 +587,41 @@ extension SourceManager {
             }
         }
     }
+}
 
+// MARK: Disabled Sources
+extension SourceManager {
     func disable(sourceKey: String) async {
         let key = "Browse.disabledSources"
-        let (inserted, _) = disabledSources.insert(sourceKey)
+        let (inserted, _) = disabledSourceKeys.insert(sourceKey)
         if inserted {
-            if let index = sources.firstIndex(where: { $0.id == sourceKey }) {
-                sources.remove(at: index)
-            }
-            UserDefaults.standard.set(Array(disabledSources), forKey: key)
-            NotificationCenter.default.post(name: .sourceUnloaded, object: key)
-            NotificationCenter.default.post(name: .updateSourceList, object: nil)
+            sourcesByKey.removeValue(forKey: sourceKey)
+            UserDefaults.standard.set(Array(disabledSourceKeys), forKey: key)
+            await publishSourceState()
+            notifySourcesUnloaded(keys: [key])
         }
     }
 
     func enable(sourceKey: String, skipUpdateNotification: Bool = false) async {
         let key = "Browse.disabledSources"
-        let removed = disabledSources.remove(sourceKey) != nil
+        let removed = disabledSourceKeys.remove(sourceKey) != nil
         if removed {
             let object: SourceObjectData? = await CoreDataManager.shared.container.performBackgroundTask { context in
                 CoreDataManager.shared.getSource(key: sourceKey, context: context)?.toData()
             }
-            if let object, let source = await object.toNewSource()  {
-                sources.append(source)
-            } else {
+            guard let object, let source = await object.toNewSource() else {
                 LogManager.logger.error("Failed to load source \(sourceKey)")
+                return
             }
-            UserDefaults.standard.set(Array(disabledSources), forKey: key)
-            NotificationCenter.default.post(name: .sourceLoaded, object: key)
-            if !skipUpdateNotification {
-                NotificationCenter.default.post(name: .updateSourceList, object: nil)
-            }
-        }
-    }
-
-    func updateCustomSource(key: String, config: CustomSourceConfig, updateSourceList: Bool = false) {
-        Task {
-            let newDbSource = await CoreDataManager.shared.container.performBackgroundTask { context in
-                let source = CoreDataManager.shared.getSource(key: key, context: context)
-                source?.customSource = config.encode() as NSObject
-                try? context.save()
-                return source?.toData()
-            }
-            if updateSourceList, let newSource = await newDbSource?.toNewSource() {
-                await MainActor.run {
-                    if let index = self.sources.firstIndex(where: { $0.id == newSource.id }) {
-                        self.sources[index] = newSource
-                    }
-                    NotificationCenter.default.post(name: .updateSourceList, object: nil)
-                }
-            }
+            sourcesByKey[source.key] = source
+            UserDefaults.standard.set(Array(disabledSourceKeys), forKey: key)
+            await publishSourceState()
+            notifySourcesLoaded(keys: [key], skipUpdateNotification: skipUpdateNotification)
         }
     }
 
     // checks if a source key matches ^[A-Za-z0-9.\-]+$ and doesn't use a reserved prefix
-    private func isValidSourceKey(_ sourceKey: String) -> Bool {
+    private nonisolated func isValidSourceKey(_ sourceKey: String) -> Bool {
         guard !sourceKey.isEmpty else {
             return false
         }
@@ -588,72 +667,41 @@ extension SourceManager {
             sourceLists.append(result)
             for source in result.sources {
                 if let sourceLanguages = source.languages {
-                    sourceListLanguages.formUnion(sourceLanguages)
+                    sourceListLanguageCodes.formUnion(sourceLanguages)
                 } else if let sourceLang = source.lang {
-                    sourceListLanguages.insert(sourceLang)
+                    sourceListLanguageCodes.insert(sourceLang)
                 }
             }
         }
 
+        let sourceListsStrings = sourceListURLs.map { $0.absoluteString }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
+
         return true
     }
 
-    func removeSourceList(url: URL) {
+    func removeSourceList(url: URL) async {
         sourceLists.removeAll { $0.url == url }
         sourceListURLs.removeAll { $0 == url }
-        loadSourceListLanguages()
+        await loadSourceListLanguages()
+        let sourceListsStrings = sourceListURLs.map { $0.absoluteString }
         UserDefaults.standard.set(sourceListsStrings, forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 
-    func clearSourceLists() {
+    func clearSourceLists() async {
         sourceLists = []
         sourceListURLs = []
-        sourceListLanguages = []
-        UserDefaults.standard.set([URL](), forKey: "Browse.sourceLists")
+        sourceListLanguageCodes = []
+        UserDefaults.standard.set([String](), forKey: "Browse.sourceLists")
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
+}
 
-    func loadSourceList(url: URL) async -> SourceList? {
-        // set request timeout to 15s
-        let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 15
-        let session = URLSession(configuration: config)
-
-        guard let (data, _) = try? await session.data(from: url) else { return nil }
-        let sourceList = try? JSONDecoder().decode(CodableSourceList.self, from: data)
-
-        if let sourceList {
-            return sourceList.into(url: url)
-        } else {
-            // fall back to legacy source loading
-            let externalSources: [ExternalSourceInfo]? = if !url.pathExtension.isEmpty {
-                try? JSONDecoder().decode([ExternalSourceInfo].self, from: data)
-            } else {
-                if let sources = try? await session.object(
-                    from: url.appendingPathComponent("index.min.json")
-                ) as [ExternalSourceInfo] {
-                    sources
-                } else {
-                    nil
-                }
-            }
-            guard var externalSources else { return nil }
-            for index in externalSources.indices {
-                externalSources[index].sourceUrl = url
-            }
-            return SourceList(
-                url: url,
-                name: NSLocalizedString("LEGACY_SOURCE_LIST"),
-                sources: externalSources,
-                legacy: true
-            )
-        }
-    }
-
-    func loadSourceListLanguages() {
+// MARK: Language Loading
+extension SourceManager {
+    private func loadSourceListLanguages() async {
         var languages = Set<String>()
         for sourceList in self.sourceLists {
             for source in sourceList.sources {
@@ -664,14 +712,48 @@ extension SourceManager {
                 }
             }
         }
-        sourceListLanguages = languages
+        sourceListLanguageCodes = languages
     }
 
-    func loadSourceLanguages() {
+    private func loadSourceLanguages() {
         var languages = Set<String>()
-        for source in sources {
+        for source in sourcesByKey.values {
             languages.formUnion(source.languages)
         }
-        sourceLanguages = languages
+        sourceLanguageCodes = languages
+    }
+}
+
+// MARK: Notifications
+extension SourceManager {
+    private func publishSourceState() async {
+        await MainActor.run { [sourcesByKey, disabledSourceKeys] in
+            store.update(
+                sourcesByKey: sourcesByKey,
+                disabledSourceKeys: disabledSourceKeys
+            )
+        }
+    }
+
+    private func notifySourcesLoaded(keys: some Sequence<String>, skipUpdateNotification: Bool = false) {
+        for sourceKey in keys {
+            NotificationCenter.default.post(name: .sourceLoaded, object: sourceKey)
+        }
+        if !skipUpdateNotification {
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
+        }
+    }
+
+    private func notifySourcesUnloaded(keys: some Sequence<String>, skipUpdateNotification: Bool = false) {
+        for sourceKey in keys {
+            NotificationCenter.default.post(name: .sourceUnloaded, object: sourceKey)
+        }
+        if !skipUpdateNotification {
+            NotificationCenter.default.post(name: .updateSourceList, object: nil)
+        }
+    }
+
+    private func notifySourceListsLoaded() {
+        NotificationCenter.default.post(name: .updateSourceLists, object: nil)
     }
 }

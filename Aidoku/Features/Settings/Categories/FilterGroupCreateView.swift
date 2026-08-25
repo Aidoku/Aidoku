@@ -91,7 +91,7 @@ struct FilterGroupCreateView: View {
                                 toggleFilter(method: .source, value: key)
                             } label: {
                                 HStack {
-                                    Text(SourceManager.shared.source(for: key)?.name ?? key)
+                                    Text(SourceManager.shared.store.source(for: key)?.name ?? key)
                                     Spacer()
                                     switch state {
                                         case .included: Image(systemName: "checkmark").foregroundStyle(.tint)

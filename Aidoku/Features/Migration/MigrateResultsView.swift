@@ -13,8 +13,6 @@ struct MigrateResultsView: View {
     @State private var selectedSeries: [AidokuRunner.Manga]
     let forceMigrate: Bool
 
-    private let sourceNames: [String: String]
-
     enum MigrationState {
         case idle
         case running
@@ -22,6 +20,7 @@ struct MigrateResultsView: View {
         case done
     }
 
+    @State private var sourceNames: [String: String] = [:]
     @State private var didFirstLoad = false
     @State private var isLoading = true
     @State private var showingConfirmAlert = false
@@ -41,12 +40,6 @@ struct MigrateResultsView: View {
         self.targetSources = targetSources
         self._selectedSeries = State(initialValue: selectedSeries)
         self.forceMigrate = forceMigrate
-
-        var sourceNames: [String: String] = [:]
-        for source in SourceManager.shared.sources {
-            sourceNames[source.key] = source.name
-        }
-        self.sourceNames = sourceNames
     }
 
     var body: some View {
@@ -111,12 +104,11 @@ struct MigrateResultsView: View {
         } message: {
             Text(NSLocalizedString("MIGRATE_CONFIRM_TEXT"))
         }
-        .onAppear {
+        .task {
             guard !didFirstLoad else { return }
             didFirstLoad = true
-            Task {
-                await startMatching()
-            }
+            await loadSourceNames()
+            await startMatching()
         }
     }
 }
@@ -142,6 +134,15 @@ extension MigrateResultsView {
 }
 
 extension MigrateResultsView {
+    func loadSourceNames() async {
+        var sourceNames: [String: String] = [:]
+        let sources = await SourceManager.shared.getLoadedSources()
+        for source in sources {
+            sourceNames[source.key] = source.name
+        }
+        self.sourceNames = sourceNames
+    }
+
     func startMatching() async {
         selectedSeries.forEach {
             states[$0.identifier] = .running

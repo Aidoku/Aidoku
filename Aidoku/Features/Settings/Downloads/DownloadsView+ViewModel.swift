@@ -168,11 +168,11 @@ extension DownloadsView.ViewModel {
         }
     }
 
-    private func getSourceDisplayName(_ sourceId: String) -> String {
-        if let source = SourceManager.shared.source(for: sourceId) {
+    private func getSourceDisplayName(_ sourceKey: String) -> String {
+        if let source = SourceManager.shared.store.source(for: sourceKey) {
             source.name
         } else {
-            sourceId
+            sourceKey
         }
     }
 

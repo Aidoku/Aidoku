@@ -49,7 +49,7 @@ struct MangaView: View {
         chapterKey: String? = nil,
         openAction: OpenAction? = nil
     ) {
-        let source = source ?? SourceManager.shared.source(for: manga.sourceKey)
+        let source = source ?? SourceManager.shared.store.source(for: manga.sourceKey)
         self._viewModel = StateObject(wrappedValue: ViewModel(source: source, manga: manga))
         self.path = path
         self._targetChapterKey = State(initialValue: chapterKey)

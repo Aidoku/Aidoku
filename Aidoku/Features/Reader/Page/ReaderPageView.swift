@@ -193,7 +193,12 @@ extension ReaderPageView {
                     request = imageTask.request
             }
         } else {
-            let urlRequest = if !url.isFileURL, let sourceId, let source = SourceManager.shared.source(for: sourceId) {
+            let source: AidokuRunner.Source? = if let sourceId {
+                await SourceManager.shared.source(for: sourceId)
+            } else {
+                nil
+            }
+            let urlRequest = if !url.isFileURL, let source {
                 await source.getModifiedImageRequest(url: url, context: context)
             } else {
                 URLRequest(url: url)
@@ -201,15 +206,12 @@ extension ReaderPageView {
 
             var processors: [ImageProcessing] = []
             var usePageProcessor = false
-            if
-                let sourceId,
-                let newSource = SourceManager.shared.source(for: sourceId)
-            {
+            if let source {
                 // only process pages if the source supports it and the image isn't downloaded
                 // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
                 //       this should probably be changed in the future to be more correct though
-                if newSource.features.processesPages, !url.isFileURL {
-                    processors.append(PageInterceptorProcessor(source: newSource, pageContext: context))
+                if source.features.processesPages, !url.isFileURL {
+                    processors.append(PageInterceptorProcessor(source: source, pageContext: context))
                     usePageProcessor = true
                 }
             }

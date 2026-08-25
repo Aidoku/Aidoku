@@ -174,7 +174,7 @@ extension DownloadTask {
         // attempt to download first chapter in the queue
         if
             let download = downloads.first,
-            let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
+            let source = await SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
         {
             // if chapter already downloaded, skip
             let directory = cache.directory(for: download.chapterIdentifier)
@@ -521,7 +521,7 @@ extension DownloadTask {
                 if
                     !coverPath.exists,
                     let coverUrl = download.manga.cover.flatMap({ URL(string: $0) }),
-                    let source = SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
+                    let source = await SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
                 {
                     let request = await source.getModifiedImageRequest(url: coverUrl, context: nil)
                     let result = try? await URLSession.shared.data(for: request)

@@ -325,7 +325,7 @@ extension HistoryView.ViewModel {
 
     // load manga and chapter data from source into cache
     private func loadMangaAndChapters(mangaId: MangaIdentifier, chapterIds: Set<String>) async {
-        guard let source = SourceManager.shared.source(for: mangaId.sourceKey) else { return }
+        guard let source = await SourceManager.shared.source(for: mangaId.sourceKey) else { return }
         let tempManga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
 
         let needsManga = mangaCache[mangaId] == nil

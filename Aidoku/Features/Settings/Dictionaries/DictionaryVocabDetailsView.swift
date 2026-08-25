@@ -91,7 +91,7 @@ struct DictionaryVocabDetailsView: View {
                         } label: {
                             HStack(spacing: 16) {
                                 MangaCoverView(
-                                    source: sourceManga.flatMap { SourceManager.shared.source(for: $0.sourceKey) },
+                                    source: sourceManga.flatMap { SourceManager.shared.store.source(for: $0.sourceKey) },
                                     coverImage: sourceManga?.cover ?? "",
                                     width: 56,
                                     height: 56 * 3/2,
@@ -180,7 +180,7 @@ struct DictionaryVocabDetailsView: View {
             .fullScreenCover(isPresented: $chapterOpened) {
                 if let sourceManga, let sourceChapter {
                     SwiftUIReaderNavigationController(
-                        source: SourceManager.shared.source(for: sourceManga.sourceKey),
+                        source: SourceManager.shared.store.source(for: sourceManga.sourceKey),
                         manga: sourceManga,
                         chapter: sourceChapter,
                         startPage: entry.page
@@ -219,7 +219,7 @@ struct DictionaryVocabDetailsView: View {
         }
 
         if manga == nil || chapter == nil {
-            let source = SourceManager.shared.source(for: entry.chapterId.sourceKey)
+            let source = await SourceManager.shared.source(for: entry.chapterId.sourceKey)
             if let source {
                 do {
                     let update = try await source.getMangaUpdate(

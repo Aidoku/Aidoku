@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ExternalSourceTableCell: View {
-    let source: SourceInfo2
+    let source: SourceInfo
     var subtitle: String?
 
     var onInstall: (() -> Void)?

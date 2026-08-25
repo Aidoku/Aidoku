@@ -60,10 +60,10 @@ private final class URLSessionUnsecureDelegate: NSObject, URLSessionDelegate, @u
 }
 
 extension AidokuRunner.Source {
-    convenience init(id: String, url: URL) async throws {
+    convenience init(key: String, url: URL) async throws {
         try await self.init(
             url: url,
-            interpreterConfig: .defaultConfig(for: id)
+            interpreterConfig: .defaultConfig(for: key)
         )
     }
 
@@ -71,8 +71,8 @@ extension AidokuRunner.Source {
         runner is Interpreter
     }
 
-    func toInfo() -> SourceInfo2 {
-        SourceInfo2(
+    func toInfo() -> SourceInfo {
+        SourceInfo(
             sourceId: key,
             iconUrl: imageUrl,
             name: name,

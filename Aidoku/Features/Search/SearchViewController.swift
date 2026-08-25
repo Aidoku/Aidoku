@@ -200,7 +200,9 @@ class SearchViewController: UIViewController {
             filters = enabledFilters ?? []
         }
 
-        loadSources()
+        Task {
+            await loadSources()
+        }
     }
 
     func constrain() {
@@ -218,7 +220,9 @@ class SearchViewController: UIViewController {
         NotificationCenter.default.publisher(for: .updateSourceList)
             .sink { [weak self] _ in
                 guard let self else { return }
-                loadSources()
+                Task {
+                    await self.loadSources()
+                }
             }
             .store(in: &cancellables)
     }
@@ -237,8 +241,8 @@ class SearchViewController: UIViewController {
         headerHostingController.rootView = headerView
     }
 
-    private func loadSources() {
-        sources = SourceManager.shared.sources
+    private func loadSources() async {
+        sources = await SourceManager.shared.getLoadedSources()
 
         // ensure filters don't reference removed sources
         filters = filters.compactMap {

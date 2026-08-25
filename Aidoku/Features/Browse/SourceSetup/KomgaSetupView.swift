@@ -61,14 +61,15 @@ struct KomgaSetupView: View {
             return false
         }
 
-        await SourceManager.shared.createCustomSource(
-            kind: .komga,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
+        let success = await SourceManager.shared.createCustomSource(
+            .komga(.init(
+                name: name,
+                server: server,
+                username: username,
+                password: password
+            ))
+        ) != nil
 
-        return true
+        return success
     }
 }

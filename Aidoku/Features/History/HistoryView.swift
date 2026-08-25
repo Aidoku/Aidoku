@@ -299,12 +299,12 @@ struct HistoryView: View {
 
         guard
             let chapter = nextChapter,
-            let source = SourceManager.shared.source(for: mangaId.sourceKey)
+            let source = SourceManager.shared.store.source(for: mangaId.sourceKey)
         else {
             // nothing left to read (or the source is missing), so open the manga page instead.
             // without a source to load details from or anything stored to show, the page would be blank
             guard
-                SourceManager.shared.hasSourceInstalled(id: mangaId.sourceKey) || !targetManga.title.isEmpty
+                SourceManager.shared.store.isInstalled(sourceKey: mangaId.sourceKey) || !targetManga.title.isEmpty
             else {
                 return
             }

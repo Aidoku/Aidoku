@@ -329,7 +329,7 @@ extension BrowseViewController {
             sectionId == .installed || sectionId == .pinned,
             let item = dataSource.itemIdentifier(for: indexPath),
             !item.info.disabled,
-            let source = SourceManager.shared.source(for: item.info.sourceId)
+            let source = SourceManager.shared.store.source(for: item.info.sourceId)
         {
             let vc: UIViewController = if let legacySource = source.legacySource {
                 SourceViewController(source: legacySource)
@@ -448,7 +448,7 @@ extension BrowseViewController {
 
     struct SourceItem: Hashable {
         let section: Section
-        let info: SourceInfo2
+        let info: SourceInfo
 
         static func == (lhs: SourceItem, rhs: SourceItem) -> Bool {
             lhs.section == rhs.section && lhs.info.sourceId == rhs.info.sourceId
@@ -460,7 +460,7 @@ extension BrowseViewController {
         }
     }
 
-    private func sourceItems(_ sources: [SourceInfo2], in section: Section) -> [SourceItem] {
+    private func sourceItems(_ sources: [SourceInfo], in section: Section) -> [SourceItem] {
         var seenSourceIds = Set<String>()
         return sources.compactMap { info in
             guard seenSourceIds.insert(info.sourceId).inserted else { return nil }

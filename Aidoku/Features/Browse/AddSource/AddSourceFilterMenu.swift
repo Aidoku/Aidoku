@@ -14,37 +14,13 @@ struct AddSourceFilterMenu: View {
         let title: String
     }
 
-    private let languages: [LanguageItem]
-
+    @State private var languages: [LanguageItem] = [LanguageItem(id: "multi", title: NSLocalizedString("MULTI_LANGUAGE"))]
     @State private var contentRatings: [String]
     @State private var selectedLanguages: [String]
 
     @Environment(\.dismiss) private var dismiss
 
     init() {
-        var languageCodes = Array(SourceManager.shared.sourceListLanguages)
-
-        // sort alphabetically
-        languageCodes.sort(by: {
-            let lhs = Locale.current.localizedString(forIdentifier: $0)
-            let rhs = Locale.current.localizedString(forIdentifier: $1)
-            return lhs ?? $0 < rhs ?? $1
-        })
-
-        // bring local language to top
-        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
-        if let code = Locale.current.languageCode {
-            languageCodes.insert(code, at: 0)
-        }
-
-        self.languages = [
-            .init(id: "multi", title: NSLocalizedString("MULTI_LANGUAGE"))
-        ] + languageCodes.map { code in
-            .init(
-                id: code,
-                title: Locale.current.localizedString(forIdentifier: code) ?? code
-            )
-        }
         self._contentRatings = State(initialValue: SettingsStore.shared.get(key: "Browse.contentRatings"))
         self._selectedLanguages = State(initialValue: SettingsStore.shared.get(key: "Browse.languages"))
     }
@@ -115,6 +91,33 @@ struct AddSourceFilterMenu: View {
         .onChange(of: selectedLanguages) { _ in
             SettingsStore.shared.set(key: "Browse.languages", value: selectedLanguages)
             NotificationCenter.default.post(name: .filterExternalSources, object: nil)
+        }
+        .task {
+            guard languages.count == 1 else { return }
+
+            var languageCodes = await Array(SourceManager.shared.getSourceListLanguages())
+
+            // sort alphabetically
+            languageCodes.sort(by: {
+                let lhs = Locale.current.localizedString(forIdentifier: $0)
+                let rhs = Locale.current.localizedString(forIdentifier: $1)
+                return lhs ?? $0 < rhs ?? $1
+            })
+
+            // bring local language to top
+            languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+            if let code = Locale.current.languageCode {
+                languageCodes.insert(code, at: 0)
+            }
+
+            self.languages = [
+                .init(id: "multi", title: NSLocalizedString("MULTI_LANGUAGE"))
+            ] + languageCodes.map { code in
+                .init(
+                    id: code,
+                    title: Locale.current.localizedString(forIdentifier: code) ?? code
+                )
+            }
         }
     }
 }

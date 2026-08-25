@@ -10,9 +10,9 @@ import AidokuRunner
 
 @MainActor
 class BrowseViewModel {
-    var updatesSources: [SourceInfo2] = []
-    var pinnedSources: [SourceInfo2] = []
-    var installedSources: [SourceInfo2] = []
+    var updatesSources: [SourceInfo] = []
+    var pinnedSources: [SourceInfo] = []
+    var installedSources: [SourceInfo] = []
 
     var unfilteredExternalSources: [ExternalSourceInfo] = []
 
@@ -20,9 +20,9 @@ class BrowseViewModel {
 
     // stored sources when searching
     private var query: String?
-    private var storedUpdatesSources: [SourceInfo2]?
-    private var storedPinnedSources: [SourceInfo2]?
-    private var storedInstalledSources: [SourceInfo2]?
+    private var storedUpdatesSources: [SourceInfo]?
+    private var storedPinnedSources: [SourceInfo]?
+    private var storedInstalledSources: [SourceInfo]?
 
     func loadInstalledSources() async {
         let installedSources = await SourceManager.shared.getSourceInfos()
@@ -38,7 +38,7 @@ class BrowseViewModel {
         let installedSources = storedInstalledSources ?? installedSources
         var defaultPinnedSources = UserDefaults.standard.stringArray(forKey: "Browse.pinnedList") ?? []
 
-        var pinnedSources: [SourceInfo2] = []
+        var pinnedSources: [SourceInfo] = []
         for sourceId in defaultPinnedSources {
             guard let source = installedSources.first(where: { $0.sourceId == sourceId }) else {
                 // remove sourceId from userdefault stored pinned list in cases such as uninstall.
@@ -67,12 +67,15 @@ class BrowseViewModel {
 
     // load external source lists
     func loadExternalSources(reload: Bool = false) async {
-        await SourceManager.shared.loadSourceLists(reload: reload, skipUpdateNotification: true)
+        if reload {
+            await SourceManager.shared.reloadSourceLists(skipUpdateNotification: true)
+        }
+        let sourceLists = await SourceManager.shared.getSourceLists()
 
         // ensure external sources have unique ids
         var sourceById: [String: ExternalSourceInfo] = [:]
 
-        for sourceList in SourceManager.shared.sourceLists {
+        for sourceList in sourceLists {
             if sourceList.legacy {
                 hasLegacySourceList = true
             }
@@ -90,7 +93,7 @@ class BrowseViewModel {
 
         unfilteredExternalSources = Array(sourceById.values)
 
-        func updateExternalInfo(for property: inout [SourceInfo2]) {
+        func updateExternalInfo(for property: inout [SourceInfo]) {
             property = property.map { info in
                 if let externalInfo = sourceById[info.sourceId] {
                     var updatedInfo = info
@@ -111,7 +114,7 @@ class BrowseViewModel {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
         let appVersion = SemanticVersion(appVersionString)
 
-        updatesSources = unfilteredExternalSources.compactMap { info -> SourceInfo2? in
+        updatesSources = unfilteredExternalSources.compactMap { info -> SourceInfo? in
             // check version availability
             if let minAppVersion = info.minAppVersion {
                 let minAppVersion = SemanticVersion(minAppVersion)

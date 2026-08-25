@@ -269,8 +269,8 @@ extension SettingsView {
                             CoreDataManager.shared.clearTracks(context: context)
                             try? context.save()
                         }
-                        SourceManager.shared.clearSources()
-                        SourceManager.shared.clearSourceLists()
+                        await SourceManager.shared.clearSources()
+                        await SourceManager.shared.clearSourceLists()
                         NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
                         NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)

@@ -126,7 +126,7 @@ private struct DownloadedMangaRow: View {
         HStack(spacing: 12) {
             // Manga cover or placeholder matching history page style
             MangaCoverView(
-                source: SourceManager.shared.source(for: manga.sourceId),
+                source: SourceManager.shared.store.source(for: manga.sourceId),
                 coverImage: manga.coverUrl ?? "",
                 width: 56,
                 height: 56 * 3/2

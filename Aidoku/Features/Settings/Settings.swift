@@ -18,7 +18,11 @@ enum Settings {
     }()
 
     private static let sourceLanguageCodes: [String] = {
-        var languageCodes = Array(SourceManager.shared.sourceLanguages)
+        var languageCodes = if #available(iOS 16, *) {
+            Locale.LanguageCode.isoLanguageCodes.map { $0.identifier }
+        } else {
+            Locale.isoLanguageCodes
+        }
 
         // sort alphabetically
         languageCodes.sort(by: {

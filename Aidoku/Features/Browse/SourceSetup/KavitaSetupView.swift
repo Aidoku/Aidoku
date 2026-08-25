@@ -82,13 +82,16 @@ struct KavitaSetupView: View {
             return false
         }
 
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
+        guard let key = await SourceManager.shared.createCustomSource(
+            .kavita(.init(
+                name: name,
+                server: server,
+                username: username,
+                password: password
+            ))
+        ) else {
+            return false
+        }
 
         UserDefaults.standard.setValue(apiKey, forKey: "\(key).apiKey")
         UserDefaults.standard.setValue(token, forKey: "\(key).token")
@@ -109,11 +112,14 @@ struct KavitaSetupView: View {
             return false
         }
 
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server
-        )
+        guard let key = await SourceManager.shared.createCustomSource(
+            .kavita(.init(
+                name: name,
+                server: server
+            ))
+        ) else {
+            return false
+        }
 
         UserDefaults.standard.setValue(apiKey, forKey: "\(key).login_key") // populate api key source setting
         UserDefaults.standard.setValue(apiKey, forKey: "\(key).apiKey")
@@ -128,11 +134,14 @@ struct KavitaSetupView: View {
 
         guard let response, let cookie = response.cookie else { return false }
 
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .kavita,
-            name: name,
-            server: server
-        )
+        guard let key = await SourceManager.shared.createCustomSource(
+            .kavita(.init(
+                name: name,
+                server: server
+            ))
+        ) else {
+            return false
+        }
 
         UserDefaults.standard.setValue("logged_in", forKey: "\(key).login_oidc")
         UserDefaults.standard.setValue(response.getApiKey(), forKey: "\(key).apiKey")

@@ -14,7 +14,7 @@ protocol SourceCellDelegate: AnyObject {
 }
 
 class SourceTableViewCell: UITableViewCell {
-    var info: SourceInfo2?
+    var info: SourceInfo?
     var section: BrowseViewController.Section?
     weak var delegate: SourceCellDelegate?
 
@@ -173,7 +173,7 @@ class SourceTableViewCell: UITableViewCell {
         }
     }
 
-    func setSourceInfo(_ info: SourceInfo2, section: BrowseViewController.Section) {
+    func setSourceInfo(_ info: SourceInfo, section: BrowseViewController.Section) {
         self.info = info
         self.section = section
 

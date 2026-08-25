@@ -103,9 +103,10 @@ extension MigrateSourcesView {
             }
             return manga
         }
+        let preferredCodes = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
         sources = manga.keys
             .map { id in
-                let source = SourceManager.shared.source(for: id)
+                let source = SourceManager.shared.store.source(for: id)
                 let coverUrl = source?.imageUrl
                 return MigrateSourceInfo(
                     id: id,
@@ -115,11 +116,16 @@ extension MigrateSourcesView {
                     source: source
                 )
             }
-            .sorted { $0.name ?? "" < $1.name ?? "" }
-            .sorted {
-                let lhs = SourceManager.languageCodes.firstIndex(of: $0.langs.count == 1 ? $0.langs[0] : "multi") ?? Int.max
-                let rhs = SourceManager.languageCodes.firstIndex(of: $1.langs.count == 1 ? $1.langs[0] : "multi") ?? Int.max
-                return lhs < rhs
+            .sorted { lhs, rhs in
+                let languageOrder = SourceLanguage.compare(
+                    lhs.langs,
+                    rhs.langs,
+                    preferredCodes: preferredCodes
+                )
+                if languageOrder != .orderedSame {
+                    return languageOrder == .orderedAscending
+                }
+                return (lhs.name ?? "").localizedCaseInsensitiveCompare(rhs.name ?? "") == .orderedAscending
             }
     }
 }
