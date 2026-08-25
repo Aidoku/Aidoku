@@ -8,19 +8,9 @@
 import Foundation
 import WebKit
 
-// counts the pages of every spine document in the background, reporting each as it lands.
-// EpubPageIndex holds them, not this.
-//
-// it counts at load and never calls settle(): measured across 53 documents of the two most
-// illustrated books in the corpus, settling cost a flat 507 to 514ms each and changed no count at
-// all, since every count taken at didFinish already equalled the settled one.
-//
-// its web view is never added to a view hierarchy. a frame and a layout are what a viewport needs;
-// window membership is not.
-//
-// a pass belongs to a viewport, so a size change cancels the one in flight. nothing measured under
-// the old size may be published afterwards, which is why cancellation is checked after each load
-// rather than only before it
+// counts every spine document in the background, reporting each as it lands. it counts at load and
+// never calls settle(), which cost a flat 507 to 514ms per document and changed no count at all.
+// its web view needs a frame and a layout but never a view hierarchy
 @MainActor
 final class EpubSpineMeasurer {
     struct Outcome {
@@ -91,12 +81,9 @@ final class EpubSpineMeasurer {
         }
 
         task = Task { [weak self] in
-            // a cancelled pass is not a finished one: cancellation is cooperative and the pass is
-            // suspended inside renderer.load, and the renderer is shared across passes and tracks
-            // one navigation at a time. two passes in the same web view are indistinguishable, one
-            // being resumed with superseded while the other files its count under the wrong path,
-            // which showed up on a 217 document book as a total seven pages long. waiting costs one
-            // document's load and removes the overlap rather than detecting it
+            // the renderer is shared across passes and tracks one navigation at a time, so two
+            // passes in the same web view file counts under each other's paths, which showed up on
+            // a 217 document book as a total seven pages long. waiting removes the overlap
             await superseded?.value
             guard let self, !Task.isCancelled else {
                 // every other exit reports an outcome, so a caller waiting on onFinish would

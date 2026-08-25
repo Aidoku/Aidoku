@@ -7,14 +7,13 @@
 
 import SwiftUI
 
-// deliberately shaped like ReaderChapterListView, its sibling. that list moves between the books
-// of a series, since one epub is one chapter; this moves within the book that is open
+// shaped like ReaderChapterListView, which moves between the books of a series where this moves
+// within the book that is open
 struct ReaderEpubContentsView: View {
     let contents: EpubTableOfContents
-    // resolved when the list appears rather than passed in, since a book whose contents are finer
-    // than its spine can only answer once the document the reader is in has been laid out
+    // resolved when the list appears, since a book whose contents are finer than its spine can
+    // only answer once the document the reader is in has been laid out
     let currentEntry: () async -> EpubTableOfContents.Entry?
-    // nil while the pages before the entry are still being counted
     let bookPage: (EpubTableOfContents.Entry) -> Int?
     var entrySet: ((EpubTableOfContents.Entry) -> Void)?
 
@@ -42,10 +41,8 @@ struct ReaderEpubContentsView: View {
         }
     }
 
-    /// How far a level of nesting indents a row, and how many levels are indented at all.
-    ///
-    /// Deep contents exist: a technical book nests four or five levels, and indenting every one of
-    /// them would leave the deepest rows with no width for their own titles.
+    // a technical book nests four or five levels, and indenting every one would leave the deepest
+    // rows with no width for their titles
     private static let indent: CGFloat = 16
     private static let maximumIndentedDepth = 4
 

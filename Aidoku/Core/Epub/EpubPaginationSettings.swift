@@ -8,14 +8,10 @@
 import Foundation
 import UIKit
 
-// readium-css specifies the injection order and it is load-bearing: ReadiumCSS-before.css, then
-// the publication's own stylesheets or ReadiumCSS-default.css where it has none, then
-// ReadiumCSS-after.css. injection happens at document end, so "before" is spliced in as the first
-// child of <head> and "after" is appended.
-//
-// every value injected here is independent of the viewport size. --RS__viewportWidth is left at the
-// 100% readium-css gives it, since a pixel value measured at load survives a rotation while the
-// 100vw columns inside it do not, and no later measurement puts a frozen width right
+// readium-css specifies the injection order and it is load-bearing: before.css, the publication's
+// own stylesheets or default.css where it has none, then after.css. every value injected is
+// independent of the viewport size, --RS__viewportWidth included, which is left at 100% because a
+// pixel value measured at load survives a rotation while the 100vw columns inside it do not
 struct EpubPaginationSettings {
     var columnCount: Int = 1
 
@@ -26,9 +22,8 @@ struct EpubPaginationSettings {
     }
 
     // separates the two pages an iPad shows in landscape, which a gutter cannot do since it pads
-    // the body and so sits outside both columns. a page therefore begins every
-    // viewportWidth + columnGapPx, and n pages span n * (viewportWidth + gap) - gap. every count and
-    // offset here is written that way; nothing may divide a scroll offset by the viewport width
+    // the body. a page therefore begins every viewportWidth + columnGapPx, so nothing may divide a
+    // scroll offset by the viewport width alone
     var columnGapPx: Int = 10
 
     var pageGutterPx: Int = 20
@@ -132,20 +127,17 @@ struct EpubPaginationSettings {
             root.style.setProperty('--USER__backgroundColor', 'light-dark(#FFFFFF, #000000)');
             root.style.setProperty('--USER__textColor', 'light-dark(#000000, #FFFFFF)');
 
-            // readium-css toggles are substring matches against the inline style attribute rather
-            // than classes, so a flag is activated by setting a custom property whose value is the
-            // flag. this one is a double negative: every rule it gates is written
-            // :not([style*="readium-noOverflow-on"]), so setting it removes readium-css's overflow
-            // clipping from body and :root. that trades a table cut off at the column edge for one
-            // that bleeds onto the following pages, which the table pass below then scales.
-            // see readium/readium-css#138 before changing it
+            // readium-css toggles are substring matches against the inline style attribute, so a
+            // flag is set by giving a custom property its name. this one is a double negative:
+            // setting it removes readium-css's overflow clipping, trading a table cut off at the
+            // column edge for one that bleeds, which the table pass below scales. see
+            // readium/readium-css#138 before changing it
             root.style.setProperty('--USER__noOverflow', 'readium-noOverflow-on');
             \(applyIOSPatch ? "root.style.setProperty('--USER__iOSPatch', 'readium-iOSPatch-on');" : "")
             \(applyIPadOSPatch ? "root.style.setProperty('--USER__iPadOSPatch', 'readium-iPadOSPatch-on');" : "")
 
-            // scaled to fit one page whole, and marked so a tap can open the fullscreen preview.
-            // transform shrinks only the painting, so a wrapper carries the scaled height for the
-            // column layout. runs after the variables above, which decide the geometry to fit
+            // scaled to fit one page whole and marked so a tap can open the fullscreen preview.
+            // transform shrinks only the painting, so a wrapper carries the scaled height
             var tables = Array.prototype.slice.call(document.querySelectorAll('table'))
                 .filter(function(table) {
                     // a nested table is part of its outer table's width
@@ -198,9 +190,8 @@ struct EpubPaginationSettings {
         return jsLiteral(css)
     }
 
-    // Reader.textFontFamily comes from UIFont.familyNames, which includes families the user has
-    // installed, so a name carrying an apostrophe would close the literal early and make the whole
-    // script a syntax error: no viewport element, no readium-css, and a plausible 980px page count
+    // a font family carrying an apostrophe would close the literal early and make the whole script
+    // a syntax error, silently: no viewport element, no readium-css, a plausible 980px page count
     private static func jsLiteral(_ value: String) -> String {
         guard
             let encoded = try? JSONEncoder().encode(value),

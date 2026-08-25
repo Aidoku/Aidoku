@@ -1333,7 +1333,7 @@ extension ReaderViewController {
         handleZoneTap(at: point)
     }
 
-    /// The tap-zone half of `handleTap`: turn a page or toggle the bars.
+    // the tap-zone half of handleTap: turn a page or toggle the bars
     private func handleZoneTap(at point: CGPoint) {
         guard let reader, let tapZone else {
             toggleBarVisibility()
@@ -1718,33 +1718,25 @@ extension ReaderViewController {
 // MARK: - Table of Contents
 
 extension ReaderViewController {
-    /// The hosted reader when it carries contents of its own, which is what decides whether the
-    /// chapter-list button opens those contents or the chapters of the series.
+    // decides whether the chapter-list button opens the book's contents or the series' chapters
     private var contentsReader: ReaderTableOfContentsReader? {
         reader as? ReaderTableOfContentsReader
     }
 
-    /// Whether the hosted reader has read its own contents yet. False for a reader that has none.
-    ///
-    /// Asked of the reader rather than of the table, because a book that declares no contents reads
-    /// them and finds none: taking an empty table for "not read yet" left the chapter-list button
-    /// disabled for as long as such a book was open, and the fallback in `openContents` that exists
-    /// for exactly that book was then reachable only by keyboard or pencil.
+    // asked of the reader rather than the table: a book that declares no contents has read them
+    // and found none, and taking an empty table for "not read yet" left the button disabled for as
+    // long as such a book was open
     private var hasReadContents: Bool {
         contentsReader?.hasReadTableOfContents == true
     }
 
-    /// Whether the hosted reader has contents worth showing, which decides which list the button
-    /// opens once it is enabled.
+    // decides which list the button opens once it is enabled
     private var hasContents: Bool {
         contentsReader?.tableOfContents.isEmpty == false
     }
 
-    /// Rebuilds the bar items that depend on what the hosted reader can offer.
-    ///
-    /// Rebuilt rather than hidden: `UIBarButtonItem.isHidden` is iOS 16 and the reader deploys to
-    /// 15. Which reader is hosted, and whether it has read a table of contents yet, are both known
-    /// only after a chapter has been loaded, so this is called again whenever either can have moved.
+    // rebuilt rather than hidden, UIBarButtonItem.isHidden being iOS 16 where this ships to 15.
+    // called again whenever the hosted reader or its contents can have changed
     func updateBarButtonItems() {
         let state = BarButtonState(
             hostsContents: contentsReader != nil,
@@ -1780,11 +1772,8 @@ extension ReaderViewController {
         navigationItem.rightBarButtonItems = items
     }
 
-    /// Shows the contents of what is open, so the reader can move about inside it.
-    ///
-    /// Reached through `openContents` rather than from a button of its own, since one ePub is one
-    /// chapter and its chapter list holds a single row: the two answer the same question, and only
-    /// one of them answers it usefully.
+    // reached through openContents rather than a button of its own, since one epub is one chapter
+    // and its chapter list holds a single row
     @objc func openTableOfContents() {
         guard let reader = contentsReader else { return }
         let view = ReaderEpubContentsView(
@@ -1799,15 +1788,8 @@ extension ReaderViewController {
         present(UIHostingController(rootView: view), animated: true)
     }
 
-    /// Opens whichever list places the reader in what they are reading.
-    ///
-    /// A reader carrying contents of its own answers that with them; every other reader answers it
-    /// with the chapters of the series. The button is disabled until a contents-carrying reader has
-    /// read them, so what is decided here is only which list a reader that has read them opens.
-    ///
-    /// A book that declares no contents still opens its own sheet, which says so, unless the series
-    /// holds more than one book: an ePub is one chapter, so a series of several is a list worth
-    /// showing, and it is the only way to reach the next book without leaving the reader.
+    // a book that declares no contents still opens its own sheet, which says so, unless the series
+    // holds more than one book, that being the only way to reach the next one without leaving
     @objc func openContents() {
         guard contentsReader != nil else {
             openChapterList()

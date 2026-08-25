@@ -8,9 +8,8 @@
 import Foundation
 import WebKit
 
-// requests address the aidoku-epub scheme under the host "book", one epub-internal path each, so
-// relative links inside a spine document resolve against the same scheme and their subresources
-// arrive here too. nothing is extracted to disk, and the web view is never given a file origin
+// relative links inside a spine document resolve against the same scheme and arrive here too.
+// nothing is extracted to disk, and the web view is never given a file origin
 @MainActor
 final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
     nonisolated static let scheme = "aidoku-epub"
@@ -18,10 +17,9 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
 
     private let provider: any EpubResourceProvider
 
-    // the tasks still ours to complete, since delivering a completion to a task WebKit has stopped
-    // traps. the task object is the value, not just its identifier: ObjectIdentifier is an address,
-    // and a stalled request that never returns would otherwise leave its identifier behind for the
-    // next task allocated at that address to inherit
+    // delivering a completion to a task WebKit has stopped traps. the task object is the value,
+    // not just its identifier: ObjectIdentifier is an address, and a stalled request would leave
+    // its identifier for the next task allocated there to inherit
     private var activeTasks: [ObjectIdentifier: any WKURLSchemeTask] = [:]
 
     init(provider: any EpubResourceProvider) {
@@ -75,7 +73,6 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
 
     // MARK: - Helpers
 
-    // a task WebKit has stopped is no longer held, and so is answered by nobody
     private func claimCompletion(of identifier: ObjectIdentifier) -> Bool {
         activeTasks.removeValue(forKey: identifier) != nil
     }
@@ -90,12 +87,9 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         return path
     }
 
-    // two extensions are not taken at face value. some toolchains give spine documents an .xml
-    // extension while the manifest declares them xhtml, and serving those as generic xml makes
-    // WebKit build an xml document, ignore the viewport element and lay out at 980px with no error,
-    // so the contents decide instead. .html and .htm go to the html parser because epub 2 permits a
-    // content document that is not well-formed xml, and the xml parser renders a parser error in
-    // place of one, leaving a blank page the measurer files as unmeasurable
+    // two extensions are not taken at face value. an .xml spine document the manifest declares
+    // xhtml, served as generic xml, lays out at 980px with no error, so the contents decide. .html
+    // goes to the html parser, epub 2 permitting a document the xml parser refuses outright
     nonisolated static func mimeType(forPath path: String, contents: Data = Data()) -> String {
         switch (path as NSString).pathExtension.lowercased() {
             case "xml": declaresXHTML(contents) ? "application/xhtml+xml" : "application/xml"
@@ -118,8 +112,7 @@ final class EpubSchemeHandler: NSObject, WKURLSchemeHandler {
         }
     }
 
-    // the namespace is ascii, so the latin-1 fallback finds it whatever the document's real
-    // encoding is, including where a multi-byte character straddles the end of the prefix
+    // the namespace is ascii, so the latin-1 fallback finds it whatever the real encoding is
     nonisolated private static func declaresXHTML(_ contents: Data) -> Bool {
         let head = contents.prefix(1024)
         let text = String(bytes: head, encoding: .utf8) ?? String(bytes: head, encoding: .isoLatin1)

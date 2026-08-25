@@ -7,14 +7,12 @@
 
 import Foundation
 
-// prefix sums over page counts that arrive one document at a time, since a count belongs to a
-// document laid out at a viewport and measuring one costs a load. every question here has to be
-// answerable while the counts are incomplete, and is nil rather than approximated where it is not:
-// a total that grows is honest, a position that moves under the reader is not
+// prefix sums over page counts that arrive one document at a time. every answer here is nil rather
+// than approximated while the counts are incomplete: a total that grows is honest, a position that
+// moves under the reader is not
 struct EpubPageIndex {
     let spinePaths: [String]
 
-    // nil where the document has not been measured yet
     private var counts: [Int?]
 
     // both zero-based
@@ -42,15 +40,13 @@ struct EpubPageIndex {
         !counts.isEmpty && counts.allSatisfy { $0 != nil }
     }
 
-    // a lower bound on the book until isComplete, and must not be displayed as though it were final
     var total: Int {
         counts.reduce(into: 0) { total, count in
             if let count { total += count }
         }
     }
 
-    // re-measuring is normal: every count belongs to a viewport, so a rotation invalidates all of
-    // them. a document occupies at least one page even when empty, so a lower count is clamped
+    // a document occupies at least one page even when empty, so a lower count is clamped
     mutating func setPageCount(_ count: Int, forDocumentAt index: Int) {
         guard counts.indices.contains(index) else { return }
         counts[index] = max(count, 1)
@@ -60,21 +56,19 @@ struct EpubPageIndex {
         counts.indices.contains(index) ? counts[index] : nil
     }
 
-    // called when the viewport changes, since a count measured at one size describes a layout that
-    // no longer exists
+    // a count measured at one viewport describes a layout that no longer exists
     mutating func invalidate() {
         counts = Array(repeating: nil, count: spinePaths.count)
     }
 
-    // nil when any earlier document is unmeasured, since the pages before it cannot be counted
     func bookPage(forDocumentAt index: Int, page: Int) -> Int? {
         guard let count = pageCount(forDocumentAt: index), page >= 0, page < count else { return nil }
         guard let start = startOfDocument(at: index) else { return nil }
         return start + page
     }
 
-    // nil past the measured run of documents at the front of the spine, since a page beyond it may
-    // belong to any of the documents that follow
+    // nil past the measured run at the front of the spine, a page beyond it belonging to any of
+    // the documents that follow
     func position(ofBookPage page: Int) -> Position? {
         guard page >= 0 else { return nil }
         var remaining = page
@@ -99,10 +93,8 @@ struct EpubPageIndex {
     }
 
     // (page + anchor) / total, restored as floor(fraction * total). the caller picks the anchor:
-    // the leading edge for one column or a scrolling document, (n - 1) / n for an n-column spread,
-    // whose earlier columns have been read by the time the reader leaves it. both halves came from
-    // a restore landing a page off. nil until the book is measured, since a fraction of a lower
-    // bound overstates how far through it the reader is and this is written to storage
+    // the leading edge for one column, (n - 1) / n for an n-column spread, both halves having come
+    // from a restore landing a page off. nil until measured, this being written to storage
     func progression(forDocumentAt index: Int, page: Int, anchor: Double) -> Double? {
         guard isComplete, let bookPage = bookPage(forDocumentAt: index, page: page) else { return nil }
         return (Double(bookPage) + anchor) / Double(total)

@@ -8,39 +8,28 @@
 import Foundation
 import WebKit
 
-// renders the documents of one epub spine, laid out in columns by readium-css. one web view serves
-// the whole spine: cost follows the number of documents rather than their size, and reuse keeps the
-// footprint flat.
-//
-// a page count belongs to a viewport size, since a column is 100vh by 100vw and any change to
-// either re-fragments the document and moves every page boundary
+// a page count belongs to a viewport size, since a column is 100vh by 100vw
 @MainActor
 final class EpubSpineRenderer: NSObject {
     enum RenderError: Error {
         case unresolvablePath(String)
         case navigationFailed(String)
-        // abandoned because another navigation began
         case superseded
         case measurementFailed(String)
     }
 
-    // the view the host places in its hierarchy. its size is the viewport every count is measured
-    // against
+    // its size is the viewport every count is measured against
     let webView: WKWebView
 
     private(set) var pageCount = 0
     private(set) var currentPage = 0
 
-    // the position that survives a document being laid out again, where a page index does not: a
-    // document of 43 pages at one width was 48 at another. a fraction rather than a pointer into
-    // the text, which is what the app already keeps and what both text readers put in
-    // HistoryObject.scrollPosition, dividing by one less than the page count as this does.
-    // belongs to one spine document
+    // survives a relayout where a page index does not, and divides by one less than the page count
+    // as the text readers' HistoryObject.scrollPosition does. belongs to one spine document
     private(set) var progression: Double = 0
 
-    // scroll mode's precise counterpart to currentPage / pageCount, which rounds the offset to a
-    // boundary and the trailing partial screen up, together understating the position by up to a
-    // page and resuming a mode switch early. nil for a paged document
+    // currentPage / pageCount understates the position by up to a page, rounding the offset to a
+    // boundary and the trailing partial screen up, which resumed a mode switch early
     var scrollEdgeFraction: Double? {
         guard !settings.paged else { return nil }
         let contentHeight = Double(webView.scrollView.contentSize.height)
@@ -48,41 +37,32 @@ final class EpubSpineRenderer: NSObject {
         return min(max(currentPageOffset / contentHeight, 0), 1)
     }
 
-    // an image decoding after navigation ended, or a change to the web view's size. the page shown
-    // is preserved across both
     var onRepaginate: ((Int) -> Void)?
 
-    // a move between spine documents is the book's to make, so a link is reported as a request and
-    // the navigation cancelled: one that loaded itself would leave the counts and the spine
-    // position describing a document no longer on screen
+    // reported as a request rather than followed: a navigation that loaded itself would leave the
+    // counts and the spine position describing a document no longer on screen
     var onLinkActivated: ((String, String?) -> Void)?
 
     private let settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
 
-    // loading over a navigation in flight makes WebKit report the replaced one as cancelled, and
-    // that report arrives after the replacement is installed, so without an identity to compare
-    // against the failure of the superseded navigation resumes the healthy one
+    // WebKit reports a replaced navigation as cancelled after the replacement is installed, so
+    // without an identity to compare, the superseded one's failure resumes the healthy one
     private var pendingNavigation: WKNavigation?
     private var confirmationTask: Task<Void, Never>?
     private var sizeChangeTask: Task<Void, Never>?
 
-    // read back from the document rather than computed here: the scroll and the check that
-    // verifies it must use one number, and window.innerWidth is a CSSOM long while bounds.width can
-    // be fractional. a width held on this side also goes stale the moment the document is laid out
-    // again, and at a remembered 412 against a document laid out at 449 every page arrived 37px
-    // before its boundary and showed the tail of the page before
+    // read back from the document rather than computed here, since a width held on this side goes
+    // stale: at a remembered 412 against a document laid out at 449, every page arrived 37px early
     private var currentPageOffset: Double = 0
 
-    // covers device-pixel snapping, not a disagreement about the geometry
     private static let pageOffsetTolerance: Double = 1
 
-    // so work started for one page can tell it has been overtaken
     private var pageRequests = 0
     private var pagesInFlight = 0
 
-    // throws where the content rule list cannot be compiled: a renderer without it would show the
-    // book while letting it reach the network
+    // throws where the content rule list cannot be compiled, which would show the book while
+    // letting it reach the network
     init(provider: any EpubResourceProvider, settings: EpubPaginationSettings = .default) async throws {
         self.settings = settings
 
@@ -98,19 +78,16 @@ final class EpubSpineRenderer: NSObject {
         webView.navigationDelegate = self
         webView.onSizeChange = { [weak self] in self?.handleSizeChange() }
 
-        // WebKit resolves 100vh against the web view's bounds rather than the area left visible
-        // once insets are applied, so a view whose scroll view insets itself lays out a column
-        // taller than it can show and leaves the foot of every page under the chrome
+        // WebKit resolves 100vh against the bounds rather than the area insets leave visible, so a
+        // self-insetting scroll view puts the foot of every page under the chrome
         webView.scrollView.contentInsetAdjustmentBehavior = .never
-        // a paged document is exactly as tall as its viewport, and a free scroll would leave a
-        // column boundary mid-viewport where the offsets no longer describe what is on screen. a
-        // scroll-mode document is the opposite, and handleScroll adopts its scrolling
+        // a free scroll would leave a paged document's column boundary mid-viewport, where the
+        // offsets no longer describe what is on screen
         webView.scrollView.alwaysBounceVertical = !settings.paged
         webView.scrollView.isScrollEnabled = !settings.paged
 
-        // in scroll mode the reading position is the vertical scroll offset, which no page turn
-        // reports, so it is observed directly. at 1% steps, since every offset change would rewrite
-        // the toolbar once per frame while a finger drags
+        // no page turn reports a scroll-mode position, so the offset is observed directly, at 1%
+        // steps to keep a drag from rewriting the toolbar once per frame
         if !settings.paged {
             scrollObservation = webView.scrollView.observe(\.contentOffset) { [weak self] _, _ in
                 Task { @MainActor in self?.handleScroll() }
@@ -121,8 +98,7 @@ final class EpubSpineRenderer: NSObject {
     private var scrollObservation: NSKeyValueObservation?
 
     private func handleScroll() {
-        // offsets seen while a document is loading belong to the one being replaced, and adopting
-        // them would hand the new document a page and an overscroll it never had
+        // offsets seen while loading belong to the document being replaced
         guard navigationContinuation == nil else { return }
         let scrollView = webView.scrollView
         let viewportHeight = Double(scrollView.bounds.height)
@@ -130,24 +106,19 @@ final class EpubSpineRenderer: NSObject {
         let maxOffset = Double(scrollView.contentSize.height) - viewportHeight
         let fraction = maxOffset > 0 ? min(max(offsetY / maxOffset, 0), 1) : 0
 
-        // the page follows a free scroll, which keeps the book page and the slider moving, and is
-        // adopted as the current target so holdCurrentPage does not scroll the reader back. not
-        // while a programmatic turn is in flight, whose target is the authority then.
-        //
-        // the bottom of the document is the last page even though that page's grid offset sits past
-        // the scrollable range, since content is rarely an exact multiple of the viewport
+        // adopted as the current target too, so holdCurrentPage does not scroll the reader back
         if pagesInFlight == 0, viewportHeight > 0, pageCount > 0 {
-            // within a line's height of the bottom counts as the bottom: the scroll view rests a
-            // few points short of its maximum, and a 1pt tolerance left the counter one page shy
+            // the bottom counts as the last page even though its grid offset sits past the
+            // scrollable range: the scroll view rests a few points short of its maximum, and a 1pt
+            // tolerance left the counter one page shy
             currentPage = offsetY >= maxOffset - 24
                 ? pageCount - 1
                 : min(max(Int((offsetY / viewportHeight).rounded()), 0), pageCount - 1)
             currentPageOffset = min(max(offsetY, 0), max(maxOffset, 0))
         }
 
-        // a pull past either end is the reader asking to continue, since vertical scrolling cannot
-        // cross a spine boundary. fired once per pull and re-armed only once the offset is back
-        // inside the scrollable range, so the bounce-back cannot repeat it
+        // re-armed only once the offset is back inside the scrollable range, so the bounce-back
+        // cannot fire this twice
         if offsetY > maxOffset + Self.overscrollThreshold || offsetY < -Self.overscrollThreshold {
             if !overscrollTriggered {
                 overscrollTriggered = true
@@ -162,15 +133,13 @@ final class EpubSpineRenderer: NSObject {
         onScroll?()
     }
 
-    // set above the overshoot a normal flick's bounce reaches on an iPad, so arriving at the bottom
-    // with momentum does not cross into the next chapter. tuned on a simulator; make it
-    // velocity-aware if flicks still cross documents on a device
+    // above the overshoot a normal flick's bounce reaches on an iPad, so momentum alone does not
+    // cross into the next chapter
     private static let overscrollThreshold: Double = 120
 
     private var overscrollTriggered = false
 
-    // walks up from the element under the point, so a tap inside a linked or captioned image still
-    // finds it. an inline svg with no source has no resource to show
+    // walks up, so a tap inside a linked or captioned image still finds it
     func imageSource(at point: CGPoint) async -> String? {
         let script = """
         (function() {
@@ -194,8 +163,6 @@ final class EpubSpineRenderer: NSObject {
         return source
     }
 
-    // only tables the injection script had to shrink: one that fits its page is readable where it
-    // is and needs no preview
     func tableHTML(at point: CGPoint) async -> String? {
         let script = """
         (function() {
@@ -212,8 +179,7 @@ final class EpubSpineRenderer: NSObject {
 
     var onScroll: (() -> Void)?
 
-    // true past the end, false past the start: the gesture that continues into the neighbouring
-    // spine document
+    // true past the end, false past the start
     var onOverscroll: ((Bool) -> Void)?
 
     deinit {
@@ -223,8 +189,7 @@ final class EpubSpineRenderer: NSObject {
 
     // MARK: - Rendering
 
-    // scrollWidth was already correct at didFinish for all 211 documents of the measured corpus,
-    // so the count is available as soon as navigation completes
+    // scrollWidth is already correct at didFinish, measured across the whole corpus
     @discardableResult
     func load(spinePath: String) async throws -> Int {
         guard let url = EpubSchemeHandler.url(forResourcePath: spinePath) else {
@@ -233,25 +198,20 @@ final class EpubSpineRenderer: NSObject {
 
         cancelPendingWork()
 
-        // a document swap must not inherit the gesture that caused it: a fling's momentum keeps
-        // scrolling after the next document has loaded, which showed a document's bottom instead of
-        // its start. toggling the pan recognizer cancels a drag still in the reader's finger, which
-        // killing the offset alone does not, and re-setting the offset kills a running deceleration
+        // a fling's momentum keeps scrolling after the next document loads, showing its bottom
+        // instead of its start. toggling the recognizer cancels a drag still in the finger
         webView.scrollView.panGestureRecognizer.isEnabled = false
         webView.scrollView.panGestureRecognizer.isEnabled = true
         webView.scrollView.setContentOffset(webView.scrollView.contentOffset, animated: false)
 
-        // cleared before the navigation rather than after it, since a throw from either the
-        // navigation or the measurement would otherwise leave a count belonging to the old document
-        // beside a page belonging to this one, which the debug screen showed as 1/43 for a blank
-        // document
+        // cleared before the navigation, or a throw leaves the old document's count beside this
+        // one's page
         currentPage = 0
         progression = 0
         pageCount = 0
         currentPageOffset = 0
 
-        // loading over the custom scheme means relative subresource requests resolve against it
-        // too, so they arrive back at the handler
+        // relative subresource requests resolve against the custom scheme and come back here
         let navigation = webView.load(URLRequest(url: url))
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
             pendingNavigation = navigation
@@ -265,32 +225,24 @@ final class EpubSpineRenderer: NSObject {
         return count
     }
 
-    // neither the count nor the page shown depends on this. what it buys is a document WebKit has
-    // finished laying out, so nothing moves under a caller about to read it. a resize is waited on
-    // as well as a load, since a size change cancels the old layout's confirmation and starts its
-    // own work
+    // buys a document WebKit has finished laying out, so nothing moves under a caller about to
+    // read it. the resize is waited on too, having cancelled the old layout's confirmation
     func settle() async {
         await confirmationTask?.value
         await sizeChangeTask?.value
     }
 
-    // a scroll requested from javascript is carried out by the scroll view rather than the script,
-    // so the document reports the previous offset for 20 to 35ms after the script returns and the
-    // offset has to be read back rather than assumed. animated slides for a turn the reader
-    // performed; restores, slider jumps and layout corrections stay instant
+    // the scroll view carries out a scroll requested from javascript, so the document reports the
+    // previous offset for 20 to 35ms afterwards and it has to be read back
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
-        // a superseded turn writes nothing: its currentPage belongs to whoever overtook it, which
-        // during a rotation is repaginate restoring a rounded page
         guard await goToPage(index, animated: animated, timeout: timeout) else { return }
-        // recorded from the reader's own turns only, since a restore reads this fraction and
-        // rounding to the nearest page each time would let the position wander across rotations
+        // from the reader's own turns only: a restore reads this fraction back, and rounding it
+        // each time would let the position wander across rotations
         progression = Double(currentPage) / Double(max(pageCount - 1, 1))
     }
 
-    // rests a scroll-mode viewport off the page grid, since a restore there has no reason to land
-    // on a boundary: the boundary sits before the place being restored, and a later switch back to
-    // paged floored a second time from it, walking every paged, scroll, paged round trip one page
-    // back. scrollEdgeFraction reads back precisely what is set here
+    // off the page grid: a boundary sits before the place restored, so switching back to paged
+    // floored a second time from it and walked every round trip a page back
     func showEdge(_ fraction: Double) async {
         guard !settings.paged, pageCount > 0 else { return }
         let script = """
@@ -310,11 +262,8 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // answered in a batch because a book converted from a single file addresses its whole contents
-    // by fragment, and one round trip per entry would be paid every time the contents are shown. a
-    // fragment the document does not contain is absent rather than defaulted to its first page.
-    // measured from this renderer's own offset, which goToPage has confirmed against the scroll
-    // view, since the document's pageXOffset lags what is on screen
+    // measured from this renderer's own offset rather than the document's pageXOffset, which lags
+    // what is on screen. a fragment the document lacks is absent rather than defaulted to page one
     func fragmentPages(_ fragments: [String]) async -> [String: Int] {
         guard !fragments.isEmpty, pageCount > 0 else { return [:] }
         guard
@@ -346,12 +295,11 @@ final class EpubSpineRenderer: NSObject {
             let json = (result as? String)?.data(using: .utf8),
             let pages = try? JSONSerialization.jsonObject(with: json) as? [String: Int]
         else { return [:] }
-        // a page past the end is a measurement taken while the document was being laid out again
+        // a page past the end was measured while the document was being laid out again
         return pages.mapValues { min(max($0, 0), max(pageCount - 1, 0)) }
     }
 
-    // returns whether this request saw itself through: one overtaken by a newer request, or
-    // cancelled, returns false and leaves the document to whoever overtook it
+    // false where a newer request overtook this one, which then owns the document
     @discardableResult
     private func goToPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async -> Bool {
         pageRequests += 1
@@ -361,9 +309,8 @@ final class EpubSpineRenderer: NSObject {
         let request = pageRequests
         currentPage = min(max(index, 0), max(pageCount - 1, 0))
 
-        // the offset is computed inside the document and returned, so the check below verifies the
-        // scroll that was performed rather than one recomputed from a size this side believes in.
-        // paged pages are column offsets along x, scroll-mode pages viewport heights along y
+        // computed inside the document and returned, so the check below verifies the scroll that
+        // was performed rather than one recomputed from a size this side believes in
         let behavior = animated ? "smooth" : "auto"
         let script = settings.paged ? """
         var offset = \(currentPage) * (window.innerWidth + \(settings.columnGapPx));
@@ -384,24 +331,20 @@ final class EpubSpineRenderer: NSObject {
 
         let deadline = Date().addingTimeInterval(timeout)
         while Date() < deadline {
-            // a page asked for since this one supersedes it, and waiting on an offset nobody wants
-            // would hold up whoever asked for the newer page
+            // waiting on an offset nobody wants would hold up whoever asked for the newer page
             guard request == pageRequests, !Task.isCancelled else { return false }
             if await isShowingCurrentPage() { return true }
             try? await Task.sleep(nanoseconds: 8_000_000)
         }
-        // nothing overtook it, so it stands as the page being shown even though the offset could
-        // not be confirmed inside the timeout
+        // nothing overtook it, so it stands even though the offset was never confirmed
         return true
     }
 
-    // the scroll view is asked because it holds what is on screen: the document's own pageXOffset
-    // is updated by a rendering update, so it lags whenever the web process has nothing else to
-    // draw and would report a page turn as unfinished long after the reader could see it
+    // the scroll view holds what is on screen, where pageXOffset lags a rendering update
     private func isShowingCurrentPage() async -> Bool {
         let target = currentPageOffset
-        // points and css pixels are the same size here, since the injected viewport element maps
-        // the document to the device width at a scale of one
+        // points and css pixels are the same size here, the viewport element mapping the document
+        // to the device width at a scale of one
         let offset = settings.paged
             ? Double(webView.scrollView.contentOffset.x)
             : Double(webView.scrollView.contentOffset.y)
@@ -415,10 +358,9 @@ final class EpubSpineRenderer: NSObject {
         let viewportExtent: Double
     }
 
-    // paged: n columns span n * width + (n - 1) * gap, so the gap belongs in the expression even
-    // while it is zero, or the count drifts low across a long document. scroll mode: a page is one
-    // viewport height, rounded up since a trailing partial screen is still text to be read, with an
-    // epsilon against float fuzz at exact multiples
+    // paged: n columns span n * width + (n - 1) * gap, so the gap belongs in the expression even at
+    // zero, or the count drifts low across a long document. scrolled: one viewport height a page,
+    // rounded up, with an epsilon against float fuzz at exact multiples
     private func measurePageCount() async throws -> Int {
         let metrics = try await readMetrics()
         guard metrics.viewportExtent > 0 else {
@@ -433,10 +375,8 @@ final class EpubSpineRenderer: NSObject {
     }
 
     // a size change reaches the view before the web content process has acted on it, so measuring
-    // when layoutSubviews fires describes the layout being replaced: an iPad entering a split view
-    // kept its full-width count while the document had already reflowed, and each resize reported
-    // the resize before it. the bounds are the expectation and the document stays the authority,
-    // so this waits until the two agree
+    // when layoutSubviews fires describes the layout being replaced and each resize reported the
+    // resize before it. the bounds are the expectation, the document the authority
     private func waitForViewport(timeout: TimeInterval = 1) async {
         let expected = Double(webView.bounds.width)
         guard expected > 0 else { return }
@@ -456,8 +396,7 @@ final class EpubSpineRenderer: NSObject {
     }
 
     private func readMetrics() async throws -> Metrics {
-        // returned as one string and parsed here, since passing structured values across the
-        // javascript boundary is less predictable. paged documents extend along x, scrolled along y
+        // paged documents extend along x, scrolled along y
         let script = settings.paged
             ? "String(document.documentElement.scrollWidth) + ',' + String(window.innerWidth)"
             : "String(document.documentElement.scrollHeight) + ',' + String(window.innerHeight)"
@@ -475,15 +414,13 @@ final class EpubSpineRenderer: NSObject {
         return Metrics(scrollExtent: values[0], viewportExtent: values[1])
     }
 
-    // progression is restored, not the page index: re-fragmenting moves text across the pages that
-    // hold it, and a document of 29 pages at 320px became 32 at 480px with the paragraph on page 10
-    // moving to page 12
+    // progression is restored, not the page index: a document of 29 pages at 320px became 32 at
+    // 480px, with the paragraph on page 10 moving to page 12
     private func repaginate() async {
         await waitForViewport()
         guard let count = try? await measurePageCount() else { return }
-        // measuring suspends, and the document measured may no longer be the one on screen: a host
-        // loading the next chapter mid-resize would otherwise show the previous chapter's
-        // progression in the new one
+        // measuring suspends, so a host loading the next chapter mid-resize would otherwise show
+        // the previous chapter's progression in the new one
         guard !Task.isCancelled else { return }
 
         let changed = count != pageCount
@@ -495,11 +432,9 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // WebKit lays a document out again shortly after it loads, and re-fragmenting a multi-column
-    // document returns the scroll view to its first column. the reset arrives a frame or two after
-    // the event that caused it, so a page applied before it is silently lost: walking a 29 page
-    // document returned exactly one page per walk to the start. a page turn still settling is left
-    // alone, since a correction issued alongside its scroll would land after it
+    // WebKit lays a document out again shortly after it loads, returning a multi-column one to its
+    // first column a frame or two later, so a page applied before that is silently lost. a page
+    // turn still settling is left alone, since a correction alongside it would land after it
     private func holdCurrentPage(through window: TimeInterval = 0.5) async {
         let deadline = Date().addingTimeInterval(window)
         while Date() < deadline {
@@ -507,9 +442,7 @@ final class EpubSpineRenderer: NSObject {
             try? await Task.sleep(nanoseconds: 32_000_000)
             guard !Task.isCancelled else { return }
 
-            // reading the offset suspends, so the quiet is checked on both sides of it: a scroll
-            // issued alongside a page turn is not recalled by the turn that follows, and lands
-            // whenever the scroll view gets to it
+            // reading the offset suspends, so the quiet is checked on both sides of it
             guard pagesInFlight == 0, request == pageRequests else { continue }
             guard await !isShowingCurrentPage() else { continue }
             guard pagesInFlight == 0, request == pageRequests else { continue }
@@ -518,10 +451,9 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // the count does not depend on this. what it covers is an image that decodes after navigation
-    // ends and reflows the document behind a count already reported; a document whose images have
-    // all arrived cannot do that, and measuring it again would provoke the very layout
-    // holdCurrentPage exists to absorb
+    // covers an image that decodes after navigation ends and reflows the document behind a count
+    // already reported. a document whose images have arrived cannot, and measuring it again would
+    // provoke the very layout holdCurrentPage absorbs
     private func makeConfirmationTask() -> Task<Void, Never> {
         Task { [weak self] in
             guard let self else { return }
@@ -543,8 +475,7 @@ final class EpubSpineRenderer: NSObject {
         return pending == "true"
     }
 
-    // a blocked image reports itself complete too, so this settles both outcomes rather than
-    // waiting out the timeout on a book whose remote images the rule list stopped
+    // a blocked image reports itself complete too, so this settles either way
     private func waitForImages(timeout: TimeInterval = 2) async {
         let script = "String(Array.prototype.every.call(document.images, function(i) { return i.complete; }))"
         let deadline = Date().addingTimeInterval(timeout)
@@ -564,9 +495,8 @@ final class EpubSpineRenderer: NSObject {
         // the first layout of an empty web view is a size change like any other
         guard webView.url != nil else { return }
 
-        // a confirmation belongs to the layout it was started for: left running, its
-        // holdCurrentPage would hold the document to an offset computed against the old width while
-        // this one restores against the new
+        // a confirmation belongs to the layout it was started for, and would otherwise hold the
+        // document to an offset computed against the old width
         confirmationTask?.cancel()
         sizeChangeTask?.cancel()
         sizeChangeTask = Task { [weak self] in
@@ -578,8 +508,7 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    // a continuation left unresumed is a leak, and a confirmation that outlives its document would
-    // re-measure the next one
+    // a continuation left unresumed is a leak
     private func cancelPendingWork() {
         confirmationTask?.cancel()
         confirmationTask = nil
@@ -590,8 +519,8 @@ final class EpubSpineRenderer: NSObject {
         pendingNavigation = nil
     }
 
-    // only a definite mismatch is ignored: WebKit types these as implicitly unwrapped, so a nil on
-    // either side is treated as the navigation in hand rather than risking a load that never returns
+    // only a definite mismatch is ignored: WebKit types these as implicitly unwrapped, and a nil
+    // treated as a mismatch would risk a load that never returns
     private func finishNavigation(_ navigation: WKNavigation?, with error: (any Error)?) {
         if let navigation, let pendingNavigation, navigation !== pendingNavigation { return }
         pendingNavigation = nil
@@ -611,18 +540,16 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction
     ) async -> WKNavigationActionPolicy {
-        // alongside the content rule list, which is what stops subresource loads
+        // the content rule list is what stops subresource loads
         guard let url = navigationAction.request.url, url.scheme == EpubSchemeHandler.scheme else {
             return .cancel
         }
-        // a link the reader followed rather than the load this renderer asked for, which only the
-        // navigation type tells apart. cancelled and handed to the book, since even a link into the
-        // document already loaded would restart it and discard the count belonging to it
+        // only the navigation type tells a followed link from the load this renderer asked for.
+        // handed to the book and cancelled, since even a link into the loaded document restarts it
         guard navigationAction.navigationType != .linkActivated else {
             // decoded, unlike the path beside it: URL.fragment hands back the encoded form where
-            // URL.path hands back a decoded one, so a link to #sec%20one or a CJK anchor would
-            // disagree with the decoded anchor the table of contents holds. fragment(percentEncoded:)
-            // says so outright and is iOS 16, where this deploys to 15
+            // URL.path hands back a decoded one, so a CJK anchor would disagree with the decoded
+            // one the table of contents holds. fragment(percentEncoded:) is iOS 16, this ships to 15
             let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
             onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
             return .cancel
@@ -649,8 +576,6 @@ extension EpubSpineRenderer: WKNavigationDelegate {
 
 // MARK: - Size reporting
 
-// a host that shows and hides its chrome changes the web view's size without saying so, and the
-// relationship between a count and the viewport it was measured against belongs to the renderer
 private final class SizeReportingWebView: WKWebView {
     var onSizeChange: (() -> Void)?
 
@@ -661,9 +586,8 @@ private final class SizeReportingWebView: WKWebView {
         reportSizeChange()
     }
 
-    // any change at all, deliberately unlike ReaderPagedTextViewController, which ignores one below
-    // 10 points to keep NSLayoutManager from repaginating in a loop. nothing here feeds back into
-    // the size, and a column is 100vw, so a few points still move every page boundary
+    // any change at all, unlike ReaderPagedTextViewController's 10 point floor: a column is 100vw,
+    // so a few points still move every boundary, and nothing here feeds back into the size
     private func reportSizeChange() {
         guard bounds.size != lastSize else { return }
         lastSize = bounds.size

@@ -7,10 +7,9 @@ import AidokuRunner
 import Foundation
 
 // downloads a server-side epub once, so a remote book reads through the same pipeline as an
-// imported one. lives in the caches directory, so the system reclaims it under storage pressure
+// imported one, into the caches directory the system can reclaim
 enum EpubChapterCache {
-    // a cache hit is checked against the server first, so a book replaced there is not served from
-    // the previously downloaded file for ever
+    // a hit is checked against the server, so a book replaced there is not served for ever
     static func fetch(request: URLRequest, sourceKey: String, chapterId: String) async throws -> URL {
         guard let root = directory else {
             throw SourceError.message("EPUB_DOWNLOAD_FAILED")
@@ -23,12 +22,11 @@ enum EpubChapterCache {
             return file
         }
 
-        // a book arrives whole or not at all: a part of one left at file would be served as though
-        // it were the book, and no retry would ever get past the cache
+        // a part of a book left at file would be served as though it were the book, and no retry
+        // would get past the cache
         do {
             let response = try await URLSession.shared.download(for: request, to: file)
-            // kept verbatim rather than parsed: staleness is "the server says something different
-            // than it did when this was downloaded", which string equality answers
+            // kept verbatim: staleness is only whether the server says something different
             if let lastModified = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Last-Modified") {
                 try? lastModified.write(to: lastModifiedSidecar(for: file), atomically: true, encoding: .utf8)
             } else {
@@ -37,8 +35,7 @@ enum EpubChapterCache {
         } catch let error as URLSession.URLSessionError {
             guard case .httpError(let statusCode) = error else { throw error }
             LogManager.logger.error("Failed to download epub (HTTP \(statusCode)): \(request)")
-            // kavita gates downloads behind the download role and komga behind the file-download
-            // permission, so a 403 is a property of the account that no retry resolves
+            // a 403 is a property of the account, both servers gating downloads behind a role
             let sourceError = switch statusCode {
                 case 401: SourceError.message("NOT_LOGGED_IN")
                 case 403: SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")
@@ -56,8 +53,7 @@ enum EpubChapterCache {
             .appendingPathComponent("EpubCache", isDirectory: true)
     }
 
-    // everything in the directory counts, sidecars included, since the question is how much
-    // clearing it would return rather than how many books are held
+    // sidecars included, the question being how much clearing it would return
     static var totalSize: Int {
         guard
             let directory,
@@ -75,12 +71,11 @@ enum EpubChapterCache {
         try? FileManager.default.removeItem(at: directory)
     }
 
-    // the same figure the image data cache is given in AppDelegate. a remote book runs from tens to
-    // a couple of hundred megabytes, so this holds several
+    // the same figure the image data cache is given in AppDelegate
     static let capacity = 500 * 1024 * 1024
 
-    // keeping is never a victim: it is the book the caller is about to read, and evicting it would
-    // mean downloading it again on the very next open, for ever, once one book exceeds the capacity
+    // keeping is never a victim: once one book exceeds the capacity, evicting the one about to be
+    // read would download it again on every open, for ever
     static func evict(in root: URL, capacity: Int, keeping: URL?) {
         let manager = FileManager.default
         let keys: [URLResourceKey] = [.contentAccessDateKey, .fileSizeKey, .isRegularFileKey]
@@ -90,16 +85,14 @@ enum EpubChapterCache {
         var total = 0
         for case let url as URL in enumerator {
             guard url.pathExtension == "epub" else {
-                // a sidecar can outlive its book, since pages discards one holding no readable
-                // pages and leaves the sidecar where it was
+                // a sidecar can outlive the book pages discarded as unreadable
                 if url.pathExtension == "lastmodified",
                    !manager.fileExists(atPath: url.deletingPathExtension().path) {
                     try? manager.removeItem(at: url)
                 }
                 continue
             }
-            // sized from the file rather than from what was downloaded, since a book the system has
-            // already purged is no longer occupying what it did
+            // from the file rather than the download, a purged book no longer occupying what it did
             guard
                 let values = try? url.resourceValues(forKeys: Set(keys)),
                 values.isRegularFile == true,
@@ -124,8 +117,7 @@ enum EpubChapterCache {
         let accessed: Date
     }
 
-    // written rather than left to the volume: a cache hit returns the file without opening it, so
-    // nothing else would move the access time
+    // a cache hit returns the file without opening it, so nothing else moves the access time
     private static func markAccessed(_ file: URL) {
         var file = file
         var values = URLResourceValues()
@@ -133,9 +125,8 @@ enum EpubChapterCache {
         try? file.setResourceValues(values)
     }
 
-    // a cached file is trusted only as far as it parses: a body that arrived complete without being
-    // a book, which is what a proxy error page looks like, would otherwise be served for ever,
-    // since EpubParser reports no pages rather than an error
+    // trusted only as far as it parses: a complete body that is not a book, which is what a proxy
+    // error page is, would be served for ever, EpubParser reporting no pages rather than an error
     static func pages(
         request: URLRequest,
         sourceKey: String,
@@ -144,7 +135,6 @@ enum EpubChapterCache {
         let file = try await fetch(request: request, sourceKey: sourceKey, chapterId: chapterId)
         let pages = LocalFileManager.shared.readEpubPages(from: file)
         guard !pages.isEmpty else {
-            // discarded rather than kept, so opening the chapter again downloads it again
             try? FileManager.default.removeItem(at: file)
             LogManager.logger.error("Cached epub holds no readable pages, discarded: \(file)")
             throw SourceError.message("EPUB_DOWNLOAD_FAILED")
@@ -152,10 +142,9 @@ enum EpubChapterCache {
         return pages
     }
 
-    // a HEAD request, judged by Last-Modified against what the download reported and by size
-    // against the file. a server that cannot answer, being offline or without HEAD support, keeps
-    // the cached book readable rather than making freshness a requirement for reading at all.
-    // a replacement with identical size and Last-Modified slips through; compare ETag if that bites
+    // a server that cannot answer, being offline or without HEAD support, keeps the cached book
+    // readable rather than making freshness a requirement for reading. a replacement with identical
+    // size and Last-Modified slips through; compare ETag if that ever bites
     private static func isStale(request: URLRequest, file: URL) async -> Bool {
         var head = request
         head.httpMethod = "HEAD"
@@ -174,13 +163,11 @@ enum EpubChapterCache {
         return cachedSize != response.expectedContentLength
     }
 
-    // next to the book itself, so the two are kept or reclaimed together
     private static func lastModifiedSidecar(for file: URL) -> URL {
         file.appendingPathExtension("lastmodified")
     }
 
-    // a source key and a chapter id each become one path component and neither is ours to trust,
-    // since a separator in either would place the file outside the cache directory
+    // a separator in either would place the file outside the cache directory
     private static func sanitized(_ component: String) -> String {
         let allowed = CharacterSet.alphanumerics.union(.init(charactersIn: "-_."))
         let cleaned = String(component.unicodeScalars.map { allowed.contains($0) ? Character($0) : "_" })
