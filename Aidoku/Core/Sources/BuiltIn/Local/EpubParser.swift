@@ -23,7 +23,7 @@ enum EpubParser {
         var coverData: Data?
         /// Chapters in spine (reading) order.
         var chapters: [Chapter]
-        /// The book's table of contents in document order, empty where the book declares none.
+        // in document order, empty where the book declares none
         var toc: [TocEntry]
     }
 
@@ -37,18 +37,15 @@ enum EpubParser {
         var href: String { hrefs[0] }
     }
 
-    /// One entry of the book's table of contents.
-    ///
-    /// Distinct from `Chapter`, which is a run of spine documents: an entry is a *place*, so
-    /// several may point into one document and one may sit beneath another. The reader navigates
-    /// by these; the chapter grouping only decides where a chapter starts.
+    // distinct from Chapter, which is a run of spine documents: an entry is a place, so several
+    // may point into one document and one may sit beneath another
     struct TocEntry: Equatable {
-        /// Path of the content file within the archive.
+        // path of the content file within the archive
         let path: String
-        /// The fragment the entry points at, without its `#`, or nil for the head of the document.
+        // without its #, nil for the head of the document
         let fragment: String?
         let title: String
-        /// Nesting depth, zero for a top-level entry.
+        // zero for a top-level entry
         let depth: Int
     }
 
@@ -188,7 +185,7 @@ enum EpubParser {
 
     // MARK: - TOC
 
-    /// The table of contents from an EPUB 3 nav document, in document order.
+    // from an epub 3 nav document, in document order
     private static func navEntries(from archive: Archive, navPath: String) -> [TocEntry] {
         guard
             let html = extractString(from: archive, path: navPath),
@@ -213,8 +210,8 @@ enum EpubParser {
                     path: target(of: href, relativeTo: navDir, ownPath: navPath),
                     fragment: fragment(of: href),
                     title: title,
-                    // Nesting is the lists between the link and the nav itself. The outermost list
-                    // is the nav's own, so it is what depth is counted from rather than a level of it.
+                    // nesting is the lists between the link and the nav itself, and the outermost
+                    // one is the nav's own, so depth is counted from it rather than including it
                     depth: max(nesting(of: link, under: toc, tags: ["ol", "ul"]) - 1, 0)
                 )
             )
@@ -222,7 +219,7 @@ enum EpubParser {
         return entries
     }
 
-    /// The table of contents from an EPUB 2 NCX file, in document order.
+    // from an epub 2 ncx file, in document order
     private static func ncxEntries(from archive: Archive, ncxPath: String) -> [TocEntry] {
         guard
             let xml = extractString(from: archive, path: ncxPath),
@@ -231,8 +228,8 @@ enum EpubParser {
         let ncxDir = directory(of: ncxPath)
 
         var entries: [TocEntry] = []
-        // A nested navPoint follows its parent in document order, so the flat walk is reading
-        // order and the nesting is recovered from each point's ancestors.
+        // a nested navPoint follows its parent in document order, so the flat walk is reading
+        // order and the nesting is recovered from each point's ancestors
         for navPoint in elements("navpoint", in: doc) {
             guard
                 let src = elements("content", in: navPoint).first.flatMap({ attr($0, "src") }),
@@ -253,10 +250,8 @@ enum EpubParser {
         return entries
     }
 
-    /// Chapter titles keyed by archive path, which is the TOC read as one title per document.
-    ///
-    /// The first entry in a document names it, since a chapter starts where a document does while
-    /// an entry may point partway into one.
+    // the toc read as one title per document: the first entry in a document names it, since a
+    // chapter starts where a document does while an entry may point partway into one
     private static func titlesByPath(of entries: [TocEntry]) -> [String: String] {
         var titles: [String: String] = [:]
         for entry in entries where titles[entry.path] == nil {
@@ -265,7 +260,7 @@ enum EpubParser {
         return titles
     }
 
-    /// How many of `tags` the element sits inside, stopping at `root`.
+    // how many of tags the element sits inside, stopping at root
     private static func nesting(of element: Element, under root: Node, tags: [String]) -> Int {
         var depth = 0
         for parent in element.parents().array() {
@@ -275,10 +270,8 @@ enum EpubParser {
         return depth
     }
 
-    /// The archive path a TOC href points at.
-    ///
-    /// A bare fragment addresses the TOC document itself, which in EPUB 3 is content like any
-    /// other and can be in the spine.
+    // a bare fragment addresses the toc document itself, which in epub 3 is content like any other
+    // and can be in the spine
     private static func target(of href: String, relativeTo dir: String, ownPath: String) -> String {
         let path = stripFragment(href)
         return path.isEmpty ? ownPath : resolve(href: path, relativeTo: dir)
@@ -286,17 +279,13 @@ enum EpubParser {
 
     // MARK: - XML Helpers
 
-    /// The tag name without any namespace prefix, lowercased.
-    /// Prose from an OPF description, which is frequently escaped HTML rather than text.
-    ///
-    /// The package document is XML, so `text()` on the element unescapes one level and a
-    /// description authored as markup arrives here as literal tags. Block boundaries become
-    /// newlines before the tags are dropped, since an anthology listing one title per `<br>` reads
-    /// as a list rather than as one run-on line. Parsing also decodes what a second escaping left
-    /// behind, which is how `&#8212;` becomes an em dash rather than five visible characters.
+    // an opf description is frequently escaped html rather than text: the package document is xml,
+    // so text() unescapes one level and markup arrives here as literal tags. block boundaries become
+    // newlines before the tags are dropped, and a second escaping is decoded, which is how &#8212;
+    // arrives as one character rather than five
     private static func plainText(fromDescription raw: String) -> String {
-        // Prose with neither a tag nor an entity is left alone, since running an HTML parse over it
-        // would swallow the word after any stray `<`.
+        // prose with neither a tag nor an entity is left alone, since an html parse would swallow
+        // the word after any stray <
         guard raw.contains("<") || raw.contains("&") else { return raw }
         let broken = raw
             // a paragraph earns a blank line, a line break and a list item only a new line
@@ -317,10 +306,9 @@ enum EpubParser {
             .replacingOccurrences(of: " *\n *", with: "\n", options: .regularExpression)
             .replacingOccurrences(of: "\n{3,}", with: "\n\n", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            // A description renders as markdown, where a lone newline is a soft break and comes out
-            // as a space. A break inside a paragraph therefore needs the two-space form, which is
-            // what `ExpandableTextView.textUntilNewline` already relies on. Blank lines are left
-            // alone, being paragraph separators in their own right.
+            // a description renders as markdown, where a lone newline is a soft break and comes out
+            // as a space, so a break inside a paragraph needs the two-space form. blank lines are
+            // left alone, being paragraph separators in their own right
             .replacingOccurrences(of: "(?<!\n)\n(?!\n)", with: "  \n", options: .regularExpression)
     }
 
@@ -370,13 +358,13 @@ enum EpubParser {
         path.split(separator: "/").dropLast().joined(separator: "/")
     }
 
-    /// An href without its fragment, which is empty for an href that is only a fragment.
+    // empty for an href that is only a fragment
     private static func stripFragment(_ href: String) -> String {
         guard let hash = href.firstIndex(of: "#") else { return href }
         return String(href[href.startIndex..<hash])
     }
 
-    /// The fragment of an href, without its `#`, or nil where there is none.
+    // without its #, nil where there is none
     private static func fragment(of href: String) -> String? {
         guard let hash = href.firstIndex(of: "#") else { return nil }
         let fragment = String(href[href.index(after: hash)...])

@@ -7,19 +7,14 @@
 
 import SwiftUI
 
-/// The table of contents of the open book, as the reader's contents button presents it.
-///
-/// The sibling of `ReaderChapterListView`, and deliberately shaped like it: a list that opens on
-/// where the reader is and takes them somewhere when tapped. What differs is what the list holds.
-/// The chapter list moves between the books of a series, since one ePub is one chapter; this moves
-/// within the book that is open, which is otherwise reachable only by dragging the slider.
+// deliberately shaped like ReaderChapterListView, its sibling. that list moves between the books
+// of a series, since one epub is one chapter; this moves within the book that is open
 struct ReaderEpubContentsView: View {
     let contents: EpubTableOfContents
-    /// Resolved when the list appears rather than passed in, because a book whose contents are
-    /// finer than its spine can only say which entry the reader is inside once the document they
-    /// are in has been laid out.
+    // resolved when the list appears rather than passed in, since a book whose contents are finer
+    // than its spine can only answer once the document the reader is in has been laid out
     let currentEntry: () async -> EpubTableOfContents.Entry?
-    /// The book page an entry begins at, nil while the pages before it are still being counted.
+    // nil while the pages before the entry are still being counted
     let bookPage: (EpubTableOfContents.Entry) -> Int?
     var entrySet: ((EpubTableOfContents.Entry) -> Void)?
 
