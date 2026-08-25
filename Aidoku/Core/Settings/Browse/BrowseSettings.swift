@@ -8,7 +8,7 @@
 import AidokuRunner
 import Foundation
 
-struct BrowseSettings {
+struct BrowseSettings: Sendable {
     var keys: [any SettingsDefault] {
         [
             languages,

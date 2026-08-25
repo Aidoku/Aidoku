@@ -5,7 +5,7 @@
 //  Created by skitty on 7/16/26.
 //
 
-protocol SettingsValue {
+protocol SettingsValue: Sendable {
     static func deserialize(from object: Any) -> Self?
     func serialize() -> Any?
 }
