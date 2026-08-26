@@ -179,7 +179,9 @@ struct SettingsTrackingView: View {
             Text(NSLocalizedString("TRACKER_LOGOUT_INFO"))
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateSourceList)) { _ in
-            loadEnhancedTrackerSources()
+            Task {
+                await loadEnhancedTrackerSources()
+            }
         }
         .task {
             guard !loadedData else { return }
@@ -193,7 +195,7 @@ struct SettingsTrackingView: View {
                 }
             }
 
-            loadEnhancedTrackerSources()
+            await loadEnhancedTrackerSources()
 
             loadedData = true
         }
@@ -226,11 +228,12 @@ struct SettingsTrackingView: View {
 }
 
 extension SettingsTrackingView {
-    func loadEnhancedTrackerSources() {
+    func loadEnhancedTrackerSources() async {
         var komgaSources: [AidokuRunner.Source] = []
         var kavitaSources: [AidokuRunner.Source] = []
         var suwayomiSources: [AidokuRunner.Source] = []
-        for source in SourceManager.shared.sources {
+        let allSources = await SourceManager.shared.getLoadedSources()
+        for source in allSources {
             if source.key.hasPrefix(KomgaSourceRunner.sourceKeyPrefix) {
                 komgaSources.append(source)
             } else if source.key.hasPrefix(KavitaSourceRunner.sourceKeyPrefix) {
@@ -244,6 +247,9 @@ extension SettingsTrackingView {
             let trackingDisabled = UserDefaults.standard.bool(forKey: "\(source.key).disableTracking")
             enhancedTrackingStates[source.key] = !trackingDisabled
         }
+        komgaSources.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        kavitaSources.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        suwayomiSources.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         self.komgaSources = komgaSources
         self.kavitaSources = kavitaSources
         self.suwayomiSources = suwayomiSources

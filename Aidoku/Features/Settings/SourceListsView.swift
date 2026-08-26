@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct SourceListsView: View {
-    @State private var sourceLists: [SourceList] = SourceManager.shared.sourceLists
+    @State private var sourceLists: [SourceList] = []
     @State private var missingSourceLists: [URL] = []
 
-    @State private var loading = false
+    @State private var loading = true
     @State private var showAddListFailAlert = false
 
     var body: some View {
@@ -58,29 +58,26 @@ struct SourceListsView: View {
             Text(NSLocalizedString("SOURCE_LIST_ADD_FAIL_TEXT"))
         }
         .onReceive(NotificationCenter.default.publisher(for: .updateSourceLists)) { _ in
-            withAnimation {
-                loading = false
-                sourceLists = SourceManager.shared.sourceLists
-                if SourceManager.shared.sourceListURLs.count != sourceLists.count {
-                    missingSourceLists = SourceManager.shared.sourceListURLs.filter { url in
-                        !sourceLists.contains(where: { $0.url == url })
-                    }
-                } else {
-                    missingSourceLists = []
-                }
+            Task {
+                await loadSourceLists()
             }
         }
         .task {
-            if SourceManager.shared.sourceLists.isEmpty {
-                loading = true
-                await SourceManager.shared.loadSourceLists()
-                loading = false
-            }
-            if SourceManager.shared.sourceListURLs.count != sourceLists.count {
-                missingSourceLists = SourceManager.shared.sourceListURLs.filter { url in
-                    !sourceLists.contains(where: { $0.url == url })
-                }
-            }
+            guard sourceLists.isEmpty else { return }
+            await loadSourceLists()
+        }
+    }
+
+    func loadSourceLists() async {
+        withAnimation {
+            loading = true
+        }
+        let newSourceLists = await SourceManager.shared.getSourceLists()
+        let newMissingSourceLists = await SourceManager.shared.getMissingSourceLists()
+        withAnimation {
+            sourceLists = newSourceLists
+            missingSourceLists = newMissingSourceLists
+            loading = false
         }
     }
 
@@ -102,7 +99,9 @@ struct SourceListsView: View {
                 missingSourceLists.firstIndex(of: url).flatMap {
                     _ = missingSourceLists.remove(at: $0)
                 }
-                SourceManager.shared.removeSourceList(url: url)
+                Task {
+                    await SourceManager.shared.removeSourceList(url: url)
+                }
             } label: {
                 Label(NSLocalizedString("REMOVE"), systemImage: "trash")
             }
@@ -116,8 +115,10 @@ struct SourceListsView: View {
 
     func delete(at offsets: IndexSet) {
         let urls = offsets.map { sourceLists[$0].url }
-        for url in urls {
-            SourceManager.shared.removeSourceList(url: url)
+        Task {
+            for url in urls {
+                await SourceManager.shared.removeSourceList(url: url)
+            }
         }
     }
 
@@ -153,16 +154,7 @@ struct SourceListsView: View {
             await UIApplication.shared.appDelegate?.hideLoadingIndicator()
 
             if success {
-                withAnimation {
-                    sourceLists = SourceManager.shared.sourceLists
-                    if SourceManager.shared.sourceListURLs.count != sourceLists.count {
-                        missingSourceLists = SourceManager.shared.sourceListURLs.filter { url in
-                            !sourceLists.contains(where: { $0.url == url })
-                        }
-                    } else {
-                        missingSourceLists = []
-                    }
-                }
+                await loadSourceLists()
             } else {
                 showAddListFailAlert = true
             }

@@ -11,7 +11,6 @@ extension Bool: SettingsValue {}
 extension String: SettingsValue {}
 extension Int: SettingsValue {}
 extension Double: SettingsValue {}
-extension Array<String>: SettingsValue {}
 
 extension Optional: SettingsValue where Wrapped: SettingsValue {}
 
@@ -34,5 +33,31 @@ extension Date: SettingsValue {
 
     func serialize() -> Any? {
         timeIntervalSince1970
+    }
+}
+
+extension Array: SettingsValue where Element: StringConvertible {
+    static func deserialize(from object: Any) -> Self? {
+        guard let values = object as? [String] else {
+            return nil
+        }
+        return values.compactMap { Element(string: $0) }
+    }
+
+    func serialize() -> Any? {
+        map { $0.toString() }
+    }
+}
+
+extension Set: SettingsValue where Element: StringConvertible {
+    static func deserialize(from object: Any) -> Self? {
+        guard let values = object as? [String] else {
+            return nil
+        }
+        return Set(values.compactMap { Element(string: $0) })
+    }
+
+    func serialize() -> Any? {
+        map { $0.toString() }.sorted()
     }
 }

@@ -100,7 +100,7 @@ struct DownloadQueueView: View {
                         }
                     } header: {
                         HStack {
-                            let source = SourceManager.shared.source(for: section.sourceId)
+                            let source = SourceManager.shared.store.source(for: section.sourceId)
                             SourceIconView(
                                 sourceId: section.sourceId,
                                 imageUrl: source?.imageUrl,

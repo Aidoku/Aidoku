@@ -281,12 +281,11 @@ extension MangaListCell {
         if !cached {
             if let fileUrl = url.toAidokuFileUrl() {
                 urlRequest = URLRequest(url: fileUrl)
-            } else if let sourceId = identifier?.sourceKey {
-                // ensure sources are loaded so we can get the modified image request
-                await SourceManager.shared.waitForSourcesLoad()
-                if let source = SourceManager.shared.source(for: sourceId) {
-                    urlRequest = await source.getModifiedImageRequest(url: url, context: nil)
-                }
+            } else if
+                let sourceId = identifier?.sourceKey,
+                let source = await SourceManager.shared.source(for: sourceId)
+            {
+                urlRequest = await source.getModifiedImageRequest(url: url, context: nil)
             }
         }
 

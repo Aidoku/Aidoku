@@ -87,7 +87,7 @@ actor MangaManager {
         if chapters.isEmpty {
             if let fallbackChapters, !fallbackChapters.isEmpty {
                 chapters = fallbackChapters
-            } else if fetchIfNeeded, let source = SourceManager.shared.source(for: mangaId.sourceKey) {
+            } else if fetchIfNeeded, let source = await SourceManager.shared.source(for: mangaId.sourceKey) {
                 let manga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
                 let updatedManga = try? await source.getMangaUpdate(
                     manga: manga,
@@ -147,7 +147,7 @@ extension MangaManager {
         var chapters = chapters
         // update manga or chapters
         if fetchMangaDetails || chapters.isEmpty {
-            if let source = SourceManager.shared.source(for: manga.sourceKey) {
+            if let source = await SourceManager.shared.source(for: manga.sourceKey) {
                 manga = (try? await source.getMangaUpdate(manga: manga, needsDetails: fetchMangaDetails, needsChapters: chapters.isEmpty)) ?? manga
                 chapters = manga.chapters ?? chapters
             }
@@ -471,6 +471,7 @@ extension MangaManager {
         manga: Manga,
         options: [String],
         excludedCategories: [String] = [],
+        loadedSourceKeys: Set<String>,
         context: NSManagedObjectContext
     ) -> Bool {
         // update strategy is never
@@ -482,6 +483,10 @@ extension MangaManager {
             if nextUpdateTime > Date() {
                 return true
             }
+        }
+        // source is missing
+        if !loadedSourceKeys.contains(manga.sourceId) {
+            return true
         }
         // completed
         if options.contains("completed") && manga.status == .completed {
@@ -503,10 +508,6 @@ extension MangaManager {
             scanlators: manga.scanlatorFilter,
             context: context
         ) == 0 {
-            return true
-        }
-        // source is missing
-        if SourceManager.shared.source(for: manga.sourceId) == nil {
             return true
         }
 
@@ -567,6 +568,8 @@ extension MangaManager {
 
         await refreshStarted?()
 
+        let allLoadedSourceKeys = await Set(SourceManager.shared.getLoadedSources().map { $0.key })
+
         // filter items that we should skip
         let filteredManga = await CoreDataManager.shared.container.performBackgroundTask { context in
             allManga.filter { manga in
@@ -574,6 +577,7 @@ extension MangaManager {
                     manga: manga,
                     options: skipOptions,
                     excludedCategories: excludedCategories,
+                    loadedSourceKeys: allLoadedSourceKeys,
                     context: context
                 )
             }
@@ -752,7 +756,7 @@ extension MangaManager {
     }
 
     func resetCover(manga: AidokuRunner.Manga) async -> String? {
-        guard let source = SourceManager.shared.source(for: manga.sourceKey) else { return nil }
+        guard let source = await SourceManager.shared.source(for: manga.sourceKey) else { return nil }
 
         // fetch new manga details (for cover)
         let newManga = try? await source.getMangaUpdate(
@@ -1049,7 +1053,7 @@ extension MangaManager {
                         guard
                             let newManga = toSeries[oldManga.identifier],
                             let newManga,
-                            let source = SourceManager.shared.source(for: newManga.sourceKey)
+                            let source = await SourceManager.shared.source(for: newManga.sourceKey)
                         else { return nil }
 
                         let newChapters = withChapters[oldManga.identifier]

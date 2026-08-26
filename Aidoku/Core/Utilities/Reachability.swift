@@ -15,12 +15,17 @@ enum NetworkDataType {
     case wifi
 }
 
-final class Reachability {
-    private static var observers: [UUID: NWPathMonitor] = [:]
-    private static let queue = DispatchQueue(label: "ReachabilityMonitorQueue")
+actor Reachability {
+    static let shared = Reachability()
 
-    static func getConnectionType() -> NetworkDataType {
-        guard let reachability = SCNetworkReachabilityCreateWithName(kCFAllocatorDefault, "www.apple.com/library/test/success.html") else {
+    private var observers: [UUID: NWPathMonitor] = [:]
+    private let queue = DispatchQueue(label: "ReachabilityMonitorQueue")
+
+    nonisolated static func getConnectionType() -> NetworkDataType {
+        guard let reachability = SCNetworkReachabilityCreateWithName(
+            kCFAllocatorDefault,
+            "www.apple.com/library/test/success.html"
+        ) else {
             return .none
         }
 
@@ -36,11 +41,11 @@ final class Reachability {
         return flags.contains(.isWWAN) ? .cellular : .wifi
     }
 
-    static func registerConnectionTypeObserver(
-        _ handle: @escaping (NetworkDataType) -> Void,
-        queue: DispatchQueue = .main
+    func registerConnectionTypeObserver(
+        _ handle: @escaping @MainActor @Sendable (NetworkDataType) -> Void
     ) -> UUID {
         let monitor = NWPathMonitor()
+        let id = UUID()
 
         monitor.pathUpdateHandler = { path in
             let connectionType: NetworkDataType
@@ -51,20 +56,18 @@ final class Reachability {
             } else {
                 connectionType = .none
             }
-            queue.async {
+            Task { @MainActor in
                 handle(connectionType)
             }
         }
 
+        observers[id] = monitor
         monitor.start(queue: self.queue)
 
-        let id = UUID()
-        observers[id] = monitor
         return id
     }
 
-    static func unregisterConnectionTypeObserver(_ id: UUID) {
-        observers[id]?.cancel()
-        observers.removeValue(forKey: id)
+    func unregisterConnectionTypeObserver(_ id: UUID) {
+        observers.removeValue(forKey: id)?.cancel()
     }
 }

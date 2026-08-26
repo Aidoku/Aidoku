@@ -96,6 +96,7 @@ class WasmNet: WasmImports {
     var passedRequests: Int = 0
 
     var storedResponse: WasmResponseObject?
+    var userAgent: String?
 
     init(globalStore: WasmGlobalStore) {
         self.globalStore = globalStore
@@ -131,9 +132,9 @@ extension WasmNet {
         var request = urlRequest
 
         // ensure a user-agent is passed
-        if request.value(forHTTPHeaderField: "User-Agent") == nil {
+        if request.value(forHTTPHeaderField: "User-Agent") == nil, let userAgent {
             request.setValue(
-                UserAgentProvider.shared.getUserAgentBlocking(),
+                userAgent,
                 forHTTPHeaderField: "User-Agent"
             )
         }

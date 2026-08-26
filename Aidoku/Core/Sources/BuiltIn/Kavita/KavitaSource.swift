@@ -768,7 +768,9 @@ extension KavitaSourceRunner {
                 if newValue != name {
                     // update db source config with new name
                     name = newValue
-                    updateSourceConfig(updateSourceList: true)
+                    Task {
+                        await updateSourceConfig(updateSourceList: true)
+                    }
                 }
 
             case "server_change":
@@ -786,7 +788,9 @@ extension KavitaSourceRunner {
                 if newValue != server {
                     // update db source config with new server url
                     server = newValue
-                    updateSourceConfig()
+                    Task {
+                        await updateSourceConfig()
+                    }
                 }
 
             default:
@@ -794,9 +798,9 @@ extension KavitaSourceRunner {
         }
     }
 
-    private func updateSourceConfig(updateSourceList: Bool = false) {
+    private func updateSourceConfig(updateSourceList: Bool = false) async {
         let config = CustomSourceConfig.kavita(.init(key: sourceKey, name: name, server: server))
-        SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
+        await SourceManager.shared.updateCustomSource(key: sourceKey, config: config, updateSourceList: updateSourceList)
     }
 }
 

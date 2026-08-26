@@ -29,6 +29,7 @@ struct SelfHostedSourceSetupView: View {
     let sourceName: String
     let info: String
     let learnMoreUrl: URL?
+    let sourceKeyPrefix: String
     let useEmail: Bool
     let placeholderServer: String?
 
@@ -42,7 +43,7 @@ struct SelfHostedSourceSetupView: View {
     private let oidcLogInHandler: ((String, URL, [HTTPCookie]) async -> Bool)?
     private let noLogInHandler: ((String, URL) async -> Bool)?
 
-    @State private var name: String
+    @State private var name: String = ""
     @State private var server: String = ""
     @State private var username: String = ""
     @State private var password: String = ""
@@ -90,6 +91,8 @@ struct SelfHostedSourceSetupView: View {
 
     @State private var uniqueName = true
     @State private var uniqueServer = true
+    @State private var sourceNames: Set<String> = []
+    @State private var existingServers: Set<String> = []
 
     enum Field: Int, Hashable {
         case name
@@ -97,10 +100,7 @@ struct SelfHostedSourceSetupView: View {
         case username
         case password
     }
-
     @FocusState private var focusedField: Field?
-
-    private var existingServers: Set<String>
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -127,6 +127,7 @@ struct SelfHostedSourceSetupView: View {
         self.sourceName = sourceName
         self.info = info
         self.learnMoreUrl = learnMoreUrl
+        self.sourceKeyPrefix = sourceKeyPrefix
         self.useEmail = useEmail
         self.placeholderServer = placeholderServer ?? demoServer
         self.demoServer = demoServer
@@ -137,19 +138,6 @@ struct SelfHostedSourceSetupView: View {
         self.apiKeyLogInHandler = apiKeyLogIn
         self.oidcLogInHandler = oidcLogIn
         self.noLogInHandler = noLogIn
-
-        // find unique default name
-        var defaultName = sourceName
-        var counter = 2
-        while SourceManager.shared.sources.contains(where: { $0.name == defaultName }) {
-            defaultName = "\(sourceName) \(counter)"
-            counter += 1
-        }
-        self._name = State(initialValue: defaultName)
-
-        // store existing komga servers to check against for uniqueness
-        let relatedSources = SourceManager.shared.sources.filter({ $0.id.hasPrefix(sourceKeyPrefix) })
-        self.existingServers = Set(relatedSources.compactMap { UserDefaults.standard.string(forKey: "\($0.key).server") })
     }
 
     var body: some View {
@@ -364,6 +352,10 @@ struct SelfHostedSourceSetupView: View {
         }
         .navigationTitle(title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            guard sourceNames.isEmpty else { return }
+            await loadInfo()
+        }
     }
 
     var submitDisabled: Bool {
@@ -377,6 +369,24 @@ struct SelfHostedSourceSetupView: View {
                         || loginMethod == .oidc
                 )
             )
+    }
+
+    func loadInfo() async {
+        let sources = await SourceManager.shared.getSourceInfos(sorted: false)
+        sourceNames = Set(sources.map { $0.name })
+
+        // find unique default name
+        var defaultName = sourceName
+        var counter = 2
+        while sourceNames.contains(defaultName) {
+            defaultName = "\(sourceName) \(counter)"
+            counter += 1
+        }
+        self.name = defaultName
+
+        // store existing komga servers to check against for uniqueness
+        let relatedSources = sources.filter({ $0.sourceId.hasPrefix(sourceKeyPrefix) })
+        self.existingServers = Set(relatedSources.compactMap { UserDefaults.standard.string(forKey: "\($0.sourceId).server") })
     }
 
     func submit() {
@@ -396,7 +406,7 @@ struct SelfHostedSourceSetupView: View {
 
     func ensureUniqueName() {
         let name = name.trimmingCharacters(in: .whitespaces)
-        uniqueName = !SourceManager.shared.sources.contains(where: { $0.name == name })
+        uniqueName = !sourceNames.contains(name)
     }
 
     func ensureUniqueServer() {

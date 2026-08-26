@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ExternalSourceTableCell: View {
-    let source: SourceInfo2
+    let source: SourceInfo
     var subtitle: String?
 
     var onInstall: (() -> Void)?
@@ -49,9 +49,7 @@ struct ExternalSourceTableCell: View {
                         .lineLimit(1)
                 } else {
                     Text(
-                        source.isMultiLanguage
-                            ? NSLocalizedString("MULTI_LANGUAGE")
-                            : Locale.current.localizedString(forIdentifier: source.languages[0]) ?? source.languages[0]
+                        SourceLanguage.displayName(for: SourceLanguage.primaryCode(for: source.languages))
                     )
                     .foregroundStyle(.secondary)
                 }

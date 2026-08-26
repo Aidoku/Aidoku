@@ -73,6 +73,7 @@ private struct InterfaceOrientationsViewModifier: ViewModifier {
 ///    ```swift
 ///    Text("My View").interfaceOrientations([.portrait, .landscape])
 ///    ```
+@MainActor
 public class InterfaceOrientationCoordinator: ObservableObject {
     public static let shared = InterfaceOrientationCoordinator()
 

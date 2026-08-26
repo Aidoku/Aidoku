@@ -9,16 +9,13 @@ import AidokuRunner
 import CoreData
 
 extension SourceObject {
-    func load(from source: Source) {
-        id = source.id
-        apiVersion = source.apiVersion
-        path = source.url.pathComponents[source.url.pathComponents.count - 2..<source.url.pathComponents.count]
-            .joined(separator: "/")
-    }
-
     func load(from source: AidokuRunner.Source) {
-        id = source.id
-        apiVersion = source.apiVersion
+        id = source.key
+        apiVersion = if let legacySource = source.legacySource {
+            legacySource.apiVersion
+        } else {
+            source.apiVersion
+        }
         if let url = source.url {
             path = url.pathComponents[url.pathComponents.count - 2..<url.pathComponents.count]
                 .joined(separator: "/")
@@ -65,12 +62,12 @@ extension SourceObjectData {
             return config.toSource()
         } else if let path {
             let url = FileManager.default.applicationSupportDirectory.appendingPathComponent(path)
-            return try? await AidokuRunner.Source(id: id, url: url)
+            return try? await AidokuRunner.Source(key: id, url: url)
         }
         return nil
     }
 
-    func toInfo() -> SourceInfo2? {
+    func toInfo() -> SourceInfo? {
         if let data = customSource as? Data, let config = try? CustomSourceConfig(from: data) {
             return config.toSource().toInfo()
         }

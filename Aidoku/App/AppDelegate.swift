@@ -11,7 +11,7 @@ import Nuke
 import SwiftUI
 import UserNotifications
 
-@UIApplicationMain
+@main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 #if CANONICAL_BUILD          // true only for App-Store scheme
     static let canonicalID = "app.aidoku.Aidoku"
@@ -144,10 +144,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Library.refreshMetadata": false,
                 "Library.notifyNewChapters": false,
 
-                "Browse.languages": ["multi"] + Locale.preferredLanguages.map { Locale(identifier: $0).languageCode },
-                "Browse.contentRatings": ["safe", "containsNsfw"],
-                "Browse.updateCount": 0,
-
                 "History.lockHistoryTab": false,
 
                 "Reader.readingMode": "auto",
@@ -258,23 +254,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         performMigration()
         handleChaptersToBeDeleted()
 
-        networkObserverId = Reachability.registerConnectionTypeObserver { connectionType in
-            switch connectionType {
-                case .wifi:
-                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
-                        Task {
-                            await DownloadManager.shared.resumeDownloads()
-                        }
-                    }
-                case .cellular, .none:
-                    if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
-                        Task {
-                            await DownloadManager.shared.pauseDownloads()
-                        }
-                    }
-            }
-        }
-
         application.applicationSupportsShakeToEdit = true
 
         BackupManager.shared.register()
@@ -283,10 +262,29 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         ReaderTemporaryPageStore.removeAllSessions()
 
         Task {
+            await SourceManager.shared.start()
             await BackupManager.shared.scheduleAutoBackup()
             if #available(iOS 18.0, *) {
                 DictionaryManager.shared.autoUpdateDictionaries()
             }
+
+            networkObserverId = await Reachability.shared.registerConnectionTypeObserver { connectionType in
+                switch connectionType {
+                    case .wifi:
+                        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                            Task {
+                                await DownloadManager.shared.resumeDownloads()
+                            }
+                        }
+                    case .cellular, .none:
+                        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                            Task {
+                                await DownloadManager.shared.pauseDownloads()
+                            }
+                        }
+                }
+            }
+
             if AppSettings.flags.libraryRefreshInProgress.get() {
                 presentAlert(
                     title: NSLocalizedString("LIBRARY_REFRESH_INTERRUPTED"),
@@ -346,7 +344,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         guard let networkObserverId else { return }
-        Reachability.unregisterConnectionTypeObserver(networkObserverId)
+        Task {
+            await Reachability.shared.unregisterConnectionTypeObserver(networkObserverId)
+        }
     }
 
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
@@ -404,7 +404,7 @@ extension AppDelegate {
     func migrateSettings() {
         // migrate showNsfwSources setting
         if UserDefaults.standard.bool(forKey: "Browse.showNsfwSources") {
-            UserDefaults.standard.setValue(["safe", "containsNsfw", "primarilyNsfw"], forKey: "Browse.contentRatings")
+            AppSettings.browse.contentRatings.set([.safe, .containsNsfw, .primarilyNsfw])
             UserDefaults.standard.removeObject(forKey: "Browse.showNsfwSources")
         }
 
@@ -546,10 +546,13 @@ extension AppDelegate {
         if url.scheme == "aidoku" { // aidoku://
             if url.host == "addSourceList" { // addSourceList?url=
                 let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
-                if let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
-                   let listUrl = URL(string: listUrlString) {
-                    guard !SourceManager.shared.sourceListURLs.contains(listUrl) else { return }
+                if
+                    let listUrlString = components?.queryItems?.first(where: { $0.name == "url" })?.value,
+                    let listUrl = URL(string: listUrlString)
+                {
                     Task {
+                        let sourceListURLs = await SourceManager.shared.getSourceListURLs()
+                        guard !sourceListURLs.contains(listUrl) else { return }
                         let success = await SourceManager.shared.addSourceList(url: listUrl)
                         if success {
                             presentAlert(
@@ -564,7 +567,7 @@ extension AppDelegate {
                         }
                     }
                 }
-            } else if let host = url.host, let source = SourceManager.shared.source(for: host) {
+            } else if let host = url.host, let source = SourceManager.shared.store.source(for: host) {
                 // todo: we should support opening items in library even if the source isn't installed
                 Task { @MainActor in
                     // support percent encoding characters like "/" for manga and chapter keys
@@ -647,7 +650,7 @@ extension AppDelegate {
                 }
             }
         } else if
-            SourceManager.shared.localSourceInstalled
+            SourceManager.shared.store.localSourceInstalled
                 && LocalFileManager.allowedFileExtensions.contains(url.pathExtension.lowercased())
         {
             Task {
@@ -677,13 +680,12 @@ extension AppDelegate {
             let targetUrl = (url as NSURL).resourceSpecifier
         else { return false }
 
-        // ensure sources are loaded
-        await SourceManager.shared.waitForSourcesLoad()
+        let allSources = await SourceManager.shared.getLoadedSources()
 
         // find source that uses the given url
         var targetSource: AidokuRunner.Source?
         var finalUrl: String?
-        for source in SourceManager.shared.sources {
+        for source in allSources {
             for sourceUrl in source.urls {
                 if let url = (sourceUrl as NSURL).resourceSpecifier, targetUrl.hasPrefix(url) {
                     targetSource = source
@@ -891,7 +893,7 @@ extension AppDelegate: ImagePipeline.Delegate {
     }
 }
 
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension AppDelegate: @MainActor UNUserNotificationCenterDelegate {
     func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification,

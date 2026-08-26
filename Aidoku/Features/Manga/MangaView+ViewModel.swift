@@ -104,17 +104,16 @@ extension MangaView {
             }
 
             NotificationCenter.default.publisher(for: .migratedManga)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] output in
-                    guard
-                        let self,
-                        let migration = output.object as? (from: AidokuRunner.Manga, to: AidokuRunner.Manga),
-                        migration.from.identifier == self.manga.identifier,
-                        let newSource = SourceManager.shared.source(for: migration.to.sourceKey)
-                    else { return }
-                    self.source = newSource
-                    self.manga = migration.to
-                    Task {
+                    Task { @MainActor in
+                        guard
+                            let self,
+                            let migration = output.object as? (from: AidokuRunner.Manga, to: AidokuRunner.Manga),
+                            migration.from.identifier == self.manga.identifier,
+                            let newSource = SourceManager.shared.store.source(for: migration.to.sourceKey)
+                                else { return }
+                        self.source = newSource
+                        self.manga = migration.to
                         await self.fetchData()
                     }
                 }
@@ -122,16 +121,17 @@ extension MangaView {
 
             for notification in [Notification.Name.sourceLoaded, Notification.Name.sourceUnloaded] {
                 NotificationCenter.default.publisher(for: notification)
-                    .receive(on: DispatchQueue.main)
                     .sink { [weak self] output in
-                        guard
-                            let self,
-                            let sourceKey = output.object as? String,
-                            self.manga.sourceKey == sourceKey
-                        else {
-                            return
+                        Task { @MainActor in
+                            guard
+                                let self,
+                                let sourceKey = output.object as? String,
+                                self.manga.sourceKey == sourceKey
+                            else {
+                                return
+                            }
+                            self.source = SourceManager.shared.store.source(for: sourceKey)
                         }
-                        self.source = SourceManager.shared.source(for: sourceKey)
                     }
                     .store(in: &cancellables)
             }

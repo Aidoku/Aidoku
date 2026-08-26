@@ -17,8 +17,8 @@ struct ReaderSettingsView: View {
         reader == .text || reader == .epub
     }
 
-    private let sourceLanguageCodes: [String]
-    private let sourceLanguageTitles: [String]
+    @State private var sourceLanguageCodes: [String] = []
+    @State private var sourceLanguageTitles: [String] = []
 
     @State private var readingMode: ReadingMode?
     @State private var tapZones: DefaultTapZones
@@ -45,21 +45,6 @@ struct ReaderSettingsView: View {
         self.mangaId = mangaId
         self.reader = reader
         self.chapterLanguage = chapterLanguage
-
-        var languageCodes = Array(SourceManager.shared.sourceLanguages)
-        // sort alphabetically
-        languageCodes.sort(by: {
-            let lhs = Locale.current.localizedString(forIdentifier: $0)
-            let rhs = Locale.current.localizedString(forIdentifier: $1)
-            return lhs ?? $0 < rhs ?? $1
-        })
-        // bring local language to top
-        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
-        if let code = Locale.current.languageCode {
-            languageCodes.insert(code, at: 0)
-        }
-        sourceLanguageCodes = languageCodes
-        sourceLanguageTitles = languageCodes.map { Locale.current.localizedString(forIdentifier: $0) ?? $0 }
 
         self._readingMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
@@ -181,6 +166,22 @@ struct ReaderSettingsView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .readerTapZones)) { _ in
                 tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
+            }
+            .task {
+                guard sourceLanguageCodes.isEmpty else { return }
+
+                var languageCodes = await SourceManager.shared.getSourceLanguages().sorted {
+                    SourceLanguage.compare($0, $1) == .orderedAscending
+                }
+
+                // bring local language to top
+                languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+                if let code = Locale.current.languageCode {
+                    languageCodes.insert(code, at: 0)
+                }
+
+                sourceLanguageCodes = languageCodes
+                sourceLanguageTitles = languageCodes.map { SourceLanguage.displayName(for: $0) }
             }
         }
     }

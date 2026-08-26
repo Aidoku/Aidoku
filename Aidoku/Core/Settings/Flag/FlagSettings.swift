@@ -5,7 +5,7 @@
 //  Created by skitty on 8/18/26.
 //
 
-struct FlagSettings {
+struct FlagSettings: Sendable {
     var keys: [any SettingsDefault] {
         [
             libraryRefreshInProgress

@@ -9,7 +9,7 @@ import SwiftUI
 
 // Remove then re-add an entry to force a re-render.
 // Apply this outside of clearsStaleListSelection, so the transient selection change is ignored there.
-private struct RestoreListSelectionOnAppearModifier<Value: Hashable>: ViewModifier {
+private struct RestoreListSelectionOnAppearModifier<Value: Hashable & Sendable>: ViewModifier {
     @Binding var selection: Set<Value>
 
     @State private var appeared = false
@@ -38,7 +38,8 @@ private struct RestoreListSelectionOnAppearModifier<Value: Hashable>: ViewModifi
 }
 
 // Marks a selection round-trip in progress, so other selection modifiers can ignore it.
-class ListSelectionRestoreState {
+@MainActor
+final class ListSelectionRestoreState {
     var isRestoring = false
 }
 
@@ -54,7 +55,7 @@ extension EnvironmentValues {
 }
 
 extension View {
-    func restoresListSelectionOnAppear<Value: Hashable>(_ selection: Binding<Set<Value>>) -> some View {
+    func restoresListSelectionOnAppear<Value: Hashable & Sendable>(_ selection: Binding<Set<Value>>) -> some View {
         modifier(RestoreListSelectionOnAppearModifier(selection: selection))
     }
 }

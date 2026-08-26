@@ -130,8 +130,8 @@ extension SearchContentView.ViewModel {
                     case .multiselect(let id, let included, let excluded):
                         switch id {
                             case "contentRating":
-                                let includedRatings = included.compactMap { SourceContentRating(stringValue: $0) }
-                                let excludedRatings = excluded.compactMap { SourceContentRating(stringValue: $0) }
+                                let includedRatings = included.compactMap { SourceContentRating(string: $0) }
+                                let excludedRatings = excluded.compactMap { SourceContentRating(string: $0) }
                                 let sourceRating = source.contentRating
                                 if !includedRatings.isEmpty && !includedRatings.contains(sourceRating) {
                                     return false

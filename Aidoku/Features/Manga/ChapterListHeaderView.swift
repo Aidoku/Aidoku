@@ -147,7 +147,7 @@ struct ChapterListHeaderView: View {
                                 langFilter = langValue
                             } label: {
                                 Label {
-                                    Text(Locale.current.localizedString(forIdentifier: lang) ?? lang)
+                                    Text(SourceLanguage.displayName(for: lang))
                                 } icon: {
                                     if langFilter == lang {
                                         Image(systemName: "checkmark")

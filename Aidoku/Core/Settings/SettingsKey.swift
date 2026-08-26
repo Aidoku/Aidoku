@@ -12,10 +12,10 @@ protocol SettingsDefault {
     var defaultObject: Any? { get }
 }
 
-struct SettingsKey<Value: SettingsValue>: SettingsDefault {
+struct SettingsKey<Value: SettingsValue>: SettingsDefault, Sendable {
     let key: String
     let defaultValue: Value
-    let requires: (() -> Value?)?
+    let requires: (@Sendable () -> Value?)?
 
     var defaultObject: Any? {
         defaultValue.serialize()
@@ -24,7 +24,7 @@ struct SettingsKey<Value: SettingsValue>: SettingsDefault {
     init(
         _ key: String,
         default defaultValue: Value,
-        requires: (() -> Value?)? = nil
+        requires: (@Sendable () -> Value?)? = nil
     ) {
         self.key = key
         self.defaultValue = defaultValue

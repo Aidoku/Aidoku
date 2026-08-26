@@ -156,7 +156,7 @@ extension SourceInfoViewController {
                 key: "\(source.id).languages",
                 title: NSLocalizedString("LANGUAGE"),
                 values: source.languages.map { $0.value ?? $0.code },
-                titles: source.languages.map { Locale.current.localizedString(forIdentifier: $0.code) ?? $0.code },
+                titles: source.languages.map { SourceLanguage.displayName(for: $0.code) },
                 notification: "languageChange"
             )
             navigationController?.pushViewController(SettingSelectViewController(source: source, item: item, style: tableView.style), animated: true)

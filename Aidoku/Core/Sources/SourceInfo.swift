@@ -8,7 +8,7 @@
 import Foundation
 import AidokuRunner
 
-struct SourceInfo2: Hashable {
+struct SourceInfo: Hashable {
     let sourceId: String
 
     var iconUrl: URL?

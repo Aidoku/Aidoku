@@ -8,6 +8,7 @@
 import Combine
 import SwiftUI
 
+@MainActor
 class UserDefaultsObserver: ObservableObject {
     @Published var observedValues: [String: Any?] = [:]
 

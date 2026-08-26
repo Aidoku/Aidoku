@@ -60,10 +60,10 @@ private final class URLSessionUnsecureDelegate: NSObject, URLSessionDelegate, @u
 }
 
 extension AidokuRunner.Source {
-    convenience init(id: String, url: URL) async throws {
+    convenience init(key: String, url: URL) async throws {
         try await self.init(
             url: url,
-            interpreterConfig: .defaultConfig(for: id)
+            interpreterConfig: .defaultConfig(for: key)
         )
     }
 
@@ -71,8 +71,8 @@ extension AidokuRunner.Source {
         runner is Interpreter
     }
 
-    func toInfo() -> SourceInfo2 {
-        SourceInfo2(
+    func toInfo() -> SourceInfo {
+        SourceInfo(
             sourceId: key,
             iconUrl: imageUrl,
             name: name,
@@ -231,21 +231,23 @@ extension AidokuRunner.SourceContentRating {
             case .primarilyNsfw: NSLocalizedString("PRIMARILY_NSFW")
         }
     }
+}
 
-    var stringValue: String {
-        switch self {
-            case .safe: "safe"
-            case .containsNsfw: "containsNsfw"
-            case .primarilyNsfw: "primarilyNsfw"
-        }
-    }
-
-    init?(stringValue: String) {
-        switch stringValue {
+extension AidokuRunner.SourceContentRating: StringConvertible {
+    init?(string: String) {
+        switch string {
             case "safe": self = .safe
             case "containsNsfw": self = .containsNsfw
             case "primarilyNsfw": self = .primarilyNsfw
             default: return nil
+        }
+    }
+
+    func toString() -> String {
+        switch self {
+            case .safe: "safe"
+            case .containsNsfw: "containsNsfw"
+            case .primarilyNsfw: "primarilyNsfw"
         }
     }
 }

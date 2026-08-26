@@ -59,7 +59,7 @@ extension ExternalSourceInfo {
         return copy
     }
 
-    func toInfo() -> SourceInfo2 {
+    func toInfo() -> SourceInfo {
         let iconUrl: URL? = sourceUrl.flatMap { sourceUrl in
             if let iconURL {
                 URL(string: iconURL, relativeTo: sourceUrl)

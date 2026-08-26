@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct DictionarySettings {
+struct DictionarySettings: Sendable {
     var keys: [any SettingsDefault] {
         [
             enable,

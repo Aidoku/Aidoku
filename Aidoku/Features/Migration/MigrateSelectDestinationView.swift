@@ -11,15 +11,14 @@ import SwiftUI
 struct MigrateSelectDestinationView: View {
     let selectedSeries: [AidokuRunner.Manga]
 
-    private let availableSources = SourceManager.shared.sources.map { $0.toInfo() }
-    private let pinnedSources = SourceManager.shared.getPinned().map { $0.toInfo() }
-
-    @State private var selectedSources: [SourceInfo2]
+    @State private var availableSources: [SourceInfo] = []
+    @State private var pinnedSources: [SourceInfo] = []
+    @State private var selectedSources: [SourceInfo]
     @State private var editMode: EditMode = .active
 
     @EnvironmentObject private var path: NavigationCoordinator
 
-    init(selectedSeries: [AidokuRunner.Manga], selectedSources: [SourceInfo2] = []) {
+    init(selectedSeries: [AidokuRunner.Manga], selectedSources: [SourceInfo] = []) {
         self.selectedSeries = selectedSeries
         self._selectedSources = State(initialValue: selectedSources)
     }
@@ -68,27 +67,44 @@ struct MigrateSelectDestinationView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button(NSLocalizedString("CONTINUE")) {
-                    let sources = selectedSources.compactMap { SourceManager.shared.source(for: $0.sourceId) }
-                    if selectedSeries.count == 1 {
-                        path.push(MigrateSingleSearchView(
-                            targetSources: sources,
-                            selectedSeries: selectedSeries[0])
-                        )
-                    } else {
-                        path.push(MigrateResultsView(
-                            targetSources: sources,
-                            selectedSeries: selectedSeries
-                        ))
+                    Task {
+                        let allSources = await SourceManager.shared.getLoadedSources()
+                        var sources: [AidokuRunner.Source] = []
+                        for source in allSources where selectedSources.contains(where: { $0.sourceId == source.key }) {
+                            sources.append(source)
+                        }
+                        if selectedSeries.count == 1 {
+                            path.push(MigrateSingleSearchView(
+                                targetSources: sources,
+                                selectedSeries: selectedSeries[0])
+                            )
+                        } else {
+                            path.push(MigrateResultsView(
+                                targetSources: sources,
+                                selectedSeries: selectedSeries
+                            ))
+                        }
                     }
                 }
                 .disabled(selectedSources.isEmpty)
             }
         }
+        .task {
+            guard availableSources.isEmpty && pinnedSources.isEmpty else { return }
+            await loadSources()
+        }
     }
 }
 
 extension MigrateSelectDestinationView {
-    func select(source: SourceInfo2) {
+    func loadSources() async {
+        availableSources = await SourceManager.shared.getSourceInfos(includeDisabled: false)
+        pinnedSources = await SourceManager.shared.getPinned().map { $0.toInfo() }
+    }
+}
+
+extension MigrateSelectDestinationView {
+    func select(source: SourceInfo) {
         selectedSources.append(source)
     }
 
@@ -105,7 +121,7 @@ extension MigrateSelectDestinationView {
 
 extension MigrateSelectDestinationView {
     struct SourceCell: View {
-        let source: SourceInfo2
+        let source: SourceInfo
 
         var body: some View {
             HStack(spacing: 12) {

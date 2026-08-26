@@ -47,12 +47,13 @@ struct SuwayomiSetupView: View {
     }
 
     private func noLogIn(name: String, server: URL) async -> Bool {
-        _ = await SourceManager.shared.createCustomSource(
-            kind: .suwayomi,
-            name: name,
-            server: server
-        )
-        return true
+        let success = await SourceManager.shared.createCustomSource(
+            .suwayomi(.init(
+                name: name,
+                server: server
+            ))
+        ) != nil
+        return success
     }
 
     private func logIn(name: String, server: URL, username: String, password: String) async -> Bool {
@@ -60,13 +61,16 @@ struct SuwayomiSetupView: View {
             return false
         }
 
-        let key = await SourceManager.shared.createCustomSource(
-            kind: .suwayomi,
-            name: name,
-            server: server,
-            username: username,
-            password: password
-        )
+        guard let key = await SourceManager.shared.createCustomSource(
+            .suwayomi(.init(
+                name: name,
+                server: server,
+                username: username,
+                password: password
+            ))
+        ) else {
+            return false
+        }
 
         if let cookie = response.cookie {
             UserDefaults.standard.setValue(cookie, forKey: "\(key).cookie")

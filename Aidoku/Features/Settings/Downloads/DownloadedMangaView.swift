@@ -39,7 +39,7 @@ struct DownloadedMangaView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Section {
-                        if viewModel.manga.isInLibrary, let source = SourceManager.shared.source(for: viewModel.manga.sourceId) {
+                        if viewModel.manga.isInLibrary, let source = SourceManager.shared.store.source(for: viewModel.manga.sourceId) {
                             Button {
                                 openMangaView(source: source)
                             } label: {
@@ -82,7 +82,7 @@ struct DownloadedMangaView: View {
         }
         .fullScreenCover(item: $openChapter) { chapter in
             SwiftUIReaderNavigationController(
-                source: SourceManager.shared.source(for: viewModel.manga.sourceId),
+                source: SourceManager.shared.store.source(for: viewModel.manga.sourceId),
                 manga: viewModel.manga.toManga(),
                 chapter: chapter.toChapter()
             )
@@ -145,7 +145,7 @@ struct DownloadedMangaView: View {
     private var mangaInfoHeader: some View {
         HStack(spacing: 12) {
             MangaCoverView(
-                source: SourceManager.shared.source(for: viewModel.manga.sourceId),
+                source: SourceManager.shared.store.source(for: viewModel.manga.sourceId),
                 coverImage: viewModel.manga.coverUrl ?? "",
                 width: 56,
                 height: 56 * 3/2

@@ -102,7 +102,7 @@ class CircularProgressView: UIView {
     }
 }
 
-extension CircularProgressView: CAAnimationDelegate {
+extension CircularProgressView: @MainActor CAAnimationDelegate {
     func animationDidStop(_ anim: CAAnimation, finished flag: Bool) {
         isAnimating = false
         startNextAnimationIfNeeded()

@@ -68,20 +68,7 @@ struct LocalSetupView: View {
     }
 
     func submit() async {
-        let config = CustomSourceConfig.local
-        let source = config.toSource()
-
-        // add to coredata
-        await CoreDataManager.shared.container.performBackgroundTask { context in
-            let result = CoreDataManager.shared.createSource(source: source, context: context)
-            result.customSource = config.encode() as NSObject
-            try? context.save()
-        }
-
-        SourceManager.shared.sources.append(source)
-        SourceManager.shared.sortSources()
-
-        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+        await SourceManager.shared.createCustomSource(.local)
 
         path.dismiss()
     }

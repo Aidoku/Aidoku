@@ -22,7 +22,7 @@ actor BackupManager {
     private static let maxAutoBackups = 4
 
     private static let excludedSettings: Set<String> = [
-        "Browse.sourceLists", // stored separately
+        AppSettings.browse.sourceLists.key, // stored separately
         "General.icloudSync"
     ]
     static let excludedSettingsPrefixes = [
@@ -106,7 +106,12 @@ actor BackupManager {
     }
 
     func createBackup(name: String = "", options: BackupOptions) async -> Backup {
-        await CoreDataManager.shared.container.performBackgroundTask { context in
+        let sourceLists: [String] = if options.sourceLists {
+            await SourceManager.shared.getSourceListURLs().map { $0.absoluteString }
+        } else {
+            []
+        }
+        return await CoreDataManager.shared.container.performBackgroundTask { context in
             let library: [BackupLibraryManga] = if options.libraryEntries {
                 CoreDataManager.shared.getLibraryManga(context: context).map {
                     BackupLibraryManga(libraryObject: $0, skipCategories: !options.categories)
@@ -163,7 +168,6 @@ actor BackupManager {
                 []
             }
             let sources: [BackupSource] = CoreDataManager.shared.getSources(context: context).compactMap(BackupSource.init)
-            let sourceLists = options.sourceLists ? SourceManager.shared.sourceListsStrings : []
 
             let settings: [String: JSONAnyValue]? = if options.settings {
                 self.exportSettings(includeSensitive: options.sensitiveSettings, sourceKeys: sources.map(\.id))
@@ -289,7 +293,8 @@ extension BackupManager {
             // restore settings
             if let settings = backup.settings {
                 // only restore source settings for sources installed, or built-in sources that will be added from the backup restore
-                var sourceKeyPrefixes = SourceManager.shared.sources.map { "\($0.key)." }
+                let sources = await SourceManager.shared.getSourceInfos(sorted: false)
+                var sourceKeyPrefixes = sources.map { "\($0.sourceId)." }
                 for additionalSource in backup.sources ?? [] where additionalSource.config != nil {
                     sourceKeyPrefixes.append("\(additionalSource.id).")
                 }
@@ -319,7 +324,7 @@ extension BackupManager {
 
             // restore source lists
             guard let sourceLists = backup.sourceLists else { return }
-            SourceManager.shared.clearSourceLists()
+            await SourceManager.shared.clearSourceLists()
             for sourceList in sourceLists {
                 guard let sourceListURL = URL(string: sourceList) else { continue }
                 _ = await SourceManager.shared.addSourceList(url: sourceListURL, allowUnavailable: true)

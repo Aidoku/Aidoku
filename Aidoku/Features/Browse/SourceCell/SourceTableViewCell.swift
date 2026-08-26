@@ -14,7 +14,7 @@ protocol SourceCellDelegate: AnyObject {
 }
 
 class SourceTableViewCell: UITableViewCell {
-    var info: SourceInfo2?
+    var info: SourceInfo?
     var section: BrowseViewController.Section?
     weak var delegate: SourceCellDelegate?
 
@@ -173,16 +173,14 @@ class SourceTableViewCell: UITableViewCell {
         }
     }
 
-    func setSourceInfo(_ info: SourceInfo2, section: BrowseViewController.Section) {
+    func setSourceInfo(_ info: SourceInfo, section: BrowseViewController.Section) {
         self.info = info
         self.section = section
 
         titleLabel.text = info.name
         versionLabel.text = "v" + String(info.version)
         badgeView.isHidden = info.contentRating != .primarilyNsfw
-        subtitleLabel.text = info.isMultiLanguage
-            ? NSLocalizedString("MULTI_LANGUAGE")
-            : Locale.current.localizedString(forIdentifier: info.languages[0]) ?? info.languages[0]
+        subtitleLabel.text = SourceLanguage.displayName(for: SourceLanguage.primaryCode(for: info.languages))
 
         warningButton.isHidden = !info.external || info.externalInfo != nil
         getButton.isHidden = section != .updates

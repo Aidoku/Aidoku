@@ -12,9 +12,10 @@ import UniformTypeIdentifiers
 struct AddSourceView: View {
     let allExternalSources: [ExternalSourceInfo]
 
-    @State private var externalSources: [SourceInfo2] = []
+    @State private var externalSources: [SourceInfo] = []
     @State private var allSourcesInstalled: Bool = false
 
+    @State private var hasLocalSourceInstalled: Bool
     @State private var loadedInitial = false
     @State private var importing = false
     @State private var searching = false
@@ -31,6 +32,9 @@ struct AddSourceView: View {
 
     init(externalSources: [ExternalSourceInfo]) {
         allExternalSources = externalSources
+        _hasLocalSourceInstalled = State(
+            initialValue: CoreDataManager.shared.hasSource(key: LocalSourceRunner.sourceKey, context: CoreDataManager.shared.context)
+        )
     }
 
     var body: some View {
@@ -91,12 +95,15 @@ struct AddSourceView: View {
                         } else {
                             ForEach(filteredSources, id: \.sourceId) { source in
                                 ExternalSourceTableCell(source: source, onInstall: {
-                                    let index = externalSources.firstIndex(of: source)
-                                    if let index {
-                                        withAnimation {
-                                            externalSources.remove(at: index)
-                                            if externalSources.isEmpty {
-                                                allSourcesInstalled = checkAllSourcesInstalled()
+                                    Task {
+                                        let index = externalSources.firstIndex(of: source)
+                                        if let index {
+                                            let allInstalled = await checkAllSourcesInstalled()
+                                            withAnimation {
+                                                externalSources.remove(at: index)
+                                                if externalSources.isEmpty {
+                                                    allSourcesInstalled = allInstalled
+                                                }
                                             }
                                         }
                                     }
@@ -185,6 +192,11 @@ struct AddSourceView: View {
             }
         }
         .interactiveDismissDisabled(searching)
+        .onReceive(NotificationCenter.default.publisher(for: .sourceLoaded)) { output in
+            if let key = output.object as? String, key == LocalSourceRunner.sourceKey {
+                hasLocalSourceInstalled = true
+            }
+        }
         .task {
             guard !loadedInitial else { return }
             await reload()
@@ -234,7 +246,7 @@ struct AddSourceView: View {
 //                )
 //            }
 
-            if !SourceManager.shared.sources.contains(where: { $0.key == LocalSourceRunner.sourceKey }) {
+            if !hasLocalSourceInstalled {
                 ExternalSourceTableCell(
                     source: .init(
                         sourceId: LocalSourceRunner.sourceKey,
@@ -314,26 +326,25 @@ struct AddSourceView: View {
         .padding()
     }
 
-    func checkAllSourcesInstalled() -> Bool {
-        let installedSources = SourceManager.shared.sources.map { $0.toInfo() }
+    func checkAllSourcesInstalled() async -> Bool {
+        let installedSources = await  SourceManager.shared.getSourceInfos(sorted: false)
         return !allExternalSources.contains { source in
             !installedSources.contains(where: { $0.sourceId == source.id })
         }
     }
 
-    func filterExternalSources() async -> ([SourceInfo2], allSourcesInstalled: Bool) {
+    func filterExternalSources() async -> ([SourceInfo], allSourcesInstalled: Bool) {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
         else { return ([], true) }
         let appVersion = SemanticVersion(appVersionString)
-        let selectedLanguages = UserDefaults.standard.stringArray(forKey: "Browse.languages") ?? []
-        let contentRatings = (UserDefaults.standard.stringArray(forKey: "Browse.contentRatings") ?? [])
-            .compactMap { SourceContentRating(stringValue: $0) }
+        let selectedLanguages = AppSettings.browse.languages.get()
+        let contentRatings = AppSettings.browse.contentRatings.get()
 
         var allSourcesInstalled = true
 
         let installedSources = await SourceManager.shared.getSourceInfos()
         let result = allExternalSources
-            .compactMap { info -> SourceInfo2? in
+            .compactMap { info -> SourceInfo? in
                 // strip installed sources from external list
                 if installedSources.contains(where: { $0.sourceId == info.id }) {
                     return nil
@@ -355,7 +366,7 @@ struct AddSourceView: View {
                 }
                 // hide unselected content ratings
                 let contentRating = info.resolvedContentRating
-                if !contentRatings.contains(where: { $0 == contentRating }) {
+                if !contentRatings.contains(contentRating) {
                     return nil
                 }
                 // hide unselected languages
@@ -364,14 +375,12 @@ struct AddSourceView: View {
                 }
                 return info.toInfo()
             }
-            // sort first by name, then by language
-            .sorted { $0.name < $1.name }
-            .sorted {
-                let lhsLang = $0.languages.count == 1 ? $0.languages[0] : "multi"
-                let rhsLang = $1.languages.count == 1 ? $1.languages[0] : "multi"
-                let lhs = SourceManager.languageCodes.firstIndex(of: lhsLang) ?? Int.max
-                let rhs = SourceManager.languageCodes.firstIndex(of: rhsLang) ?? Int.max
-                return lhs < rhs
+            .sorted { lhs, rhs in
+                let languageOrder = SourceLanguage.compare(lhs.languages, rhs.languages)
+                if languageOrder != .orderedSame {
+                    return languageOrder == .orderedAscending
+                }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
             }
         return (result, allSourcesInstalled)
     }

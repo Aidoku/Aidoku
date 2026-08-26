@@ -309,6 +309,7 @@ extension Source {
 
     func initialize() {
         Task {
+            netModule.userAgent = await UserAgentProvider.shared.getUserAgent()
             try? await actor.initialize()
         }
     }

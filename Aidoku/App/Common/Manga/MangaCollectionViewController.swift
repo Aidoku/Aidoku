@@ -284,6 +284,7 @@ extension MangaCollectionViewController {
                     attributes: .destructive
                 ) { _ in
                     let isTracking = TrackerManager.shared.isTracking(mangaId: entry.identifier)
+                    @MainActor
                     func commit() {
                         // remove bookmark icon
                         self.bookmarkedItems.remove(entry.key)
