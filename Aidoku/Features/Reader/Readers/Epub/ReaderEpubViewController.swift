@@ -81,27 +81,22 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var returnPosition: Double?
 
     private lazy var returnButton: UIButton = {
-        var configuration = UIButton.Configuration.plain()
+        var configuration: UIButton.Configuration
+        if #available(iOS 26.0, *) {
+            configuration = .glass()
+        } else {
+            configuration = .filled()
+            configuration.baseBackgroundColor = .secondarySystemBackground
+        }
+        configuration.baseForegroundColor = .tintColor
+        configuration.cornerStyle = .capsule
         configuration.image = UIImage(
             systemName: "arrow.uturn.backward",
             withConfiguration: UIImage.SymbolConfiguration(textStyle: .body)
         )
-        configuration.contentInsets = .zero
-        // on the configuration, not the layer: a configured button draws its own background
-        configuration.cornerStyle = .capsule
-        configuration.background.backgroundColor = .systemBackground
-        configuration.background.strokeColor = .separator
-        configuration.background.strokeWidth = 1
+        configuration.contentInsets = .init(top: 10, leading: 10, bottom: 10, trailing: 10)
         let button = UIButton(configuration: configuration)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.tintColor = .label
-        button.layer.shadowColor = UIColor.black.cgColor
-        button.layer.shadowOpacity = 0.15
-        button.layer.shadowRadius = 6
-        button.layer.shadowOffset = CGSize(width: 0, height: 2)
-        button.layer.shadowPath = UIBezierPath(
-            ovalIn: CGRect(x: 0, y: 0, width: Self.returnButtonDiameter, height: Self.returnButtonDiameter)
-        ).cgPath
         button.alpha = 0
         button.isHidden = true
         button.addTarget(self, action: #selector(returnToJumpOrigin), for: .touchUpInside)
