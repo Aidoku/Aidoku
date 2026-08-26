@@ -212,6 +212,10 @@ final class EpubSpineRenderer: NSObject {
     }
 
     // the document reports the previous offset for ~30ms after the script returns
+    var pagePitch: CGFloat {
+        webView.bounds.width + CGFloat(settings.columnGapPx)
+    }
+
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
         guard await goToPage(index, animated: animated, timeout: timeout) else { return }
         // the reader's own turns only, or the position wanders across repeated restores

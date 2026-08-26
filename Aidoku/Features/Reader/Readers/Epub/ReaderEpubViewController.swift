@@ -235,14 +235,9 @@ class ReaderEpubViewController: BaseObservingViewController {
         // opaque, or the host's Reader.backgroundColor shows in the strips around the web view
         view.backgroundColor = .systemBackground
 
-        // tap zones default to disabled and the web view does not scroll, so without these no
-        // touch gesture turns a page
-        for direction in [UISwipeGestureRecognizer.Direction.left, .right] {
-            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
-            swipe.direction = direction
-            swipe.delegate = self
-            view.addGestureRecognizer(swipe)
-        }
+        // tap zones default to disabled and the web view does not scroll in paged mode, so
+        // without this no touch gesture turns a page
+        view.addGestureRecognizer(pagePan)
 
         installReturnButton()
     }
@@ -262,12 +257,58 @@ class ReaderEpubViewController: BaseObservingViewController {
     private static let returnButtonMargin: CGFloat = 16
     private static let returnButtonToolbarClearance: CGFloat = 60
 
-    @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
-        // direct, not through moveRight/moveLeft, which suppress a link tap's turn; a swipe is not one
-        switch gesture.direction {
-            case .left: turn(forward: true)
-            case .right: turn(forward: false)
-            default: break
+    private lazy var pagePan: UIPanGestureRecognizer = {
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        pan.delegate = self
+        return pan
+    }()
+
+    private var panStartOffset: CGFloat = 0
+
+    // the columns already sit side by side in one scroll view, so dragging its offset is the turn
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard let renderer = book?.renderer, renderer.pageCount > 0 else { return }
+        let pitch = renderer.pagePitch
+        guard pitch > 0 else { return }
+        let scrollView = renderer.webView.scrollView
+        let translation = gesture.translation(in: view).x
+
+        switch gesture.state {
+            case .began:
+                endSliding()
+                panStartOffset = scrollView.contentOffset.x
+            case .changed:
+                let limit = CGFloat(renderer.pageCount - 1) * pitch
+                let offset = panStartOffset - translation
+                // the page past either end belongs to another document, so the drag resists there
+                scrollView.contentOffset.x = if offset < 0 {
+                    offset / 3
+                } else if offset > limit {
+                    limit + (offset - limit) / 3
+                } else {
+                    offset
+                }
+            case .ended, .cancelled, .failed:
+                // projected rather than released, so a flick carries to the next page
+                let projected = panStartOffset - translation - gesture.velocity(in: view).x * Self.panProjection
+                settle(on: Int((projected / pitch).rounded()))
+            default:
+                break
+        }
+    }
+
+    private static let panProjection: CGFloat = 0.1
+
+    private func settle(on page: Int) {
+        let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        navigate { book in
+            if page < 0 {
+                await book.moveBackward(animated: animated)
+            } else if page >= book.renderer?.pageCount ?? 0 {
+                await book.moveForward(animated: animated)
+            } else {
+                await book.move(toPage: page, animated: animated)
+            }
         }
     }
 
@@ -667,7 +708,7 @@ extension ReaderEpubViewController: ReaderTableOfContentsReader {
 // MARK: - UIGestureRecognizerDelegate
 
 extension ReaderEpubViewController: UIGestureRecognizerDelegate {
-    // only the reader's own swipes carry this delegate
+    // only the reader's own gestures carry this delegate
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
