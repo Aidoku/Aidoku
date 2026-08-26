@@ -51,6 +51,8 @@ final class EpubSpineRenderer: NSObject {
 
     private static let pageOffsetTolerance: Double = 1
 
+    private var doubleTapObservations: [NSKeyValueObservation] = []
+
     private var pageRequests = 0
     private var pagesInFlight = 0
 
@@ -262,6 +264,30 @@ final class EpubSpineRenderer: NSObject {
         // the scroll observation reports the move, so nothing here records the position
         scrollView.setContentOffset(CGPoint(x: 0, y: target), animated: animated)
         return true
+    }
+
+    // WebKit re-enables its double tap about a second after the load, so this holds it off rather
+    // than disabling it once. a double tap otherwise recentres the page, moving the reader's position
+    private func suppressDoubleTapGestures() {
+        doubleTapObservations.removeAll()
+        var stack: [UIView] = [webView]
+        while let view = stack.popLast() {
+            for recognizer in view.gestureRecognizers ?? [] {
+                // the exact type only: the subclasses at two taps are word selection and the
+                // synthesised link click, both of which must keep working
+                guard
+                    let tap = recognizer as? UITapGestureRecognizer,
+                    type(of: tap) == UITapGestureRecognizer.self,
+                    tap.numberOfTapsRequired == 2,
+                    tap.numberOfTouchesRequired == 1
+                else { continue }
+                tap.isEnabled = false
+                doubleTapObservations.append(tap.observe(\.isEnabled) { tap, _ in
+                    if tap.isEnabled { tap.isEnabled = false }
+                })
+            }
+            stack.append(contentsOf: view.subviews)
+        }
     }
 
     var pagePitch: CGFloat {
@@ -561,6 +587,7 @@ extension EpubSpineRenderer: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        suppressDoubleTapGestures()
         finishNavigation(navigation, with: nil)
     }
 
