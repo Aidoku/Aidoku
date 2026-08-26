@@ -274,6 +274,8 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private var panStartOffset: CGFloat = 0
 
+    private var panIsTracking = false
+
     // the columns already sit side by side in one scroll view, so dragging its offset is the turn
     @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
         guard let renderer = book?.renderer, renderer.pageCount > 0 else { return }
@@ -286,7 +288,9 @@ class ReaderEpubViewController: BaseObservingViewController {
             case .began:
                 endSliding()
                 panStartOffset = scrollView.contentOffset.x
+                panIsTracking = true
             case .changed:
+                guard panIsTracking else { return }
                 let limit = CGFloat(renderer.pageCount - 1) * pitch
                 let offset = panStartOffset - translation
                 // the page past either end belongs to another document, so the drag resists there
@@ -298,6 +302,8 @@ class ReaderEpubViewController: BaseObservingViewController {
                     offset
                 }
             case .ended, .cancelled, .failed:
+                guard panIsTracking else { return }
+                panIsTracking = false
                 // projected rather than released, so a flick carries to the next page
                 let projected = panStartOffset - translation - gesture.velocity(in: view).x * Self.panProjection
                 settle(on: Int((projected / pitch).rounded()))
