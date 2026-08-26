@@ -137,7 +137,13 @@ final class ReaderEpubViewModel {
     func moveForward(animated: Bool = false) async {
         pendingBookPage = nil
         guard let renderer else { return }
-        if renderer.currentPage + 1 < renderer.pageCount {
+        if !settings.paged {
+            if renderer.scrollByViewport(forward: true, animated: animated) {
+                onChange?()
+            } else {
+                await move(toDocument: currentDocument + 1, landingOnLastPage: false, animated: animated)
+            }
+        } else if renderer.currentPage + 1 < renderer.pageCount {
             await renderer.showPage(renderer.currentPage + 1, animated: animated)
             onChange?()
         } else {
@@ -148,7 +154,13 @@ final class ReaderEpubViewModel {
     func moveBackward(animated: Bool = false) async {
         pendingBookPage = nil
         guard let renderer else { return }
-        if renderer.currentPage > 0 {
+        if !settings.paged {
+            if renderer.scrollByViewport(forward: false, animated: animated) {
+                onChange?()
+            } else {
+                await move(toDocument: currentDocument - 1, landingOnLastPage: true, animated: animated)
+            }
+        } else if renderer.currentPage > 0 {
             await renderer.showPage(renderer.currentPage - 1, animated: animated)
             onChange?()
         } else {

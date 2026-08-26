@@ -248,6 +248,22 @@ final class EpubSpineRenderer: NSObject {
         handleSizeChange()
     }
 
+    // two thirds of the viewport, the amount the webtoon and text readers scroll on a tap, so the
+    // line being read survives the move. false when the document is already at that end
+    func scrollByViewport(forward: Bool, animated: Bool) -> Bool {
+        let scrollView = webView.scrollView
+        let viewport = scrollView.bounds.height
+        guard viewport > 0 else { return false }
+        let maxOffset = max(scrollView.contentSize.height - viewport, 0)
+        let current = scrollView.contentOffset.y
+        guard forward ? current < maxOffset - 1 : current > 1 else { return false }
+        let step = viewport * 2 / 3
+        let target = min(max(forward ? current + step : current - step, 0), maxOffset)
+        // the scroll observation reports the move, so nothing here records the position
+        scrollView.setContentOffset(CGPoint(x: 0, y: target), animated: animated)
+        return true
+    }
+
     var pagePitch: CGFloat {
         webView.bounds.width + CGFloat(settings.columnGapPx)
     }
