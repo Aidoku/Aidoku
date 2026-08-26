@@ -146,8 +146,11 @@ final class ReaderEpubViewModel {
         } else if renderer.currentPage + 1 < renderer.pageCount {
             await renderer.showPage(renderer.currentPage + 1, animated: animated)
             onChange?()
-        } else {
+        } else if spinePaths.indices.contains(currentDocument + 1) {
             await move(toDocument: currentDocument + 1, landingOnLastPage: false, animated: animated)
+        } else {
+            // the pan resists past the last page, and nothing else would undo that offset
+            await renderer.showPage(renderer.currentPage, animated: animated)
         }
     }
 
@@ -163,8 +166,11 @@ final class ReaderEpubViewModel {
         } else if renderer.currentPage > 0 {
             await renderer.showPage(renderer.currentPage - 1, animated: animated)
             onChange?()
-        } else {
+        } else if spinePaths.indices.contains(currentDocument - 1) {
             await move(toDocument: currentDocument - 1, landingOnLastPage: true, animated: animated)
+        } else {
+            // the pan resists before the first page, and nothing else would undo that offset
+            await renderer.showPage(renderer.currentPage, animated: animated)
         }
     }
 
