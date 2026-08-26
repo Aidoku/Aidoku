@@ -67,7 +67,7 @@ enum EpubWebViewFactory {
     }
 
     // omitting any part of this errors nowhere, it just reports a plausible and wrong page count
-    private static func makeInjectionScript(settings: EpubPaginationSettings) -> WKUserScript {
+    static func makeInjectionScript(settings: EpubPaginationSettings) -> WKUserScript {
         WKUserScript(
             source: settings.injectionScript(),
             injectionTime: .atDocumentEnd,

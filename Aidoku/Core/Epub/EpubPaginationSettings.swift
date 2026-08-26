@@ -11,7 +11,7 @@ import UIKit
 // readium-css fixes the injection order and it is load-bearing: before.css, the publication's own
 // stylesheets or default.css, then after.css. every injected value is viewport-independent;
 // --RS__viewportWidth stays at 100%, a pixel value surviving a rotation the 100vw columns do not
-struct EpubPaginationSettings {
+struct EpubPaginationSettings: Equatable {
     var columnCount: Int = 1
 
     // UIDevice.current.orientation is .unknown until the device moves, so it cannot answer here
@@ -32,6 +32,23 @@ struct EpubPaginationSettings {
     var lineHeight: Double?
 
     var paged: Bool = true
+
+    // scroll style passes content under the bars, so the clearance is padding inside the document
+    var scrollPaddingTopPx: Int = 0
+
+    var scrollPaddingBottomPx: Int = 0
+
+    var scrollPaddingLeftPx: Int = 0
+
+    var scrollPaddingRightPx: Int = 0
+
+    mutating func applyScrollClearance(_ clearance: UIEdgeInsets) {
+        guard !paged else { return }
+        scrollPaddingTopPx = Int(clearance.top)
+        scrollPaddingBottomPx = Int(clearance.bottom)
+        scrollPaddingLeftPx = Int(clearance.left)
+        scrollPaddingRightPx = Int(clearance.right)
+    }
 
     // -webkit-text-size-adjust rather than zoom, which would scale the column geometry too
     var applyIOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? false : true
@@ -107,6 +124,18 @@ struct EpubPaginationSettings {
             root.style.setProperty('--USER__colCount', '\(columnCount)');
             root.style.setProperty('--RS__colGap', '\(columnGapPx)px');
             root.style.setProperty('--RS__pageGutter', '\(pageGutterPx)px');
+            \(scrollPaddingTopPx > 0
+                ? "root.style.setProperty('--RS__scrollPaddingTop', '\(scrollPaddingTopPx)px');"
+                : "")
+            \(scrollPaddingBottomPx > 0
+                ? "root.style.setProperty('--RS__scrollPaddingBottom', '\(scrollPaddingBottomPx)px');"
+                : "")
+            \(scrollPaddingLeftPx > 0
+                ? "root.style.setProperty('--RS__scrollPaddingLeft', '\(scrollPaddingLeftPx)px');"
+                : "")
+            \(scrollPaddingRightPx > 0
+                ? "root.style.setProperty('--RS__scrollPaddingRight', '\(scrollPaddingRightPx)px');"
+                : "")
             root.style.setProperty('--USER__fontFamily', \(Self.jsLiteral(fontFamily)));
             root.style.setProperty('--USER__fontSize', '\(fontSizePercent)%');
             \(lineHeight.map { "root.style.setProperty('--USER__lineHeight', '\($0)');" } ?? "")

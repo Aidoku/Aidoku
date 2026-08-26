@@ -38,7 +38,7 @@ final class EpubSpineRenderer: NSObject {
     // reported rather than followed; a self-loading navigation would strand the counts
     var onLinkActivated: ((String, String?) -> Void)?
 
-    private let settings: EpubPaginationSettings
+    private var settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
 
     // without this identity, a superseded navigation's failure resumes the healthy one
@@ -212,6 +212,34 @@ final class EpubSpineRenderer: NSObject {
     }
 
     // the document reports the previous offset for ~30ms after the script returns
+    // a rotation moves the safe area, and rebuilding the book to re-inject it loses the position
+    func setScrollPadding(_ clearance: UIEdgeInsets) {
+        guard !settings.paged else { return }
+        var updated = settings
+        updated.applyScrollClearance(clearance)
+        guard updated != settings else { return }
+        settings = updated
+
+        // the injection is a user script fixed at configuration time, so later documents need it too
+        let controller = webView.configuration.userContentController
+        controller.removeAllUserScripts()
+        controller.addUserScript(EpubWebViewFactory.makeInjectionScript(settings: settings))
+
+        // readium reads the property where it uses it, so the loaded document takes this live
+        webView.evaluateJavaScript(
+            """
+            document.documentElement.style.setProperty('--RS__scrollPaddingTop', '\(settings.scrollPaddingTopPx)px');
+            document.documentElement.style.setProperty('--RS__scrollPaddingBottom', '\(settings.scrollPaddingBottomPx)px');
+            document.documentElement.style.setProperty('--RS__scrollPaddingLeft', '\(settings.scrollPaddingLeftPx)px');
+            document.documentElement.style.setProperty('--RS__scrollPaddingRight', '\(settings.scrollPaddingRightPx)px');
+            """,
+            in: nil,
+            in: EpubWebViewFactory.contentWorld
+        )
+        // queued behind the property set, so it measures the padded document
+        handleSizeChange()
+    }
+
     var pagePitch: CGFloat {
         webView.bounds.width + CGFloat(settings.columnGapPx)
     }

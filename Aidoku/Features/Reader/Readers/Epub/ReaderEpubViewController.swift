@@ -371,19 +371,44 @@ class ReaderEpubViewController: BaseObservingViewController {
     // only when the view's size changes
     private var insetsAppliedForSize: CGSize = .zero
 
+    private var appliedPaged = true
+
+    private var appliedScrollClearance: UIEdgeInsets = .zero
+
+    private func scrollClearance() -> UIEdgeInsets {
+        let safeArea = view.window?.safeAreaInsets ?? .zero
+        return UIEdgeInsets(
+            top: safeArea.top + Self.chromeBuffer,
+            left: max(safeArea.left, appliedHorizontalGutter),
+            bottom: safeArea.bottom + Self.chromeBuffer,
+            right: max(safeArea.right, appliedHorizontalGutter)
+        )
+    }
+
     private func applySafeArea() {
         guard let window = view.window else { return }
         returnButtonBottom?.constant = -(
             window.safeAreaInsets.bottom + Self.returnButtonMargin + Self.returnButtonToolbarClearance
         )
+        let clearance = scrollClearance()
+        if !appliedPaged, clearance != appliedScrollClearance {
+            appliedScrollClearance = clearance
+            book?.renderer?.setScrollPadding(clearance)
+        }
         guard let webViewInsets else { return }
         guard view.bounds.size != insetsAppliedForSize else { return }
         insetsAppliedForSize = view.bounds.size
-        var insets = window.safeAreaInsets
-        insets.top += Self.chromeBuffer
-        insets.bottom += Self.chromeBuffer
-        insets.left += appliedHorizontalGutter
-        insets.right += appliedHorizontalGutter
+        // the bars' glass refracts what sits under them, so a web view inset from the edge draws a
+        // seam where the refraction starts. scroll style reaches every edge and pads inside the
+        // document instead, which also puts a cut line at the screen edge rather than mid-screen
+        var insets = UIEdgeInsets.zero
+        if appliedPaged {
+            insets = window.safeAreaInsets
+            insets.top += Self.chromeBuffer
+            insets.bottom += Self.chromeBuffer
+            insets.left = max(insets.left, appliedHorizontalGutter)
+            insets.right = max(insets.right, appliedHorizontalGutter)
+        }
         guard webViewInsets.constants != insets else { return }
         webViewInsets.apply(insets)
         view.layoutIfNeeded()
@@ -438,9 +463,15 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
         guard !Task.isCancelled else { return }
 
-        let settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
+        var settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
+        appliedPaged = settings.paged
         appliedColumnCount = settings.columnCount
         appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
+        let clearance = scrollClearance()
+        appliedScrollClearance = clearance
+        settings.applyScrollClearance(clearance)
+        // the mode may have changed without the size, and the insets follow the mode
+        insetsAppliedForSize = .zero
         pagePan.isEnabled = settings.paged
         let book: ReaderEpubViewModel
         do {
