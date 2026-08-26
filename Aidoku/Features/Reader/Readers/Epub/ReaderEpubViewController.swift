@@ -238,6 +238,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         // tap zones default to disabled and the web view does not scroll in paged mode, so
         // without this no touch gesture turns a page
         view.addGestureRecognizer(pagePan)
+        view.addGestureRecognizer(selectionPress)
 
         installReturnButton()
     }
@@ -256,6 +257,19 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private static let returnButtonMargin: CGFloat = 16
     private static let returnButtonToolbarClearance: CGFloat = 60
+
+    // a long press is WebKit starting a selection, and the tap ending it is not a page turn
+    private lazy var selectionPress: UILongPressGestureRecognizer = {
+        let press = UILongPressGestureRecognizer(target: self, action: #selector(handleSelectionPress))
+        press.delegate = self
+        press.cancelsTouchesInView = false
+        return press
+    }()
+
+    // stamped for every state, so the window is measured from the finger lifting
+    @objc private func handleSelectionPress() {
+        suppressedPageTurnAt = Date()
+    }
 
     private lazy var pagePan: UIPanGestureRecognizer = {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
