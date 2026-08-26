@@ -28,7 +28,7 @@ final class EpubSpineMeasurer {
     }
 
     private let provider: any EpubResourceProvider
-    private let settings: EpubPaginationSettings
+    private var settings: EpubPaginationSettings
 
     // its configuration binds one provider, so a measurer serves the book it was made for
     private var renderer: EpubSpineRenderer?
@@ -103,6 +103,18 @@ final class EpubSpineMeasurer {
     }
 
     // provider reads serialise onto one file handle, so a reader and this pass contend
+    // counts taken with the old padding no longer describe the layout, and the cached renderer
+    // carries it in its injection, so the next pass builds a fresh one
+    func setScrollPadding(_ clearance: UIEdgeInsets) {
+        guard !settings.paged else { return }
+        var updated = settings
+        updated.applyScrollClearance(clearance)
+        guard updated != settings else { return }
+        settings = updated
+        task?.cancel()
+        renderer = nil
+    }
+
     func pause() {
         isPaused = true
     }

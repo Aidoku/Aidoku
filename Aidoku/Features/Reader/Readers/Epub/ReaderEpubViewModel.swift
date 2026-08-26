@@ -208,6 +208,11 @@ final class ReaderEpubViewModel {
         await showBookPage(page)
     }
 
+    func setScrollPadding(_ clearance: UIEdgeInsets) {
+        renderer?.setScrollPadding(clearance)
+        measurer.setScrollPadding(clearance)
+    }
+
     func viewportChanged(to size: CGSize) {
         guard isOpen, size != viewport, size.width > 0, size.height > 0 else { return }
         viewport = size

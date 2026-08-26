@@ -385,14 +385,16 @@ class ReaderEpubViewController: BaseObservingViewController {
         returnButtonBottom?.constant = -(
             window.safeAreaInsets.bottom + Self.returnButtonMargin + Self.returnButtonToolbarClearance
         )
+        guard let webViewInsets else { return }
+        // below the size guard: on a device without a notch the window's top inset also moves when
+        // the bars hide, and repaginating on a bar toggle would jump the reading position
+        guard view.bounds.size != insetsAppliedForSize else { return }
+        insetsAppliedForSize = view.bounds.size
         let clearance = scrollClearance()
         if !appliedPaged, clearance != appliedScrollClearance {
             appliedScrollClearance = clearance
-            book?.renderer?.setScrollPadding(clearance)
+            book?.setScrollPadding(clearance)
         }
-        guard let webViewInsets else { return }
-        guard view.bounds.size != insetsAppliedForSize else { return }
-        insetsAppliedForSize = view.bounds.size
         // the bars' glass refracts what sits under them, so a web view inset from the edge draws a
         // seam where the refraction starts. scroll style reaches every edge and pads inside the
         // document instead, which also puts a cut line at the screen edge rather than mid-screen
