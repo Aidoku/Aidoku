@@ -427,6 +427,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         let settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
         appliedColumnCount = settings.columnCount
         appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
+        pagePan.isEnabled = settings.paged
         let book: ReaderEpubViewModel
         do {
             book = try ReaderEpubViewModel(bookURL: bookURL, settings: settings)
