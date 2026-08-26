@@ -315,13 +315,20 @@ final class ReaderEpubViewModel {
 
         if let snapshot {
             if loaded, let webView = renderer?.webView {
-                let width = webView.bounds.width
+                // along the axis the style reads in, or scroll style turns a chapter sideways
                 let direction: CGFloat = forward ? 1 : -1
-                webView.transform = CGAffineTransform(translationX: direction * width, y: 0)
+                let extent = (settings.paged ? webView.bounds.width : webView.bounds.height) * direction
+                let entering = settings.paged
+                    ? CGAffineTransform(translationX: extent, y: 0)
+                    : CGAffineTransform(translationX: 0, y: extent)
+                let leaving = settings.paged
+                    ? CGAffineTransform(translationX: -extent, y: 0)
+                    : CGAffineTransform(translationX: 0, y: -extent)
+                webView.transform = entering
                 await withCheckedContinuation { continuation in
                     UIView.animate(withDuration: 0.25, delay: 0, options: [.curveEaseOut]) {
                         webView.transform = .identity
-                        snapshot.transform = CGAffineTransform(translationX: -direction * width, y: 0)
+                        snapshot.transform = leaving
                     } completion: { _ in
                         snapshot.removeFromSuperview()
                         continuation.resume()
