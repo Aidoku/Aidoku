@@ -78,6 +78,14 @@ final class EpubSpineRenderer: NSObject {
         webView.scrollView.showsVerticalScrollIndicator = false
         webView.scrollView.showsHorizontalScrollIndicator = false
 
+        if #available(iOS 27.0, *) {
+            webView.scrollView.topEdgeEffect.style = .soft
+            webView.scrollView.bottomEdgeEffect.style = .soft
+            // a page drag runs horizontally, and the effect reads as a shadow down each side
+            webView.scrollView.leftEdgeEffect.isHidden = true
+            webView.scrollView.rightEdgeEffect.isHidden = true
+        }
+
         // no page turn reports a scroll-mode position; 1% steps keep a drag off the toolbar
         if !settings.paged {
             scrollObservation = webView.scrollView.observe(\.contentOffset) { [weak self] _, _ in
