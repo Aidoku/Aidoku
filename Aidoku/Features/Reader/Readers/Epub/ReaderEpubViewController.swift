@@ -231,8 +231,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         view.backgroundColor = .systemBackground
 
         // tap zones default to disabled and the web view does not scroll in paged mode, so
-        // without these no touch gesture turns a page
-        pageSwipes.forEach(view.addGestureRecognizer)
+        // without this no touch gesture turns a page
+        view.addGestureRecognizer(pagePan)
         view.addGestureRecognizer(selectionPress)
 
         installReturnButton()
@@ -266,25 +266,15 @@ class ReaderEpubViewController: BaseObservingViewController {
         suppressedPageTurnAt = Date()
     }
 
-    // one per direction, held so the style can enable them: a side swipe in scroll style should be
-    // free to dismiss the reader instead of turning a page
-    private lazy var pageSwipes: [UISwipeGestureRecognizer] = {
-        [UISwipeGestureRecognizer.Direction.left, .right].map { direction in
-            let swipe = UISwipeGestureRecognizer(target: self, action: #selector(handleSwipe(_:)))
-            swipe.direction = direction
-            swipe.delegate = self
-            return swipe
-        }
+    private lazy var pagePan: UIPanGestureRecognizer = {
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
+        pan.delegate = self
+        return pan
     }()
 
-    @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
-        // direct, not through moveRight/moveLeft, which suppress a link tap's turn; a swipe is not one
-        switch gesture.direction {
-            case .left: turn(forward: true)
-            case .right: turn(forward: false)
-            default: break
-        }
-    }
+    private var panStartOffset: CGFloat = 0
+
+    private var panIsTracking = false
 
     private var appliedColumnCount = 1
 
@@ -434,7 +424,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         settings.applyScrollClearance(clearance)
         // the mode may have changed without the size, and the insets follow the mode
         insetsAppliedForSize = .zero
-        pageSwipes.forEach { $0.isEnabled = settings.paged }
+        pagePan.isEnabled = settings.paged
         let book: ReaderEpubViewModel
         do {
             book = try ReaderEpubViewModel(bookURL: bookURL, settings: settings)
@@ -710,6 +700,77 @@ extension ReaderEpubViewController: ReaderTableOfContentsReader {
     func goToTableOfContentsEntry(_ entry: EpubTableOfContents.Entry) {
         offerReturn()
         navigate { await $0.showEntry(entry) }
+    }
+}
+
+// MARK: - Page turn drag
+
+extension ReaderEpubViewController {
+    // the columns already sit side by side in one scroll view, so dragging its offset is the turn
+    @objc private func handlePan(_ gesture: UIPanGestureRecognizer) {
+        guard let renderer = book?.renderer, renderer.pageCount > 0 else { return }
+        let pitch = renderer.pagePitch
+        guard pitch > 0 else { return }
+        let scrollView = renderer.webView.scrollView
+        let translation = gesture.translation(in: view).x
+
+        switch gesture.state {
+            case .began:
+                endSliding()
+                panStartOffset = scrollView.contentOffset.x
+                panIsTracking = true
+                // stamped for every state, so the tap the lifting finger also delivers cannot turn
+                // a second page, whichever of the two recognisers reports first
+                suppressedPageTurnAt = Date()
+            case .changed:
+                guard panIsTracking else { return }
+                suppressedPageTurnAt = Date()
+                let limit = CGFloat(renderer.pageCount - 1) * pitch
+                let offset = panStartOffset - translation
+                // the page past either end belongs to another document, so the drag resists there
+                scrollView.contentOffset.x = if offset < 0 {
+                    offset / 3
+                } else if offset > limit {
+                    limit + (offset - limit) / 3
+                } else {
+                    offset
+                }
+            case .ended, .cancelled, .failed:
+                guard panIsTracking else { return }
+                panIsTracking = false
+                suppressedPageTurnAt = Date()
+                // the offset runs against the finger, so the drag's velocity is the negative one
+                let velocity = -gesture.velocity(in: view).x
+                let released = panStartOffset - translation
+                let start = Int((panStartOffset / pitch).rounded())
+                let projected = Int(((released + velocity * Self.panProjection) / pitch).rounded())
+                // one page per drag however far the projection carries, as a paged scroll view does
+                settle(on: min(max(projected, start - 1), start + 1), velocity: velocity)
+            default:
+                break
+        }
+    }
+
+    // UIScrollView's own projection, converted to the points per second a pan reports. a tenth of
+    // a second of travel is five times more conservative, and drops the flicks that read as turns
+    private static let panProjection: CGFloat = {
+        let rate = UIScrollView.DecelerationRate.normal.rawValue
+        return rate / (1000 * (1 - rate))
+    }()
+
+    private func settle(on page: Int, velocity: CGFloat) {
+        let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        navigate { book in
+            if page < 0 {
+                await book.moveBackward(animated: animated)
+            } else if page >= book.renderer?.pageCount ?? 0 {
+                await book.moveForward(animated: animated)
+            } else if animated {
+                await book.slide(toPage: page, velocity: velocity)
+            } else {
+                await book.move(toPage: page, animated: false)
+            }
+        }
     }
 }
 

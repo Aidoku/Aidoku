@@ -82,7 +82,7 @@ final class EpubSpineRenderer: NSObject {
 
         if #available(iOS 27.0, *) {
             // a paged view does not scroll, so an edge effect there only fades the first and last
-            // lines. the horizontal pair is hidden either way, a page turn is not a scroll
+            // lines. the horizontal pair is hidden either way, a page drag is not a scroll
             webView.scrollView.topEdgeEffect.style = settings.paged ? .hard : .soft
             webView.scrollView.bottomEdgeEffect.style = settings.paged ? .hard : .soft
             webView.scrollView.topEdgeEffect.isHidden = settings.paged
@@ -292,6 +292,49 @@ final class EpubSpineRenderer: NSObject {
             stack.append(contentsOf: view.subviews)
         }
     }
+
+    var pagePitch: CGFloat {
+        webView.bounds.width + CGFloat(settings.columnGapPx)
+    }
+
+    // a settle continues the drag: it starts where the finger left the page and carries its speed,
+    // where a smooth scrollTo eases in from rest however fast the release was
+    func slide(toPage index: Int, velocity: CGFloat) async {
+        pageRequests += 1
+        pagesInFlight += 1
+        defer { pagesInFlight -= 1 }
+
+        currentPage = min(max(index, 0), max(pageCount - 1, 0))
+        let target = Double(currentPage) * Double(pagePitch)
+        currentPageOffset = target
+
+        let scrollView = webView.scrollView
+        let distance = target - Double(scrollView.contentOffset.x)
+        // a spring measures its velocity as a fraction of the distance left, and a release aimed
+        // away from the target starts the settle at rest rather than pulling further off it
+        let spring = distance == 0 ? 0 : min(max(Double(velocity) / distance, 0), Self.settleVelocityLimit)
+
+        await withCheckedContinuation { continuation in
+            UIView.animate(
+                withDuration: Self.settleDuration,
+                delay: 0,
+                usingSpringWithDamping: 1,
+                initialSpringVelocity: spring,
+                options: [.allowUserInteraction, .beginFromCurrentState]
+            ) {
+                scrollView.contentOffset.x = CGFloat(target)
+            } completion: { _ in
+                continuation.resume()
+            }
+        }
+
+        progression = Double(currentPage) / Double(max(pageCount - 1, 1))
+    }
+
+    private static let settleDuration: TimeInterval = 0.3
+
+    // a flick hard enough to carry several pages would otherwise snap the one page it turns
+    private static let settleVelocityLimit: Double = 30
 
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
         guard await goToPage(index, animated: animated, timeout: timeout) else { return }

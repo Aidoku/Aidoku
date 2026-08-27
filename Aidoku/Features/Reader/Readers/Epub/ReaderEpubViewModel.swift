@@ -127,6 +127,21 @@ final class ReaderEpubViewModel {
         startMeasuring()
     }
 
+    func move(toPage page: Int, animated: Bool = false) async {
+        pendingBookPage = nil
+        guard let renderer else { return }
+        await renderer.showPage(page, animated: animated)
+        onChange?()
+    }
+
+    // the drag's own settle, carrying the speed the finger released at
+    func slide(toPage page: Int, velocity: CGFloat) async {
+        pendingBookPage = nil
+        guard let renderer else { return }
+        await renderer.slide(toPage: page, velocity: velocity)
+        onChange?()
+    }
+
     func moveForward(animated: Bool = false) async {
         pendingBookPage = nil
         guard let renderer else { return }
