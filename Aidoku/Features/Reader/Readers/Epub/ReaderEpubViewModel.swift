@@ -127,13 +127,6 @@ final class ReaderEpubViewModel {
         startMeasuring()
     }
 
-    func move(toPage page: Int, animated: Bool = false) async {
-        pendingBookPage = nil
-        guard let renderer else { return }
-        await renderer.showPage(page, animated: animated)
-        onChange?()
-    }
-
     func moveForward(animated: Bool = false) async {
         pendingBookPage = nil
         guard let renderer else { return }

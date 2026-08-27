@@ -83,7 +83,6 @@ final class EpubSpineRenderer: NSObject {
         if #available(iOS 27.0, *) {
             webView.scrollView.topEdgeEffect.style = .soft
             webView.scrollView.bottomEdgeEffect.style = .soft
-            // a page drag runs horizontally, and the effect reads as a shadow down each side
             webView.scrollView.leftEdgeEffect.isHidden = true
             webView.scrollView.rightEdgeEffect.isHidden = true
         }
@@ -288,10 +287,6 @@ final class EpubSpineRenderer: NSObject {
             }
             stack.append(contentsOf: view.subviews)
         }
-    }
-
-    var pagePitch: CGFloat {
-        webView.bounds.width + CGFloat(settings.columnGapPx)
     }
 
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
