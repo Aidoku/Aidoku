@@ -82,21 +82,21 @@ actor MyAnimeListApi {
 
 // MARK: - Data
 extension MyAnimeListApi {
-    func search(query: String) async -> MyAnimeListSearchResponse? {
-        guard var url = URL(string: baseApiUrl + "/manga") else { return nil }
+    func search(query: String) async throws -> MyAnimeListSearchResponse {
+        var url = URL(string: baseApiUrl + "/manga")!
         url.queryParameters = [
             "q": query.take(first: 64), // Search query can't be greater than 64 characters
             "nsfw": "true"
         ]
-        return try? await self.request(url: url)
+        return try await self.request(url: url)
     }
 
-    func getMangaDetails(id: Int) async -> MyAnimeListManga? {
+    func getMangaDetails(id: Int) async throws -> MyAnimeListManga? {
         guard var url = URL(string: baseApiUrl + "/manga/\(id)") else { return nil }
         url.queryParameters = [
             "fields": "id,title,synopsis,num_chapters,main_picture,status,media_type,start_date,my_list_status"
         ]
-        return try? await self.request(url: url)
+        return try await self.request(url: url)
     }
 
     func getMangaWithStatus(id: Int) async -> MyAnimeListManga? {

@@ -21,6 +21,7 @@ struct TrackerSearchView: View {
     @State private var results: [TrackSearchItem] = []
     @State private var selectedItem: String?
     @State private var searchTask: Task<Void, Never>?
+    @State private var searchError: Error?
     @State private var safariUrl: URL?
     @State private var showSafari = false
 
@@ -36,29 +37,31 @@ struct TrackerSearchView: View {
     var body: some View {
         PlatformNavigationStack {
             List {
-                ForEach(results, id: \.id) { item in
-                    Button {
-                        if selectedItem == item.id {
-                            selectedItem = nil
-                        } else {
-                            selectedItem = item.id
-                        }
-                    } label: {
-                        TrackerSearchItemCell(item: item, selected: selectedItem == item.id)
-                    }
-                    .offsetListSeparator()
-                    .contextMenu {
+                if searchError == nil {
+                    ForEach(results, id: \.id) { item in
                         Button {
-                            Task {
-                                safariUrl = await tracker.getUrl(trackId: item.id)
-                                guard safariUrl != nil else { return }
-                                showSafari = true
+                            if selectedItem == item.id {
+                                selectedItem = nil
+                            } else {
+                                selectedItem = item.id
                             }
                         } label: {
-                            Label(
-                                NSLocalizedString("VIEW_ON_WEBSITE"),
-                                systemImage: "safari"
-                            )
+                            TrackerSearchItemCell(item: item, selected: selectedItem == item.id)
+                        }
+                        .offsetListSeparator()
+                        .contextMenu {
+                            Button {
+                                Task {
+                                    safariUrl = await tracker.getUrl(trackId: item.id)
+                                    guard safariUrl != nil else { return }
+                                    showSafari = true
+                                }
+                            } label: {
+                                Label(
+                                    NSLocalizedString("VIEW_ON_WEBSITE"),
+                                    systemImage: "safari"
+                                )
+                            }
                         }
                     }
                 }
@@ -67,6 +70,10 @@ struct TrackerSearchView: View {
             .overlay {
                 if loading {
                     ProgressView().progressViewStyle(.circular)
+                } else if let searchError {
+                    ErrorView(error: searchError)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .padding()
                 }
             }
             .scrollDismissesKeyboardImmediately()
@@ -153,10 +160,18 @@ struct TrackerSearchView: View {
             }
             guard !Task.isCancelled else { return }
 
+            withAnimation {
+                searchError = nil
+            }
+
             do {
                 results = try await tracker.search(title: query, includeNsfw: includeNsfw)
             } catch {
                 LogManager.logger.error("Failed to search tracker \(tracker.id): \(error)")
+                withAnimation {
+                    searchError = error
+                    results = []
+                }
             }
         }
     }

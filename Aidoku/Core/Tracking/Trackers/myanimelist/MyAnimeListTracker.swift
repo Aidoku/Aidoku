@@ -83,13 +83,13 @@ final class MyAnimeListTracker: OAuthTracker {
         URL(string: "https://myanimelist.net/manga/\(trackId)")
     }
 
-    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
-        await search(title: manga.title, includeNsfw: includeNsfw)
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
+        try await search(title: manga.title, includeNsfw: includeNsfw)
     }
 
-    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {
-        (await api.search(query: title)?.data.concurrentMap { node -> TrackSearchItem in
-            let details = await self.api.getMangaDetails(id: node.node.id)
+    func search(title: String, includeNsfw: Bool) async throws -> [TrackSearchItem] {
+        try await api.search(query: title).data.concurrentMap { node -> TrackSearchItem in
+            let details = try? await self.api.getMangaDetails(id: node.node.id)
             return TrackSearchItem(
                 id: String(node.node.id),
                 title: details?.title,
@@ -99,7 +99,7 @@ final class MyAnimeListTracker: OAuthTracker {
                 type: self.getMediaType(typeString: details?.mediaType ?? ""),
                 tracked: details?.myListStatus != nil
             )
-        }) ?? []
+        }
     }
 
     func handleAuthenticationCallback(url: URL) async {
