@@ -5,10 +5,11 @@
 //  Created by Skitty on 2/27/22.
 //
 
-import UIKit
-import SafariServices
-import LocalAuthentication
 import AuthenticationServices
+import Combine
+import LocalAuthentication
+import SafariServices
+import UIKit
 
 class SettingsTableViewController: UITableViewController {
 
@@ -17,18 +18,12 @@ class SettingsTableViewController: UITableViewController {
 
     var requireObservers: [SettingItem] = []
 
-    var observers: [NSObjectProtocol] = []
+    private var cancellables: Set<AnyCancellable> = []
 
-    deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
-
-    func addObserver(forName name: String, object: Any? = nil, using block: @escaping (Notification) -> Void) {
-        observers.append(NotificationCenter.default.addObserver(
-            forName: NSNotification.Name(name), object: object, queue: nil, using: block
-        ))
+    func addObserver(forName name: Notification.Name, object: Any? = nil, using block: @escaping (Notification) -> Void) {
+        NotificationCenter.default.publisher(for: name)
+            .sink(receiveValue: block)
+            .store(in: &cancellables)
     }
 
     init(items: [SettingItem] = [], source: Source? = nil, style: UITableView.Style = .insetGrouped) {
@@ -103,19 +98,19 @@ extension SettingsTableViewController {
         }
         if let requires = item.requires {
             switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            addObserver(forName: .init(requires)) { _ in
                 Task { @MainActor in
                     switchView.isEnabled = UserDefaults.standard.bool(forKey: requires)
                 }
-            })
+            }
             requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            addObserver(forName: .init(requires)) { _ in
                 Task { @MainActor in
                     switchView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
                 }
-            })
+            }
             requireObservers.append(item)
         } else {
             switchView.isEnabled = true
@@ -189,33 +184,37 @@ extension SettingsTableViewController {
                    let index = item.values?.firstIndex(of: value) {
                     cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
                 }
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(key), object: nil, queue: nil) { _ in
-                    if let value = UserDefaults.standard.string(forKey: key),
-                       let index = item.values?.firstIndex(of: value) {
-                        cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                addObserver(forName: .init(key)) { _ in
+                    Task { @MainActor in
+                        if
+                            let value = UserDefaults.standard.string(forKey: key),
+                            let index = item.values?.firstIndex(of: value)
+                        {
+                            cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                        }
                     }
-                })
+                }
             }
 
             if let requires = item.requires {
                 cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                addObserver(forName: .init(requires)) { _ in
                     Task { @MainActor in
                         cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                         cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
                     }
-                })
+                }
                 requireObservers.append(item)
             } else if let requires = item.requiresFalse {
                 cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                addObserver(forName: .init(requires)) { _ in
                     Task { @MainActor in
                         cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                         cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
                     }
-                })
+                }
                 requireObservers.append(item)
             } else {
                 cell.selectionStyle = .default
@@ -231,33 +230,37 @@ extension SettingsTableViewController {
                    let index = item.values?.firstIndex(of: value) {
                     cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
                 }
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(key), object: nil, queue: nil) { _ in
-                    if let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
-                       let index = item.values?.firstIndex(of: value) {
-                        cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                addObserver(forName: .init(key)) { _ in
+                    Task { @MainActor in
+                        if
+                            let value = UserDefaults.standard.stringArray(forKey: item.key ?? "")?.first,
+                            let index = item.values?.firstIndex(of: value)
+                        {
+                            cell.detailTextLabel?.text = item.titles?[index] ?? item.values?[index]
+                        }
                     }
-                })
+                }
             }
 
             if let requires = item.requires {
                 cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                addObserver(forName: .init(requires)) { _ in
                     Task { @MainActor in
                         cell.textLabel?.textColor = UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                         cell.selectionStyle = UserDefaults.standard.bool(forKey: requires) ? .default : .none
                     }
-                })
+                }
                 requireObservers.append(item)
             } else if let requires = item.requiresFalse {
                 cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                 cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
-                observers.append(NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+                addObserver(forName: .init(requires)) { _ in
                     Task { @MainActor in
                         cell.textLabel?.textColor = !UserDefaults.standard.bool(forKey: requires) ? .label : .secondaryLabel
                         cell.selectionStyle = !UserDefaults.standard.bool(forKey: requires) ? .default : .none
                     }
-                })
+                }
                 requireObservers.append(item)
             } else {
                 cell.selectionStyle = .default

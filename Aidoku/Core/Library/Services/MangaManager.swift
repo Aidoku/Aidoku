@@ -467,7 +467,7 @@ extension MangaManager {
     }
 
     /// Check if a manga should skip updating based on skip options.
-    private func shouldSkip(
+    private nonisolated func shouldSkip(
         manga: Manga,
         options: [String],
         excludedCategories: [String] = [],
@@ -791,7 +791,7 @@ extension MangaManager {
         fromSeries: [AidokuRunner.Manga],
         toSeries: [MangaIdentifier: AidokuRunner.Manga?],
         withChapters: [MangaIdentifier: [AidokuRunner.Chapter]] = [:],
-        progressReport: ((Float) -> Void)? = nil
+        progressReport: (@Sendable (Float) -> Void)? = nil
     ) async {
         let newDetails = await fetchNewDetails(
             fromSeries: fromSeries,

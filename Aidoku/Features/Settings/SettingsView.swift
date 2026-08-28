@@ -540,6 +540,7 @@ private struct LayoutSettingView: View {
         case compact
         case custom
 
+        @MainActor
         var imageName: String {
             switch self {
                 case .standard: UIDevice.current.userInterfaceIdiom == .pad ? "LayoutStandardPad" : "LayoutStandard"

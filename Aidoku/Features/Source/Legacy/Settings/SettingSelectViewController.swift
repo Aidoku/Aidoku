@@ -5,6 +5,7 @@
 //  Created by Skitty on 2/16/22.
 //
 
+import Combine
 import UIKit
 
 class SettingSelectViewController: UITableViewController {
@@ -55,7 +56,7 @@ class SettingSelectViewController: UITableViewController {
         return indexes
     }
 
-    var observers: [NSObjectProtocol] = []
+    private var cancellables: Set<AnyCancellable> = []
 
     init(source: Source? = nil, item: SettingItem, style: UITableView.Style = .insetGrouped) {
         self.source = source
@@ -82,25 +83,15 @@ class SettingSelectViewController: UITableViewController {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.isHidden = false
 
-        observers.append(
-            NotificationCenter.default.addObserver(
-                forName: NSNotification.Name("Reader.orientation"), object: nil, queue: nil
-            ) { [weak self] _ in
+        NotificationCenter.default.publisher(for: .init("Reader.orientation"))
+            .sink { [weak self] _ in
                 guard #available(iOS 16.0, *) else {
                     UIViewController.attemptRotationToDeviceOrientation()
                     return
                 }
-
                 self?.setNeedsUpdateOfSupportedInterfaceOrientations()
-            })
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
+            }
+            .store(in: &cancellables)
     }
 }
 

@@ -151,8 +151,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 }
 
 // MARK: - Zoom Support
-extension VerticalContentOffsetPreservingLayout: ZoomableLayoutProtocol {
-
+extension VerticalContentOffsetPreservingLayout: @MainActor ZoomableLayoutProtocol {
     func getScale() -> CGFloat {
         scale
     }

@@ -27,21 +27,23 @@ struct ExpandableTextView: View {
             .joined(separator: "  \n")
     }
 
-    static let markdownTheme = Theme()
-        .paragraph { configuration in
-            configuration.label
-                .markdownTextStyle {
-                    FontSize(15)
-                }
-                .lineSpacing(0)
-                .foregroundStyle(.secondary)
-        }
+    private var markdownTheme: Theme {
+        Theme()
+            .paragraph { configuration in
+                configuration.label
+                    .markdownTextStyle {
+                        FontSize(15)
+                    }
+                    .lineSpacing(0)
+                    .foregroundStyle(.secondary)
+            }
+    }
 
     var body: some View {
         let text = expanded ? text : textUntilNewline
         ZStack(alignment: .bottomTrailing) {
             Markdown(text)
-                .markdownTheme(Self.markdownTheme)
+                .markdownTheme(markdownTheme)
                 .environment(
                     \.openURL,
                     OpenURLAction { url in

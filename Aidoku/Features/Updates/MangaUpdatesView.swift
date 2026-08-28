@@ -135,7 +135,7 @@ struct MangaUpdatesView: View {
 
 extension MangaUpdatesView {
     private func loadNewEntries() async {
-        let newUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let newUpdates = await CoreDataManager.shared.container.performBackgroundTask { [offset] context in
             CoreDataManager.shared.getRecentMangaUpdates(limit: limit, offset: offset, context: context).compactMap {
                 if let mangaObj = CoreDataManager.shared.getManga(
                     mangaId: $0.identifier.mangaIdentifier,

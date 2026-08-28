@@ -8,6 +8,7 @@
 import AidokuRunner
 import UIKit
 
+@MainActor
 enum Settings {
     // All available font families on the system
     private static let availableFonts: [String] = {

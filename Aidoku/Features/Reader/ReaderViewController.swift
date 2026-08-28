@@ -785,7 +785,7 @@ extension ReaderViewController {
 }
 
 // MARK: - Reader Holding Delegate
-extension ReaderViewController: ReaderHoldingDelegate {
+extension ReaderViewController: @MainActor ReaderHoldingDelegate {
     var barsHidden: Bool { statusBarHidden }
 
     private func areDuplicates(_ a: AidokuRunner.Chapter, _ b: AidokuRunner.Chapter) -> Bool {

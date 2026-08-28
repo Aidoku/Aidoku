@@ -1132,7 +1132,7 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
 
 // MARK: - Dictionary Lookup
 @available(iOS 18.0, *)
-extension ReaderPagedViewController: ReaderDictionaryReader {
+extension ReaderPagedViewController: @MainActor ReaderDictionaryReader {
     func recognizedText(at point: CGPoint) -> TextRecognizer.Result? {
         for pageVC in visiblePageControllers() {
             guard

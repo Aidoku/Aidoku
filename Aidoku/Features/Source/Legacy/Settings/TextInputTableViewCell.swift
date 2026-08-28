@@ -5,6 +5,7 @@
 //  Created by Skitty on 2/16/22.
 //
 
+import Combine
 import UIKit
 
 class TextInputTableViewCell: UITableViewCell {
@@ -31,13 +32,7 @@ class TextInputTableViewCell: UITableViewCell {
         }
     }
 
-    var observers: [NSObjectProtocol] = []
-
-    deinit {
-        for observer in observers {
-            NotificationCenter.default.removeObserver(observer)
-        }
-    }
+    private var cancellables: Set<AnyCancellable> = []
 
     init(source: Source? = nil, reuseIdentifier: String?) {
         self.source = source
@@ -74,12 +69,13 @@ class TextInputTableViewCell: UITableViewCell {
         }
 
         if let key = item?.key {
-            observers.append(NotificationCenter.default.addObserver(forName: Notification.Name(key), object: nil, queue: nil) { [weak self] _ in
-                guard let self = self else { return }
-                Task { @MainActor in
-                    self.textField.text = UserDefaults.standard.string(forKey: key)
+            NotificationCenter.default.publisher(for: .init(key))
+                .sink { [weak self] _ in
+                    Task { @MainActor in
+                        self?.textField.text = UserDefaults.standard.string(forKey: key)
+                    }
                 }
-            })
+                .store(in: &cancellables)
         }
     }
 
