@@ -66,6 +66,8 @@ actor DownloadManager {
         let archiveURL = directory.appendingPathExtension("cbz")
         if archiveURL.exists {
             return LocalFileManager.shared.readPages(from: archiveURL)
+        } else if let epubFile = directory.contents.first(where: { $0.pathExtension.lowercased() == "epub" }) {
+            return LocalFileManager.shared.readEpubPages(from: epubFile)
         } else {
             var descriptionFiles: [URL] = []
 

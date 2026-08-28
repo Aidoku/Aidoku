@@ -246,6 +246,55 @@ extension DownloadTask {
             downloads[0].total = pages.count
         }
 
+        if pages.first?.isEpubPage == true {
+            downloads[0].total = pages.count
+            var archive = pages.first?.zipURL.flatMap { URL(string: $0) }
+            let resolved = archive.map { $0.isFileURL && FileManager.default.fileExists(atPath: $0.path) } ?? false
+            if !resolved {
+                // the source hands back a path into an evictable cache, so a missing archive is
+                // fetched again and the new list read rather than the old path retried
+                let language = download.chapter.language ?? source.languages.first
+                let refetched = ((try? await source.getPageList(
+                    manga: download.manga,
+                    chapter: download.chapter
+                )) ?? []).map {
+                    $0.toOld(
+                        sourceId: source.key,
+                        chapterId: download.chapterIdentifier.chapterKey,
+                        language: language
+                    )
+                }
+                guard running && downloads.first == download else { return }
+                if !refetched.isEmpty {
+                    pages = refetched
+                    downloads[0].total = pages.count
+                    archive = pages.first?.zipURL.flatMap { URL(string: $0) }
+                }
+            }
+
+            currentPage = 0
+            // failed rather than left to the page loop below, which has no request to make for an
+            // epub and would finish an empty directory as a complete download
+            guard
+                let archive,
+                archive.isFileURL,
+                FileManager.default.fileExists(atPath: archive.path)
+            else {
+                await incrementProgress(for: download.chapterIdentifier, failedPage: 1)
+                return
+            }
+            do {
+                let target = tmpDirectory.appendingPathComponent("\(download.chapterIdentifier.chapterKey).epub")
+                try FileManager.default.copyItem(at: archive, to: target)
+            } catch {
+                LogManager.logger.error("Error copying downloaded epub: \(error)")
+                await incrementProgress(for: download.chapterIdentifier, failedPage: 1)
+                return
+            }
+            await incrementProgress(for: download.chapterIdentifier)
+            return
+        }
+
         var networkPages: [NetworkPage] = []
 
         for (i, page) in pages.enumerated() {
@@ -510,7 +559,7 @@ extension DownloadTask {
 
                 try FileManager.default.moveItem(at: tmpDirectory, to: directory)
 
-                if UserDefaults.standard.bool(forKey: "Downloads.compress") {
+                if UserDefaults.standard.bool(forKey: "Downloads.compress") && pages.first?.isEpubPage != true {
                     try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
                     directory.removeItem()
                 }
