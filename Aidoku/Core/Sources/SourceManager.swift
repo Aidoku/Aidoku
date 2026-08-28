@@ -22,12 +22,28 @@ actor SourceManager {
     private var disabledSourceKeys: Set<String> = []
     private var sourceLanguageCodes: Set<String> = []
 
-    private var sourceLists: [SourceList] = []
     private var sourceListURLs: Set<URL>
     private var sourceListLanguageCodes: Set<String> = []
 
     private var loadSourcesTask: Task<(), Never>?
     private var loadSourceListsTask: Task<(), Never>?
+
+    private enum SourceListLoadState {
+        case loading
+        case loaded(SourceList)
+        case unavailable
+    }
+
+    private struct SourceListStreamSubscriber {
+        let generation: Int
+        let continuation: AsyncStream<URL>.Continuation
+    }
+
+    private var sourceListStates: [URL: SourceListLoadState] = [:]
+    private var sourceListStreamSubscribers: [UUID: SourceListStreamSubscriber] = [:]
+    private var sourceListLoadGeneration = 0
+
+    var sourceListLoadFinished = false
 
     private init() {
         sourceListURLs = AppSettings.browse.sourceLists.get()
@@ -39,9 +55,7 @@ actor SourceManager {
         loadSourcesTask = Task {
             await reloadSources()
         }
-        loadSourceListsTask = Task {
-            await reloadSourceLists()
-        }
+        startSourceListsReload()
     }
 }
 
@@ -101,26 +115,119 @@ extension SourceManager {
         await loadSourceListsTask?.value
     }
 
-    func reloadSourceLists(skipUpdateNotification: Bool = false) async {
-        sourceLists = await withTaskGroup(of: SourceList?.self) { group in
-            for url in sourceListURLs {
+    func startSourceListsReload(skipUpdateNotification: Bool = false) {
+        if let loadSourcesTask {
+            loadSourcesTask.cancel()
+            finishSourceListStreams()
+        }
+
+        sourceListLoadGeneration += 1
+        sourceListLoadFinished = false
+
+        let generation = sourceListLoadGeneration
+        let urls = sourceListURLs
+
+        sourceListStates = Dictionary(uniqueKeysWithValues: urls.map { ($0, .loading) })
+
+        loadSourceListsTask = Task { [weak self] in
+            await self?.loadSourceLists(
+                urls: urls,
+                generation: generation,
+                skipUpdateNotification: skipUpdateNotification
+            )
+        }
+    }
+
+    func streamSourceListsLoad() -> AsyncStream<URL> {
+        let (stream, continuation) = AsyncStream<URL>.makeStream()
+        let id = UUID()
+        let generation = sourceListLoadGeneration
+
+        for url in sourceListURLs {
+            guard let state = sourceListStates[url] else { continue }
+            if case .loading = state { continue }
+            continuation.yield(url)
+        }
+
+        if sourceListLoadFinished {
+            continuation.finish()
+            return stream
+        }
+
+        sourceListStreamSubscribers[id] = .init(generation: generation, continuation: continuation)
+
+        continuation.onTermination = { [weak self] _ in
+            Task {
+                await self?.removeSourceListStreamSubscriber(id)
+            }
+        }
+
+        return stream
+    }
+
+    func getSourceList(url: URL) -> SourceList? {
+        guard case let .loaded(sourceList) = sourceListStates[url] else {
+            return nil
+        }
+        return sourceList
+    }
+
+    private func removeSourceListStreamSubscriber(_ id: UUID) {
+        sourceListStreamSubscribers[id] = nil
+    }
+
+    private func loadSourceLists(
+        urls: Set<URL>,
+        generation: Int,
+        skipUpdateNotification: Bool
+    ) async {
+        await withTaskGroup(of: (URL, SourceList?).self) { group in
+            for url in urls {
                 group.addTask {
-                    await self.loadSourceList(url: url)
+                    let sourceList = await self.loadSourceList(url: url)
+                    return (url, sourceList)
                 }
             }
-            var results: [SourceList] = []
-            for await result in group {
-                guard let result else { continue }
-                results.append(result)
+
+            for await (url, sourceList) in group {
+                guard generation == sourceListLoadGeneration else { return }
+
+                if let sourceList {
+                    sourceListStates[url] = .loaded(sourceList)
+                } else {
+                    sourceListStates[url] = .unavailable
+                }
+                for subscriber in sourceListStreamSubscribers.values where subscriber.generation == generation {
+                    subscriber.continuation.yield(url)
+                }
             }
-            return results
         }
-        sourceLists.sort { $0.name < $1.name }
+
+        guard generation == sourceListLoadGeneration else { return }
 
         await loadSourceListLanguages()
 
+        sourceListLoadFinished = true
+        loadSourceListsTask = nil
+
+        finishSourceListStreams(generation: generation)
+
         if !skipUpdateNotification {
             notifySourceListsLoaded()
+        }
+    }
+
+    private func finishSourceListStreams(generation: Int? = nil) {
+        let ids = sourceListStreamSubscribers.compactMap { id, subscriber -> UUID? in
+            guard generation == nil || subscriber.generation == generation else {
+                return nil
+            }
+            subscriber.continuation.finish()
+            return id
+        }
+
+        for id in ids {
+            sourceListStreamSubscribers.removeValue(forKey: id)
         }
     }
 
@@ -167,7 +274,8 @@ extension SourceManager {
         await waitForSourcesLoad()
 
         var sourceById: [String: ExternalSourceInfo] = [:]
-        for sourceList in sourceLists {
+        for state in sourceListStates.values {
+            guard case let .loaded(sourceList) = state else { continue }
             for source in sourceList.sources {
                 if let existing = sourceById[source.id] {
                     // if a newer version exists, replace it
@@ -213,17 +321,36 @@ extension SourceManager {
 
     func getSourceLists() async -> [SourceList] {
         await waitForSourceListsLoad()
-        return sourceLists
+        return sourceListStates.values
+            .compactMap {
+                guard case let .loaded(sourceList) = $0 else { return nil }
+                return sourceList
+            }
+            .sorted {
+                $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
     }
 
     func getSourceListURLs() -> Set<URL> {
         sourceListURLs
     }
 
-    func getMissingSourceLists() async -> [URL] {
-        await waitForSourceListsLoad()
-        return sourceListURLs.filter { url in
-            !sourceLists.contains(where: { $0.url == url })
+    func getLoadedSourceLists() async -> [URL: SourceList] {
+        sourceListStates.reduce(into: [URL: SourceList]()) { result, item in
+            guard case let .loaded(sourceList) = item.value else {
+                return
+            }
+            result[item.key] = sourceList
+        }
+    }
+
+    func getMissingSourceLists() async -> Set<URL> {
+        sourceListURLs.filter {
+            if case .unavailable = sourceListStates[$0] {
+                true
+            } else {
+                false
+            }
         }
     }
 
@@ -654,7 +781,7 @@ extension SourceManager {
         AppSettings.browse.sourceLists.set(sourceListURLs)
 
         if let result {
-            sourceLists.append(result)
+            sourceListStates[url] = .loaded(result)
             for source in result.sources {
                 if let sourceLanguages = source.languages {
                     sourceListLanguageCodes.formUnion(sourceLanguages)
@@ -662,6 +789,8 @@ extension SourceManager {
                     sourceListLanguageCodes.insert(sourceLang)
                 }
             }
+        } else {
+            sourceListStates[url] = .unavailable
         }
 
         NotificationCenter.default.post(name: .updateSourceLists, object: nil)
@@ -670,7 +799,7 @@ extension SourceManager {
     }
 
     func removeSourceList(url: URL) async {
-        sourceLists.removeAll { $0.url == url }
+        sourceListStates.removeValue(forKey: url)
         sourceListURLs.remove(url)
         AppSettings.browse.sourceLists.set(sourceListURLs)
         await loadSourceListLanguages()
@@ -678,7 +807,7 @@ extension SourceManager {
     }
 
     func clearSourceLists() async {
-        sourceLists = []
+        sourceListStates = [:]
         sourceListURLs = []
         sourceListLanguageCodes = []
         AppSettings.browse.sourceLists.reset()
@@ -690,7 +819,8 @@ extension SourceManager {
 extension SourceManager {
     private func loadSourceListLanguages() async {
         var languages = Set<String>()
-        for sourceList in self.sourceLists {
+        for state in sourceListStates.values {
+            guard case let .loaded(sourceList) = state else { continue }
             for source in sourceList.sources {
                 if let sourceLanguages = source.languages {
                     languages.formUnion(sourceLanguages)
