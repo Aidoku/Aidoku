@@ -35,6 +35,10 @@ final class EpubSpineRenderer: NSObject {
 
     var onRepaginate: ((Int) -> Void)?
 
+    // the web view is blank from here and does not come back on its own, so whoever owns it has to
+    // load the document again rather than keep showing it
+    var onContentProcessTerminated: (() -> Void)?
+
     // reported rather than followed; a self-loading navigation would strand the counts
     var onLinkActivated: ((String, String?) -> Void)?
     var onExternalLinkActivated: ((URL) -> Void)?
@@ -118,9 +122,11 @@ final class EpubSpineRenderer: NSObject {
             currentPageOffset = min(max(offsetY, 0), max(maxOffset, 0))
         }
 
-        // re-armed inside the range, so the bounce-back cannot fire this twice
+        // re-armed inside the range, so the bounce-back cannot fire this twice. only a live drag
+        // or its momentum: a document still settling after a load also carries the offset past the
+        // ends, and a crossing from that navigated the reader while a restore was on its way
         if offsetY > maxOffset + Self.overscrollThreshold || offsetY < -Self.overscrollThreshold {
-            if !overscrollTriggered {
+            if !overscrollTriggered, scrollView.isDragging || scrollView.isDecelerating {
                 overscrollTriggered = true
                 onOverscroll?(offsetY > 0)
             }
@@ -638,6 +644,20 @@ extension EpubSpineRenderer: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         suppressDoubleTapGestures()
         finishNavigation(navigation, with: nil)
+    }
+
+    // jettisoned under memory pressure, which three live documents on an iPad reach far sooner than
+    // one did. a load waiting on this view would otherwise never be answered
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        LogManager.logger.warn("EpubSpineRenderer: the web content process ended")
+        cancelPendingWork()
+        pageCount = 0
+        currentPage = 0
+        currentPageOffset = 0
+        navigationContinuation?.resume(throwing: RenderError.navigationFailed("the web content process ended"))
+        navigationContinuation = nil
+        pendingNavigation = nil
+        onContentProcessTerminated?()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {

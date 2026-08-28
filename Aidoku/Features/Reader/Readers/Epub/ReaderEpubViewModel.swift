@@ -24,7 +24,12 @@ final class ReaderEpubViewModel {
 
     private(set) var index: EpubPageIndex
     private(set) var currentDocument = 0
-    private(set) var renderer: EpubSpineRenderer?
+
+    private var pool: EpubLoaderPool?
+    private var preloadTask: Task<Void, Never>?
+    private(set) var currentLoader: EpubDocumentLoader?
+
+    var renderer: EpubSpineRenderer? { currentLoader?.renderer }
 
     private let provider: any EpubResourceProvider
     private let measurer: EpubSpineMeasurer
@@ -40,6 +45,13 @@ final class ReaderEpubViewModel {
 
     var onOverscroll: ((Bool) -> Void)?
 
+    // the loaders, or which document they hold, changed
+    var onLoadersChanged: (() -> Void)?
+
+    // a loader exists but holds nothing yet; its web view needs a place in the hierarchy before a
+    // document is laid out into it
+    var onLoaderCreated: ((EpubDocumentLoader) -> Void)?
+
     // spine paths the pass could not lay out; each is still counted as one page, so a book with one
     // in it can be finished
     private(set) var unmeasurable: [String] = []
@@ -52,6 +64,72 @@ final class ReaderEpubViewModel {
     var canShowPendingBookPage: Bool {
         guard let pendingBookPage else { return false }
         return index.position(ofBookPage: pendingBookPage) != nil
+    }
+
+    /// The web views the reader should still be hosting. Anything else it holds has been given up.
+    var hostedWebViews: Set<ObjectIdentifier> {
+        Set((pool?.loaders ?? []).map { ObjectIdentifier($0.webView) })
+    }
+
+    /// Gives back everything but the document being read and the pair either side of it. The outer
+    /// ones exist to save a load, which is not worth a jettisoned web process to buy.
+    func releaseOuterDocuments() {
+        guard let pool else { return }
+        let keep = slottedLoaders.map { ObjectIdentifier($0.loader.webView) }
+        pool.release(keeping: Set(keep))
+        onLoadersChanged?()
+        preloadTask?.cancel()
+    }
+
+    func hasNeighbour(offset: Int) -> Bool {
+        slottedLoaders.contains { $0.slot == offset }
+    }
+
+    // paged only: in scroll style a document edge is a scroll position rather than a page
+    var isAtDocumentStart: Bool {
+        guard settings.paged, let renderer else { return false }
+        return renderer.currentPage == 0
+    }
+
+    var isAtDocumentEnd: Bool {
+        guard settings.paged, let renderer, renderer.pageCount > 0 else { return false }
+        return renderer.currentPage >= renderer.pageCount - 1
+    }
+
+    /// Takes an already loaded neighbour as the document being read. Nothing loads and nothing
+    /// moves: the drag has already carried it into place, and it is sitting on the right page.
+    @discardableResult
+    func adoptNeighbour(offset: Int) async -> Bool {
+        let document = currentDocument + offset
+        guard let loader = pool?.loader(holding: document), spinePaths.indices.contains(document) else {
+            return false
+        }
+        if loader.document != document {
+            // still mid-load, or lost to a terminated web process while the crossing animated:
+            // waited out here, and given up on rather than adopted blank when it cannot finish
+            guard (try? await loader.load(document: document, path: spinePaths[document])) != nil,
+                  loader.document == document
+            else { return false }
+        }
+        pendingBookPage = nil
+        currentDocument = document
+        currentLoader = loader
+        onLoadersChanged?()
+        onChange?()
+        preloadNeighbours()
+        return true
+    }
+
+    /// The live documents and where each sits relative to the one being read.
+    var slottedLoaders: [(loader: EpubDocumentLoader, slot: Int)] {
+        guard let pool else { return [] }
+        return pool.loaders.compactMap { loader in
+            // by the document actually painted, never one mid-load: until the incoming document
+            // renders, the web view still shows whatever it held before, and a slotted view is a
+            // drag away from being on screen
+            guard let document = loader.document, abs(document - currentDocument) <= 1 else { return nil }
+            return (loader, document - currentDocument)
+        }
     }
 
     var pageInDocument: Int {
@@ -92,6 +170,34 @@ final class ReaderEpubViewModel {
     // shared with the measurement pass; a count is only valid at the settings it was measured with
     private let settings: EpubPaginationSettings
 
+    // the document being read and the neighbour on either side (previous, current, next).
+    // keeping 3 loaders avoids WebKit process termination under memory pressure on iPad.
+    private static let loaderCapacity = 3
+
+    // measured in pages rather than documents: a chapter of one page costs one
+    private static let preloadPageBudget = 1
+
+    // only a host that installs the loaders' web views can hold neighbours: a renderer outside the
+    // hierarchy has no size to lay a document out at, so off it there is one document at a time
+    // a rebuild restores the reader's position before it is worth holding neighbours: a preload
+    // ahead of that puts a web view load between the reader and the page they were on
+    var deferPreloading = false {
+        didSet {
+            if !deferPreloading {
+                preloadNeighbours()
+            }
+        }
+    }
+
+    var keepsNeighbours = false {
+        didSet {
+            pool?.capacity = keepsNeighbours ? Self.loaderCapacity : 1
+            if keepsNeighbours {
+                preloadNeighbours()
+            }
+        }
+    }
+
     init(bookURL: URL, settings: EpubPaginationSettings = .default) throws {
         guard let book = EpubParser.parse(url: bookURL) else {
             throw LoadError.unreadableBook(bookURL)
@@ -107,18 +213,46 @@ final class ReaderEpubViewModel {
 
     func prepareRenderer() async throws -> EpubSpineRenderer {
         if let renderer { return renderer }
-        let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
-        renderer.onScroll = { [weak self] in self?.onChange?() }
-        renderer.onOverscroll = { [weak self] forward in self?.onOverscroll?(forward) }
-        renderer.onLinkActivated = { [weak self] path, fragment in self?.onLink?(path, fragment) }
-        renderer.onExternalLinkActivated = { [weak self] url in self?.onExternalLink?(url) }
-        renderer.onRepaginate = { [weak self] count in
+        let pool = pool ?? makePool()
+        self.pool = pool
+        guard let loader = try await pool.prepare() else {
+            throw LoadError.unreadableBook(bookURL)
+        }
+        currentLoader = loader
+        return loader.renderer
+    }
+
+    private func makePool() -> EpubLoaderPool {
+        let capacity = keepsNeighbours ? Self.loaderCapacity : 1
+        let pool = EpubLoaderPool(capacity: capacity) { [weak self, provider, settings] in
+            let renderer = try await EpubSpineRenderer(provider: provider, settings: settings)
+            self?.wire(renderer)
+            return renderer
+        }
+        pool.onLoaderCreated = { [weak self] loader in self?.onLoaderCreated?(loader) }
+        pool.onContentLost = { [weak self] document in self?.reload(document) }
+        pool.isProtected = { [weak self] loader in loader === self?.currentLoader }
+        pool.onRepaginate = { [weak self] document, count in
             guard let self else { return }
-            index.setPageCount(count, forDocumentAt: currentDocument)
+            index.setPageCount(count, forDocumentAt: document)
             onChange?()
         }
-        self.renderer = renderer
-        return renderer
+        return pool
+    }
+
+    private func wire(_ renderer: EpubSpineRenderer) {
+        // only the document being read speaks for the reader: a neighbour being positioned scrolls
+        // too, and reporting that moved the toolbar to a page nobody had turned to
+        renderer.onScroll = { [weak self, weak renderer] in
+            guard let self, currentLoader?.renderer === renderer else { return }
+            onChange?()
+        }
+        renderer.onOverscroll = { [weak self, weak renderer] forward in
+            guard let self, currentLoader?.renderer === renderer else { return }
+            onOverscroll?(forward)
+        }
+        renderer.onLinkActivated = { [weak self] path, fragment in self?.onLink?(path, fragment) }
+        renderer.onExternalLinkActivated = { [weak self] url in self?.onExternalLink?(url) }
     }
 
     func open(viewport: CGSize, atDocument document: Int = 0) async throws {
@@ -219,7 +353,9 @@ final class ReaderEpubViewModel {
     }
 
     func setScrollPadding(_ clearance: UIEdgeInsets) {
-        renderer?.setScrollPadding(clearance)
+        for loader in pool?.loaders ?? [] {
+            loader.renderer.setScrollPadding(clearance)
+        }
         measurer.setScrollPadding(clearance)
     }
 
@@ -311,19 +447,26 @@ final class ReaderEpubViewModel {
         // visibly run through it; hidden across both steps unless page 0 is the target
         let target = landingOnLastPage ? Int.max : page
         let hides = (target != 0 || fragment != nil) && snapshot == nil
-        if hides {
-            renderer?.webView.alpha = 0
-        }
-        defer {
-            if hides {
-                renderer?.webView.alpha = 1
-            }
-        }
+        // the views themselves, not `renderer`, which moves to the incoming loader when the
+        // document loads: restoring alpha through it left the outgoing web view invisible for
+        // good, and it came back around as a blank page in whatever slot it filled next
+        let outgoing = hides ? renderer?.webView : nil
+        outgoing?.alpha = 0
+        defer { outgoing?.alpha = 1 }
 
         currentDocument = document
         var loaded = false
         do {
             let count = try await loadCurrentDocument()
+            let incoming = hides ? renderer?.webView : nil
+            if incoming !== outgoing {
+                incoming?.alpha = 0
+            }
+            defer {
+                if incoming !== outgoing {
+                    incoming?.alpha = 1
+                }
+            }
             var landing = landingOnLastPage ? count - 1 : page
             if let fragment, let resolved = await renderer?.fragmentPages([fragment])[fragment] {
                 landing = resolved
@@ -364,11 +507,96 @@ final class ReaderEpubViewModel {
 
     @discardableResult
     private func loadCurrentDocument() async throws -> Int {
-        guard let renderer, spinePaths.indices.contains(currentDocument) else { return 0 }
-        let count = try await renderer.load(spinePath: spinePaths[currentDocument])
-        index.setPageCount(count, forDocumentAt: currentDocument)
+        guard let pool, spinePaths.indices.contains(currentDocument) else { return 0 }
+        let loader = try await pool.loader(for: currentDocument, path: spinePaths[currentDocument])
+        currentLoader = loader
+        index.setPageCount(loader.pageCount, forDocumentAt: currentDocument)
+        onLoadersChanged?()
         onChange?()
-        return count
+        preloadNeighbours()
+        return loader.pageCount
+    }
+
+    // a web view whose content process ended shows nothing until the document is put back into it.
+    // the one being read cannot wait for a turn, the neighbours are refilled by the next preload
+    private func reload(_ document: Int) {
+        onLoadersChanged?()
+        guard document == currentDocument else {
+            preloadNeighbours()
+            return
+        }
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                try await loadCurrentDocument()
+            } catch {
+                LogManager.logger.error(
+                    "ReaderEpubViewModel: could not reload \(spinePaths[document]) after its process ended: \(error)"
+                )
+            }
+        }
+    }
+
+    // a neighbour already laid out is a turn with nothing to load, which is the whole point of
+    // holding three. it reports no count and no position: the pass has already measured the book,
+    // and a second opinion on a count is the disagreement that put the book total out by one
+    private func preloadNeighbours() {
+        preloadTask?.cancel()
+        // behind measurement, never beside it. the pass drives the toolbar and the progress the
+        // reader is judged on, where a preload only saves a turn that has not happened yet. and
+        // behind a restore, which is the page the reader is waiting to be given back
+        guard keepsNeighbours, isMeasured, !deferPreloading else { return }
+        let current = currentDocument
+        let window = preloadWindow(around: current)
+        let wanted = Set(window.map(\.document) + [current])
+        preloadTask = Task { [weak self] in
+            guard let self else { return }
+            for (document, offset) in window {
+                guard !Task.isCancelled, currentDocument == current, let pool else { continue }
+                do {
+                    // an already loaded one is still repositioned: adopting a neighbour turns the
+                    // document just left into the neighbour on the other side
+                    let loader = try await pool.loader(
+                        for: document,
+                        path: spinePaths[document],
+                        keeping: wanted.subtracting([document])
+                    )
+                    // never the document being read: a load already in flight for it is shared
+                    // rather than repeated, and positioning it would throw away the reader's page
+                    guard !Task.isCancelled, currentDocument == current, loader !== currentLoader else { continue }
+                    // the page a drag into it reveals: forward enters at the start, back at the end
+                    await loader.renderer.showPage(offset > 0 ? 0 : max(loader.pageCount - 1, 0))
+                    guard !Task.isCancelled, currentDocument == current else { return }
+                    onLoadersChanged?()
+                } catch {
+                    LogManager.logger.warn(
+                        "ReaderEpubViewModel: could not preload \(spinePaths[document]): \(error)"
+                    )
+                }
+            }
+        }
+    }
+
+    /// The documents worth holding either side, nearest first, taken outward while they are short
+    /// enough to be worth the web view.
+    private func preloadWindow(around document: Int) -> [(document: Int, offset: Int)] {
+        let reach = Self.loaderCapacity / 2
+        var window: [(document: Int, offset: Int)] = []
+        for direction in [1, -1] {
+            var pages = 0
+            var offset = direction
+            while abs(offset) <= reach {
+                let candidate = document + offset
+                guard spinePaths.indices.contains(candidate) else { break }
+                window.append((candidate, offset))
+                pages += index.pageCount(forDocumentAt: candidate) ?? 1
+                guard pages < Self.preloadPageBudget else { break }
+                offset += direction
+            }
+        }
+        // the pair that can actually be turned into first, so a fast reader is never waiting on the
+        // outer ones
+        return window.sorted { abs($0.offset) < abs($1.offset) }
     }
 
     private func startMeasuring() {
@@ -399,6 +627,7 @@ final class ReaderEpubViewModel {
                 }
                 unmeasurable = outcome.failed
                 onChange?()
+                preloadNeighbours()
             }
         )
     }

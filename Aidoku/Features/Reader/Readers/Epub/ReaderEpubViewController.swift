@@ -65,6 +65,26 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private var webViewInsets: WebViewInsets?
 
+    // the documents sit side by side inside it, so the one being read fills it and its neighbours
+    // are flush off either edge. the insets are carried here rather than on a web view, which lets
+    // every document lay out at the same viewport and so paginate the same way
+    private let documentContainer: UIView = {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.clipsToBounds = true
+        return container
+    }()
+
+    private var installedSlots: [ObjectIdentifier: NSLayoutConstraint] = [:]
+
+    // a width past the slot a crossing reveals, so a loader holding nothing or holding a document
+    // out of reach cannot be dragged into view. hiding one instead stops it laying out, and a
+    // renderer that does not lay out cannot be measured
+    private let parkingGuide = UILayoutGuide()
+
+    private var reloadCover: UIView?
+    private var reloadCoverTask: Task<Void, Never>?
+
     private var isSliding = false
 
     // a move into another document reports twice, which a dragged slider showed as a jump
@@ -203,6 +223,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     private func rebuildBook() {
         guard book != nil else { return }
         let page = settingsReloadPage ?? (book?.bookPage).map { $0 + 1 } ?? 1
+        coverForReload()
         tearDownBook()
         openTask = Task { [weak self] in
             await self?.open(startPage: page)
@@ -220,9 +241,16 @@ class ReaderEpubViewController: BaseObservingViewController {
         reportedTotal = 0
         lastViewport = .zero
         insetsAppliedForSize = .zero
-        book?.renderer?.webView.removeFromSuperview()
-        webViewInsets = nil
+        for subview in documentContainer.subviews {
+            subview.removeFromSuperview()
+        }
+        installedSlots.removeAll()
         book = nil
+    }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        book?.releaseOuterDocuments()
     }
 
     override func viewDidLoad() {
@@ -300,19 +328,6 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     // never as injected env(safe-area-inset-*) rules: resizing changes env() and re-fragments the
     // document on a different tick from the one the renderer waits for
-    private func install(_ webView: UIView) {
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(webView)
-        let insets = WebViewInsets(
-            top: webView.topAnchor.constraint(equalTo: view.topAnchor),
-            bottom: view.bottomAnchor.constraint(equalTo: webView.bottomAnchor),
-            leading: webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            trailing: view.trailingAnchor.constraint(equalTo: webView.trailingAnchor)
-        )
-        NSLayoutConstraint.activate([insets.top, insets.bottom, insets.leading, insets.trailing])
-        webViewInsets = insets
-        applySafeArea()
-    }
 
     // the window's insets survive a bar toggle where the view's do not, and a column is 100vh by
     // 100vw, so resizing on every toggle would move every boundary
@@ -368,7 +383,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     }
 
     private func webViewSize() -> CGSize {
-        book?.renderer?.webView.bounds.size ?? .zero
+        documentContainer.bounds.size
     }
 
     // the archive is known only to the source, so the page list is asked for as usual
@@ -469,7 +484,16 @@ class ReaderEpubViewController: BaseObservingViewController {
             return
         }
         guard !Task.isCancelled else { return }
-        install(renderer.webView)
+        install(renderer.webView, slot: 0)
+        book.onLoadersChanged = { [weak self] in self?.syncDocuments() }
+        // it holds no document yet, so it is parked out of reach until one is slotted into it
+        book.onLoaderCreated = { [weak self] loader in
+            self?.install(loader.webView, slot: Self.parkedSlot)
+        }
+        book.keepsNeighbours = true
+        book.deferPreloading = settingsReloadAnchor != nil
+            || settingsReloadPosition != nil
+            || settingsReloadPage != nil
         view.layoutIfNeeded()
 
         let viewport = renderer.webView.bounds.size
@@ -492,7 +516,9 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
 
         do {
-            try await book.open(viewport: viewport)
+            // straight to the document the restore is heading for. opening at the head first and
+            // moving afterwards laid a document out that nobody was going to look at
+            try await book.open(viewport: viewport, atDocument: settingsReloadAnchor?.document ?? 0)
         } catch {
             LogManager.logger.error("ReaderEpubViewController: could not lay out \(bookURL.lastPathComponent): \(error)")
             delegate?.setPages([])
@@ -541,7 +567,10 @@ class ReaderEpubViewController: BaseObservingViewController {
         // floor, not nearest, or a restore skips text. the epsilon is a hundredth of a page, a
         // scroll offset coming back a few pixels under what was set. showEdge is why this navigates
         // even when the coarse landing already sits on the target page
-        if book.isMeasured, let (document, fraction) = settingsReloadAnchor,
+        // the anchor needs its own document counted and the ones before it, which is what the two
+        // lookups below say. waiting for the whole book to be measured on top of that was most of
+        // what a settings change spent covered
+        if let (document, fraction) = settingsReloadAnchor,
            let count = book.index.pageCount(forDocumentAt: document),
            let start = book.index.startOfDocument(at: document),
            count != settingsReloadAnchorAppliedCount {
@@ -549,9 +578,10 @@ class ReaderEpubViewController: BaseObservingViewController {
             settingsReloadPosition = nil
             settingsReloadPage = nil
             let target = start + min(Int(fraction * Double(count) + 0.01), count - 1)
-            navigate(isRestore: true) {
-                await $0.showBookPage(target)
-                await $0.renderer?.showEdge(fraction)
+            navigate(isRestore: true) { [weak self] book in
+                await book.showBookPage(target)
+                await book.renderer?.showEdge(fraction)
+                self?.uncoverReload()
             }
             return
         } else if book.isMeasured, let position = settingsReloadPosition {
@@ -559,7 +589,10 @@ class ReaderEpubViewController: BaseObservingViewController {
             settingsReloadPage = nil
             let target = min(Int(position * Double(book.bookTotal) + 0.01), book.bookTotal - 1)
             if target != book.bookPage {
-                navigate(isRestore: true) { await $0.showBookPage(target) }
+                navigate(isRestore: true) { [weak self] book in
+                    await book.showBookPage(target)
+                    self?.uncoverReload()
+                }
                 return
             }
         }
@@ -569,6 +602,11 @@ class ReaderEpubViewController: BaseObservingViewController {
         // never while the thumb is held, this being the call that moves it, nor mid-navigation,
         // whose intermediate states are not places the reader is
         guard !isSliding, !isNavigating else { return }
+        // a rebuild reopens at the head of the book and reports that before the restore runs, so
+        // the cover comes off with the restore rather than here, and here only when there is none
+        if settingsReloadAnchor == nil, settingsReloadPosition == nil, settingsReloadPage == nil {
+            uncoverReload()
+        }
         delegate?.setCurrentPage(page + 1, position: book.progression)
     }
 
@@ -735,13 +773,17 @@ extension ReaderEpubViewController {
                 suppressedPageTurnAt = Date()
                 let limit = CGFloat(renderer.pageCount - 1) * pitch
                 let offset = panStartOffset - translation
-                // the page past either end belongs to another document, so the drag resists there
-                scrollView.contentOffset.x = if offset < 0 {
-                    offset / 3
+                // past either end the drag leaves this document and carries the container, which
+                // is where the neighbour is already sitting. with no neighbour it resists instead
+                if offset < 0 {
+                    scrollView.contentOffset.x = 0
+                    documentContainer.bounds.origin.x = crossing(offset, toward: -1)
                 } else if offset > limit {
-                    limit + (offset - limit) / 3
+                    scrollView.contentOffset.x = limit
+                    documentContainer.bounds.origin.x = crossing(offset - limit, toward: 1)
                 } else {
-                    offset
+                    scrollView.contentOffset.x = offset
+                    documentContainer.bounds.origin.x = 0
                 }
             case .ended, .cancelled, .failed:
                 guard panIsTracking else { return }
@@ -750,6 +792,10 @@ extension ReaderEpubViewController {
                 // the offset runs against the finger, so the drag's velocity is the negative one
                 let velocity = -gesture.velocity(in: view).x
                 let released = panStartOffset - translation
+                if documentContainer.bounds.origin.x != 0 {
+                    settleCrossing(velocity: velocity)
+                    return
+                }
                 let start = Int((panStartOffset / pitch).rounded())
                 let projected = Int(((released + velocity * Self.panProjection) / pitch).rounded())
                 // one page per drag however far the projection carries, as a paged scroll view does
@@ -759,8 +805,118 @@ extension ReaderEpubViewController {
         }
     }
 
+    // the container follows the finger where a neighbour is waiting, and resists at the same rate
+    // a scroll view does where the book simply ends
+    private func crossing(_ overshoot: CGFloat, toward offset: Int) -> CGFloat {
+        guard book?.hasNeighbour(offset: offset) == true else { return overshoot / 3 }
+        let width = documentContainer.bounds.width
+        return min(max(overshoot, -width), width)
+    }
+
+    private func settleCrossing(velocity: CGFloat) {
+        let width = documentContainer.bounds.width
+        let carried = documentContainer.bounds.origin.x
+        let offset = carried > 0 ? 1 : -1
+        let projected = carried + velocity * Self.panProjection
+        guard abs(projected) > width / 2 else {
+            // nothing is adopted, so this settles outside the navigation queue
+            Task { await carryContainer(to: 0, velocity: velocity) }
+            return
+        }
+        guard book?.hasNeighbour(offset: offset) == true else {
+            // a chapter that exists but is not laid out yet turns on the same covered move a tap
+            // there makes; only past the end of the spine does the release settle back
+            if let book, book.spinePaths.indices.contains(book.currentDocument + offset) {
+                documentContainer.bounds.origin.x = 0
+                navigate { book in
+                    if offset > 0 {
+                        await book.moveForward(animated: true)
+                    } else {
+                        await book.moveBackward(animated: true)
+                    }
+                }
+            } else {
+                Task { await carryContainer(to: 0, velocity: velocity) }
+            }
+            return
+        }
+        cross(offset: offset, velocity: velocity, animated: true)
+    }
+
+    /// A tap at a document edge crosses on the same animation a drag settles on, so which one the
+    /// reader used is not visible in the result.
+    private func crossDocument(forward: Bool, animated: Bool) -> Bool {
+        let offset = forward ? 1 : -1
+        guard
+            let book,
+            book.hasNeighbour(offset: offset),
+            forward ? book.isAtDocumentEnd : book.isAtDocumentStart
+        else { return false }
+        cross(offset: offset, velocity: 0, animated: animated)
+        return true
+    }
+
+    // through the navigation queue, so a second turn arriving mid-crossing waits its turn rather
+    // than starting a second animation and adopting twice for one visible move
+    private func cross(offset: Int, velocity: CGFloat, animated: Bool) {
+        navigate { [weak self] book in
+            guard let self else { return }
+            // re-asked here: a queued turn was decided against the document that was being read
+            // when the key was pressed, which is not necessarily this one
+            let crossable = book.hasNeighbour(offset: offset)
+                && (offset > 0 ? book.isAtDocumentEnd : book.isAtDocumentStart)
+            guard crossable else {
+                if offset > 0 {
+                    await book.moveForward(animated: animated)
+                } else {
+                    await book.moveBackward(animated: animated)
+                }
+                return
+            }
+            if animated {
+                await carryContainer(to: CGFloat(offset) * documentContainer.bounds.width, velocity: velocity)
+            }
+            // the re-anchor puts the adopted document under the container's own origin, so the
+            // origin returns to zero in the same layout pass and nothing is drawn in between
+            let adopted = await book.adoptNeighbour(offset: offset)
+            if !adopted {
+                // lost between the check and the adopt, to a terminated web process or a recycle:
+                // the slot the container is looking at is empty, so a covered move takes over
+                documentContainer.bounds.origin.x = 0
+                if offset > 0 {
+                    await book.moveForward(animated: animated)
+                } else {
+                    await book.moveBackward(animated: animated)
+                }
+            }
+        }
+    }
+
+    private func carryContainer(to target: CGFloat, velocity: CGFloat) async {
+        let remaining = abs(target - documentContainer.bounds.origin.x)
+        isSliding = true
+        await withCheckedContinuation { continuation in
+            UIView.animate(
+                withDuration: 0.3,
+                delay: 0,
+                usingSpringWithDamping: 1,
+                initialSpringVelocity: remaining > 0 ? abs(velocity) / remaining : 0,
+                options: [.curveEaseOut]
+            ) {
+                self.documentContainer.bounds.origin.x = target
+            } completion: { _ in
+                continuation.resume()
+            }
+        }
+        isSliding = false
+    }
+
     // UIScrollView's own projection, converted to the points per second a pan reports. a tenth of
     // a second of travel is five times more conservative, and drops the flicks that read as turns
+    private static let parkedSlot = 2
+
+    private static let reloadCoverTimeout: UInt64 = 3_000_000_000
+
     private static let panProjection: CGFloat = {
         let rate = UIScrollView.DecelerationRate.normal.rawValue
         return rate / (1000 * (1 - rate))
@@ -822,6 +978,7 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     private func turn(forward: Bool) {
         endSliding()
         let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
+        guard !crossDocument(forward: forward, animated: animated) else { return }
         navigate { book in
             if forward {
                 await book.moveForward(animated: animated)
@@ -1010,5 +1167,122 @@ private final class EpubTablePreviewController: UIViewController {
         <body>\(tableHTML)</body>
         </html>
         """
+    }
+}
+
+// MARK: - Document hosting
+
+extension ReaderEpubViewController {
+    // the reader keeps the document being read and its neighbours, so a slot can change without
+    // anything loading: turning into a preloaded document only re-anchors the views
+    private func syncDocuments() {
+        guard let book else { return }
+        var live: Set<ObjectIdentifier> = []
+        for (loader, slot) in book.slottedLoaders {
+            install(loader.webView, slot: slot)
+            live.insert(ObjectIdentifier(loader.webView))
+        }
+        // parked rather than removed: a loader out of reach still needs a size, or the next
+        // document laid out into it measures against nothing. it must not be left in a slot the
+        // container can reach, since that is where a crossing reveals the incoming document
+        let hosted = book.hostedWebViews
+        for subview in documentContainer.subviews where !live.contains(ObjectIdentifier(subview)) {
+            if hosted.contains(ObjectIdentifier(subview)) {
+                install(subview, slot: Self.parkedSlot)
+            } else {
+                installedSlots.removeValue(forKey: ObjectIdentifier(subview))
+                subview.removeFromSuperview()
+            }
+        }
+        // the slots are relative to the document being read, so once they are re-anchored the
+        // container is looking at the right one again. never mid-drag or mid-settle: a preload
+        // finishing then would plant a model value the running animation snaps back to
+        if !panIsTracking && !isSliding {
+            documentContainer.bounds.origin.x = 0
+        }
+    }
+
+    // a settings change rebuilds the book, which empties the container and lays every document out
+    // again. covered by what was on screen until the reader is back where it was, or the change
+    // reads as the page blinking out and returning
+    private func coverForReload() {
+        guard
+            reloadCover == nil,
+            let webView = book?.renderer?.webView,
+            webView.superview != nil,
+            let cover = webView.snapshotView(afterScreenUpdates: false)
+        else { return }
+        cover.frame = documentContainer.frame
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.insertSubview(cover, aboveSubview: documentContainer)
+        reloadCover = cover
+        reloadCoverTask = Task { [weak self] in
+            // a rebuild that never lands must not leave the reader looking at a still image
+            try? await Task.sleep(nanoseconds: Self.reloadCoverTimeout)
+            guard !Task.isCancelled else { return }
+            self?.uncoverReload()
+        }
+    }
+
+    private func uncoverReload() {
+        book?.deferPreloading = false
+        reloadCoverTask?.cancel()
+        reloadCoverTask = nil
+        guard let cover = reloadCover else { return }
+        reloadCover = nil
+        UIView.animate(withDuration: 0.15) {
+            cover.alpha = 0
+        } completion: { _ in
+            cover.removeFromSuperview()
+        }
+    }
+
+    private func installContainer() {
+        guard documentContainer.superview == nil else { return }
+        view.addSubview(documentContainer)
+        let insets = WebViewInsets(
+            top: documentContainer.topAnchor.constraint(equalTo: view.topAnchor),
+            bottom: view.bottomAnchor.constraint(equalTo: documentContainer.bottomAnchor),
+            leading: documentContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            trailing: view.trailingAnchor.constraint(equalTo: documentContainer.trailingAnchor)
+        )
+        NSLayoutConstraint.activate([insets.top, insets.bottom, insets.leading, insets.trailing])
+        webViewInsets = insets
+
+        documentContainer.addLayoutGuide(parkingGuide)
+        NSLayoutConstraint.activate([
+            parkingGuide.leadingAnchor.constraint(equalTo: documentContainer.trailingAnchor),
+            parkingGuide.widthAnchor.constraint(equalTo: documentContainer.widthAnchor)
+        ])
+    }
+
+    private func install(_ webView: UIView, slot: Int) {
+        installContainer()
+        let key = ObjectIdentifier(webView)
+        if let existing = installedSlots[key] {
+            existing.isActive = false
+        } else {
+            webView.translatesAutoresizingMaskIntoConstraints = false
+            documentContainer.addSubview(webView)
+            NSLayoutConstraint.activate([
+                webView.topAnchor.constraint(equalTo: documentContainer.topAnchor),
+                webView.bottomAnchor.constraint(equalTo: documentContainer.bottomAnchor),
+                webView.widthAnchor.constraint(equalTo: documentContainer.widthAnchor)
+            ])
+        }
+        // anchored to an edge rather than offset by a width, so a rotation needs no constant kept
+        // in step with the container
+        let position = switch slot {
+            case ..<0: webView.trailingAnchor.constraint(equalTo: documentContainer.leadingAnchor)
+            case 0: webView.leadingAnchor.constraint(equalTo: documentContainer.leadingAnchor)
+            case 1: webView.leadingAnchor.constraint(equalTo: documentContainer.trailingAnchor)
+            default: webView.leadingAnchor.constraint(equalTo: parkingGuide.trailingAnchor)
+        }
+        position.isActive = true
+        installedSlots[key] = position
+        applySafeArea()
+        // laid out now: a renderer measures against its bounds, and a web view parked before the
+        // next layout pass would be asked to lay a document out at no size
+        view.layoutIfNeeded()
     }
 }
