@@ -36,6 +36,7 @@ final class ReaderEpubViewModel {
     var onChange: (() -> Void)?
 
     var onLink: ((String, String?) -> Void)?
+    var onExternalLink: ((URL) -> Void)?
 
     var onOverscroll: ((Bool) -> Void)?
 
@@ -110,6 +111,7 @@ final class ReaderEpubViewModel {
         renderer.onScroll = { [weak self] in self?.onChange?() }
         renderer.onOverscroll = { [weak self] forward in self?.onOverscroll?(forward) }
         renderer.onLinkActivated = { [weak self] path, fragment in self?.onLink?(path, fragment) }
+        renderer.onExternalLinkActivated = { [weak self] url in self?.onExternalLink?(url) }
         renderer.onRepaginate = { [weak self] count in
             guard let self else { return }
             index.setPageCount(count, forDocumentAt: currentDocument)

@@ -37,6 +37,7 @@ final class EpubSpineRenderer: NSObject {
 
     // reported rather than followed; a self-loading navigation would strand the counts
     var onLinkActivated: ((String, String?) -> Void)?
+    var onExternalLinkActivated: ((URL) -> Void)?
 
     private var settings: EpubPaginationSettings
     private var navigationContinuation: CheckedContinuation<Void, any Error>?
@@ -615,14 +616,20 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction
     ) async -> WKNavigationActionPolicy {
-        guard let url = navigationAction.request.url, url.scheme == EpubSchemeHandler.scheme else {
-            return .cancel
+        guard let url = navigationAction.request.url else { return .cancel }
+        if navigationAction.navigationType == .linkActivated {
+            if url.scheme == "http" || url.scheme == "https" {
+                onExternalLinkActivated?(url)
+                return .cancel
+            }
+            if url.scheme == EpubSchemeHandler.scheme {
+                // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
+                let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
+                onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
+                return .cancel
+            }
         }
-        // handed to the book and cancelled; even a link into the loaded document restarts it
-        guard navigationAction.navigationType != .linkActivated else {
-            // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
-            let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
-            onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
+        guard url.scheme == EpubSchemeHandler.scheme else {
             return .cancel
         }
         return .allow

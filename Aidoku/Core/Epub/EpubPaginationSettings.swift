@@ -119,6 +119,11 @@ struct EpubPaginationSettings: Equatable {
             }
 
             head.appendChild(makeStyle(\(after)));
+            head.appendChild(makeStyle(
+                'a, a:visited { color: #FF2D55; }' +
+                '@media (prefers-color-scheme: dark) { a, a:visited { color: #FF375F; } }' +
+                'a:active { opacity: 0.7; }'
+            ));
 
             var root = document.documentElement;
             root.style.setProperty('--USER__colCount', '\(columnCount)');

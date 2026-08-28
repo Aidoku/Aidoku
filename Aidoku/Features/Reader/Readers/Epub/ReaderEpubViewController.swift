@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+import SafariServices
 import UIKit
 import WebKit
 
@@ -439,6 +440,13 @@ class ReaderEpubViewController: BaseObservingViewController {
             suppressedPageTurnAt = Date()
             offerReturn()
             navigate { await $0.showLocation(path: path, fragment: fragment) }
+        }
+        book.onExternalLink = { [weak self] url in
+            // a lookup or the settings sheet can already be up, and presenting over one fails
+            guard let self, presentedViewController == nil else { return }
+            let safari = SFSafariViewController(url: url)
+            safari.preferredControlTintColor = view.tintColor
+            present(safari, animated: true)
         }
         book.onOverscroll = { [weak self] forward in
             self?.navigate { book in
