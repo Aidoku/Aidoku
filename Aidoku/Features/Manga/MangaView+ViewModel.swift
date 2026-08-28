@@ -31,10 +31,10 @@ extension MangaView {
         @Published var initialDataLoaded = false
 
         @Published var chapterSortOption: ChapterSortOption = .sourceOrder {
-            didSet { resortChapters() }
+            didSet { refilterChapters() }
         }
         @Published var chapterSortAscending = false {
-            didSet { resortChapters() }
+            didSet { refilterChapters() }
         }
 
         @Published var chapterFilters: [ChapterFilterOption] = [] {
@@ -663,17 +663,6 @@ extension MangaView.ViewModel {
             readingHistory[chapter.key] = nil
         }
         updateReadButton()
-    }
-
-    private func resortChapters() {
-        withAnimation {
-            chapters = sortedChapters()
-        }
-        if bookmarked {
-            Task {
-                await saveFilters()
-            }
-        }
     }
 
     private func refilterChapters() {
