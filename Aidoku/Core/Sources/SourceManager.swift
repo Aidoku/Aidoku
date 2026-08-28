@@ -370,6 +370,71 @@ extension SourceManager {
 
 // MARK: - Source Management
 extension SourceManager {
+    func missingExternalSourceKeys(in keys: Set<String>) async -> Set<String> {
+        let installedKeys: Set<String> = await CoreDataManager.shared.container.performBackgroundTask { context in
+            Set(CoreDataManager.shared.getSources(context: context).compactMap(\.id))
+        }
+        return keys.subtracting(installedKeys)
+    }
+
+    /// Installs missing sources with matching entries in the currently loaded source lists.
+    ///
+    /// If multiple lists contain the same source, the newest compatible version is used.
+    func installExternalSources(
+        keys: Set<String>,
+        progressReport: @MainActor @Sendable (_ name: String, _ key: String, _ current: Int, _ total: Int) -> Void
+    ) async -> Set<String> {
+        guard
+            !keys.isEmpty,
+            let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
+        else {
+            return []
+        }
+
+        let missingKeys = await missingExternalSourceKeys(in: keys)
+        guard !missingKeys.isEmpty else { return [] }
+
+        let appVersion = SemanticVersion(appVersionString)
+        var sourcesByKey: [String: ExternalSourceInfo] = [:]
+
+        for state in sourceListStates.values {
+            guard case let .loaded(sourceList) = state else { continue }
+            for source in sourceList.sources where missingKeys.contains(source.id) && source.fileURL != nil {
+                if
+                    let minAppVersion = source.minAppVersion.flatMap(SemanticVersion.init),
+                    minAppVersion > appVersion
+                {
+                    continue
+                }
+                if
+                    let maxAppVersion = source.maxAppVersion.flatMap(SemanticVersion.init),
+                    maxAppVersion < appVersion
+                {
+                    continue
+                }
+
+                if let existing = sourcesByKey[source.id] {
+                    if source.version > existing.version {
+                        sourcesByKey[source.id] = source
+                    }
+                } else {
+                    sourcesByKey[source.id] = source
+                }
+            }
+        }
+
+        let sources = missingKeys.sorted().compactMap { sourcesByKey[$0] }
+        var installedKeys: Set<String> = []
+        for (index, source) in sources.enumerated() {
+            guard let url = source.fileURL else { continue }
+            await progressReport(source.name, source.id, index + 1, sources.count)
+            if let installedSource = await importSource(from: url) {
+                installedKeys.insert(installedSource.key)
+            }
+        }
+        return installedKeys
+    }
+
     func importSource(from url: URL) async -> AidokuRunner.Source? {
         // download and unzip source aix
         guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }

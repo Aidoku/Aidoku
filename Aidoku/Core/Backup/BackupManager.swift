@@ -289,39 +289,8 @@ extension BackupManager {
             UIApplication.shared.isIdleTimerDisabled = true
         }
 
-        Task {
-            // restore settings
-            if let settings = backup.settings {
-                // only restore source settings for sources installed, or built-in sources that will be added from the backup restore
-                let sources = await SourceManager.shared.getSourceInfos(sorted: false)
-                var sourceKeyPrefixes = sources.map { "\($0.sourceId)." }
-                for additionalSource in backup.sources ?? [] where additionalSource.config != nil {
-                    sourceKeyPrefixes.append("\(additionalSource.id).")
-                }
-                var needsMigrate = false
-                for (key, value) in settings {
-                    let hasAllowedPrefix = Self.allowedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
-                        || sourceKeyPrefixes.contains(where: { key.hasPrefix($0) })
-                    guard
-                        hasAllowedPrefix,
-                        !Self.excludedSettings.contains(key),
-                        !Self.excludedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
-                    else {
-                        continue
-                    }
-                    UserDefaults.standard.set(value.toRaw(), forKey: key)
-                    if AppDelegate.legacySettingKeys.contains(key) {
-                        needsMigrate = true
-                    }
-                }
-
-                if needsMigrate {
-                    await MainActor.run {
-                        UIApplication.shared.appDelegate?.migrateSettings()
-                    }
-                }
-            }
-
+        let sourceListsTask = Task {
+            await SourceManager.shared.waitForSourceListsLoad()
             // restore source lists
             guard let sourceLists = backup.sourceLists else { return }
             await SourceManager.shared.clearSourceLists()
@@ -559,6 +528,7 @@ extension BackupManager {
             }
         }
         let sourceTask = Task {
+            await sourceListsTask.value
             if let sourceItems = backup.sources {
                 let (result, needsRefresh) = await CoreDataManager.shared.container.performBackgroundTask { context in
                     var needsRefresh = false
@@ -597,6 +567,60 @@ extension BackupManager {
             backupError = error
         }
 
+        // Restore application and currently installed source settings as part of the initial restore.
+        await restoreSettings(from: backup)
+
+        await Task { @MainActor in
+            await UIApplication.shared.appDelegate?.hideLoadingIndicator()
+            UIApplication.shared.isIdleTimerDisabled = false
+        }.value
+
+        if backupError == nil {
+            let externalSourceKeys = Set((backup.sources ?? []).lazy.filter { $0.config == nil }.map(\.id))
+            let missingSourceKeys = await SourceManager.shared.missingExternalSourceKeys(in: externalSourceKeys)
+
+            if
+                !missingSourceKeys.isEmpty,
+                Reachability.getConnectionType() != .none,
+                await confirmExternalSourceRestore(keys: missingSourceKeys)
+            {
+                await MainActor.run {
+                    UIApplication.shared.isIdleTimerDisabled = true
+                    UIApplication.shared.appDelegate?.showLoadingIndicator(
+                        style: .progress,
+                        message: NSLocalizedString("INSTALLING_SOURCES")
+                    )
+                }
+
+                let installedSourceKeys = await SourceManager.shared.installExternalSources(
+                    keys: missingSourceKeys
+                ) { name, key, current, total in
+                    let sourceName = name.isEmpty || name == key ? key : "\(name) (\(key))"
+                    UIApplication.shared.appDelegate?.updateLoadingIndicator(
+                        message: String(
+                            format: NSLocalizedString("INSTALLING_SOURCE_%@_%@_%@"),
+                            String(current),
+                            String(total),
+                            sourceName
+                        ),
+                        progress: Float(current - 1) / Float(total)
+                    )
+                }
+
+                // Newly installed sources were not eligible during the initial settings restore.
+                await restoreSettings(from: backup, sourceKeys: installedSourceKeys)
+
+                await Task { @MainActor in
+                    UIApplication.shared.appDelegate?.updateLoadingIndicator(
+                        message: NSLocalizedString("INSTALLING_SOURCES"),
+                        progress: 1
+                    )
+                    await UIApplication.shared.appDelegate?.hideLoadingIndicator()
+                    UIApplication.shared.isIdleTimerDisabled = false
+                }.value
+            }
+        }
+
         NotificationCenter.default.post(name: .updateHistory, object: nil)
         NotificationCenter.default.post(name: .updateTrackers, object: nil)
         NotificationCenter.default.post(name: .updateCategories, object: nil)
@@ -604,10 +628,6 @@ extension BackupManager {
 
         await Task { @MainActor [backupError] in
             let delegate = UIApplication.shared.appDelegate
-            await delegate?.hideLoadingIndicator()
-
-            UIApplication.shared.isIdleTimerDisabled = false
-
             if let backupError {
                 // show error alert
                 delegate?.presentAlert(
@@ -632,6 +652,76 @@ extension BackupManager {
         }.value
 
         return backupError == nil
+    }
+
+    private func restoreSettings(from backup: Backup, sourceKeys: Set<String>? = nil) async {
+        guard let settings = backup.settings else { return }
+
+        let sourceKeyPrefixes: [String]
+        if let sourceKeys {
+            sourceKeyPrefixes = sourceKeys.map { "\($0)." }
+        } else {
+            // Only restore source settings for sources installed, or built-in sources added by the restore.
+            let sources = await SourceManager.shared.getSourceInfos(sorted: false)
+            sourceKeyPrefixes = sources.map { "\($0.sourceId)." } + (backup.sources ?? []).compactMap {
+                $0.config == nil ? nil : "\($0.id)."
+            }
+        }
+
+        var needsMigrate = false
+        for (key, value) in settings {
+            let hasAllowedPrefix = (sourceKeys == nil && Self.allowedSettingsPrefixes.contains { key.hasPrefix($0) })
+                || sourceKeyPrefixes.contains { key.hasPrefix($0) }
+            guard
+                hasAllowedPrefix,
+                !Self.excludedSettings.contains(key),
+                !Self.excludedSettingsPrefixes.contains(where: { key.hasPrefix($0) })
+            else {
+                continue
+            }
+            UserDefaults.standard.set(value.toRaw(), forKey: key)
+            if AppDelegate.legacySettingKeys.contains(key) {
+                needsMigrate = true
+            }
+        }
+
+        if needsMigrate {
+            await MainActor.run {
+                UIApplication.shared.appDelegate?.migrateSettings()
+            }
+        }
+    }
+
+    private func confirmExternalSourceRestore(keys: Set<String>) async -> Bool {
+        let message = String(
+            format: NSLocalizedString("RESTORE_MISSING_SOURCES_TEXT_%@"),
+            String(keys.count)
+        )
+            + keys.sorted().map { "\n- \($0)" }.joined()
+
+        return await withCheckedContinuation { continuation in
+            Task { @MainActor in
+                guard
+                    let delegate = UIApplication.shared.appDelegate,
+                    delegate.topViewController != nil
+                else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                delegate.presentAlert(
+                    title: NSLocalizedString("RESTORE_MISSING_SOURCES"),
+                    message: message,
+                    actions: [
+                        UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel) { _ in
+                            continuation.resume(returning: false)
+                        },
+                        UIAlertAction(title: NSLocalizedString("INSTALL_SOURCES"), style: .default) { _ in
+                            continuation.resume(returning: true)
+                        }
+                    ]
+                )
+            }
+        }
     }
 }
 
