@@ -266,7 +266,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         suppressedPageTurnAt = Date()
     }
 
-    private lazy var pagePan: UIPanGestureRecognizer = {
+    private(set) lazy var pagePan: UIPanGestureRecognizer = {
         let pan = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         pan.delegate = self
         return pan
@@ -778,6 +778,12 @@ extension ReaderEpubViewController {
 
 extension ReaderEpubViewController: UIGestureRecognizerDelegate {
     // only the reader's own gestures carry this delegate
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        guard gestureRecognizer === pagePan else { return true }
+        let translation = pagePan.translation(in: view)
+        return abs(translation.x) > abs(translation.y)
+    }
+
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer

@@ -1108,8 +1108,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         tap.delegate = self
         // the epub reader is the only one with a web view under the tap zones, and its tap must
         // not cancel touches, which is what lets the web view keep text selection and links
-        if reader is ReaderEpubViewController {
+        if let epubReader = reader as? ReaderEpubViewController {
             tap.cancelsTouchesInView = false
+            tap.require(toFail: epubReader.pagePan)
         }
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
