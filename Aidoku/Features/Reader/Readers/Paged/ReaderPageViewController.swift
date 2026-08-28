@@ -61,7 +61,9 @@ class ReaderPageViewController: BaseObservingViewController {
     var isInDoublePageController = false {
         didSet {
             loadPageBackground()
-            zoomView?.zoomEnabled = !(isInDoublePageController)
+            if isInDoublePageController {
+                zoomView?.zoomEnabled = false
+            }
         }
     }
     var doublePageRestorationConstraints: [NSLayoutConstraint] = []
@@ -101,6 +103,7 @@ class ReaderPageViewController: BaseObservingViewController {
             case .page:
                 // zoom view
                 let zoomView = ZoomableScrollView(frame: view.bounds)
+                zoomView.zoomEnabled = false
                 zoomView.translatesAutoresizingMaskIntoConstraints = false
                 self.zoomView = zoomView
                 updateDoubleTapZoomSetting()
@@ -178,6 +181,8 @@ class ReaderPageViewController: BaseObservingViewController {
         zoomView?.zoomEnabled = false
         Task {
             let result = await pageView.setPage(page, sourceId: sourceId, skipProcessing: skipProcessing)
+            guard self.page == page else { return }
+
             zoomView?.zoomEnabled = result && !isInDoublePageController
             reloadButton.isHidden = result
 
@@ -249,6 +254,7 @@ class ReaderPageViewController: BaseObservingViewController {
     }
 
     func clearPage() {
+        page = nil
         pageSet = false
         pageView?.imageView.image = nil
         zoomView?.zoomEnabled = false
