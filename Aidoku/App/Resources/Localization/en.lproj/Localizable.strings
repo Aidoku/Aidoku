@@ -660,6 +660,10 @@
 "BACKUP_INFO" = "Long press on a backup to export it, or swipe to the left to delete.";
 "MISSING_SOURCES" = "Missing Sources";
 "MISSING_SOURCES_TEXT" = "The restored backup may contain data from the following sources, which are not currently installed:";
+"RESTORE_MISSING_SOURCES" = "Restore Missing Sources?";
+"RESTORE_MISSING_SOURCES_TEXT" = "Would you like to search for and install missing sources?";
+"INSTALL_SOURCES" = "Install Sources";
+"INSTALLING_SOURCES" = "Installing sources…";
 "RESTORE_BACKUP" = "Restore to this backup?";
 "RESTORE_BACKUP_TEXT" = "All current data will be removed and replaced by the data from this backup.";
 "BACKUP_IMPORT_SUCCESS" = "Backup Imported";
