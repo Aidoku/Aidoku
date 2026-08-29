@@ -290,7 +290,7 @@ extension DownloadTask {
             }
         }
 
-        if UserDefaults.standard.bool(forKey: "Downloads.parallel") {
+        if AppSettings.downloads.parallel.get() {
             // download pages from the network concurrently
             await withTaskGroup(of: PageDownloadResult.self) { taskGroup in
                 let groupSize = max(1, min(source.config?.maximumParallelRequests ?? Self.maxConcurrentPageTasks, Self.maxConcurrentPageTasks))
@@ -510,7 +510,7 @@ extension DownloadTask {
 
                 try FileManager.default.moveItem(at: tmpDirectory, to: directory)
 
-                if UserDefaults.standard.bool(forKey: "Downloads.compress") {
+                if AppSettings.downloads.compress.get() {
                     try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
                     directory.removeItem()
                 }

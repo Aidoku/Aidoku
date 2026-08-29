@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AutomaticBackupsView: View {
-    @StateObject private var enabled = UserDefaultsBool(key: "AutomaticBackups.enabled")
+    @StateObject private var enabled = UserDefaultsBool(key: AppSettings.backups.autoBackups.enabled.key)
 
     @Environment(\.dismiss) private var dismiss
 
@@ -16,12 +16,12 @@ struct AutomaticBackupsView: View {
         PlatformNavigationStack {
             List {
                 Section {
-                    toggle(key: "AutomaticBackups.enabled", title: NSLocalizedString("AUTOMATIC_BACKUPS"))
+                    toggle(key: AppSettings.backups.autoBackups.enabled.key, title: NSLocalizedString("AUTOMATIC_BACKUPS"))
 
                     if enabled.value {
                         SettingView(
                             setting: .init(
-                                key: "AutomaticBackups.interval",
+                                key: AppSettings.backups.autoBackups.interval.key,
                                 title: NSLocalizedString("BACKUP_INTERVAL"),
                                 value: .select(.init(
                                     values: ["6hours", "12hours", "daily", "2days", "weekly"],
@@ -37,7 +37,7 @@ struct AutomaticBackupsView: View {
                         )
                     }
                 } footer: {
-                    let date = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "AutomaticBackups.lastBackup"))
+                    let date = AppSettings.backups.autoBackups.lastBackup.get()
                     if date > Date.distantPast {
                         Text(String(format: NSLocalizedString("LAST_BACKED_UP_%@"), date.formatted(.relative(presentation: .named))))
                     }
@@ -45,19 +45,19 @@ struct AutomaticBackupsView: View {
 
                 if enabled.value {
                     Section(NSLocalizedString("LIBRARY")) {
-                        toggle(key: "AutomaticBackups.libraryEntries", title: NSLocalizedString("LIBRARY_ENTRIES"))
-                        toggle(key: "AutomaticBackups.chapters", title: NSLocalizedString("CHAPTERS"))
-                        toggle(key: "AutomaticBackups.tracking", title: NSLocalizedString("TRACKING"))
-                        toggle(key: "AutomaticBackups.history", title: NSLocalizedString("HISTORY"))
-                        toggle(key: "AutomaticBackups.categories", title: NSLocalizedString("CATEGORIES"))
-                        toggle(key: "AutomaticBackups.readingSessions", title: NSLocalizedString("READING_SESSIONS"))
-                        toggle(key: "AutomaticBackups.vocabulary", title: NSLocalizedString("VOCABULARY"))
-                        toggle(key: "AutomaticBackups.updates", title: NSLocalizedString("MANGA_UPDATES"))
+                        toggle(key: AppSettings.backups.autoBackups.libraryEntries.key, title: NSLocalizedString("LIBRARY_ENTRIES"))
+                        toggle(key: AppSettings.backups.autoBackups.chapters.key, title: NSLocalizedString("CHAPTERS"))
+                        toggle(key: AppSettings.backups.autoBackups.tracking.key, title: NSLocalizedString("TRACKING"))
+                        toggle(key: AppSettings.backups.autoBackups.history.key, title: NSLocalizedString("HISTORY"))
+                        toggle(key: AppSettings.backups.autoBackups.categories.key, title: NSLocalizedString("CATEGORIES"))
+                        toggle(key: AppSettings.backups.autoBackups.readingSessions.key, title: NSLocalizedString("READING_SESSIONS"))
+                        toggle(key: AppSettings.backups.autoBackups.vocabulary.key, title: NSLocalizedString("VOCABULARY"))
+                        toggle(key: AppSettings.backups.autoBackups.updates.key, title: NSLocalizedString("MANGA_UPDATES"))
                     }
                     Section(NSLocalizedString("SETTINGS")) {
-                        toggle(key: "AutomaticBackups.settings", title: NSLocalizedString("SETTINGS"))
-                        toggle(key: "AutomaticBackups.sourceLists", title: NSLocalizedString("SOURCE_LISTS"))
-                        toggle(key: "AutomaticBackups.sensitiveSettings", title: NSLocalizedString("SENSITIVE_SETTINGS"))
+                        toggle(key: AppSettings.backups.autoBackups.settings.key, title: NSLocalizedString("SETTINGS"))
+                        toggle(key: AppSettings.backups.autoBackups.sourceLists.key, title: NSLocalizedString("SOURCE_LISTS"))
+                        toggle(key: AppSettings.backups.autoBackups.sensitiveSettings.key, title: NSLocalizedString("SENSITIVE_SETTINGS"))
                     }
                 }
             }

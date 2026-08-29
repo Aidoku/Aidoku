@@ -200,10 +200,11 @@ extension MangaView {
                 }
                 .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .init("Library.resumeLastOpenedChapter"))
-                .receive(on: DispatchQueue.main)
+            NotificationCenter.default.publisher(for: .init(AppSettings.library.resumeLastOpenedChapter.key))
                 .sink { [weak self] _ in
-                    self?.updateReadButton()
+                    Task { @MainActor in
+                        self?.updateReadButton()
+                    }
                 }
                 .store(in: &cancellables)
 
@@ -284,7 +285,7 @@ extension MangaView.ViewModel {
     }
 
     func markUpdatesViewed() async {
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+        if !AppSettings.general.incognitoMode.get() {
             await MangaUpdateManager.shared.viewAllUpdates(of: manga)
         }
     }
@@ -422,7 +423,7 @@ extension MangaView.ViewModel {
         )
 
         // sync progress from regular trackers if auto sync enabled
-        if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") {
+        if AppSettings.tracking.autoSyncFromTracker.get() {
             let trackItems: [TrackItem] = await CoreDataManager.shared.container.performBackgroundTask { @Sendable [manga] context in
                 CoreDataManager.shared.getTracks(
                     mangaId: manga.identifier,
@@ -509,7 +510,7 @@ extension MangaView.ViewModel {
                         let now = Date.now
                         libraryObject.lastUpdated = now
 
-                        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                        if !AppSettings.general.incognitoMode.get() {
                             libraryObject.lastOpened = now.addingTimeInterval(1) // ensure item isn't re-pinned, since it's already open
                         }
 

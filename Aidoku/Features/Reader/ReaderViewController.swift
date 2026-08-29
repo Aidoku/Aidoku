@@ -476,7 +476,7 @@ extension ReaderViewController {
         let effectiveCurrentPage = currentPage ?? self.currentPage
 
         guard
-            !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
+            !AppSettings.general.incognitoMode.get(),
             effectiveTotalPages > 0 // ensure chapter pages are loaded
         else {
             return
@@ -1024,7 +1024,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
     }
 
     func setCompleted() {
-        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        guard !AppSettings.general.incognitoMode.get() else { return }
 
         Task { [chaptersToMark] in
             await HistoryManager.shared.addHistory(
@@ -1033,7 +1033,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
             )
         }
 
-        if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
+        if AppSettings.downloads.deleteDownloadAfterReading.get() {
             chaptersToRemoveDownload.append(chapter)
         }
     }
@@ -1453,10 +1453,10 @@ extension ReaderViewController {
                 if #available(iOS 26.0, *) {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 1
                 }
-                self.node.backgroundColor = if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                self.node.backgroundColor = if AppSettings.appearance.useSystemAppearance.get() {
                     .systemBackground
                 } else {
-                    if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                    if AppSettings.appearance.appearance.get() == 0 {
                         .white
                     } else {
                         .black

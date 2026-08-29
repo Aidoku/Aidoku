@@ -130,10 +130,10 @@ extension SettingsView {
             categoriesOnly = CoreDataManager.shared.getCategoryTitles()
             categoriesAndGroups = CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false)
             if
-                let selected = UserDefaults.standard.string(forKey: "Library.defaultCategory"),
+                let selected = AppSettings.library.defaultCategory.get(),
                 !selected.isEmpty && selected != "none" && !categoriesOnly.contains(selected)
             {
-                UserDefaults.standard.removeObject(forKey: "Library.defaultCategory")
+                AppSettings.library.defaultCategory.reset()
             }
         }
     }
@@ -142,9 +142,9 @@ extension SettingsView {
 extension SettingsView {
     func onSettingChange(_ key: String) {
         switch key {
-            case "General.appearance", "General.useSystemAppearance":
-                if !UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
-                    if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+            case AppSettings.appearance.appearance.key, AppSettings.appearance.useSystemAppearance.key:
+                if !AppSettings.appearance.useSystemAppearance.get() {
+                    if AppSettings.appearance.appearance.get() == 0 {
                         UIApplication.shared.firstKeyWindow?.overrideUserInterfaceStyle = .light
                     } else {
                         UIApplication.shared.firstKeyWindow?.overrideUserInterfaceStyle = .dark
@@ -318,9 +318,9 @@ extension SettingsView {
 
     @ViewBuilder
     func customContentHandler(_ setting: Setting) -> some View {
-        if setting.key == "Appearance.layout" {
+        if setting.key == AppSettings.appearance.layout.key {
             LayoutSettingView()
-        } else if setting.key == "Library.defaultCategory" {
+        } else if setting.key == AppSettings.library.defaultCategory.key {
             let newSetting = {
                 var setting = setting
                 setting.value = .select(.init(
@@ -332,14 +332,14 @@ extension SettingsView {
                 return setting
             }()
             SettingView(setting: newSetting)
-        } else if setting.key == "Library.lockedCategories" {
+        } else if setting.key == AppSettings.library.lockedCategories.key {
             let newSetting = {
                 var setting = setting
                 setting.value = .multiselect(.init(values: categoriesAndGroups, authToOpen: true))
                 return setting
             }()
             SettingView(setting: newSetting)
-        } else if setting.key == "Library.excludedUpdateCategories" {
+        } else if setting.key == AppSettings.library.excludedUpdateCategories.key {
             let newSetting = {
                 var setting = setting
                 setting.value = .multiselect(.init(values: categoriesOnly))
@@ -526,42 +526,19 @@ private extension Setting {
 }
 
 private struct LayoutSettingView: View {
-    @State private var selection: Layout
+    @State private var selection: AppearanceSettings.Layout
     @State private var showCustomSettings: Bool
 
     init() {
-        let layout = UserDefaults.standard.string(forKey: "Appearance.layout").flatMap(Layout.init) ?? .standard
+        let layout = AppSettings.appearance.layout.get()
         self._selection = State(initialValue: layout)
         self._showCustomSettings = State(initialValue: layout == .custom)
-    }
-
-    enum Layout: String, CaseIterable {
-        case standard
-        case compact
-        case custom
-
-        @MainActor
-        var imageName: String {
-            switch self {
-                case .standard: UIDevice.current.userInterfaceIdiom == .pad ? "LayoutStandardPad" : "LayoutStandard"
-                case .compact: UIDevice.current.userInterfaceIdiom == .pad ? "LayoutCompactPad" : "LayoutCompact"
-                case .custom: UIDevice.current.userInterfaceIdiom == .pad ? "LayoutCustomPad" : "LayoutCustom"
-            }
-        }
-
-        var title: String {
-            switch self {
-                case .standard: NSLocalizedString("STANDARD")
-                case .compact: NSLocalizedString("COMPACT")
-                case .custom: NSLocalizedString("CUSTOM")
-            }
-        }
     }
 
     var body: some View {
         Group {
             HStack(spacing: 48) {
-                ForEach(Layout.allCases, id: \.self) { layout in
+                ForEach(AppearanceSettings.Layout.allCases, id: \.self) { layout in
                     let selected = layout == selection
                     Button {
                         selection = layout
@@ -598,19 +575,19 @@ private struct LayoutSettingView: View {
 
             if showCustomSettings {
                 SettingView(setting: .init(
-                    key: "Appearance.customPortraitRows",
+                    key: AppSettings.appearance.customPortraitRows.key,
                     title: NSLocalizedString("PORTRAIT_ROWS"),
                     value: .stepper(.init(minimumValue: 1, maximumValue: 15))
                 ))
                 SettingView(setting: .init(
-                    key: "Appearance.customLandscapeRows",
+                    key: AppSettings.appearance.customLandscapeRows.key,
                     title: NSLocalizedString("LANDSCAPE_ROWS"),
                     value: .stepper(.init(minimumValue: 1, maximumValue: 15))
                 ))
             }
         }
         .onChange(of: selection) { newValue in
-            UserDefaults.standard.set(newValue.rawValue, forKey: "Appearance.layout")
+            AppSettings.appearance.layout.set(newValue)
         }
     }
 

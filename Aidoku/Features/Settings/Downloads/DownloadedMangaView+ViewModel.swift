@@ -29,7 +29,7 @@ extension DownloadedMangaView {
         init(manga: DownloadedMangaInfo) {
             self.manga = manga
             // Load sort preference from UserDefaults
-            self.sortAscending = UserDefaults.standard.bool(forKey: "Flag.downloadChapterSortAscending")
+            self.sortAscending = AppSettings.flags.downloadChapterSortAscending.get()
             setupNotificationObservers()
         }
     }
@@ -53,8 +53,7 @@ extension DownloadedMangaView.ViewModel {
 
     func toggleSortOrder() {
         sortAscending.toggle()
-        // Save sort preference to UserDefaults
-        UserDefaults.standard.set(sortAscending, forKey: "Flag.downloadChapterSortAscending")
+        AppSettings.flags.downloadChapterSortAscending.set(sortAscending)
         chapters = sortChapters(chapters)
     }
 

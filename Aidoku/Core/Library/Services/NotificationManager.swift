@@ -15,7 +15,6 @@ actor NotificationManager {
         let chapterCount: Int
     }
 
-    static let settingKey = "Library.notifyNewChapters"
     static let categoryIdentifier = "newChapters"
     static let threadIdentifier = "newChapters"
     static let sourceIdInfoKey = "sourceId"
@@ -23,7 +22,7 @@ actor NotificationManager {
     static let batchNotificationThreshold = 3
 
     nonisolated func isEnabled() -> Bool {
-        UserDefaults.standard.bool(forKey: Self.settingKey)
+        AppSettings.library.notifyNewChapters.get()
     }
 
     func requestAuthorization() async -> Bool {

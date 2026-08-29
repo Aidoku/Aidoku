@@ -401,7 +401,7 @@ extension MangaView {
             let buttons = Group {
                 if hasDownloadButton {
                     Button {
-                        let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
+                        let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
                         if
                             downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
                                 || !downloadOnlyOnWifi
@@ -717,7 +717,7 @@ extension MangaView {
                     }
                     .reversed()
 
-                let downloadOnlyOnWifi = UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi")
+                let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
                 if
                     downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi
                         || !downloadOnlyOnWifi

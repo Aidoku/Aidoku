@@ -8,12 +8,28 @@
 import Foundation
 
 struct AppSettings {
+    static let appearance = AppearanceSettings()
+    static let backups = BackupsSettings()
     static let browse = BrowseSettings()
     static let dictionary = DictionarySettings()
+    static let downloads = DownloadsSettings()
     static let flags = FlagSettings()
+    static let general = GeneralSettings()
+    static let library = LibrarySettings()
+    static let reader = ReaderSettings()
+    static let tracking = TrackingSettings()
 
     private static var keys: [any SettingsDefault] {
-        browse.keys + dictionary.keys + flags.keys
+        appearance.keys
+            + backups.keys
+            + browse.keys
+            + dictionary.keys
+            + downloads.keys
+            + flags.keys
+            + general.keys
+            + library.keys
+            + reader.keys
+            + tracking.keys
     }
 
     static func registerDefaults() {

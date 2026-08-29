@@ -23,7 +23,7 @@ actor BackupManager {
 
     private static let excludedSettings: Set<String> = [
         AppSettings.browse.sourceLists.key, // stored separately
-        "General.icloudSync"
+        AppSettings.general.icloudSync.key
     ]
     static let excludedSettingsPrefixes = [
         "Flag",
@@ -734,15 +734,15 @@ extension BackupManager {
     }
 
     func scheduleAutoBackup() {
-        guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else {
+        guard AppSettings.backups.autoBackups.enabled.get() else {
 #if !targetEnvironment(simulator)
             BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: Self.backupTaskIdentifier)
 #endif
             return
         }
 
-        let lastUpdated = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "AutomaticBackups.lastBackup"))
-        let interval: Double = switch UserDefaults.standard.string(forKey: "AutomaticBackups.interval") {
+        let lastUpdated = AppSettings.backups.autoBackups.lastBackup.get()
+        let interval: Double = switch AppSettings.backups.autoBackups.interval.get() {
             case "6hours": 21600
             case "12hours": 43200
             case "daily": 86400
@@ -777,19 +777,19 @@ extension BackupManager {
     }
 
     private func createAutoBackup() async {
-        guard UserDefaults.standard.bool(forKey: "AutomaticBackups.enabled") else { return }
+        guard AppSettings.backups.autoBackups.enabled.get() else { return }
 
-        let libraryEntries = UserDefaults.standard.bool(forKey: "AutomaticBackups.libraryEntries")
-        let history = UserDefaults.standard.bool(forKey: "AutomaticBackups.history")
-        let chapters = UserDefaults.standard.bool(forKey: "AutomaticBackups.chapters")
-        let tracking = UserDefaults.standard.bool(forKey: "AutomaticBackups.tracking")
-        let readingSessions = UserDefaults.standard.bool(forKey: "AutomaticBackups.readingSessions")
-        let vocabulary = UserDefaults.standard.bool(forKey: "AutomaticBackups.vocabulary")
-        let updates = UserDefaults.standard.bool(forKey: "AutomaticBackups.updates")
-        let categories = UserDefaults.standard.bool(forKey: "AutomaticBackups.categories")
-        let settings = UserDefaults.standard.bool(forKey: "AutomaticBackups.settings")
-        let sourceLists = UserDefaults.standard.bool(forKey: "AutomaticBackups.sourceLists")
-        let sensitiveSettings = UserDefaults.standard.bool(forKey: "AutomaticBackups.sensitiveSettings")
+        let libraryEntries = AppSettings.backups.autoBackups.libraryEntries.get()
+        let history = AppSettings.backups.autoBackups.history.get()
+        let chapters = AppSettings.backups.autoBackups.chapters.get()
+        let tracking = AppSettings.backups.autoBackups.tracking.get()
+        let readingSessions = AppSettings.backups.autoBackups.readingSessions.get()
+        let vocabulary = AppSettings.backups.autoBackups.vocabulary.get()
+        let updates = AppSettings.backups.autoBackups.updates.get()
+        let categories = AppSettings.backups.autoBackups.categories.get()
+        let settings = AppSettings.backups.autoBackups.settings.get()
+        let sourceLists = AppSettings.backups.autoBackups.sourceLists.get()
+        let sensitiveSettings = AppSettings.backups.autoBackups.sensitiveSettings.get()
 
         await self.saveNewBackup(
             options: .init(
@@ -809,7 +809,7 @@ extension BackupManager {
         )
 
         // update last auto backup time
-        UserDefaults.standard.set(Date.now.timeIntervalSince1970, forKey: "AutomaticBackups.lastBackup")
+        AppSettings.backups.autoBackups.lastBackup.set(Date.now)
 
         cleanUpAutoBackups()
         scheduleAutoBackup() // schedule the next one

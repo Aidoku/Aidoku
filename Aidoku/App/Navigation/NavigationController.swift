@@ -19,7 +19,7 @@ class NavigationController: UINavigationController {
 
     // fix for incognito mode banner status bar text being the wrong color sometimes on ios 26+
     override var preferredStatusBarStyle: UIStatusBarStyle {
-        if UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+        if AppSettings.general.incognitoMode.get() {
             traitCollection.userInterfaceStyle == .light ? .darkContent : .lightContent
         } else {
             .default

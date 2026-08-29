@@ -184,10 +184,10 @@ extension CategoriesView {
             CoreDataManager.shared.removeCategory(title: title, context: context)
             do {
                 try context.save()
-                var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+                var locked = AppSettings.library.lockedCategories.get()
                 if let oldIndex = locked.firstIndex(of: title) {
                     locked.remove(at: oldIndex)
-                    UserDefaults.standard.set(locked, forKey: "Library.lockedCategories")
+                    AppSettings.library.lockedCategories.set(locked)
                 }
                 return true
             } catch {
@@ -207,10 +207,10 @@ extension CategoriesView {
                     guard success else { return false }
                     do {
                         try context.save()
-                        var locked = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+                        var locked = AppSettings.library.lockedCategories.get()
                         if let oldIndex = locked.firstIndex(of: title) {
                             locked[oldIndex] = newTitle
-                            UserDefaults.standard.set(locked, forKey: "Library.lockedCategories")
+                            AppSettings.library.lockedCategories.set(locked)
                         }
                         return true
                     } catch {

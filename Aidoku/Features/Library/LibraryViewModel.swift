@@ -113,14 +113,14 @@ class LibraryViewModel {
     }
 
     lazy var pinType: PinType = getPinType()
-    lazy var sortMethod = SortMethod(rawValue: UserDefaults.standard.integer(forKey: "Library.sortOption")) ?? .lastOpened
-    lazy var sortAscending = UserDefaults.standard.bool(forKey: "Library.sortAscending")
+    lazy var sortMethod = SortMethod(rawValue: AppSettings.library.sortOption.get()) ?? .lastOpened
+    lazy var sortAscending = AppSettings.library.sortAscending.get()
     lazy var badgeType: BadgeType = {
         var type: BadgeType = []
-        if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
+        if AppSettings.library.unreadChapterBadges.get() {
             type.insert(.unread)
         }
-        if UserDefaults.standard.bool(forKey: "Library.downloadedChapterBadges") {
+        if AppSettings.library.downloadedChapterBadges.get() {
             type.insert(.downloaded)
         }
         return type
@@ -141,9 +141,9 @@ class LibraryViewModel {
 
     var categories: [String] = []
     var filterGroups: [FilterGroup] = []
-    lazy var currentCategory: String? = UserDefaults.standard.string(forKey: "Library.currentCategory") {
+    lazy var currentCategory: String? = AppSettings.library.currentCategory.get() {
         didSet {
-            UserDefaults.standard.set(currentCategory, forKey: "Library.currentCategory")
+            AppSettings.library.currentCategory.set(currentCategory)
         }
     }
     var isInRealCategory: Bool {
@@ -159,7 +159,7 @@ class LibraryViewModel {
     private(set) var actuallyEmpty = true
 
     init() {
-        let filtersData = UserDefaults.standard.data(forKey: "Library.filters")
+        let filtersData = AppSettings.library.filtersData.get()
         if let filtersData {
             let filters = try? JSONDecoder().decode([LibraryFilter].self, from: filtersData)
             self.filters = filters ?? []
@@ -171,16 +171,16 @@ class LibraryViewModel {
 
 extension LibraryViewModel {
     func isCategoryLocked() -> Bool {
-        guard UserDefaults.standard.bool(forKey: "Library.lockLibrary") else { return false }
+        guard AppSettings.library.lockLibrary.get() else { return false }
         if let currentCategory, !currentCategory.isEmpty {
-            let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+            let lockedCategories = AppSettings.library.lockedCategories.get()
             return lockedCategories.contains(currentCategory)
         }
         return true
     }
 
     func getPinType() -> PinType {
-        UserDefaults.standard.string(forKey: "Library.pinTitles").flatMap(PinType.init) ?? .none
+        PinType(rawValue: AppSettings.library.pinTitles.get()) ?? .none
     }
 
     func refreshCategories(skipDataLoad: Bool = false) async {
@@ -192,7 +192,7 @@ extension LibraryViewModel {
         }
         if !skipDataLoad {
             let isInFilterGroup = filterGroups.contains(where: { $0.title == currentCategory })
-            let showUncategorized = UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory")
+            let showUncategorized = AppSettings.library.showUncategorizedCategory.get()
             if let currentCategory, (!categories.contains(currentCategory) && !isInFilterGroup) || (currentCategory.isEmpty && !showUncategorized) {
                 self.currentCategory = nil
                 await loadLibrary()
@@ -622,11 +622,11 @@ extension LibraryViewModel {
         }
         if sortAscending != ascending {
             sortAscending = ascending
-            UserDefaults.standard.set(sortAscending, forKey: "Library.sortAscending")
+            AppSettings.library.sortAscending.set(sortAscending)
         }
         if sortMethod != method {
             sortMethod = method
-            UserDefaults.standard.set(sortMethod.rawValue, forKey: "Library.sortOption")
+            AppSettings.library.sortOption.set(sortMethod.rawValue)
         }
         await sortLibrary()
     }
@@ -648,7 +648,7 @@ extension LibraryViewModel {
     private func saveFilters() {
         let filtersData = try? JSONEncoder().encode(filters)
         if let filtersData {
-            UserDefaults.standard.set(filtersData, forKey: "Library.filters")
+            AppSettings.library.filtersData.set(filtersData)
         }
     }
 

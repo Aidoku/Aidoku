@@ -100,9 +100,9 @@ class BrowseViewController: BaseTableViewController {
                 updateDataSource()
             }
 
-            if viewModel.hasLegacySourceList && !UserDefaults.standard.bool(forKey: "Flag.showedLegacySourceListNotice") {
+            if viewModel.hasLegacySourceList && !AppSettings.flags.showedLegacySourceListNotice.get() {
                 showLegacySourceListNotice()
-                UserDefaults.standard.set(true, forKey: "Flag.showedLegacySourceListNotice")
+                AppSettings.flags.showedLegacySourceListNotice.set(true)
             }
         }
     }

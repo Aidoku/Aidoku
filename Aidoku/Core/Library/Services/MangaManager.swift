@@ -31,7 +31,7 @@ actor MangaManager {
         readingHistory: [String: (page: Int, date: Int)],
         sortAscending: Bool
     ) -> AidokuRunner.Chapter? {
-        let resumeLastOpened = UserDefaults.standard.bool(forKey: "Library.resumeLastOpenedChapter")
+        let resumeLastOpened = AppSettings.library.resumeLastOpenedChapter.get()
 
         // 1. Resume Reading: Find the most recently read chapter that isn't
         // completed, unless the "resume last opened" option is enabled.
@@ -159,7 +159,7 @@ extension MangaManager {
                 context: context
             )
             // add to default category
-            let defaultCategory = UserDefaults.standard.string(forKey: "Library.defaultCategory")
+            let defaultCategory = AppSettings.library.defaultCategory.get()
             if let defaultCategory {
                 let hasCategory = CoreDataManager.shared.hasCategory(title: defaultCategory, context: context)
                 if hasCategory {
@@ -301,7 +301,7 @@ extension MangaManager {
         let categories = CoreDataManager.shared.getCategoryTitles()
         guard !categories.isEmpty else { return false }
         if
-            let defaultCategory = UserDefaults.standard.string(forKey: "Library.defaultCategory"),
+            let defaultCategory = AppSettings.library.defaultCategory.get(),
             defaultCategory == "none" || categories.contains(defaultCategory)
         {
             return false
@@ -348,8 +348,8 @@ extension MangaManager {
     }
 
     func scheduleLibraryRefresh() {
-        let lastUpdated = Date(timeIntervalSince1970: UserDefaults.standard.double(forKey: "Library.lastUpdated"))
-        let interval: Double = switch UserDefaults.standard.string(forKey: "Library.updateInterval") {
+        let lastUpdated = AppSettings.library.lastUpdated.get()
+        let interval: Double = switch AppSettings.library.updateInterval.get() {
             case "12hours": 43200
             case "daily": 86400
             case "2days": 172800
@@ -394,7 +394,7 @@ extension MangaManager {
         self.skipReachabilityCheck = skipReachabilityCheck
 
 #if !targetEnvironment(simulator)
-        if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Library.backgroundRefresh"), !ProcessInfo.processInfo.isMacCatalystApp {
+        if #available(iOS 26.0, *), AppSettings.library.backgroundRefresh.get(), !ProcessInfo.processInfo.isMacCatalystApp {
             let request = BGContinuedProcessingTaskRequest(
                 identifier: Self.taskIdentifier,
                 title: NSLocalizedString("REFRESHING_LIBRARY"),
@@ -555,16 +555,15 @@ extension MangaManager {
         // check if connected to wi-fi
         if
             !skipReachabilityCheck,
-            UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi"),
+            AppSettings.library.updateOnlyOnWifi.get(),
             Reachability.getConnectionType() != .wifi
         {
             return
         }
 
-        let skipOptions = forceAll ? [] : UserDefaults.standard.stringArray(forKey: "Library.skipTitles") ?? []
-        let excludedCategories = forceAll ? [] : (UserDefaults.standard.stringArray(forKey: "Library.excludedUpdateCategories") ?? [])
-            .filter { $0 != category }
-        let updateMetadata = forceAll || UserDefaults.standard.bool(forKey: "Library.refreshMetadata")
+        let skipOptions = forceAll ? [] : AppSettings.library.skipTitles.get()
+        let excludedCategories = forceAll ? [] : AppSettings.library.excludedUpdateCategories.get().filter { $0 != category }
+        let updateMetadata = forceAll || AppSettings.library.refreshMetadata.get()
 
         await refreshStarted?()
 
@@ -698,7 +697,7 @@ extension MangaManager {
             }
         }
 
-        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "Library.lastUpdated")
+        AppSettings.library.lastUpdated.set(Date.now)
     }
 
     private func updateLibraryRefreshProgress(_ progress: Progress) {

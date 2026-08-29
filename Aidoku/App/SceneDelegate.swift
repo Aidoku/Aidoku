@@ -23,10 +23,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             window.rootViewController = TabBarController()
             window.tintColor = .systemPink
 
-            if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+            if AppSettings.appearance.useSystemAppearance.get() {
                 window.overrideUserInterfaceStyle = .unspecified
             } else {
-                if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                if AppSettings.appearance.appearance.get() == 0 {
                     window.overrideUserInterfaceStyle = .light
                 } else {
                     window.overrideUserInterfaceStyle = .dark
@@ -70,8 +70,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        let incognitoEnabled = UserDefaults.standard.bool(forKey: "General.incognitoMode")
-        if incognitoEnabled {
+        if AppSettings.general.incognitoMode.get() {
             (scene as? UIWindowScene)?.windows.first?.addSubview(contentHideView)
         }
     }
