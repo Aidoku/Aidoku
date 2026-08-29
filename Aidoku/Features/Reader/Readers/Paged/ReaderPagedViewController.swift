@@ -477,14 +477,14 @@ extension ReaderPagedViewController {
                 let previewController = pageViewControllers.last,
                 case .page = previewController.type
             {
-                previewController.setPage(firstPage, sourceId: sourceId)
+                previewController.setPage(firstPage, sourceId: sourceKey)
             }
 
             await pagePrefetcher.prefetch(
                 pages: pages,
                 count: pageCount,
                 chapterKey: nextChapter.key,
-                sourceId: sourceId
+                sourceKey: sourceKey
             )
         }
     }

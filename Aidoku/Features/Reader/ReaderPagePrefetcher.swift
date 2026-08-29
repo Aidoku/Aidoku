@@ -20,7 +20,7 @@ final class ReaderPagePrefetcher {
     private var generation = 0
 
     /// Fetch the first `count` pages of a chapter, skipping any that were already requested.
-    func prefetch(pages: [Page], count: Int, chapterKey: String, sourceId: String) async {
+    func prefetch(pages: [Page], count: Int, chapterKey: String, sourceKey: String) async {
         let target = min(count, pages.count)
         let start = prefetchedCounts[chapterKey] ?? 0
         guard target > start else { return }
@@ -28,7 +28,7 @@ final class ReaderPagePrefetcher {
         prefetchedCounts[chapterKey] = target
 
         let generation = generation
-        let source = await SourceManager.shared.source(for: sourceId)
+        let source = await SourceManager.shared.source(for: sourceKey)
 
         var requests: [ImageRequest] = []
         for page in pages[start..<target] {

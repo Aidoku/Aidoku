@@ -162,9 +162,9 @@ extension ReaderPageView {
     }
 
     /// Creates the image request used to fetch a page image.
-    static func imageRequest(url: URL, context: PageContext? = nil, sourceId: String? = nil) async -> ImageRequest {
-        let source: AidokuRunner.Source? = if let sourceId {
-            await SourceManager.shared.source(for: sourceId)
+    static func imageRequest(url: URL, context: PageContext? = nil, sourceKey: String? = nil) async -> ImageRequest {
+        let source: AidokuRunner.Source? = if let sourceKey {
+            await SourceManager.shared.source(for: sourceKey)
         } else {
             nil
         }
@@ -237,7 +237,7 @@ extension ReaderPageView {
                     request = imageTask.request
             }
         } else {
-            request = await Self.imageRequest(url: url, context: context, sourceId: sourceId)
+            request = await Self.imageRequest(url: url, context: context, sourceKey: sourceId)
         }
 
         // Store current image request for reload functionality
