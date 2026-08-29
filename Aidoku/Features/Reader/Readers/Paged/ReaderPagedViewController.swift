@@ -470,7 +470,7 @@ extension ReaderPagedViewController {
 
             let pages = viewModel.preloadedPages
             guard !pages.isEmpty else { return }
-            let sourceId = viewModel.source?.key ?? viewModel.manga.sourceKey
+            let sourceKey = viewModel.manga.sourceKey
 
             if
                 let firstPage = pages.first,
