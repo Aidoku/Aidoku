@@ -45,7 +45,7 @@ extension UIStepper {
             handler(value)
         }
         if let key = defaultsKey {
-            NotificationCenter.default.post(name: NSNotification.Name(key), object: value)
+            NotificationCenter.default.post(name: Notification.Name(key), object: value)
         }
     }
 }

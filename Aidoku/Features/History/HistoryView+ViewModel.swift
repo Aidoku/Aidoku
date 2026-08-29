@@ -40,22 +40,23 @@ extension HistoryView {
         private var cancellables = Set<AnyCancellable>()
 
         init() {
-            setUpNotifications()
+            registerNotifications()
         }
     }
 }
 
 extension HistoryView.ViewModel {
-    private func setUpNotifications() {
+    private func registerNotifications() {
         NotificationCenter.default.publisher(for: .updateHistory)
-            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 // reset all cached history entries
                 guard let self else { return }
-                self.filteredHistory = [:]
-                self.historyData = [:]
-                self.offset = 0
-                self.loadingState = .idle
+                Task { @MainActor in
+                    self.filteredHistory = [:]
+                    self.historyData = [:]
+                    self.offset = 0
+                    self.loadingState = .idle
+                }
             }
             .store(in: &cancellables)
 

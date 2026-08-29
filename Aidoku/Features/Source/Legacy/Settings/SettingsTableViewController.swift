@@ -93,7 +93,7 @@ extension SettingsTableViewController {
             }
             if let notification = item.notification {
                 self.source?.performAction(key: notification)
-                NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
+                NotificationCenter.default.post(name: Notification.Name(notification), object: item)
             }
         }
         if let requires = item.requires {
@@ -141,12 +141,12 @@ extension SettingsTableViewController {
             cell.detailLabel.text = String(UserDefaults.standard.integer(forKey: item.key ?? ""))
             if let notification = item.notification {
                 self.source?.performAction(key: notification)
-                NotificationCenter.default.post(name: NSNotification.Name(notification), object: item)
+                NotificationCenter.default.post(name: Notification.Name(notification), object: item)
             }
         }
         if let requires = item.requires {
             stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            NotificationCenter.default.addObserver(forName: Notification.Name(requires), object: nil, queue: nil) { _ in
                 Task { @MainActor in
                     stepperView.isEnabled = UserDefaults.standard.bool(forKey: requires)
                 }
@@ -154,7 +154,7 @@ extension SettingsTableViewController {
             requireObservers.append(item)
         } else if let requires = item.requiresFalse {
             stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.addObserver(forName: NSNotification.Name(requires), object: nil, queue: nil) { _ in
+            NotificationCenter.default.addObserver(forName: Notification.Name(requires), object: nil, queue: nil) { _ in
                 Task { @MainActor in
                     stepperView.isEnabled = !UserDefaults.standard.bool(forKey: requires)
                 }
@@ -350,7 +350,7 @@ extension SettingsTableViewController {
                 else { return }
                 if let notification = item.notification {
                     self.source?.performAction(key: notification)
-                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                    NotificationCenter.default.post(name: Notification.Name(notification), object: nil)
                 }
                 if let external = item.external, external {
                     UIApplication.shared.open(url)
@@ -361,7 +361,7 @@ extension SettingsTableViewController {
             case "button":
                 guard let action = item.action else { return }
                 source?.performAction(key: action)
-                NotificationCenter.default.post(name: NSNotification.Name(action), object: nil)
+                NotificationCenter.default.post(name: Notification.Name(action), object: nil)
             case "login":
                 guard item.method == "oauth", let key = item.key else { return }
                 let url: URL?
@@ -375,7 +375,7 @@ extension SettingsTableViewController {
                     UserDefaults.standard.set(nil, forKey: key)
                     if let notification = item.notification {
                         source?.performAction(key: notification)
-                        NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                        NotificationCenter.default.post(name: Notification.Name(notification), object: nil)
                     }
                     self.tableView.cellForRow(at: indexPath)?.accessoryType = .none
                     self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.title
@@ -390,7 +390,7 @@ extension SettingsTableViewController {
                             Task { @MainActor in
                                 if let notification = item.notification {
                                     self.source?.performAction(key: notification)
-                                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                                    NotificationCenter.default.post(name: Notification.Name(notification), object: nil)
                                 }
                                 self.tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
                                 self.tableView.cellForRow(at: indexPath)?.textLabel?.text = item.logoutTitle ?? item.title

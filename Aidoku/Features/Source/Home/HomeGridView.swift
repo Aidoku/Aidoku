@@ -94,13 +94,13 @@ struct HomeGridView: View {
         .onReceive(NotificationCenter.default.publisher(for: .orientationDidChange)) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .layoutSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.layout.key))) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .portraitRowsSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.customPortraitRows.key))) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .landscapeRowsSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.customLandscapeRows.key))) { _ in
             columns = Self.getColumns()
         }
     }

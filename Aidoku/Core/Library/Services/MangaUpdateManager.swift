@@ -20,7 +20,7 @@ extension MangaUpdateManager {
                 context: context
             )
             if !updates.isEmpty {
-                NotificationCenter.default.post(name: NSNotification.Name("mangaUpdatesViewed"), object: updates.map { $0.toItem() })
+                NotificationCenter.default.post(name: .mangaUpdatesViewed, object: updates.map { $0.toItem() })
             }
         }
     }

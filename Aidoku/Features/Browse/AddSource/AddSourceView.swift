@@ -237,7 +237,7 @@ struct AddSourceView: View {
 //                        SourceManager.shared.sources.append(source)
 //                        SourceManager.shared.sortSources()
 //
-//                        NotificationCenter.default.post(name: Notification.Name("updateSourceList"), object: nil)
+//                        NotificationCenter.default.post(name: .updateSourceList, object: nil)
 //
 //                        dismiss()
 //

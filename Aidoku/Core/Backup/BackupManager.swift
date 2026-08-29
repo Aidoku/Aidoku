@@ -83,7 +83,7 @@ actor BackupManager {
         }
         do {
             try FileManager.default.copyItem(at: url, to: targetLocation)
-            NotificationCenter.default.post(name: Notification.Name("updateBackupList"), object: nil)
+            NotificationCenter.default.post(name: .updateBackupList, object: nil)
             return true
         } catch {
             return false

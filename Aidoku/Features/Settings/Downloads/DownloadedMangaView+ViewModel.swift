@@ -237,7 +237,7 @@ extension DownloadedMangaView.ViewModel {
 
     private func setupNotificationObservers() {
         // Immediate updates for relevant manga operations
-        let immediateNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
+        let immediateNotifications: [(Notification.Name, (Notification) -> Bool)] = [
             (.downloadRemoved, { [weak self] notification in
                 guard
                     let id = notification.object as? ChapterIdentifier,
@@ -256,10 +256,9 @@ extension DownloadedMangaView.ViewModel {
 
         for (notificationName, filter) in immediateNotifications {
             NotificationCenter.default.publisher(for: notificationName)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] notification in
-                    if filter(notification) {
-                        Task {
+                    Task { @MainActor in
+                        if filter(notification) {
                             await self?.performBackgroundUpdate()
                         }
                     }
@@ -268,7 +267,7 @@ extension DownloadedMangaView.ViewModel {
         }
 
         // Debounced updates for general events
-        let debouncedNotifications: [(NSNotification.Name, (Notification) -> Bool)] = [
+        let debouncedNotifications: [(Notification.Name, (Notification) -> Bool)] = [
             (.downloadFinished, { [weak self] notification in
                 guard let download = notification.object as? Download,
                       download.mangaIdentifier == self?.manga.mangaIdentifier
@@ -303,26 +302,26 @@ extension DownloadedMangaView.ViewModel {
 
         for (notificationName, filter) in debouncedNotifications {
             NotificationCenter.default.publisher(for: notificationName)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] notification in
-                    if filter(notification) {
-                        self?.scheduleBackgroundUpdate()
+                    Task { @MainActor in
+                        if filter(notification) {
+                            self?.scheduleBackgroundUpdate()
+                        }
                     }
                 }
                 .store(in: &cancellables)
         }
 
         // General updates that might affect this manga
-        let generalNotifications: [NSNotification.Name] = [
+        let generalNotifications: [Notification.Name] = [
             .updateLibrary, .updateHistory
         ]
 
         for notification in generalNotifications {
             NotificationCenter.default.publisher(for: notification)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
-                    self?.scheduleBackgroundUpdate()
-                    Task {
+                    Task { @MainActor in
+                        self?.scheduleBackgroundUpdate()
                         await self?.loadHistory()
                     }
                 }

@@ -1194,7 +1194,7 @@ extension SettingView {
                             }
                         }
                     }
-                    NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                    NotificationCenter.default.post(name: Notification.Name(notification), object: nil)
                 }
             }
         }

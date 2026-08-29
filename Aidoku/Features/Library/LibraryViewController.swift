@@ -368,7 +368,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
 
-        addObserver(forName: .pinTitles) { [weak self] _ in
+        addObserver(forName: AppSettings.library.pinTitles.key) { [weak self] _ in
             guard let self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
             Task { @MainActor in

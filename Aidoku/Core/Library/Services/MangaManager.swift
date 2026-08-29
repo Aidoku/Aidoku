@@ -317,10 +317,7 @@ extension MangaManager {
             mangaId: mangaId,
             categories: categories
         )
-        NotificationCenter.default.post(
-            name: Notification.Name("updateMangaCategories"),
-            object: MangaInfo(id: mangaId)
-        )
+        NotificationCenter.default.post(name: .updateMangaCategories, object: MangaInfo(id: mangaId))
     }
 }
 

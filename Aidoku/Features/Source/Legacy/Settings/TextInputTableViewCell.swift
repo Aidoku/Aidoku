@@ -102,7 +102,7 @@ extension TextInputTableViewCell: UITextFieldDelegate {
             UserDefaults.standard.set(textField.text, forKey: key)
             if let notification = item?.notification {
                 source?.performAction(key: notification)
-                NotificationCenter.default.post(name: NSNotification.Name(notification), object: nil)
+                NotificationCenter.default.post(name: Notification.Name(notification), object: nil)
             }
         }
     }

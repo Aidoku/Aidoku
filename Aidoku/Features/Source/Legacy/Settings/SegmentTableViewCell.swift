@@ -51,7 +51,7 @@ class SegmentTableViewCell: UITableViewCell {
 
         if let requires = item?.requires {
             segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.publisher(for: NSNotification.Name(requires))
+            NotificationCenter.default.publisher(for: Notification.Name(requires))
                 .sink { [weak self] _ in
                     Task { @MainActor in
                         self?.segmentedControl.isEnabled = UserDefaults.standard.bool(forKey: requires)
@@ -60,7 +60,7 @@ class SegmentTableViewCell: UITableViewCell {
                 .store(in: &cancellables)
         } else if let requires = item?.requiresFalse {
             segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
-            NotificationCenter.default.publisher(for: NSNotification.Name(requires))
+            NotificationCenter.default.publisher(for: Notification.Name(requires))
                 .sink { [weak self] _ in
                     Task { @MainActor in
                         self?.segmentedControl.isEnabled = !UserDefaults.standard.bool(forKey: requires)
@@ -87,7 +87,7 @@ class SegmentTableViewCell: UITableViewCell {
             if let source = source, let notification = item?.notification {
                 source.performAction(key: notification)
             }
-            NotificationCenter.default.post(name: NSNotification.Name(key), object: nil)
+            NotificationCenter.default.post(name: Notification.Name(key), object: nil)
         }
     }
 }

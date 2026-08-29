@@ -211,7 +211,7 @@ extension SettingsView {
                             CoreDataManager.shared.clearHistory(context: context)
                             try? context.save()
                         }
-                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+                        NotificationCenter.default.post(name: .updateHistory, object: nil)
                     }
                 }
             case "Advanced.clearExcludingLibrary":
@@ -224,7 +224,7 @@ extension SettingsView {
                             CoreDataManager.shared.clearHistoryExcludingLibrary(context: context)
                             try? context.save()
                         }
-                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
+                        NotificationCenter.default.post(name: .updateHistory, object: nil)
                     }
                 }
             case "Advanced.migrateHistory":
@@ -240,7 +240,7 @@ extension SettingsView {
                                 UIApplication.shared.appDelegate?.indicatorProgress = progress
                             }
                         }
-                        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+                        NotificationCenter.default.post(name: .updateLibrary, object: nil)
                         await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }
@@ -271,10 +271,10 @@ extension SettingsView {
                         }
                         await SourceManager.shared.clearSources()
                         await SourceManager.shared.clearSourceLists()
-                        NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
-                        NotificationCenter.default.post(name: Notification.Name("updateHistory"), object: nil)
-                        NotificationCenter.default.post(name: Notification.Name("updateTrackers"), object: nil)
-                        NotificationCenter.default.post(name: Notification.Name("updateCategories"), object: nil)
+                        NotificationCenter.default.post(name: .updateLibrary, object: nil)
+                        NotificationCenter.default.post(name: .updateHistory, object: nil)
+                        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+                        NotificationCenter.default.post(name: .updateCategories, object: nil)
                         await UIApplication.shared.appDelegate?.hideLoadingIndicator()
                     }
                 }

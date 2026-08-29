@@ -87,7 +87,7 @@ class ReaderToolbarView: UIView {
     }
 
     func observe() {
-        NotificationCenter.default.publisher(for: .incognitoMode)
+        NotificationCenter.default.publisher(for: .init(AppSettings.general.incognitoMode.key))
             .sink { [weak self] _ in
                 self?.incognitoModeLabel.isHidden = !AppSettings.general.incognitoMode.get()
             }

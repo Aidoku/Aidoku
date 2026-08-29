@@ -71,7 +71,7 @@ struct MangaUpdatesView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(NSLocalizedString("MANGA_UPDATES"))
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { notification in
+        .onReceive(NotificationCenter.default.publisher(for: .mangaUpdatesViewed)) { notification in
             guard let objects = notification.object as? [MangaUpdateItem] else { return }
 
             for section in 0..<entries.count {

@@ -62,98 +62,116 @@ extension MangaView {
             let key = "Manga.chapterDisplayMode.\(manga.identifier)"
             self.chapterTitleDisplayMode = .init(rawValue: UserDefaults.standard.integer(forKey: key)) ?? .default
 
-            setupNotifications()
+            registerNotifications()
+        }
+    }
+}
+
+// MARK: Notifications
+extension MangaView.ViewModel {
+    private func registerNotifications() {
+        registerLibraryNotifications()
+        registerSourceNotifications()
+        registerHistoryNotifications()
+        registerTrackingNotifications()
+        registerDownloadsNotifications()
+        registerSettingsNotifications()
+    }
+
+    private func registerLibraryNotifications() {
+        NotificationCenter.default.publisher(for: .updateMangaDetails)
+            .sink { [weak self] output in
+                Task { @MainActor in
+                    guard
+                        let self,
+                        let manga = output.object as? AidokuRunner.Manga,
+                        manga.identifier == self.manga.identifier
+                            else {
+                        return
+                    }
+                    self.manga = manga
+                }
+            }
+            .store(in: &cancellables)
+
+        for name in [
+            Notification.Name.addToLibrary,
+            Notification.Name.removeFromLibrary
+        ] {
+            NotificationCenter.default.publisher(for: name)
+                .sink { [weak self] output in
+                    Task { @MainActor in
+                        guard
+                            let self,
+                            let manga = output.object as? AidokuRunner.Manga,
+                            manga.identifier == self.manga.identifier
+                                else {
+                            return
+                        }
+                        await self.loadBookmarked()
+                    }
+                }
+                .store(in: &cancellables)
         }
 
-        private func setupNotifications() {
-            NotificationCenter.default.publisher(for: .updateMangaDetails)
-                .receive(on: DispatchQueue.main)
+        NotificationCenter.default.publisher(for: .migratedManga)
+            .sink { [weak self] output in
+                Task { @MainActor in
+                    guard
+                        let self,
+                        let migration = output.object as? (from: AidokuRunner.Manga, to: AidokuRunner.Manga),
+                        migration.from.identifier == self.manga.identifier,
+                        let newSource = SourceManager.shared.store.source(for: migration.to.sourceKey)
+                    else {
+                        return
+                    }
+                    self.source = newSource
+                    self.manga = migration.to
+                    await self.fetchData()
+                }
+            }
+            .store(in: &cancellables)
+    }
+
+    private func registerSourceNotifications() {
+        for notification in [Notification.Name.sourceLoaded, Notification.Name.sourceUnloaded] {
+            NotificationCenter.default.publisher(for: notification)
                 .sink { [weak self] output in
                     Task { @MainActor in
                         guard
                             let self,
-                            let manga = output.object as? AidokuRunner.Manga,
-                            manga.identifier == self.manga.identifier
+                            let sourceKey = output.object as? String,
+                            self.manga.sourceKey == sourceKey
                         else {
                             return
                         }
-                        self.manga = manga
+                        self.source = SourceManager.shared.store.source(for: sourceKey)
                     }
                 }
                 .store(in: &cancellables)
+        }
+    }
 
-            for name in [
-                Notification.Name.addToLibrary,
-                Notification.Name.removeFromLibrary
-            ] {
-                NotificationCenter.default.publisher(for: name)
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] output in
-                        guard
-                            let self,
-                            let manga = output.object as? AidokuRunner.Manga,
-                            manga.identifier == self.manga.identifier
-                        else {
-                            return
-                        }
-                        Task {
-                            await self.loadBookmarked()
-                        }
-                    }
-                    .store(in: &cancellables)
+    private func registerHistoryNotifications() {
+        NotificationCenter.default.publisher(for: .updateHistory)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                Task { @MainActor in
+                    await self.loadHistory()
+                    self.updateReadButton()
+                }
             }
+            .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .migratedManga)
-                .sink { [weak self] output in
-                    Task { @MainActor in
-                        guard
-                            let self,
-                            let migration = output.object as? (from: AidokuRunner.Manga, to: AidokuRunner.Manga),
-                            migration.from.identifier == self.manga.identifier,
-                            let newSource = SourceManager.shared.store.source(for: migration.to.sourceKey)
-                                else { return }
-                        self.source = newSource
-                        self.manga = migration.to
-                        await self.fetchData()
-                    }
-                }
-                .store(in: &cancellables)
-
-            for notification in [Notification.Name.sourceLoaded, Notification.Name.sourceUnloaded] {
-                NotificationCenter.default.publisher(for: notification)
-                    .sink { [weak self] output in
-                        Task { @MainActor in
-                            guard
-                                let self,
-                                let sourceKey = output.object as? String,
-                                self.manga.sourceKey == sourceKey
-                            else {
-                                return
-                            }
-                            self.source = SourceManager.shared.store.source(for: sourceKey)
-                        }
-                    }
-                    .store(in: &cancellables)
-            }
-
-            // history
-            NotificationCenter.default.publisher(for: .updateHistory)
-                .sink { [weak self] _ in
-                    guard let self else { return }
-                    Task { @MainActor in
-                        await self.loadHistory()
-                        self.updateReadButton()
-                    }
-                }
-                .store(in: &cancellables)
-
-            NotificationCenter.default.publisher(for: .historyAdded)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
+        NotificationCenter.default.publisher(for: .historyAdded)
+            .sink { [weak self] output in
+                Task { @MainActor in
                     guard
                         let self,
                         let chapters = output.object as? [ChapterIdentifier]
-                    else { return }
+                            else {
+                        return
+                    }
                     let date = Int(Date().timeIntervalSince1970)
                     for chapterId in chapters where chapterId.mangaIdentifier == self.manga.identifier {
                         self.readingHistory[chapterId.chapterKey] = (page: -1, date: date)
@@ -161,12 +179,13 @@ extension MangaView {
                     self.updateReadButton()
                     self.checkForAllReadMarkOpened()
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .historyRemoved)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
-                    guard let self else { return }
+        NotificationCenter.default.publisher(for: .historyRemoved)
+            .sink { [weak self] output in
+                guard let self else { return }
+                Task { @MainActor in
                     if let chapters = output.object as? [ChapterIdentifier] {
                         for chapterId in chapters where chapterId.mangaIdentifier == self.manga.identifier {
                             self.readingHistory.removeValue(forKey: chapterId.chapterKey)
@@ -174,21 +193,22 @@ extension MangaView {
                     } else if
                         let mangaId = output.object as? MangaIdentifier,
                         mangaId == self.manga.identifier
-                    {
+                            {
                         self.readingHistory = [:]
                     }
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .historySet)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
+        NotificationCenter.default.publisher(for: .historySet)
+            .sink { [weak self] output in
+                Task { @MainActor in
                     guard
                         let self,
                         let item = output.object as? (chapterId: ChapterIdentifier, page: Int),
                         item.chapterId.mangaIdentifier == self.manga.identifier,
                         self.readingHistory[item.chapterId.chapterKey]?.page != -1
-                    else {
+                            else {
                         return
                     }
                     self.readingHistory[item.chapterId.chapterKey] = (
@@ -198,31 +218,26 @@ extension MangaView {
                     self.updateReadButton()
                     self.checkForAllReadMarkOpened()
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
+    }
 
-            NotificationCenter.default.publisher(for: .init(AppSettings.library.resumeLastOpenedChapter.key))
-                .sink { [weak self] _ in
-                    Task { @MainActor in
-                        self?.updateReadButton()
-                    }
+    private func registerTrackingNotifications() {
+        NotificationCenter.default.publisher(for: .syncTrackItem)
+            .sink { [weak self] output in
+                guard let self, let item = output.object as? TrackItem else { return }
+                Task { @MainActor in
+                    await self.checkTrackerSync(item: item)
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
+    }
 
-            // tracking
-            NotificationCenter.default.publisher(for: .syncTrackItem)
-                .sink { [weak self] output in
-                    guard let self, let item = output.object as? TrackItem else { return }
-                    Task { @MainActor in
-                        await self.checkTrackerSync(item: item)
-                    }
-                }
-                .store(in: &cancellables)
-
-            // downloads
-            NotificationCenter.default.publisher(for: .downloadsQueued)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
-                    guard let self, let downloads = output.object as? [Download] else { return }
+    private func registerDownloadsNotifications() {
+        NotificationCenter.default.publisher(for: .downloadsQueued)
+            .sink { [weak self] output in
+                guard let self, let downloads = output.object as? [Download] else { return }
+                Task { @MainActor in
                     let chapters = downloads.compactMap {
                         if $0.mangaIdentifier == self.manga.identifier {
                             $0.chapter
@@ -235,47 +250,62 @@ extension MangaView {
                         self.downloadProgress[chapter.key] = 0
                     }
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
-            NotificationCenter.default.publisher(for: .downloadProgressed)
-                .receive(on: DispatchQueue.main)
-                .sink { [weak self] output in
+        NotificationCenter.default.publisher(for: .downloadProgressed)
+            .sink { [weak self] output in
+                Task { @MainActor in
                     guard
                         let self,
                         let download = output.object as? Download,
                         download.mangaIdentifier == self.manga.identifier
-                    else { return }
+                    else {
+                        return
+                    }
                     self.downloadStatus[download.chapterIdentifier.chapterKey] = .downloading
                     self.downloadProgress[download.chapterIdentifier.chapterKey] = Float(download.progress) / Float(download.total)
                 }
-                .store(in: &cancellables)
+            }
+            .store(in: &cancellables)
 
-            for name in [
-                Notification.Name.downloadFinished,
-                Notification.Name.downloadFailed,
-                Notification.Name.downloadRemoved,
-                Notification.Name.downloadCancelled
-            ] {
-                NotificationCenter.default.publisher(for: name)
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] output in
+        for name in [
+            Notification.Name.downloadFinished,
+            Notification.Name.downloadFailed,
+            Notification.Name.downloadRemoved,
+            Notification.Name.downloadCancelled
+        ] {
+            NotificationCenter.default.publisher(for: name)
+                .sink { [weak self] output in
+                    Task { @MainActor in
                         self?.removeDownload(output)
                     }
-                    .store(in: &cancellables)
-            }
+                }
+                .store(in: &cancellables)
+        }
 
-            for name in [
-                Notification.Name.downloadsRemoved,
-                Notification.Name.downloadsCancelled
-            ] {
-                NotificationCenter.default.publisher(for: name)
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self] output in
+        for name in [
+            Notification.Name.downloadsRemoved,
+            Notification.Name.downloadsCancelled
+        ] {
+            NotificationCenter.default.publisher(for: name)
+                .sink { [weak self] output in
+                    Task { @MainActor in
                         self?.removeDownloads(output)
                     }
-                    .store(in: &cancellables)
-            }
+                }
+                .store(in: &cancellables)
         }
+    }
+
+    private func registerSettingsNotifications() {
+        NotificationCenter.default.publisher(for: .init(AppSettings.library.resumeLastOpenedChapter.key))
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    self?.updateReadButton()
+                }
+            }
+            .store(in: &cancellables)
     }
 }
 
