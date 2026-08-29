@@ -190,7 +190,6 @@
 "BACKUP_INFO" = "长按备份以导出它，或向左滑动以删除。";
 "MISSING_SOURCES" = "图源缺失";
 "RESTORE_MISSING_SOURCES" = "恢复缺失图源？";
-"RESTORE_MISSING_SOURCES_TEXT_%@" = "是否要搜索已恢复的图源列表并安装找到的图源？";
 "INSTALL_SOURCES" = "安装图源";
 "INSTALLING_SOURCES" = "正在安装图源…";
 "MISSING_SOURCES_TEXT" = "恢复的备份可能包含来自以下图源的数据，但这些图源当前未安装：";
