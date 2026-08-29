@@ -134,7 +134,7 @@ extension LocalFileImportView.ContentView {
             }
             .sheet(isPresented: $importing) {
                 DocumentPickerView(
-                    allowedContentTypes: [.init(filenameExtension: "cbz")!, .zip, .epub],
+                    allowedContentTypes: [.init(filenameExtension: "cbz")!, .zip],
                     onDocumentsPicked: { urls in
                         guard let url = urls.first else {
                             loadingImport = false
@@ -236,13 +236,7 @@ extension LocalFileImportView.ContentView {
                     .lineLimit(4)
                     .padding(.horizontal, 20)
                 Text({
-                    let pagesText = if fileInfo.fileType == .epub {
-                        if fileInfo.pageCount == 1 {
-                            NSLocalizedString("1_CHAPTER")
-                        } else {
-                            String(format: NSLocalizedString("%i_CHAPTERS"), fileInfo.pageCount)
-                        }
-                    } else if fileInfo.pageCount == 1 {
+                    let pagesText = if fileInfo.pageCount == 1 {
                         NSLocalizedString("1_PAGE")
                     } else {
                         String(format: NSLocalizedString("%i_PAGES"), fileInfo.pageCount)
@@ -259,67 +253,64 @@ extension LocalFileImportView.ContentView {
 
             // fields
             VStack(spacing: interItemSpacing) {
-                // chapter fields don't apply to epubs, whose chapters come from the file itself
-                if fileInfo.fileType != .epub {
-                    // name
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(NSLocalizedString("CHAPTER_TITLE")).fontWeight(.medium)
+                // name
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(NSLocalizedString("CHAPTER_TITLE")).fontWeight(.medium)
 
-                        TextFieldWrapper {
-                            TextField(NSLocalizedString("CHAPTER_TITLE"), text: $name)
-                                .autocorrectionDisabled()
-                            if !name.isEmpty {
-                                ClearFieldButton {
-                                    name = ""
-                                }
+                    TextFieldWrapper {
+                        TextField(NSLocalizedString("CHAPTER_TITLE"), text: $name)
+                            .autocorrectionDisabled()
+                        if !name.isEmpty {
+                            ClearFieldButton {
+                                name = ""
                             }
                         }
                     }
+                }
 
-                    // volume/chapter
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: interItemSpacing) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(NSLocalizedString("VOLUME")).fontWeight(.medium)
+                // volume/chapter
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: interItemSpacing) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(NSLocalizedString("VOLUME")).fontWeight(.medium)
 
-                                TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
-                                    TextField(NSLocalizedString("VOLUME"), value: $volume, format: .number)
-                                        .keyboardType(.decimalPad)
-                                    if volume != nil {
-                                        ClearFieldButton {
-                                            volume = nil
-                                        }
-                                    }
-                                }
-                            }
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text(NSLocalizedString("CHAPTER")).fontWeight(.medium)
-
-                                TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
-                                    TextField(NSLocalizedString("CHAPTER"), value: $chapter, format: .number)
-                                        .keyboardType(.decimalPad)
-                                    if chapter != nil {
-                                        ClearFieldButton {
-                                            chapter = nil
-                                        }
+                            TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
+                                TextField(NSLocalizedString("VOLUME"), value: $volume, format: .number)
+                                    .keyboardType(.decimalPad)
+                                if volume != nil {
+                                    ClearFieldButton {
+                                        volume = nil
                                     }
                                 }
                             }
                         }
 
-                        if !volumeChapterValid {
-                            fieldTextView(NSLocalizedString("VOLUME_CHAPTER_INVALID_ERROR"), error: true)
-                        } else if volumeChapterEmpty {
-                            fieldTextView(NSLocalizedString("VOLUME_CHAPTER_EMPTY_ERROR"), error: true)
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(NSLocalizedString("CHAPTER")).fontWeight(.medium)
+
+                            TextFieldWrapper(hasError: !volumeChapterValid || volumeChapterEmpty) {
+                                TextField(NSLocalizedString("CHAPTER"), value: $chapter, format: .number)
+                                    .keyboardType(.decimalPad)
+                                if chapter != nil {
+                                    ClearFieldButton {
+                                        chapter = nil
+                                    }
+                                }
+                            }
                         }
                     }
-                    .onChange(of: volume) { _ in
-                        validateVolumeChapter()
+
+                    if !volumeChapterValid {
+                        fieldTextView(NSLocalizedString("VOLUME_CHAPTER_INVALID_ERROR"), error: true)
+                    } else if volumeChapterEmpty {
+                        fieldTextView(NSLocalizedString("VOLUME_CHAPTER_EMPTY_ERROR"), error: true)
                     }
-                    .onChange(of: chapter) { _ in
-                        validateVolumeChapter()
-                    }
+                }
+                .onChange(of: volume) { _ in
+                    validateVolumeChapter()
+                }
+                .onChange(of: chapter) { _ in
+                    validateVolumeChapter()
                 }
 
                 // series select

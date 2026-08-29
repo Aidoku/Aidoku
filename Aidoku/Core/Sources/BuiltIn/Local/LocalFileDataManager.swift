@@ -249,7 +249,6 @@ extension LocalFileDataManager {
         try? context.save()
 
         // only report the file for removal if no other chapters still reference it
-        // (epub chapters share a single archive file)
         if let filePath {
             let request = ChapterObject.fetchRequest()
             request.predicate = NSPredicate(

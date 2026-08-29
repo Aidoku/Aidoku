@@ -65,8 +65,7 @@ struct MarkdownView: View {
     }
 }
 
-/// Loads file urls (e.g. images extracted from epubs) directly from disk,
-/// since the default provider only handles network urls.
+// loads file urls directly from disk, since the default provider only handles network urls.
 private struct LocalFileImageProvider: ImageProvider {
     @ViewBuilder
     func makeImage(url: URL?) -> some View {
