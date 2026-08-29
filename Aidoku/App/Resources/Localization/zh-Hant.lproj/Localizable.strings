@@ -210,7 +210,7 @@
 "BACKUP_INFO" = "長按備份項目以輸出，左滑以刪除。";
 "MISSING_SOURCES" = "缺少來源";
 "RESTORE_MISSING_SOURCES" = "恢復缺失來源？";
-"RESTORE_MISSING_SOURCES_TEXT_%@" = "是否要搜尋已恢復的來源列表並安裝找到的來源？";
+"RESTORE_MISSING_SOURCES_TEXT" = "是否要搜尋已恢復的來源列表並安裝找到的來源？";
 "INSTALL_SOURCES" = "安裝來源";
 "INSTALLING_SOURCES" = "正在安裝來源…";
 "RESTORE_BACKUP" = "用此備份回復？";
