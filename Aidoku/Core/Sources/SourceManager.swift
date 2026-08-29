@@ -295,7 +295,7 @@ extension SourceManager {
             .compactMap { source in
                 guard var info = source.toInfo() else { return nil }
                 let disabled = disabledSourceKeys.contains(info.sourceId)
-                if !includeDisabled {
+                if !includeDisabled && disabled {
                     return nil
                 }
                 info.disabled = disabled
