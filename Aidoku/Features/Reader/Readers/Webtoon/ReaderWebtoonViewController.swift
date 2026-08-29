@@ -149,16 +149,11 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             self?.setLiveTextButtonHidden(true)
         }
 
-        addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
-            // clear live text analysis
-            LogManager.logger.warn("Received memory warning")
+        addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { _ in
+            LogManager.logger.warn("Received memory warning in webtoon reader")
 
-            if #available(iOS 16.0, *) {
-                self?.collectionNode.visibleNodes.forEach { node in
-                    guard let node = node as? ReaderWebtoonPageNode else { return }
-                    node.imageNode.imageAnalaysisInteraction = nil
-                }
-            }
+            // clear image memory cache
+            ImagePipeline.shared.configuration.imageCache?.removeAll()
         }
     }
 
@@ -882,8 +877,17 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
         if page.type == .imagePage {
             // image page
             return { [weak self] in
-                guard let self else { return ASCellNode() }
-                let cell = ReaderWebtoonPageNode(source: self.viewModel.source, page: page)
+                guard
+                    let self,
+                    let temporaryPageStore = self.viewModel.temporaryPageStore
+                else {
+                    return ASCellNode()
+                }
+                let cell = ReaderWebtoonPageNode(
+                    source: self.viewModel.source,
+                    page: page,
+                    temporaryPageStore: temporaryPageStore
+                )
                 cell.delegate = self
                 if #available(iOS 18.0, *) {
                     self.bindDictionaryOverlayTap(to: cell)
