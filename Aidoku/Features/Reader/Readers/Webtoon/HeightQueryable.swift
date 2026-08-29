@@ -8,28 +8,32 @@
 import UIKit
 
 protocol HeightQueryable {
-    func getHeight() -> CGFloat
+    func getHeight(for size: CGSize) -> CGFloat
 }
 
 extension ReaderWebtoonPageNode: HeightQueryable {
-    func getHeight() -> CGFloat {
-        if pillarbox && isPillarboxOrientation() {
+    func getHeight(for size: CGSize) -> CGFloat {
+        guard size.width > 0 else { return 0 }
+
+        let ratio = ratio ?? Self.defaultRatio
+
+        if pillarbox && isPillarboxOrientation(for: size) {
             let percent = (100 - pillarboxAmount) / 100
-            let ratio = percent * (ratio ?? Self.defaultRatio)
-            return UIScreen.main.bounds.width * ratio
-        } else {
-            let ratio = ratio ?? Self.defaultRatio
-            return UIScreen.main.bounds.width * ratio
+            return size.width * percent * ratio
         }
+
+        return size.width * ratio
     }
 }
 
 extension ReaderWebtoonTransitionNode: HeightQueryable {
-    func getHeight() -> CGFloat {
-        if pillarbox && isPillarboxOrientation() {
-            return UIScreen.main.bounds.width * (100 - pillarboxAmount) / 100
-        } else {
-            return UIScreen.main.bounds.width
+    func getHeight(for size: CGSize) -> CGFloat {
+        guard size.width > 0 else { return 0 }
+
+        if pillarbox && isPillarboxOrientation(for: size) {
+            return size.width * (100 - pillarboxAmount) / 100
         }
+
+        return size.width
     }
 }

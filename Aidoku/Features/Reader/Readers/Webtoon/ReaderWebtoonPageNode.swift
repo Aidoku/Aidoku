@@ -54,6 +54,10 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 
     static let defaultRatio: CGFloat = 1.435
 
+    private var pageWidth: CGFloat {
+        calculatedSize.width
+    }
+
     var progressView: CircularProgressView {
         (progressNode.view as? CircularProgressView)!
     }
@@ -182,15 +186,16 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         return width / image.size.width * image.size.height
     }
 
-    func isPillarboxOrientation() -> Bool {
-        pillarboxOrientation == "both" ||
-            (pillarboxOrientation == "portrait" && UIDevice.current.orientation.isPortrait) ||
-            (pillarboxOrientation == "landscape" && UIDevice.current.orientation.isLandscape)
+    func isPillarboxOrientation(for size: CGSize) -> Bool {
+        let isPortrait = size.height >= size.width
+        return pillarboxOrientation == "both"
+            || (pillarboxOrientation == "portrait" && isPortrait)
+            || (pillarboxOrientation == "landscape" && !isPortrait)
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         if let image {
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let height = getPillarboxHeight(percent: percent, maxWidth: constrainedSize.max.width)
 
@@ -212,7 +217,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             }
         } else if text != nil {
             // todo: the text node should probably adjust its size based on the text
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
@@ -227,7 +232,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
                 )
             }
         } else {
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
@@ -281,10 +286,10 @@ extension ReaderWebtoonPageNode {
             URLRequest(url: url)
         }
 
-        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+        let width = pageWidth
+        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && width > 0
         let shouldUpscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
         let shouldCropBorders = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
-        let width = await UIScreen.main.bounds.width
         var processors: [ImageProcessing] = []
         var usePageProcessor = false
         if
@@ -392,6 +397,9 @@ extension ReaderWebtoonPageNode {
             return
         }
 
+        let downsampleWidth = pageWidth
+        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && downsampleWidth > 0
+
         let image: UIImage? = await Task.detached {
             guard
                 let imageData = Data(base64Encoded: base64),
@@ -406,8 +414,8 @@ extension ReaderWebtoonPageNode {
                     image = processedImage
                 }
             }
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
+            if shouldDownsample {
+                let processor = await DownsampleProcessor(width: downsampleWidth)
                 if let processedImage = processor.process(image) {
                     image = processedImage
                 }
@@ -458,6 +466,9 @@ extension ReaderWebtoonPageNode {
             return
         }
 
+        let downsampleWidth = pageWidth
+        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && downsampleWidth > 0
+
         let image: UIImage? = await Task.detached {
             do {
                 var imageData = Data()
@@ -484,8 +495,8 @@ extension ReaderWebtoonPageNode {
                         image = processedImage
                     }
                 }
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
+                if shouldDownsample {
+                    let processor = await DownsampleProcessor(width: downsampleWidth)
                     let processedImage = processor.process(image)
                     if let processedImage = processedImage {
                         image = processedImage
@@ -563,13 +574,14 @@ extension ReaderWebtoonPageNode {
     }
 
     private func transition() {
+        let width = pageWidth
+        guard width > 0 else { return }
         let ratio = if let image, image.size.width > 0 {
             image.size.height / image.size.width
         } else {
             ratio ?? Self.defaultRatio
         }
-        let scaledHeight = UIScreen.main.bounds.width * ratio
-        let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
+        let size = CGSize(width: width, height: width * ratio)
         frame = CGRect(origin: .zero, size: size)
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
     }

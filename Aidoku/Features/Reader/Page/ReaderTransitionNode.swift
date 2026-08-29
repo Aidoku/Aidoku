@@ -20,6 +20,7 @@ struct Transition {
 
 class ReaderTransitionNode: ASDisplayNode {
     var transition: Transition
+    var referenceWidth: CGFloat = 0
 
     private static let defaultFontSize: CGFloat = 16
     private lazy var fontSize = Self.defaultFontSize
@@ -118,7 +119,11 @@ class ReaderTransitionNode: ASDisplayNode {
         super.layout()
         if frame.width != lastWidth {
             lastWidth = frame.width
-            fontSize = Self.defaultFontSize - Self.defaultFontSize * (1 - frame.width / UIScreen.main.bounds.width) / 3
+
+            let referenceWidth = max(referenceWidth, frame.width, 1)
+            let widthRatio = min(frame.width / referenceWidth, 1)
+            fontSize = Self.defaultFontSize * (2 + widthRatio) / 3
+
             func fixText(node: ASTextNode) {
                 if let attr = node.attributedText?.mutableCopy() as? NSMutableAttributedString {
                     attr.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(0..<attr.length))

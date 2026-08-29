@@ -123,7 +123,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         else {
             return 0
         }
-        return node.getHeight()
+        return node.getHeight(for: collectionView.bounds.size)
     }
 
     func getHeightFor(section: Int, range: Range<Int>? = nil) -> CGFloat {

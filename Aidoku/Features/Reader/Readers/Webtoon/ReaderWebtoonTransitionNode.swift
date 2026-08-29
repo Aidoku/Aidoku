@@ -33,14 +33,17 @@ class ReaderWebtoonTransitionNode: BaseObservingCellNode {
         }
     }
 
-    func isPillarboxOrientation() -> Bool {
-        pillarboxOrientation == "both" ||
-            (pillarboxOrientation == "portrait" && UIDevice.current.orientation.isPortrait) ||
-            (pillarboxOrientation == "landscape" && UIDevice.current.orientation.isLandscape)
+    func isPillarboxOrientation(for size: CGSize) -> Bool {
+        let isPortrait = size.height >= size.width
+        return pillarboxOrientation == "both"
+            || (pillarboxOrientation == "portrait" && isPortrait)
+            || (pillarboxOrientation == "landscape" && !isPortrait)
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-        if pillarbox && isPillarboxOrientation() {
+        transitionNode.referenceWidth = constrainedSize.max.width
+
+        if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
             let percent = (100 - pillarboxAmount) / 100
             let height = constrainedSize.max.width * percent
 
