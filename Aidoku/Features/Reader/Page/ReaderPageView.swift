@@ -182,6 +182,8 @@ extension ReaderPageView {
         var usePageProcessor = false
         if let source {
             // only process pages if the source supports it and the image isn't downloaded
+            // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
+            //       this should probably be changed in the future to be more correct though
             if source.features.processesPages, !url.isFileURL {
                 processors.append(PageInterceptorProcessor(source: source, pageContext: context))
                 usePageProcessor = true
