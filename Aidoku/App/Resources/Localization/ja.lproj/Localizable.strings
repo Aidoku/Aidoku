@@ -300,6 +300,7 @@
 "THAT_HAVENT_BEEN_READ" = "未読の漫画";
 "MISSING_SOURCES" = "ソースがありません";
 "RESTORE_MISSING_SOURCES" = "不足しているソースを復元しますか？";
+"RESTORE_MISSING_SOURCES_TEXT" = "復元したソースリストを検索し、見つかったソースをインストールしますか？";
 "INSTALL_SOURCES" = "ソースをインストール";
 "INSTALLING_SOURCES" = "ソースをインストール中…";
 "%@_AGO" = "%@前";
