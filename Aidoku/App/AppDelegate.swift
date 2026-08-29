@@ -537,9 +537,8 @@ extension AppDelegate {
         topViewController?.present(loadingAlert, animated: true, completion: completion)
     }
 
-    /// Updates the message and progress of a shown loading indicator.
-    func updateLoadingIndicator(message: String, progress: Float) {
-        loadingAlert.message = message
+    /// Updates the  progress of a shown loading indicator.
+    func updateLoadingIndicator(progress: Float) {
         progressView.progress = progress
     }
 

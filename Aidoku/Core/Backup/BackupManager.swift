@@ -592,30 +592,25 @@ extension BackupManager {
                     )
                 }
 
-                let installedSourceKeys = await SourceManager.shared.installExternalSources(
-                    keys: missingSourceKeys
-                ) { name, key, current, total in
-                    let sourceName = name.isEmpty || name == key ? key : "\(name) (\(key))"
-                    UIApplication.shared.appDelegate?.updateLoadingIndicator(
-                        message: String(
-                            format: NSLocalizedString("INSTALLING_SOURCE_%@_%@_%@"),
-                            String(current),
-                            String(total),
-                            sourceName
-                        ),
-                        progress: Float(current - 1) / Float(total)
-                    )
+                var installedSourceKeys: Set<String> = []
+
+                if let (installedSourceKeyStream, total) = await SourceManager.shared.installExternalSources(keys: missingSourceKeys) {
+                    var current = 0
+                    for await key in installedSourceKeyStream {
+                        current += 1
+                        installedSourceKeys.insert(key)
+                        await UIApplication.shared.appDelegate?.updateLoadingIndicator(
+                            progress: Float(current - 1) / Float(total)
+                        )
+                    }
                 }
 
-                // Newly installed sources were not eligible during the initial settings restore.
                 await restoreSettings(from: backup, sourceKeys: installedSourceKeys)
 
                 await Task { @MainActor in
-                    UIApplication.shared.appDelegate?.updateLoadingIndicator(
-                        message: NSLocalizedString("INSTALLING_SOURCES"),
-                        progress: 1
-                    )
-                    await UIApplication.shared.appDelegate?.hideLoadingIndicator()
+                    let appDelegate = UIApplication.shared.appDelegate
+                    appDelegate?.updateLoadingIndicator(progress: 1)
+                    await appDelegate?.hideLoadingIndicator()
                     UIApplication.shared.isIdleTimerDisabled = false
                 }.value
             }
@@ -625,6 +620,9 @@ extension BackupManager {
         NotificationCenter.default.post(name: .updateTrackers, object: nil)
         NotificationCenter.default.post(name: .updateCategories, object: nil)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
+
+        let backupSourceKeys = backup.sources?.map { $0.id } ?? []
+        let missingSourceKeys = await SourceManager.shared.missingExternalSourceKeys(in: Set(backupSourceKeys))
 
         await Task { @MainActor [backupError] in
             let delegate = UIApplication.shared.appDelegate
@@ -639,13 +637,10 @@ extension BackupManager {
                 )
             } else {
                 // show missing sources alert if there are any
-                let missingSources = (backup.sources ?? []).filter {
-                    !CoreDataManager.shared.hasSource(key: $0.id)
-                }
-                if !missingSources.isEmpty {
+                if !missingSourceKeys.isEmpty {
                     delegate?.presentAlert(
                         title: NSLocalizedString("MISSING_SOURCES"),
-                        message: NSLocalizedString("MISSING_SOURCES_TEXT") + missingSources.map { "\n- \($0.id)" }.joined()
+                        message: NSLocalizedString("MISSING_SOURCES_TEXT") + missingSourceKeys.map { "\n\($0)" }.joined()
                     )
                 }
             }
@@ -661,7 +656,7 @@ extension BackupManager {
         if let sourceKeys {
             sourceKeyPrefixes = sourceKeys.map { "\($0)." }
         } else {
-            // Only restore source settings for sources installed, or built-in sources added by the restore.
+            // only restore source settings for sources installed, or built-in sources that will be added from the backup restore
             let sources = await SourceManager.shared.getSourceInfos(sorted: false)
             sourceKeyPrefixes = sources.map { "\($0.sourceId)." } + (backup.sources ?? []).compactMap {
                 $0.config == nil ? nil : "\($0.id)."
@@ -669,6 +664,7 @@ extension BackupManager {
         }
 
         var needsMigrate = false
+
         for (key, value) in settings {
             let hasAllowedPrefix = (sourceKeys == nil && Self.allowedSettingsPrefixes.contains { key.hasPrefix($0) })
                 || sourceKeyPrefixes.contains { key.hasPrefix($0) }
@@ -693,11 +689,7 @@ extension BackupManager {
     }
 
     private func confirmExternalSourceRestore(keys: Set<String>) async -> Bool {
-        let message = String(
-            format: NSLocalizedString("RESTORE_MISSING_SOURCES_TEXT_%@"),
-            String(keys.count)
-        )
-            + keys.sorted().map { "\n- \($0)" }.joined()
+        let message = NSLocalizedString("RESTORE_MISSING_SOURCES_TEXT") + keys.sorted().map { "\n\($0)" }.joined()
 
         return await withCheckedContinuation { continuation in
             Task { @MainActor in

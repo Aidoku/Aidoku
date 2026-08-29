@@ -209,10 +209,9 @@
 "RENAME_BACKUP_TEXT" = "Entrez un nouveau nom pour votre sauvegarde";
 "MISSING_SOURCES" = "Sources manquantes";
 "RESTORE_MISSING_SOURCES" = "Restaurer les sources manquantes ?";
-"RESTORE_MISSING_SOURCES_TEXT_%@" = "Voulez-vous rechercher les sources dans les listes restaurées et installer celles qui sont trouvées ?\n\nSources à rechercher : %@";
+"RESTORE_MISSING_SOURCES_TEXT_%@" = "Voulez-vous rechercher les sources dans les listes restaurées et installer celles qui sont trouvées ?";
 "INSTALL_SOURCES" = "Installer les sources";
 "INSTALLING_SOURCES" = "Installation des sources…";
-"INSTALLING_SOURCE_%@_%@_%@" = "Installation de la source %@ sur %@ :\n%@";
 "RESET_SETTINGS" = "Réinitialiser les paramètres";
 "CORRUPTED_BACKUP" = "Sauvegarde endommagée";
 "BACKUP_INFO" = "Appuyez longuement sur une sauvegarde pour l'exporter, ou faites glisser vers la gauche pour la supprimer.";

@@ -377,42 +377,39 @@ extension SourceManager {
         return keys.subtracting(installedKeys)
     }
 
-    /// Installs missing sources with matching entries in the currently loaded source lists.
-    ///
-    /// If multiple lists contain the same source, the newest compatible version is used.
-    func installExternalSources(
-        keys: Set<String>,
-        progressReport: @MainActor @Sendable (_ name: String, _ key: String, _ current: Int, _ total: Int) -> Void
-    ) async -> Set<String> {
+    func installExternalSources(keys: Set<String>) async -> (AsyncStream<String>, Int)? {
         guard
             !keys.isEmpty,
             let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-        else {
-            return []
+                else {
+            return nil
         }
 
         let missingKeys = await missingExternalSourceKeys(in: keys)
-        guard !missingKeys.isEmpty else { return [] }
+        guard !missingKeys.isEmpty else { return nil }
+
+        let (stream, continuation) = AsyncStream<String>.makeStream()
 
         let appVersion = SemanticVersion(appVersionString)
         var sourcesByKey: [String: ExternalSourceInfo] = [:]
 
         for state in sourceListStates.values {
             guard case let .loaded(sourceList) = state else { continue }
-            for source in sourceList.sources where missingKeys.contains(source.id) && source.fileURL != nil {
-                if
-                    let minAppVersion = source.minAppVersion.flatMap(SemanticVersion.init),
-                    minAppVersion > appVersion
-                {
-                    continue
-                }
-                if
-                    let maxAppVersion = source.maxAppVersion.flatMap(SemanticVersion.init),
-                    maxAppVersion < appVersion
-                {
-                    continue
-                }
 
+            for source in sourceList.sources where missingKeys.contains(source.id) && source.fileURL != nil {
+                // check version availability
+                if let minAppVersion = source.minAppVersion {
+                    let minAppVersion = SemanticVersion(minAppVersion)
+                    if minAppVersion > appVersion {
+                        continue
+                    }
+                }
+                if let maxAppVersion = source.maxAppVersion {
+                    let maxAppVersion = SemanticVersion(maxAppVersion)
+                    if maxAppVersion < appVersion {
+                        continue
+                    }
+                }
                 if let existing = sourcesByKey[source.id] {
                     if source.version > existing.version {
                         sourcesByKey[source.id] = source
@@ -424,15 +421,18 @@ extension SourceManager {
         }
 
         let sources = missingKeys.sorted().compactMap { sourcesByKey[$0] }
-        var installedKeys: Set<String> = []
-        for (index, source) in sources.enumerated() {
-            guard let url = source.fileURL else { continue }
-            await progressReport(source.name, source.id, index + 1, sources.count)
-            if let installedSource = await importSource(from: url) {
-                installedKeys.insert(installedSource.key)
+
+        Task {
+            for source in sources {
+                guard let url = source.fileURL else { continue }
+                if await importSource(from: url) != nil {
+                    continuation.yield(source.id)
+                }
             }
+            continuation.finish()
         }
-        return installedKeys
+
+        return (stream, sources.count)
     }
 
     func importSource(from url: URL) async -> AidokuRunner.Source? {

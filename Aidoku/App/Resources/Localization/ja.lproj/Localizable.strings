@@ -300,10 +300,9 @@
 "THAT_HAVENT_BEEN_READ" = "未読の漫画";
 "MISSING_SOURCES" = "ソースがありません";
 "RESTORE_MISSING_SOURCES" = "不足しているソースを復元しますか？";
-"RESTORE_MISSING_SOURCES_TEXT_%@" = "復元したソースリストを検索し、見つかったソースをインストールしますか？\n\n検索するソース：%@";
+"RESTORE_MISSING_SOURCES_TEXT_%@" = "復元したソースリストを検索し、見つかったソースをインストールしますか？";
 "INSTALL_SOURCES" = "ソースをインストール";
 "INSTALLING_SOURCES" = "ソースをインストール中…";
-"INSTALLING_SOURCE_%@_%@_%@" = "ソースをインストール中（%@/%@）：\n%@";
 "%@_AGO" = "%@前";
 "WEBTOON" = "Webtoon";
 "PILLARBOX_ORIENTATION" = "ピラーボックスの向き";
