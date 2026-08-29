@@ -27,6 +27,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
+    // How many pages before the end of the last chapter the next one starts loading
+    private lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
     private var loadingPrevious = false
     private var loadingNext = false
 
@@ -141,6 +143,10 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             addObserver(forName: key) { [weak self] _ in
                 self?.updateDoubleTapZoomSetting()
             }
+        }
+        addObserver(forName: "Reader.pagesToPreload") { [weak self] notification in
+            self?.pagesToPreload = notification.object as? Int
+                ?? UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
         }
         addObserver(forName: .readerShowingBars) { [weak self] _ in
             self?.setLiveTextButtonHidden(false)
@@ -553,12 +559,30 @@ extension ReaderWebtoonViewController {
                 }
             }
         }
+        // a missing path means the bottom of the screen is past the last page
+        let bottomPath = getCurrentPagePath(pos: .bottom)
+
+        // mark the current chapter completed at the end of its own section, which isn't
+        // necessarily the last one now that the next chapter can be appended early
+        if
+            let chapter,
+            let chapterIndex = chapters.firstIndex(of: chapter),
+            let chapterPages = pages[safe: chapterIndex],
+            bottomPath == nil || (bottomPath?.section == chapterIndex && bottomPath?.item == chapterPages.count - 1)
+        {
+            delegate?.setCompleted()
+        }
+
         if !loadingNext {
-            let bottomPath = getCurrentPagePath(pos: .bottom)
-            // append next chapter
-            if bottomPath == nil || (bottomPath?.section == pages.count - 1 && bottomPath?.item == pages[pages.count - 1].count - 1) {
+            let lastSection = pages.count - 1
+            let lastItem = (pages.last?.count ?? 0) - 1
+            let atEnd = bottomPath == nil || (bottomPath?.section == lastSection && bottomPath?.item == lastItem)
+            // append the next chapter before reaching the end, so its pages have time to load
+            let withinPreloadRange = bottomPath?.section == lastSection
+                && lastItem - (bottomPath?.item ?? lastItem) <= pagesToPreload
+
+            if atEnd || withinPreloadRange {
                 loadingNext = true
-                delegate?.setCompleted()
                 Task {
                     await appendNextChapter()
                     loadingNext = false
@@ -623,6 +647,7 @@ extension ReaderWebtoonViewController {
     /// Append the next chapter's pages
     func appendNextChapter() async {
         guard let nextChapter = delegate?.getNextChapter() else { return }
+        guard !chapters.contains(nextChapter) else { return }
         await viewModel.preload(chapter: nextChapter)
 
         // check if pages failed to load
