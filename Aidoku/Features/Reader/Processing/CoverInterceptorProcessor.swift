@@ -1,23 +1,18 @@
 //
-//  PageInterceptorProcessor.swift
+//  CoverInterceptorProcessor.swift
 //  Aidoku
 //
-//  Created by Skitty on 5/8/25.
+//  Created by skitty on 8/30/26.
 //
 
 import AidokuRunner
 import Foundation
 import Nuke
 
-extension ImageRequest.UserInfoKey {
-    static let processesKey: Self = "aidoku/usesPageProcessor"
-}
-
-struct PageInterceptorProcessor: ImageProcessing {
+struct CoverInterceptorProcessor: ImageProcessing {
     let source: AidokuRunner.Source
-    let pageContext: PageContext?
 
-    let identifier: String = "pageProcessor"
+    let identifier: String = "coverProcessor"
 
     func process(_ image: PlatformImage) -> PlatformImage? {
         nil
@@ -72,7 +67,7 @@ struct PageInterceptorProcessor: ImageProcessing {
             image: imageDescriptor
         )
 
-        let result = try await source.processPageImage(response: response, context: pageContext)
+        let result = try await source.processCoverImage(response: response)
 
         try await source.remove(value: imageDescriptor)
 
@@ -101,14 +96,13 @@ struct PageInterceptorProcessor: ImageProcessing {
     }
 }
 
-extension PageInterceptorProcessor: Hashable {
+extension CoverInterceptorProcessor: Hashable {
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.source.key == rhs.source.key && lhs.pageContext == rhs.pageContext
+        lhs.source.key == rhs.source.key
     }
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(source.key)
-        hasher.combine(pageContext)
     }
 
     var hashableIdentifier: AnyHashable {

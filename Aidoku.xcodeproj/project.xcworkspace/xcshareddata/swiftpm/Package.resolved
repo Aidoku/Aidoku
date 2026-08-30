@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "2270b5dfc11a56c974f9f1b961aec948985a4dfe"
+        "revision" : "cc4d06ff399e7169b9c647bccede7cb29bc805c6"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Nuke",
       "state" : {
-        "revision" : "63a8fcbd6621340a2410bc3e9575ac97058615f4",
-        "version" : "13.0.6"
+        "revision" : "30f7a7e72e0607d304fbf69c799474bd5fb6d1ce",
+        "version" : "13.2.0"
       }
     },
     {
