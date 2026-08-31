@@ -27,6 +27,10 @@ enum EpubWebViewFactory {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        // never .recommended, which on an iPad resolves to desktop-class browsing per navigation:
+        // desktop mode keeps the 980px legacy viewport, ignores the injected viewport meta, and
+        // reports whole documents as one page
+        configuration.defaultWebpagePreferences.preferredContentMode = .mobile
         configuration.setURLSchemeHandler(
             EpubSchemeHandler(provider: provider),
             forURLScheme: EpubSchemeHandler.scheme

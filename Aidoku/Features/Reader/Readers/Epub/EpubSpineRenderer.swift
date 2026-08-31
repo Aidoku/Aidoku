@@ -253,6 +253,10 @@ final class EpubSpineRenderer: NSObject {
             navigationContinuation = continuation
         }
 
+        // the injected viewport meta is applied on a rendering update after the load, so the
+        // measurement below could otherwise read a layout the meta has not reached yet
+        await waitForViewport()
+
         let count = try await measurePageCount()
         pageCount = count
         confirmationTask = makeConfirmationTask()
