@@ -1,0 +1,321 @@
+//
+//  BackupsView.swift
+//  Aidoku
+//
+//  Created by Skitty on 9/19/25.
+//
+
+import SwiftUI
+
+struct BackupsView: View {
+    @State private var backupUrls: [URL] = []
+    @State private var backups: [URL: BackupInfo] = [:]
+    @State private var invalidBackups: Set<URL> = []
+
+    @State private var loadedInitialBackupInfo = false
+    @State private var targetRestoreBackup: BackupInfo?
+    @State private var targetExportBackup: BackupInfo?
+    @State private var showCreateSheet = false
+    @State private var showImportSheet = false
+    @State private var showAutoBackupsSheet = false
+    @State private var showImportFailAlert = false
+
+    @EnvironmentObject private var path: NavigationCoordinator
+
+    @Namespace private var transitionNamespace
+
+    private enum SheetID: String {
+        case autoBackup
+    }
+
+    init() {
+        self._backupUrls = State(initialValue: BackupManager.backupUrls)
+    }
+
+    var body: some View {
+        let list = List {
+            Section {
+                ForEach(backupUrls, id: \.self) { url in
+                    let backup = backups[url]
+
+                    if let backup {
+                        backupCell(backup: backup)
+                    } else if invalidBackups.contains(url) {
+                        Text(NSLocalizedString("CORRUPTED_BACKUP"))
+                    } else {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                    }
+                }
+                .onDelete(perform: onDelete)
+            } footer: {
+                if !backupUrls.isEmpty {
+                    Text(NSLocalizedString("BACKUP_INFO"))
+                }
+            }
+        }
+        .animation(.default, value: backupUrls)
+        .animation(.default, value: backups)
+        .navigationTitle(NSLocalizedString("BACKUPS"))
+        .sheet(isPresented: $showCreateSheet) {
+            BackupCreateView()
+        }
+        .sheet(isPresented: $showImportSheet) {
+            DocumentPickerView(
+                allowedContentTypes: [
+                    .init(filenameExtension: "aib")!,
+                    .json
+                ],
+                onDocumentsPicked: { urls in
+                    guard let url = urls.first else {
+                        return
+                    }
+                    Task {
+                        let result = await BackupManager.shared.importBackup(from: url)
+                        if !result {
+                            showImportFailAlert = true
+                        }
+                    }
+                }
+            )
+            .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showAutoBackupsSheet) {
+            AutomaticBackupsView()
+                .navigationTransitionZoom(sourceID: SheetID.autoBackup, in: transitionNamespace)
+        }
+        .sheet(item: $targetRestoreBackup) { backup in
+            BackupContentView(backup: backup)
+        }
+        .alert(NSLocalizedString("IMPORT_FAIL"), isPresented: $showImportFailAlert) {
+            Button(NSLocalizedString("OK"), role: .cancel) {}
+        } message: {
+            Text(NSLocalizedString("BACKUP_IMPORT_FAIL_TEXT"))
+        }
+        .onAppear {
+            guard !loadedInitialBackupInfo else { return }
+            loadedInitialBackupInfo = true
+            loadBackupInfo()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .updateBackupList)) { _ in
+            backupUrls = BackupManager.backupUrls
+            loadBackupInfo()
+        }
+
+        if #available(iOS 26.0, *) {
+            list
+                .toolbar {
+                    toolbarContentiOS26
+                }
+        } else {
+            list
+                .toolbar {
+                    ToolbarItemGroup(placement: .topBarTrailing) {
+                        autoBackupButton
+                        createBackupButton
+                    }
+                }
+        }
+    }
+
+    var autoBackupButton: some View {
+        Button {
+            showAutoBackupsSheet = true
+        } label: {
+            let imageName = if #available(iOS 18.0, *) {
+                "clock.arrow.trianglehead.counterclockwise.rotate.90"
+            } else {
+                "clock.arrow.circlepath"
+            }
+            Image(systemName: imageName)
+        }
+        .matchedTransitionSourcePlease(id: SheetID.autoBackup, in: transitionNamespace)
+    }
+
+    var createBackupButton: some View {
+        Menu {
+            Button {
+                showCreateSheet = true
+            } label: {
+                Label(NSLocalizedString("CREATE_BACKUP"), systemImage: "plus")
+            }
+            Button {
+                showImportSheet = true
+            } label: {
+                Label(NSLocalizedString("IMPORT_BACKUP"), systemImage: "square.and.arrow.down")
+            }
+        } label: {
+            Image(systemName: "plus")
+        }
+    }
+
+    @available(iOS 26.0, *)
+    @ToolbarContentBuilder
+    var toolbarContentiOS26: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            autoBackupButton
+        }
+
+        ToolbarSpacer(placement: .topBarTrailing)
+
+        ToolbarItem(placement: .topBarTrailing) {
+            createBackupButton
+        }
+    }
+
+    func backupCell(backup: BackupInfo) -> some View {
+        let url = backup.url
+        return Button {
+            targetRestoreBackup = backup
+        } label: {
+            HStack {
+                let date = DateFormatter.localizedString(from: backup.date, dateStyle: .short, timeStyle: .short)
+                if let name = backup.name {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text(name)
+                                .lineLimit(1)
+                            if backup.automatic {
+                                automaticBadge
+                            }
+                        }
+                        Text(date)
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    HStack {
+                        Text(String(format: NSLocalizedString("BACKUP_%@"), date))
+                            .lineLimit(1)
+                        if backup.automatic {
+                            automaticBadge
+                        }
+                    }
+                }
+                Spacer()
+                if let size = backup.size {
+                    Text(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
+                        .foregroundStyle(.secondary)
+                        .font(.footnote)
+                }
+            }
+        }
+        .foregroundStyle(.primary)
+        .swipeActions {
+            Button(role: .destructive) {
+                onDelete(at: IndexSet(integer: backupUrls.firstIndex(of: url)!))
+            } label: {
+                Label(NSLocalizedString("DELETE"), systemImage: "trash")
+            }
+            Button {
+                showRenamePrompt(targetRenameBackupUrl: url, initialName: backup.name)
+            } label: {
+                Label(NSLocalizedString("RENAME"), systemImage: "pencil")
+            }
+            .tint(.indigo)
+        }
+        .contextMenu {
+            Button {
+                targetExportBackup = backup
+            } label: {
+                Label(NSLocalizedString("EXPORT"), systemImage: "square.and.arrow.up")
+            }
+        }
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .onChange(of: targetExportBackup) { newValue in
+                        if newValue == backup {
+                            export(url: url, sourceRect: geo.frame(in: .global))
+                            targetExportBackup = nil
+                        }
+                    }
+            }
+        )
+    }
+
+    var automaticBadge: some View {
+        Text(NSLocalizedString("AUTO"))
+            .lineLimit(1)
+            .foregroundStyle(.primary)
+            .font(.caption)
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .background(.blue.opacity(0.3))
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+
+    func onDelete(at offsets: IndexSet) {
+        for offset in offsets {
+            let url = backupUrls[offset]
+            Task {
+                await BackupManager.shared.removeBackup(url: url)
+            }
+            backups.removeValue(forKey: url)
+        }
+        backupUrls.remove(atOffsets: offsets)
+    }
+
+    func showRenamePrompt(targetRenameBackupUrl: URL, initialName: String?) {
+        var alertTextField: UITextField?
+        UIApplication.shared.appDelegate?.presentAlert(
+            title: NSLocalizedString("RENAME_BACKUP"),
+            message: NSLocalizedString("RENAME_BACKUP_TEXT"),
+            actions: [
+                UIAlertAction(title: NSLocalizedString("CANCEL"), style: .cancel),
+                UIAlertAction(title: NSLocalizedString("OK"), style: .default) { _ in
+                    guard let text = alertTextField?.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
+                    renameBackup(url: targetRenameBackupUrl, name: text)
+                }
+            ],
+            textFieldHandlers: [
+                { textField in
+                    textField.placeholder = NSLocalizedString("BACKUP_NAME")
+                    textField.text = initialName
+                    textField.autocorrectionType = .no
+                    textField.returnKeyType = .done
+                    alertTextField = textField
+                }
+            ],
+            textFieldDisablesLastActionWhenEmpty: true
+        )
+    }
+}
+
+extension BackupsView {
+    func loadBackupInfo() {
+        Task.detached { [backupUrls] in
+            for backupUrl in backupUrls {
+                let backup = BackupInfo.load(from: backupUrl)
+                await MainActor.run {
+                    if let backup {
+                        self.backups[backupUrl] = backup
+                        self.invalidBackups.remove(backupUrl)
+                    } else {
+                        self.invalidBackups.insert(backupUrl)
+                    }
+                }
+            }
+        }
+    }
+
+    func renameBackup(url: URL, name: String) {
+        Task {
+            // renaming requires re-encoding the backup, so it can fail even though the info loaded fine
+            let renamed = await BackupManager.shared.renameBackup(url: url, name: name)
+            if !renamed {
+                UIApplication.shared.appDelegate?.presentAlert(
+                    title: NSLocalizedString("CORRUPTED_BACKUP"),
+                    message: NSLocalizedString("CORRUPTED_BACKUP_TEXT")
+                )
+            }
+        }
+    }
+
+    func export(url: URL, sourceRect: CGRect) {
+        let vc = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        guard let sourceView = path.rootViewController?.view else { return }
+        vc.popoverPresentationController?.sourceView = sourceView
+        vc.popoverPresentationController?.sourceRect = sourceRect
+        path.present(vc)
+    }
+}

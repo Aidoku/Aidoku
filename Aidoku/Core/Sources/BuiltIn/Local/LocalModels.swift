@@ -1,0 +1,44 @@
+//
+//  LocalModels.swift
+//  Aidoku
+//
+//  Created by Skitty on 6/10/25.
+//
+
+import UIKit
+
+enum LocalFileManagerError: Error {
+    case invalidFileType
+    case cannotReadArchive
+    case noImagesFound
+    case fileCopyFailed
+}
+
+struct LocalSeriesInfo: Hashable {
+    let coverUrl: String
+    let name: String
+    let chapterCount: Int
+}
+
+enum LocalFileType {
+    case cbz
+    case zip
+    case epub
+
+    var localizedName: String {
+        switch self {
+            case .cbz: NSLocalizedString("CBZ_NAME")
+            case .zip: NSLocalizedString("ZIP_NAME")
+            case .epub: NSLocalizedString("EPUB_NAME")
+        }
+    }
+}
+
+struct ImportFileInfo: Hashable {
+    let url: URL
+    let previewImages: [UIImage]
+    let name: String
+    let pageCount: Int
+    let fileType: LocalFileType
+    let comicInfo: ComicInfo?
+}

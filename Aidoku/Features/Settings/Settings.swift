@@ -1,0 +1,930 @@
+//
+//  Settings.swift
+//  Aidoku
+//
+//  Created by Skitty on 9/20/25.
+//
+
+import AidokuRunner
+import UIKit
+
+@MainActor
+enum Settings {
+    // All available font families on the system
+    private static let availableFonts: [String] = {
+        var fonts = UIFont.familyNames.sorted()
+        // Add "System" at the beginning for the default SF font
+        fonts.insert("System", at: 0)
+        return fonts
+    }()
+
+    private static let sourceLanguageCodes: [String] = {
+        var languageCodes = if #available(iOS 16, *) {
+            Locale.LanguageCode.isoLanguageCodes.map { $0.identifier }
+        } else {
+            Locale.isoLanguageCodes
+        }
+
+        languageCodes.sort {
+            SourceLanguage.compare($0, $1) == .orderedAscending
+        }
+
+        // bring local language to top
+        languageCodes.removeAll { $0 == Locale.current.languageCode || $0 == "multi" || $0 == "All" }
+        if let code = Locale.current.languageCode {
+            languageCodes.insert(code, at: 0)
+        }
+
+        return languageCodes
+    }()
+
+    private static let sourceLanguageTitles = sourceLanguageCodes.map { SourceLanguage.displayName(for: $0) }
+
+    static let settings: [Setting] = [
+        .init(value: .group(.init(items: [
+            .init(
+                key: AppSettings.general.incognitoMode.key,
+                title: NSLocalizedString("INCOGNITO_MODE"),
+                value: .toggle(.init(subtitle: NSLocalizedString("INCOGNITO_MODE_TEXT")))
+            )
+        ]))),
+        .init(value: .group(.init(items: [
+            .init(
+                title: NSLocalizedString("APPEARANCE"),
+                value: .page(.init(
+                    items: appearanceSettings,
+                    inlineTitle: true,
+                    icon: .system(name: "textformat.size", color: "blue")
+                ))
+            ),
+            .init(
+                title: NSLocalizedString("LIBRARY"),
+                value: .page(.init(
+                    items: librarySettings,
+                    inlineTitle: true,
+                    icon: .system(name: "books.vertical.fill", color: "red")
+                ))
+            ),
+            .init(
+                title: NSLocalizedString("READER"),
+                value: .page(.init(
+                    items: readerSettings,
+                    inlineTitle: true,
+                    icon: .system(name: "book.fill", color: "green")
+                ))
+            )
+        ] + {
+            if #available(iOS 18.0, *) {
+                [
+                    .init(
+                        title: NSLocalizedString("DICTIONARIES"),
+                        value: .page(.init(
+                            items: dictionarySettings,
+                            icon: .system(name: "character.book.closed.fill", color: "indigo"),
+                            info: NSLocalizedString("DICTIONARY_SETTINGS_TEXT")
+                        ))
+                    )
+                ]
+            } else {
+                []
+            }
+        }() + [
+            .init(
+                key: "Tracking",
+                title: NSLocalizedString("TRACKING"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "clock.arrow.2.circlepath", color: "orange", inset: 4)
+                ))
+            ),
+            .init(
+                title: NSLocalizedString("ICLOUD_SYNC"),
+                value: .page(.init(
+                    items: [
+                        .init(value: .group(.init(items: [
+                            .init(
+                                key: AppSettings.general.icloudSync.key,
+                                title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("ICLOUD_SYNC")),
+                                requires: AppSettings.flags.isiCloudAvailable.key,
+                                value: .toggle(.init())
+                            )
+                        ])))
+                    ],
+                    icon: .system(name: "icloud.fill", color: "blue"),
+                    info: NSLocalizedString(
+                        AppSettings.flags.isSideloaded.get()
+                            ? "ICLOUD_SYNC_TEXT_SIDELOADED"
+                            : "ICLOUD_SYNC_TEXT_EXPERIMENTAL"
+                    )
+                ))
+            ),
+            .init(
+                title: NSLocalizedString("ADVANCED"),
+                value: .page(.init(
+                    items: advancedSettings,
+                    inlineTitle: true,
+                    icon: .system(name: "gearshape.2.fill", color: "gray", inset: 4)
+                ))
+            )
+        ]))),
+        .init(value: .group(.init(items: [
+            .init(
+                key: "About",
+                title: NSLocalizedString("ABOUT"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "info.circle.fill", color: "gray", inset: 6)
+                ))
+            ),
+            .init(
+                key: "Insights",
+                title: NSLocalizedString("INSIGHTS"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "chart.bar.xaxis", color: "indigo")
+                ))
+            ),
+            .init(
+                key: "SourceLists",
+                title: NSLocalizedString("SOURCE_LISTS"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "globe", color: "green")
+                ))
+            ),
+            .init(
+                key: "Backups",
+                title: NSLocalizedString("BACKUPS"),
+                value: .page(.init(
+                    items: [],
+                    inlineTitle: true,
+                    icon: .system(name: "externaldrive.fill", color: "red")
+                ))
+            ),
+            .init(
+                key: "Downloads",
+                title: NSLocalizedString("DOWNLOADS"),
+                value: .page(.init(
+                    items: downloadSettings,
+                    inlineTitle: true,
+                    icon: .system(name: "arrow.down.circle.fill", color: "blue", inset: 6)
+                ))
+            )
+        ])))
+    ]
+}
+
+extension Settings {
+    private static let appearanceSettings: [Setting] = [
+        .init(value: .group(.init(items: [
+            .init(
+                key: AppSettings.appearance.appearance.key,
+                title: NSLocalizedString("APPEARANCE"),
+                requiresFalse: AppSettings.appearance.useSystemAppearance.key,
+                value: .segment(.init(options: [
+                    NSLocalizedString("APPEARANCE_LIGHT"),
+                    NSLocalizedString("APPEARANCE_DARK")
+                ]))
+            ),
+            .init(
+                key: AppSettings.appearance.useSystemAppearance.key,
+                title: NSLocalizedString("USE_SYSTEM_APPEARANCE"),
+                value: .toggle(.init())
+            )
+        ]))),
+        .init(
+            title: NSLocalizedString("LAYOUT"),
+            value: .group(.init(items: [
+                .init(
+                    key: AppSettings.appearance.layout.key,
+                    title: NSLocalizedString("LAYOUT"),
+                    value: .custom
+                )
+            ]))
+        )
+    ]
+
+    private static let librarySettings: [Setting] = [
+        .init(value: .group(.init(items: [
+            .init(
+                key: AppSettings.library.opensReaderView.key,
+                title: NSLocalizedString("OPEN_READER_VIEW"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.library.resumeLastOpenedChapter.key,
+                title: NSLocalizedString("RESUME_LAST_OPENED_CHAPTER"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.library.continueReadingOnReselect.key,
+                title: NSLocalizedString("CONTINUE_READING_ON_RESELECT"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.library.unreadChapterBadges.key,
+                title: NSLocalizedString("UNREAD_CHAPTER_BADGES"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.library.downloadedChapterBadges.key,
+                title: NSLocalizedString("DOWNLOADED_CHAPTER_BADGES"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.library.pinTitles.key,
+                title: NSLocalizedString("PIN_TITLES"),
+                value: .select(.init(
+                    values: LibraryViewModel.PinType.allCases.map(\.rawValue),
+                    titles: LibraryViewModel.PinType.allCases.map(\.title)
+                ))
+            )
+        ]))),
+        .init(value: .group(.init(items: [
+            .init(
+                key: AppSettings.library.lockLibrary.key,
+                title: NSLocalizedString("LOCK_LIBRARY"),
+                notification: "updateLibraryLock",
+                value: .toggle(.init(authToDisable: true))
+            ),
+            .init(
+                key: "History.lockHistoryTab",
+                title: NSLocalizedString("LOCK_HISTORY_TAB"),
+                value: .toggle(.init(authToDisable: true))
+            )
+        ]))),
+        .init(
+            title: NSLocalizedString("CATEGORIES"),
+            value: .group(.init(items: [
+                .init(
+                    key: "Library.categories",
+                    title: NSLocalizedString("CATEGORIES"),
+                    value: .page(.init(items: []))
+                ),
+                .init(
+                    key: "Library.filterGroups",
+                    title: NSLocalizedString("FILTER_GROUPS"),
+                    value: .page(.init(items: []))
+                ),
+                .init(
+                    key: AppSettings.library.defaultCategory.key,
+                    title: NSLocalizedString("DEFAULT_CATEGORY"),
+                    value: .custom
+                ),
+                .init(
+                    key: AppSettings.library.lockedCategories.key,
+                    title: NSLocalizedString("LOCKED_CATEGORIES"),
+                    notification: "updateLibraryLock",
+                    requires: AppSettings.library.lockLibrary.key,
+                    value: .custom
+                ),
+                .init(
+                    key: AppSettings.library.showUncategorizedCategory.key,
+                    title: NSLocalizedString("SHOW_UNCATEGORIZED_CATEGORY"),
+                    notification: "updateCategories",
+                    value: .toggle(.init())
+                )
+            ]))
+        )
+    ] + libraryUpdateGroups
+
+    private static let libraryUpdateGroups: [Setting] = {
+        var baseGroup: Setting = .init(
+            title: NSLocalizedString("LIBRARY_UPDATING"),
+            value: .group(.init(
+                footer: NSLocalizedString("NEW_CHAPTER_NOTIFICATIONS_TEXT"),
+                items: [
+                    .init(
+                        key: AppSettings.library.updateInterval.key,
+                        title: NSLocalizedString("UPDATE_INTERVAL"),
+                        value: .select(.init(
+                            values: ["never", "12hours", "daily", "2days", "weekly"],
+                            titles: [
+                                NSLocalizedString("NEVER"),
+                                NSLocalizedString("EVERY_12_HOURS"),
+                                NSLocalizedString("DAILY"),
+                                NSLocalizedString("EVERY_2_DAYS"),
+                                NSLocalizedString("WEEKLY")
+                            ]
+                        ))
+                    ),
+                    .init(
+                        key: AppSettings.library.skipTitles.key,
+                        title: NSLocalizedString("SKIP_TITLES"),
+                        value: .multiselect(.init(
+                            values: ["hasUnread", "completed", "notStarted"],
+                            titles: [
+                                NSLocalizedString("WITH_UNREAD_CHAPTERS"),
+                                NSLocalizedString("WITH_COMPLETED_STATUS"),
+                                NSLocalizedString("THAT_HAVENT_BEEN_READ")
+                            ]
+                        ))
+                    ),
+                    .init(
+                        key: AppSettings.library.excludedUpdateCategories.key,
+                        title: NSLocalizedString("EXCLUDED_CATEGORIES"),
+                        value: .custom
+                    ),
+                    .init(
+                        key: AppSettings.library.updateOnlyOnWifi.key,
+                        title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: AppSettings.library.refreshMetadata.key,
+                        title: NSLocalizedString("REFRESH_METADATA"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: AppSettings.library.notifyNewChapters.key,
+                        title: NSLocalizedString("NEW_CHAPTER_NOTIFICATIONS"),
+                        value: .toggle(.init())
+                    )
+                ]
+            ))
+        )
+
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
+            return [
+                baseGroup,
+                .init(
+                    value: .group(.init(
+                        footer: NSLocalizedString("BACKGROUND_REFRESH_TEXT"),
+                        items: [
+                            .init(
+                                key: AppSettings.library.backgroundRefresh.key,
+                                title: NSLocalizedString("BACKGROUND_REFRESH"),
+                                value: .toggle(.init())
+                            )
+                        ]
+                    ))
+                )
+            ]
+        } else {
+            return [baseGroup]
+        }
+    }()
+
+    private static let readerSettings: [Setting] = [
+        .init(value: .group(.init(items: [
+            .init(
+                key: "Reader.readingMode",
+                title: NSLocalizedString("READING_MODE"),
+                value: .select(.init(
+                    values: [
+                        "auto",
+                        "rtl",
+                        "ltr",
+                        "vertical",
+                        "webtoon",
+                        "continuous"
+                    ],
+                    titles: [
+                        NSLocalizedString("AUTOMATIC"),
+                        NSLocalizedString("RTL"),
+                        NSLocalizedString("LTR"),
+                        NSLocalizedString("VERTICAL"),
+                        NSLocalizedString("WEBTOON"),
+                        NSLocalizedString("CONTINUOUS_WITH_GAPS")
+                    ]
+                ))
+            ),
+            .init(
+                key: "Reader.skipDuplicateChapters",
+                title: NSLocalizedString("SKIP_DUPLICATE_CHAPTERS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.markDuplicateChapters",
+                title: NSLocalizedString("MARK_DUPLICATE_CHAPTERS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.downsampleImages",
+                title: NSLocalizedString("DOWNSAMPLE_IMAGES"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.cropBorders",
+                title: NSLocalizedString("CROP_BORDERS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.disableQuickActions",
+                title: NSLocalizedString("DISABLE_QUICK_ACTIONS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.disableDoubleTap",
+                title: NSLocalizedString("DISABLE_DOUBLE_TAP_ZOOM"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.liveText",
+                title: NSLocalizedString("LIVE_TEXT"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.hideBarsOnSwipe",
+                title: NSLocalizedString("HIDE_BARS_ON_SWIPE"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: "Reader.backgroundColor",
+                title: NSLocalizedString("READER_BG_COLOR"),
+                value: .select(.init(
+                    values: ["system", "auto", "white", "black"],
+                    titles: [
+                        NSLocalizedString("READER_BG_COLOR_SYSTEM"),
+                        NSLocalizedString("READER_BG_COLOR_AUTO"),
+                        NSLocalizedString("READER_BG_COLOR_WHITE"),
+                        NSLocalizedString("READER_BG_COLOR_BLACK")
+                    ]
+                ))
+            )
+        ] + {
+            if UIDevice.current.userInterfaceIdiom != .pad {
+                [
+                    .init(
+                        key: "Reader.orientation",
+                        title: NSLocalizedString("READER_ORIENTATION"),
+                        notification: "Reader.orientation",
+                        value: .select(.init(
+                            values: ["device", "portrait", "landscape"],
+                            titles: [
+                                NSLocalizedString("FOLLOW_DEVICE"),
+                                NSLocalizedString("PORTRAIT"),
+                                NSLocalizedString("LANDSCAPE")
+                            ]
+                        ))
+                    )
+                ]
+            } else {
+                []
+            }
+        }()))),
+        .init(
+            title: NSLocalizedString("TAP_ZONES"),
+            value: .group(.init(items: [
+                .init(
+                    key: "Reader.tapZones",
+                    title: NSLocalizedString("TAP_ZONES"),
+                    value: .select(.init(
+                        values: DefaultTapZones.allCases.map { $0.value },
+                        titles: DefaultTapZones.allCases.map { $0.title }
+                    ))
+                ),
+                .init(
+                    key: "Reader.invertTapZones",
+                    title: NSLocalizedString("INVERT_TAP_ZONES"),
+                    value: .toggle(.init())
+                ),
+                .init(
+                    key: "Reader.animatePageTransitions",
+                    title: NSLocalizedString("ANIMATE_PAGE_TRANSITIONS"),
+                    value: .toggle(.init())
+                )
+            ]))
+        ),
+        .init(
+            title: NSLocalizedString("UPSCALING"),
+            value: .group(.init(
+                footer: NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT_TEXT"),
+                items: [
+                    .init(
+                        key: "Reader.upscaleImages",
+                        title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("UPSCALE_IMAGES")),
+                        requiresFalse: "Reader.downsampleImages",
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Reader.upscalingModels",
+                        title: NSLocalizedString("UPSCALING_MODELS"),
+                        requires: "Reader.upscaleImages",
+                        value: .page(.init(items: []))
+                    ),
+                    .init(
+                        key: "Reader.upscaleMaxHeight",
+                        title: NSLocalizedString("UPSCALE_MAX_IMAGE_HEIGHT"),
+                        requires: "Reader.upscaleImages",
+                        value: .stepper(.init(
+                            minimumValue: 200,
+                            maximumValue: 4000,
+                            stepValue: 100
+                        ))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            title: NSLocalizedString("PAGED"),
+            value: .group(.init(items: [
+                .init(
+                    key: "Reader.pagesToPreload",
+                    title: NSLocalizedString("PAGES_TO_PRELOAD"),
+                    value: .stepper(.init(minimumValue: 1, maximumValue: 10))
+                ),
+                .init(
+                    key: "Reader.pagedPageLayout",
+                    title: NSLocalizedString("PAGE_LAYOUT"),
+                    value: .select(.init(
+                        values: ["single", "double", "auto"],
+                        titles: [
+                            NSLocalizedString("SINGLE_PAGE"),
+                            NSLocalizedString("DOUBLE_PAGE"),
+                            NSLocalizedString("AUTOMATIC")
+                        ]
+                    ))
+                ),
+                .init(
+                    key: "Reader.pagedPageOffset",
+                    title: NSLocalizedString("PAGE_OFFSET"),
+                    notification: .init("Reader.pagedPageOffset"),
+                    value: .toggle(.init())
+                ),
+                .init(
+                    key: "Reader.splitWideImages",
+                    title: NSLocalizedString("SPLIT_WIDE_IMAGES"),
+                    notification: .init("Reader.splitWideImages"),
+                    value: .toggle(.init())
+                ),
+                .init(
+                    key: "Reader.reverseSplitOrder",
+                    title: NSLocalizedString("REVERSE_SPLIT_ORDER"),
+                    notification: .init("Reader.reverseSplitOrder"),
+                    requires: "Reader.splitWideImages",
+                    value: .toggle(.init())
+                )
+            ]))
+        ),
+        .init(
+            title: NSLocalizedString("WEBTOON"),
+            value: .group(.init(
+                footer: NSLocalizedString("PILLARBOX_ORIENTATION_INFO"),
+                items: [
+                    .init(
+                        key: "Reader.verticalInfiniteScroll",
+                        title: NSLocalizedString("INFINITE_VERTICAL_SCROLL"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Reader.autoScroll",
+                        title: NSLocalizedString("AUTO_SCROLL"),
+                        notification: .init("Reader.autoScroll"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Reader.autoScrollSpeed",
+                        title: NSLocalizedString("AUTO_SCROLL_SPEED"),
+                        requires: "Reader.autoScroll",
+                        value: .stepper(.init(minimumValue: 1, maximumValue: 10, stepValue: 1))
+                    ),
+                    .init(
+                        key: "Reader.pillarbox",
+                        title: NSLocalizedString("PILLARBOX"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        key: "Reader.pillarboxAmount",
+                        title: NSLocalizedString("PILLARBOX_AMOUNT"),
+                        requires: "Reader.pillarbox",
+                        value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
+                    ),
+                    .init(
+                        key: "Reader.pillarboxOrientation",
+                        title: NSLocalizedString("PILLARBOX_ORIENTATION"),
+                        requires: "Reader.pillarbox",
+                        value: .select(.init(
+                            values: ["both", "portrait", "landscape"],
+                            titles: [
+                                NSLocalizedString("BOTH"),
+                                NSLocalizedString("PORTRAIT"),
+                                NSLocalizedString("LANDSCAPE")
+                            ]
+                        ))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("TEXT_READER")),
+            value: .group(.init(
+                items: [
+                    .init(
+                        key: "Reader.textReaderStyle",
+                        title: NSLocalizedString("TEXT_READER_STYLE"),
+                        value: .select(.init(
+                            values: ["paged", "scroll"],
+                            titles: [
+                                NSLocalizedString("TEXT_READER_PAGED"),
+                                NSLocalizedString("TEXT_READER_SCROLL")
+                            ]
+                        ))
+                    ),
+                    .init(
+                        key: "Reader.textFontFamily",
+                        title: NSLocalizedString("TEXT_FONT_FAMILY"),
+                        notification: .init("Reader.textFontFamily"),
+                        value: .select(.init(
+                            values: Self.availableFonts
+                        ))
+                    ),
+                    .init(
+                        key: "Reader.textFontSize",
+                        title: NSLocalizedString("TEXT_FONT_SIZE"),
+                        notification: .init("Reader.textFontSize"),
+                        value: .stepper(.init(minimumValue: 12, maximumValue: 32, stepValue: 2))
+                    ),
+                    .init(
+                        key: "Reader.textLineSpacing",
+                        title: NSLocalizedString("TEXT_LINE_SPACING"),
+                        notification: .init("Reader.textLineSpacing"),
+                        value: .stepper(.init(minimumValue: 0, maximumValue: 24, stepValue: 2))
+                    ),
+                    .init(
+                        key: "Reader.textHorizontalPadding",
+                        title: NSLocalizedString("TEXT_HORIZONTAL_PADDING"),
+                        notification: .init("Reader.textHorizontalPadding"),
+                        value: .stepper(.init(minimumValue: 8, maximumValue: 48, stepValue: 4))
+                    ),
+                    .init(
+                        key: ReaderTextTheme.lightUserDefaultsKey,
+                        title: NSLocalizedString("TEXT_THEME_LIGHT"),
+                        notification: .init(ReaderTextTheme.changeNotification),
+                        value: .select(.init(
+                            values: ReaderTextTheme.allCases.map(\.rawValue),
+                            titles: ReaderTextTheme.allCases.map(\.title)
+                        ))
+                    ),
+                    .init(
+                        key: ReaderTextTheme.darkUserDefaultsKey,
+                        title: NSLocalizedString("TEXT_THEME_DARK"),
+                        notification: .init(ReaderTextTheme.changeNotification),
+                        value: .select(.init(
+                            values: ReaderTextTheme.allCases.map(\.rawValue),
+                            titles: ReaderTextTheme.allCases.map(\.title)
+                        ))
+                    )
+                ]
+            ))
+        )
+    ]
+
+    private static let dictionarySettings: [Setting] = [
+        .init(
+            value: .group(.init(items: [
+                .init(
+                    key: AppSettings.dictionary.enable.key,
+                    title: NSLocalizedString("DICTIONARY_LOOKUP"),
+                    value: .toggle(.init())
+                ),
+                .init(
+                    key: "Dictionary.dictionaries",
+                    title: NSLocalizedString("DICTIONARIES"),
+                    value: .page(.init(items: []))
+                ),
+                .init(
+                    key: "Dictionary.vocabulary",
+                    title: NSLocalizedString("VOCABULARY"),
+                    value: .page(.init(items: []))
+                )
+            ]))
+        )
+    ] + {
+        let lookupGestureSetting = Setting(
+            key: AppSettings.dictionary.lookupGesture.key,
+            title: NSLocalizedString("LOOKUP_GESTURE"),
+            value: .select(.init(
+                values: DictionarySettings.LookupGesture.allCases.map(\.rawValue),
+                titles: DictionarySettings.LookupGesture.allCases.map(\.title)
+            ))
+        )
+        return [
+            .init(
+                requires: "Dictionary.enable && Dictionary.lookupGesture==single-tap",
+                value: .group(.init(
+                    footer: NSLocalizedString("LOOKUP_GESTURE_SINGLE_TAP_INFO"),
+                    items: [lookupGestureSetting]
+                ))
+            ),
+            .init(
+                requires: "Dictionary.enable && Dictionary.lookupGesture==long-press",
+                value: .group(.init(
+                    footer: NSLocalizedString("LOOKUP_GESTURE_LONG_PRESS_INFO"),
+                    items: [lookupGestureSetting]
+                ))
+            )
+        ]
+    }() + [
+        .init(
+            requires: AppSettings.dictionary.enable.key,
+            value: .group(.init(
+                footer: NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE_INFO"),
+                items: [
+                    .init(
+                        key: AppSettings.dictionary.textOverlayMode.key,
+                        title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("DICTIONARY_TEXT_OVERLAY_MODE")),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        requires: AppSettings.dictionary.textOverlayMode.key,
+                        value: .group(.init(items: [
+                            .init(
+                                key: AppSettings.dictionary.overlayPadding.key,
+                                title: NSLocalizedString("DICTIONARY_OVERLAY_PADDING"),
+                                value: .stepper(.init(
+                                    minimumValue: 0,
+                                    maximumValue: 10,
+                                    stepValue: 1
+                                ))
+                            ),
+                            .init(
+                                key: AppSettings.dictionary.overlayTextScaleMultiplier.key,
+                                title: NSLocalizedString("DICTIONARY_OVERLAY_TEXT_SCALE"),
+                                value: .stepper(.init(
+                                    minimumValue: 0.5,
+                                    maximumValue: 1.25,
+                                    stepValue: 0.05
+                                ))
+                            )
+                        ]))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            requires: AppSettings.dictionary.enable.key,
+            value: .group(.init(
+                footer: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES_INFO"),
+                items: [
+                    .init(
+                        key: AppSettings.dictionary.restrictOCRLanguages.key,
+                        title: NSLocalizedString("DICTIONARY_RESTRICT_OCR_LANGUAGES"),
+                        value: .toggle(.init())
+                    ),
+                    .init(
+                        requires: AppSettings.dictionary.restrictOCRLanguages.key,
+                        value: .group(.init(items: [
+                            .init(
+                                key: AppSettings.dictionary.restrictedOCRLanguages.key,
+                                title: NSLocalizedString("DICTIONARY_OCR_LANGUAGES"),
+                                value: .multiselect(.init(
+                                    values: sourceLanguageCodes,
+                                    titles: sourceLanguageTitles
+                                ))
+                            )
+                        ]))
+                    )
+                ]
+            ))
+        ),
+        .init(
+            title: NSLocalizedString("DICTIONARY_POPUP"),
+            requires: AppSettings.dictionary.enable.key,
+            value: .group(.init(items: [
+                .init(
+                    key: AppSettings.dictionary.displayMode.key,
+                    title: NSLocalizedString("DISPLAY_MODE"),
+                    value: .picker(.init(
+                        values: DictionarySettings.DisplayMode.allCases.map(\.rawValue),
+                        titles: DictionarySettings.DisplayMode.allCases.map(\.title)
+                    ))
+                ),
+                .init(
+                    key: AppSettings.dictionary.popupWidth.key,
+                    title: NSLocalizedString("DICTIONARY_POPUP_WIDTH"),
+                    requiresFalse: "\(AppSettings.dictionary.displayMode.key)==\(DictionarySettings.DisplayMode.fullWidth.rawValue)",
+                    value: .stepper(.init(
+                        minimumValue: 220,
+                        maximumValue: 500,
+                        stepValue: 10
+                    ))
+                ),
+                .init(
+                    key: AppSettings.dictionary.popupHeight.key,
+                    title: NSLocalizedString("DICTIONARY_POPUP_HEIGHT"),
+                    value: .stepper(.init(
+                        minimumValue: 160,
+                        maximumValue: 350,
+                        stepValue: 10
+                    ))
+                )
+            ]))
+        )
+    ]
+
+    private static let advancedSettings: [Setting] = [
+        .init(
+            title: NSLocalizedString("LOGGING"),
+            value: .group(.init(items: [
+                .init(
+                    key: "Logs.logServer",
+                    title: NSLocalizedString("LOG_SERVER"),
+                    value: .text(.init(
+                        placeholder: "http://127.0.0.1",
+                        autocapitalizationType: 0,
+                        keyboardType: 3,
+                        returnKeyType: 9,
+                        autocorrectionDisabled: true,
+                    ))
+                ),
+                .init(
+                    key: "Logs.export",
+                    title: NSLocalizedString("EXPORT_LOGS"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Logs.display",
+                    title: NSLocalizedString("DISPLAY_LOGS"),
+                    value: .button(.init())
+                )
+            ]))
+        ),
+        .init(
+            title: NSLocalizedString("ADVANCED"),
+            value: .group(.init(items: [
+                .init(
+                    key: "Advanced.clearTrackedManga",
+                    title: NSLocalizedString("CLEAR_TRACKED_MANGA"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.clearNetworkCache",
+                    title: NSLocalizedString("CLEAR_NETWORK_CACHE"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.clearReadHistory",
+                    title: NSLocalizedString("CLEAR_READ_HISTORY"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.clearExcludingLibrary",
+                    title: NSLocalizedString("CLEAR_EXCLUDING_LIBRARY"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.migrateHistory",
+                    title: "Migrate Chapter History",
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.resetSettings",
+                    title: NSLocalizedString("RESET_SETTINGS"),
+                    value: .button(.init())
+                ),
+                .init(
+                    key: "Advanced.reset",
+                    title: NSLocalizedString("RESET"),
+                    value: .button(.init())
+                )
+            ]))
+        )
+    ]
+}
+
+extension Settings {
+    static let downloadSettings: [Setting] = {
+        var baseItems: [Setting] = [
+            .init(
+                key: AppSettings.downloads.downloadOnlyOnWifi.key,
+                title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.downloads.deleteDownloadAfterReading.key,
+                title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.downloads.compress.key,
+                title: NSLocalizedString("COMPRESS_DOWNLOADS"),
+                value: .toggle(.init())
+            ),
+            .init(
+                key: AppSettings.downloads.parallel.key,
+                title: NSLocalizedString("PARALLEL_DOWNLOADS"),
+                value: .toggle(.init())
+            )
+        ]
+        if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
+            baseItems.append(
+                .init(
+                    key: AppSettings.downloads.background.key,
+                    title: NSLocalizedString("BACKGROUND_DOWNLOADING"),
+                    value: .toggle(.init())
+                )
+            )
+        }
+        return [
+            .init(
+                title: NSLocalizedString("SETTINGS"),
+                value: .group(.init(items: baseItems))
+            )
+        ]
+    }()
+}

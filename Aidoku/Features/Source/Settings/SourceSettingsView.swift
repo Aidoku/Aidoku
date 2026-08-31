@@ -1,0 +1,173 @@
+//
+//  SourceSettingsView.swift
+//  Aidoku
+//
+//  Created by Skitty on 10/6/23.
+//
+
+import AidokuRunner
+import SwiftUI
+import WebKit
+
+struct SourceSettingsView: View {
+    let source: AidokuRunner.Source
+
+    @State private var settings: [Setting] = []
+    @State private var showingClearCacheConfirm = false
+    @State private var showingResetAlert = false
+    @State private var error: Error?
+
+    @EnvironmentObject var path: NavigationCoordinator
+
+    init(source: AidokuRunner.Source) {
+        self.source = source
+        if !source.features.dynamicSettings {
+            self._settings = State(initialValue: source.staticSettings)
+        }
+    }
+
+    var body: some View {
+        List {
+            // header
+            Section {
+                SourceTableCell(source: source)
+                    .listRowInsets(.init(top: 16, leading: 16, bottom: 16, trailing: 16))
+            }
+            .listRowBackground(
+                Color(uiColor: .secondarySystemGroupedBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            )
+
+            // source settings
+            if let error {
+                Section {
+                    ErrorView(
+                        error: error,
+                        restart: { try await source.restart() },
+                        retry: loadSettings
+                    )
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+                }
+            }
+            if !settings.isEmpty {
+                ForEach(settings.indices, id: \.self) { index in
+                    let setting = settings[index]
+                    SettingView(source: source, setting: setting, namespace: source.id)
+                }
+            }
+
+            Section {
+                Button(NSLocalizedString("CLEAR_SOURCE_CACHE")) {
+                    showingClearCacheConfirm = true
+                }
+
+                // reset button
+                if !settings.isEmpty || source.languages.count > 1 {
+                    Button(NSLocalizedString("RESET_SETTINGS")) {
+                        showingResetAlert = true
+                    }
+                }
+            }
+        }
+        .scrollDismissesKeyboardImmediately()
+        .navigationTitle(NSLocalizedString("SOURCE_SETTINGS"))
+        .navigationBarTitleDisplayMode(.inline)
+        // for ios 15
+        .background(
+            Color(uiColor: .systemGroupedBackground)
+                .ignoresSafeArea()
+        )
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                CloseButton {
+                    path.dismiss()
+                }
+            }
+        }
+        .animation(.default, value: settings)
+        .task {
+            guard settings.isEmpty else { return }
+            await loadSettings()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("refresh-settings"))) { _ in
+            Task {
+                await loadSettings()
+            }
+        }
+        .alert(NSLocalizedString("RESET_SETTINGS"), isPresented: $showingResetAlert) {
+            Button(NSLocalizedString("CANCEL"), role: .cancel) {}
+            Button(NSLocalizedString("RESET"), role: .destructive) {
+                resetSettings()
+            }
+        } message: {
+            Text(String(format: NSLocalizedString("RESET_SETTINGS_CONFIRM_%@"), source.name))
+        }
+        .confirmationDialogOrAlert(NSLocalizedString("CLEAR_SOURCE_CACHE"), isPresented: $showingClearCacheConfirm, titleVisibility: .visible) {
+            Button(NSLocalizedString("CLEAR"), role: .destructive) {
+                Task {
+                    await clearCache()
+                }
+            }
+        } message: {
+            Text(NSLocalizedString("CLEAR_SOURCE_CACHE_TEXT"))
+        }
+    }
+
+    func loadSettings() async {
+        withAnimation {
+            error = nil
+        }
+        do {
+            settings = try await source.getSettings()
+        } catch {
+            withAnimation {
+                self.error = error
+            }
+        }
+    }
+
+    // find every userdefaults key with the source id as the prefix and remove it
+    func resetSettings() {
+        SourceManager.shared.removeSettings(from: source.key)
+
+        let currentSettings = settings
+        settings = []
+        settings = currentSettings
+
+        for name in ["refresh-content", "refresh-settings", "refresh-listings", "refresh-filters"] {
+            NotificationCenter.default.post(name: .init(name), object: nil)
+        }
+    }
+
+    func clearCache() async {
+        // remove cookies
+        for url in source.urls {
+            if let cookies = HTTPCookieStorage.shared.allCookies(for: url) {
+                for cookie in cookies {
+                    HTTPCookieStorage.shared.deleteCookie(cookie)
+                }
+            }
+        }
+
+        // remove wkwebview data
+        await withCheckedContinuation { continuation in
+            let store = WKWebsiteDataStore.default()
+            store.fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+                for record in records where source.urls.contains(where: { $0.domain == record.displayName }) {
+                    store.removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+                }
+                continuation.resume()
+            }
+        }
+
+        // clear source web view cache
+        await source.clearCache()
+
+        // remove cached home layout
+        UserDefaults.standard.removeObject(forKey: "\(source.key).homeComponents")
+
+        // reload source
+        NotificationCenter.default.post(name: .init("refresh-content"), object: nil)
+    }
+}

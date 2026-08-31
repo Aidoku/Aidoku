@@ -1,5 +1,5 @@
 {
-  "originHash" : "fbee1fcd32ad03a92ffe9109e2bd94b400fad95c547fb7d3b5ec7a14031d23a7",
+  "originHash" : "2a03085cc27e6126636f23e5314c8863e452ac74984aadf2747627a82b4f8612",
   "pins" : [
     {
       "identity" : "aidokurunner",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/Aidoku/AidokuRunner",
       "state" : {
         "branch" : "main",
-        "revision" : "45560aa5326b3c3ceda1d7432edb5292463f877a"
+        "revision" : "cc4d06ff399e7169b9c647bccede7cb29bc805c6"
       }
     },
     {
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "46434cd816f035271beb16d80f7bc91381cbd8e4",
         "version" : "3.5.1"
+      }
+    },
+    {
+      "identity" : "hoshidicts",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Manhhao/hoshidicts.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "bc62d2becc3c2dac0f6abd1cbaa1df11b1ea1acc"
       }
     },
     {
@@ -33,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/kean/Nuke",
       "state" : {
-        "revision" : "63a8fcbd6621340a2410bc3e9575ac97058615f4",
-        "version" : "13.0.6"
+        "revision" : "30f7a7e72e0607d304fbf69c799474bd5fb6d1ce",
+        "version" : "13.2.0"
       }
     },
     {
@@ -69,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/scinfu/SwiftSoup",
       "state" : {
-        "revision" : "49dcadd93161f4a44b4994d3a3e8de9f085aface",
-        "version" : "2.13.5"
+        "revision" : "8d6ad267714cac3ae747cefdd21f7a6665006e1f",
+        "version" : "2.13.7"
       }
     },
     {
@@ -96,7 +105,7 @@
       "location" : "https://github.com/Skittyblock/Wasm3",
       "state" : {
         "branch" : "main",
-        "revision" : "8c0e4ef3dec8e88a94c19959c3fe100cf50c548b"
+        "revision" : "6a64d8bfc6a235f1ee3f8b57f692494fbf72ed19"
       }
     },
     {
@@ -106,6 +115,15 @@
       "state" : {
         "revision" : "22787ffb59de99e5dc1fbfe80b19c97a904ad48d",
         "version" : "0.9.20"
+      }
+    },
+    {
+      "identity" : "zstd",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/facebook/zstd.git",
+      "state" : {
+        "revision" : "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+        "version" : "1.5.7"
       }
     }
   ],
