@@ -610,8 +610,8 @@ extension ReaderSettingsView {
             )
             SettingView(
                 setting: .init(
-                    key: ReaderTextTheme.lightUserDefaultsKey,
-                    title: NSLocalizedString("TEXT_THEME_LIGHT"),
+                    key: ReaderTextTheme.userDefaultsKey,
+                    title: NSLocalizedString("TEXT_THEME"),
                     notification: .init(ReaderTextTheme.changeNotification),
                     value: .select(.init(
                         values: ReaderTextTheme.allCases.map(\.rawValue),
@@ -621,12 +621,16 @@ extension ReaderSettingsView {
             )
             SettingView(
                 setting: .init(
-                    key: ReaderTextTheme.darkUserDefaultsKey,
-                    title: NSLocalizedString("TEXT_THEME_DARK"),
+                    key: ReaderTextTheme.appearanceUserDefaultsKey,
+                    title: NSLocalizedString("APPEARANCE"),
                     notification: .init(ReaderTextTheme.changeNotification),
                     value: .select(.init(
-                        values: ReaderTextTheme.allCases.map(\.rawValue),
-                        titles: ReaderTextTheme.allCases.map(\.title)
+                        values: ["system", "light", "dark"],
+                        titles: [
+                            NSLocalizedString("READER_BG_COLOR_SYSTEM"),
+                            NSLocalizedString("APPEARANCE_LIGHT"),
+                            NSLocalizedString("APPEARANCE_DARK")
+                        ]
                     ))
                 )
             )

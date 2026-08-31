@@ -58,6 +58,7 @@ extension ReaderPagedTextViewController.ChapterTransitionViewController {
         view.backgroundColor = ReaderTextTheme.background
 
         guard let infoView else { return }
+        infoView.applyTextTheme()
         infoView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(infoView)
 

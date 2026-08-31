@@ -165,6 +165,7 @@ class ReaderTextViewController: BaseViewController {
         nextChapter: AidokuRunner.Chapter?
     ) -> ReaderInfoPageView {
         let tv = ReaderInfoPageView(type: .next)
+        tv.applyTextTheme()
         tv.translatesAutoresizingMaskIntoConstraints = false
         tv.currentChapter = finishedChapter
         tv.nextChapter = nextChapter
@@ -208,12 +209,14 @@ class ReaderTextViewController: BaseViewController {
 
         // Boundary transition views (direct scroll view children)
         let prevView = ReaderInfoPageView(type: .previous)
+        prevView.applyTextTheme()
         prevView.translatesAutoresizingMaskIntoConstraints = false
         prevView.isHidden = true
         scrollView.addSubview(prevView)
         previousTransitionView = prevView
 
         let nextView = ReaderInfoPageView(type: .next)
+        nextView.applyTextTheme()
         nextView.translatesAutoresizingMaskIntoConstraints = false
         nextView.isHidden = true
         scrollView.addSubview(nextView)
@@ -417,6 +420,11 @@ extension ReaderTextViewController {
 
     @objc private func textStyleChanged() {
         scrollView.backgroundColor = ReaderTextTheme.background
+        previousTransitionView?.applyTextTheme()
+        nextTransitionView?.applyTextTheme()
+        for section in sections {
+            section.transitionView?.applyTextTheme()
+        }
         refreshTextViews()
     }
 

@@ -72,9 +72,6 @@ class ReaderViewController: BaseObservingViewController {
     private lazy var toolbarView = ReaderToolbarView()
     private var toolbarViewWidthConstraint: NSLayoutConstraint?
 
-    private var windowTraitRegistration: Any?
-    private weak var observedWindow: UIWindow?
-
     private var squeezeTimer: Timer?
     private var longSqueezeTimer: Timer?
     private var squeezeStartTime: Date?
@@ -406,17 +403,6 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.isToolbarHidden = false
         navigationController?.toolbar.alpha = 1
 
-        // the text theme selection depends on the window's light/dark style, and the
-        // reader's own traits may be pinned by the theme override, so observe the window
-        if #available(iOS 17.0, *), windowTraitRegistration == nil, let window = view.window {
-            observedWindow = window
-            windowTraitRegistration = window.registerForTraitChanges(
-                [UITraitUserInterfaceStyle.self]
-            ) { (_: UIWindow, _) in
-                NotificationCenter.default.post(name: .init(ReaderTextTheme.changeNotification), object: nil)
-            }
-        }
-
         disableSwipeGestures()
         configureNavigationBarDismissTapGesture(enabled: isDictionarySingleTapLookupActiveForCurrentChapter)
 
@@ -428,14 +414,6 @@ class ReaderViewController: BaseObservingViewController {
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
-        // the reader is being closed, stop observing the window's interface style
-        if #available(iOS 17.0, *),
-           navigationController?.isBeingDismissed ?? isBeingDismissed,
-           let registration = windowTraitRegistration as? any UITraitChangeRegistration {
-            observedWindow?.unregisterForTraitChanges(registration)
-            windowTraitRegistration = nil
-        }
 
         (reader as? ReaderWebtoonViewController)?.stopAutoScroll()
 
@@ -637,6 +615,10 @@ extension ReaderViewController {
                 chapterLanguage: chapter.language ?? source?.languages.first
             )
         )
+        // the sheet follows the reader's appearance override (it doesn't inherit it)
+        if currentReader == .text {
+            vc.overrideUserInterfaceStyle = ReaderTextTheme.interfaceStyleOverride
+        }
         present(vc, animated: true)
     }
 
@@ -811,19 +793,26 @@ extension ReaderViewController {
         updateTextThemeOverride()
     }
 
-    /// Text reader themes (besides system) force a light or dark appearance so the
-    /// bars and transition pages match the page background. Other readers are unaffected.
+    /// The text reader appearance setting can pin the reader (and sheets presented
+    /// from it) to a light or dark interface style, and themes color the bars and
+    /// transition pages to match the page background. Other readers are unaffected.
     func updateTextThemeOverride() {
         let theme = ReaderTextTheme.current
         let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
-        let themed = isTextReader && theme != .system
-        navigationController?.overrideUserInterfaceStyle = themed ? theme.interfaceStyle : .unspecified
+        let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.interfaceStyleOverride : .unspecified
+        navigationController?.overrideUserInterfaceStyle = styleOverride
+        // presented sheets (e.g. reader settings) don't inherit the override
+        presentedViewController?.overrideUserInterfaceStyle = styleOverride
+        let themed = isTextReader && (theme != .default || styleOverride != .unspecified)
 
         // the bar renders from the appearance objects set in configure(), which
         // don't follow the trait override (they resolve against the device style),
-        // so write the theme colors into them directly: the bar background matches
-        // the page (like the books app) and the title uses the theme text color
-        let titleColor = themed ? theme.textColor : nil
+        // so write the theme colors (pre-resolved against the appearance override)
+        // into them directly: the bar background matches the page (like the books
+        // app) and the title uses the theme text color
+        let backgroundColor = ReaderTextTheme.background
+        let textColor = ReaderTextTheme.text
+        let titleColor = themed ? textColor : nil
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
                 if themed {
@@ -835,10 +824,10 @@ extension ReaderViewController {
                         // paged reader: nothing extends under the bar (the paginator
                         // reserves the top), so match the page color seamlessly
                         appearance.backgroundEffect = nil
-                        appearance.backgroundColor = theme.backgroundColor
+                        appearance.backgroundColor = backgroundColor
                         appearance.shadowColor = .clear
                     }
-                    appearance.titleTextAttributes[.foregroundColor] = theme.textColor
+                    appearance.titleTextAttributes[.foregroundColor] = textColor
                 } else {
                     appearance.configureWithDefaultBackground()
                     appearance.titleTextAttributes.removeValue(forKey: .foregroundColor)

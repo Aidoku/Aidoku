@@ -6,69 +6,68 @@
 import UIKit
 
 /// Preset color themes for the text reader, similar to the Books app.
-/// All themes besides `system` override the reader's user interface style.
+/// Each theme has a light and dark color variant, following the interface style;
+/// a separate appearance setting can pin the reader to a light or dark style.
 enum ReaderTextTheme: String, CaseIterable {
-    case system
-    case white
+    case `default`
     case sepia
     case paper
     case gray
-    case black
 
-    static let lightUserDefaultsKey = "Reader.textThemeLight"
-    static let darkUserDefaultsKey = "Reader.textThemeDark"
+    static let userDefaultsKey = "Reader.textTheme"
+    static let appearanceUserDefaultsKey = "Reader.textAppearance"
     static let changeNotification = "Reader.textTheme"
 
-    /// The active theme, selected separately for light and dark mode.
-    /// Uses the window's interface style, since the reader's own style
-    /// may be overridden by the active theme.
     static var current: ReaderTextTheme {
-        let isDark = UIApplication.shared.firstKeyWindow?.traitCollection.userInterfaceStyle == .dark
-        let key = isDark ? darkUserDefaultsKey : lightUserDefaultsKey
-        return UserDefaults.standard.string(forKey: key).flatMap(ReaderTextTheme.init) ?? .system
+        UserDefaults.standard.string(forKey: userDefaultsKey).flatMap(ReaderTextTheme.init) ?? .default
     }
 
-    static var background: UIColor { current.backgroundColor }
-    static var text: UIColor { current.textColor }
+    /// The interface style override for the reader, from the appearance setting.
+    static var interfaceStyleOverride: UIUserInterfaceStyle {
+        switch UserDefaults.standard.string(forKey: appearanceUserDefaultsKey) {
+            case "light": .light
+            case "dark": .dark
+            default: .unspecified
+        }
+    }
+
+    /// The current theme's colors, pre-resolved against the appearance override
+    /// (trait propagation doesn't reliably re-resolve dynamic colors in the reader).
+    static var background: UIColor { resolve(current.backgroundColor) }
+    static var text: UIColor { resolve(current.textColor) }
+
+    private static func resolve(_ color: UIColor) -> UIColor {
+        let style = interfaceStyleOverride
+        guard style != .unspecified else { return color }
+        return color.resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
+    }
 
     var title: String {
         switch self {
-            case .system: NSLocalizedString("READER_BG_COLOR_SYSTEM")
-            case .white: NSLocalizedString("READER_BG_COLOR_WHITE")
+            case .default: NSLocalizedString("DEFAULT")
             case .sepia: NSLocalizedString("TEXT_THEME_SEPIA")
             case .paper: NSLocalizedString("TEXT_THEME_PAPER")
             case .gray: NSLocalizedString("TEXT_THEME_GRAY")
-            case .black: NSLocalizedString("READER_BG_COLOR_BLACK")
         }
     }
 
     var backgroundColor: UIColor {
         switch self {
-            case .system: .systemBackground
-            case .white: .white
-            case .sepia: UIColor(rgb: 0xFAF1E3)
-            case .paper: UIColor(rgb: 0xF2F1EC)
-            case .gray: UIColor(rgb: 0x414141)
-            case .black: .black
+            case .default: .systemBackground
+            case .sepia: UIColor(light: 0xFAF1E3, dark: 0x3B3226)
+            case .paper: UIColor(light: 0xF2F1EC, dark: 0x2E2E2B)
+            case .gray: UIColor(light: 0xD1D1D6, dark: 0x414141)
         }
     }
 
     var textColor: UIColor {
         switch self {
-            case .system: .label
-            case .white: .black
-            case .sepia, .paper: UIColor.black.withAlphaComponent(0.9)
-            case .gray: UIColor.white.withAlphaComponent(0.9)
-            case .black: .white
-        }
-    }
-
-    /// The interface style the reader should take on while this theme is active.
-    var interfaceStyle: UIUserInterfaceStyle {
-        switch self {
-            case .system: .unspecified
-            case .white, .sepia, .paper: .light
-            case .gray, .black: .dark
+            case .default: .label
+            case .sepia, .paper, .gray: UIColor { traits in
+                traits.userInterfaceStyle == .dark
+                    ? UIColor.white.withAlphaComponent(0.9)
+                    : UIColor.black.withAlphaComponent(0.9)
+            }
         }
     }
 }
@@ -81,5 +80,11 @@ private extension UIColor {
             blue: CGFloat(rgb & 0xFF) / 255,
             alpha: 1
         )
+    }
+
+    convenience init(light: Int, dark: Int) {
+        self.init { traits in
+            traits.userInterfaceStyle == .dark ? UIColor(rgb: dark) : UIColor(rgb: light)
+        }
     }
 }
