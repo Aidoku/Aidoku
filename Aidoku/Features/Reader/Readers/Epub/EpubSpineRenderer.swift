@@ -167,6 +167,41 @@ final class EpubSpineRenderer: NSObject {
         return source
     }
 
+    enum LinkTarget {
+        case inBook(path: String, fragment: String?)
+        case external(URL)
+    }
+
+    // the paged style disables the web view's touches so the page controller's pan can recognise
+    // over text, which also silences WebKit's own link taps; the reader asks here instead, at the
+    // point its own tap landed
+    func linkTarget(at point: CGPoint) async -> LinkTarget? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            while (el) {
+                if ((el.tagName || '').toLowerCase() === 'a') {
+                    var href = el.getAttribute('href');
+                    return href ? new URL(href, document.baseURI).href : '';
+                }
+                el = el.parentElement;
+            }
+            return '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let href = result as? String, !href.isEmpty, let url = URL(string: href) else { return nil }
+        if url.scheme == "http" || url.scheme == "https" {
+            return .external(url)
+        }
+        if url.scheme == EpubSchemeHandler.scheme {
+            // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
+            let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
+            return .inBook(path: EpubSchemeHandler.resourcePath(from: url), fragment: fragment)
+        }
+        return nil
+    }
+
     func tableHTML(at point: CGPoint) async -> String? {
         let script = """
         (function() {

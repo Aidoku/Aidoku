@@ -1107,10 +1107,9 @@ extension ReaderViewController: ReaderHoldingDelegate {
         tap.numberOfTapsRequired = 1
         tap.delegate = self
         // the epub reader is the only one with a web view under the tap zones, and its tap must
-        // not cancel touches, which is what lets the web view keep text selection and links
-        if let epubReader = reader as? ReaderEpubViewController {
+        // not cancel touches, which is what lets the scroll style keep text selection and links
+        if reader is ReaderEpubViewController {
             tap.cancelsTouchesInView = false
-            tap.require(toFail: epubReader.pagePan)
         }
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
@@ -1318,14 +1317,14 @@ extension ReaderViewController {
             }
         }
 
-        // A tap on an image inside an ePub shows a fullscreen preview of it, the way the readium
-        // toolkit's image previews behave. Asked before the zones so a page cannot also turn out
-        // from under the preview; taps that hit no image fall through unchanged.
+        // A tap on the book's own content — a link, an image, a table — belongs to the book.
+        // Asked before the zones so a page cannot also turn out from under what was opened;
+        // taps that hit nothing of the sort fall through unchanged.
         if let epub = reader as? ReaderEpubViewController {
             let location = view.convert(point, to: epub.view)
             Task { [weak self] in
                 guard let self else { return }
-                if await epub.presentImagePreview(forTapAt: location) { return }
+                if await epub.handleContentTap(at: location) { return }
                 self.handleZoneTap(at: point)
             }
             return

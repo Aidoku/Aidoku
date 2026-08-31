@@ -39,6 +39,31 @@ struct ReaderEpubViewModelTests {
         try await viewModel.open(viewport: Self.viewport, atDocument: document)
     }
 
+    /// Mirrors the paged style: the whole book measured first, then a page controller built over
+    /// the completed index, reporting its position back into the model the way the reader wires it.
+    private func startPaged(
+        _ viewModel: ReaderEpubViewModel,
+        atBookPage bookPage: Int = 0
+    ) async throws -> EpubPagedViewController {
+        await viewModel.openPaged(viewport: Self.viewport)
+        try #require(viewModel.isMeasured, "the paged style measures the book before showing it")
+        let paged = EpubPagedViewController(book: viewModel.makePagedBook(), contentInsets: .zero)
+        paged.onPageChanged = { [weak viewModel] page in viewModel?.notePagedPosition(bookPage: page) }
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first
+        try #require(window).addSubview(paged.view)
+        paged.view.frame = CGRect(origin: .zero, size: Self.viewport)
+        paged.view.layoutIfNeeded()
+        await paged.open(atBookPage: bookPage)
+        viewModel.notePagedPosition(bookPage: paged.currentBookPage)
+        return paged
+    }
+
+    private func dismantle(_ paged: EpubPagedViewController) {
+        paged.view.removeFromSuperview()
+    }
+
     private func waitUntilMeasured(_ viewModel: ReaderEpubViewModel, timeout: TimeInterval = 20) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while !viewModel.isMeasured && Date() < deadline {
@@ -68,30 +93,32 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await start(viewModel)
-        defer { viewModel.renderer?.webView.stopLoading() }
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
 
         let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
         try #require(count > 1, "the fixture's first document must span more than one page")
 
-        await viewModel.moveForward()
+        await paged.turn(forward: true, animated: false)
         #expect(viewModel.currentDocument == 0)
         #expect(viewModel.pageInDocument == 1)
     }
 
-    /// The seam forwards: the last page of a document turns into the first page of the next.
+    /// The seam forwards: the last page of a document turns into the first page of the next, on
+    /// the same turn as any other page.
     @Test func turningForwardAtTheEndEntersTheNextDocument() async throws {
         let url = try Self.makeBook()
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await start(viewModel)
-        defer { viewModel.renderer?.webView.stopLoading() }
-
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
         let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
-        for _ in 0..<count {
-            await viewModel.moveForward()
-        }
+        await paged.show(bookPage: count - 1, animated: false)
+        try #require(viewModel.currentDocument == 0)
+        try #require(viewModel.pageInDocument == count - 1)
+
+        await paged.turn(forward: true, animated: false)
 
         #expect(viewModel.currentDocument == 1)
         #expect(viewModel.pageInDocument == 0)
@@ -103,15 +130,16 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await start(viewModel, atDocument: 1)
-        defer { viewModel.renderer?.webView.stopLoading() }
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
+        await paged.show(bookPage: count, animated: false)
         try #require(viewModel.currentDocument == 1)
         try #require(viewModel.pageInDocument == 0)
 
-        await viewModel.moveBackward()
+        await paged.turn(forward: false, animated: false)
 
         #expect(viewModel.currentDocument == 0)
-        let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
         #expect(viewModel.pageInDocument == count - 1)
     }
 
@@ -120,10 +148,10 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await start(viewModel)
-        defer { viewModel.renderer?.webView.stopLoading() }
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
 
-        await viewModel.moveBackward()
+        await paged.turn(forward: false, animated: false)
 
         #expect(viewModel.currentDocument == 0)
         #expect(viewModel.pageInDocument == 0)
@@ -134,18 +162,21 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+        let total = viewModel.bookTotal
+        await paged.show(bookPage: total - 1, animated: false)
+
+        await paged.turn(forward: true, animated: false)
+        await paged.turn(forward: true, animated: false)
+
         let last = viewModel.spinePaths.count - 1
-        try await start(viewModel, atDocument: last)
-        defer { viewModel.renderer?.webView.stopLoading() }
-
         let count = try #require(viewModel.index.pageCount(forDocumentAt: last))
-        for _ in 0..<(count + 2) {
-            await viewModel.moveForward()
-        }
-
         #expect(viewModel.currentDocument == last)
         #expect(viewModel.pageInDocument == count - 1)
     }
+
+
 
     /// What the slider asks for. A page in another document has to load it.
     @Test func showingABookPageCrossesIntoTheRightDocument() async throws {
@@ -153,12 +184,11 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        try await start(viewModel)
-        defer { viewModel.renderer?.webView.stopLoading() }
-        try await waitUntilMeasured(viewModel)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
 
         let target = try #require(viewModel.index.bookPage(forDocumentAt: 2, page: 1))
-        await viewModel.showBookPage(target)
+        await paged.show(bookPage: target, animated: false)
 
         #expect(viewModel.currentDocument == 2)
         #expect(viewModel.pageInDocument == 1)
@@ -214,13 +244,12 @@ struct ReaderEpubViewModelTests {
         defer { EpubFixture.remove(url) }
 
         let viewModel = try makeViewModel(url)
-        let last = viewModel.spinePaths.count - 1
-        try await start(viewModel, atDocument: last)
-        defer { viewModel.renderer?.webView.stopLoading() }
-        try await waitUntilMeasured(viewModel)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
 
+        let last = viewModel.spinePaths.count - 1
         let count = try #require(viewModel.index.pageCount(forDocumentAt: last))
-        await viewModel.showBookPage(viewModel.bookTotal - 1)
+        await paged.show(bookPage: viewModel.bookTotal - 1, animated: false)
 
         #expect(viewModel.currentDocument == last)
         #expect(viewModel.pageInDocument == count - 1)

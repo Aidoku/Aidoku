@@ -326,14 +326,15 @@ struct ReaderEpubViewControllerTests {
         // Against the documents rather than against itself: the sum has to equal what each document
         // reports at this size, which is the only check a mis-attributed count cannot pass.
         //
-        // Measured at the web view's bounds rather than the reader's, since the reader insets its
-        // web view by the window's safe area and a count belongs to the size it was laid out at.
+        // Measured at a page web view's bounds rather than the reader's, since the reader insets
+        // its pages by the window's safe area and a count belongs to the size it was laid out at.
         //
         // With the reader's own settings, derived from the reader's bounds the way the controller
         // derives them: a count belongs to its settings as much as to its size, so a renderer built
         // with the defaults would lay the same text out at a different font size and disagree for a
         // reason that says nothing about attribution.
-        let size = try #require(model.renderer?.webView.bounds.size)
+        try await EpubFixture.waitUntil(timeout: 10) { reader.paged?.currentWebView != nil }
+        let size = try #require(reader.paged?.currentWebView?.bounds.size)
         let settings = EpubPaginationSettings.fromUserDefaults(for: reader.view.bounds.size)
         let renderer = try await EpubFixture.makeRenderer(for: book.url, size: size, settings: settings)
         defer { EpubFixture.dismantle(renderer.webView) }
@@ -562,7 +563,10 @@ struct ReaderEpubViewControllerTests {
         let before = try #require(reader.book)
         let totalBefore = before.bookTotal
         let pageBefore = Int(Double(totalBefore) * 0.4)
-        await before.showBookPage(pageBefore)
+        // through the reader rather than the model: the paged style turns pages in the page
+        // controller, which only the reader holds
+        reader.showBookPage(pageBefore)
+        try await EpubFixture.waitUntil(timeout: 10) { reader.book?.bookPage == pageBefore }
         let fractionBefore = Double(pageBefore) / Double(totalBefore - 1)
 
         // The reader observes the key rather than reading it at draw time, so the notification is
@@ -573,10 +577,10 @@ struct ReaderEpubViewControllerTests {
         try await EpubFixture.waitUntil(timeout: 30) {
             reader.book?.isMeasured == true && reader.book?.bookTotal != totalBefore
         }
-        // The refinement happens on the report that observes the last count, and moves through the
-        // navigation queue, so it settles a moment after the book is measured.
+        // The restore settles a moment after the book is measured; a freshly rebuilt book reads as
+        // page 0 until it does, which is not a place this reader was.
         try await EpubFixture.waitUntil(timeout: 10) {
-            reader.book.map { $0.bookPage != nil && $0.bookPage != pageBefore } ?? false
+            reader.book.map { ($0.bookPage ?? 0) > 0 && $0.bookPage != pageBefore } ?? false
         }
 
         let after = try #require(reader.book)
@@ -629,7 +633,9 @@ struct ReaderEpubViewControllerTests {
         // Deep enough into the third document that a whole-book fraction, skewed by the other
         // documents' rounding, would miss it.
         let before = try #require(reader.book)
-        await before.showBookPage(Int(Double(before.bookTotal) * 0.4))
+        let targetBefore = Int(Double(before.bookTotal) * 0.4)
+        reader.showBookPage(targetBefore)
+        try await EpubFixture.waitUntil(timeout: 10) { reader.book?.bookPage == targetBefore }
         let documentBefore = before.currentDocument
         let pageInDocumentBefore = before.pageInDocument
         let countBefore = try #require(before.index.pageCount(forDocumentAt: documentBefore))
@@ -834,7 +840,8 @@ struct ReaderEpubViewControllerTests {
         #expect(delegate.currentPage == expected + 1, "the position was withheld after the drag ended")
 
         // And the reader keeps reporting afterwards rather than having been silenced for good.
-        await reader.book?.moveForward()
+        reader.moveRight()
+        try await EpubFixture.waitUntil(timeout: 10) { delegate.currentPage == expected + 2 }
         #expect(delegate.currentPage == expected + 2)
     }
 
@@ -870,20 +877,14 @@ struct ReaderEpubViewControllerTests {
         #expect(try #require(reader.book).pendingBookPage == nil)
     }
 
-    /// A resume is marked outstanding until it lands, and the total climbs throughout.
+    /// A resume is marked outstanding until it lands, and the total is published once, final.
     ///
-    /// Two things have to hold at once here, and fixing one by breaking the other has now happened
-    /// twice. The reader must not be taken to be *at* the head of the book while it is being resumed
-    /// past it, because the host writes that position and it lands on top of the progress being
-    /// resumed to; measured on a real book, page 1 was saved over page 2120 of 5298. And the toolbar
-    /// must keep showing numbers throughout, because `ReaderToolbarView` blanks both of its labels
-    /// unless it has a current page as well as a total, so withholding the position withheld every
-    /// sign that a five thousand page book was doing anything at all.
-    ///
-    /// The resolution is that the position is reported and `isAwaitingResume` says not to write it.
-    /// This covers the reporting half. The half that refuses the write lives in
-    /// `ReaderViewController.updateReadPosition`, which no test drives.
-    @Test func aResumeIsMarkedOutstandingWhileTheTotalClimbs() async throws {
+    /// The reader must not be taken to be *at* the head of the book while it is being resumed past
+    /// it, because the host writes that position and it lands on top of the progress being resumed
+    /// to; measured on a real book, page 1 was saved over page 2120 of 5298. The paged reader now
+    /// measures the whole book behind a loading cover before showing anything, so the total is
+    /// reported exactly once and never climbs under positions already reported against it.
+    @Test func aResumeIsMarkedOutstandingUntilItLands() async throws {
         let book = try EpubFixture.makeBook(documents: [1, 40, 6, 25])
         defer { EpubFixture.remove(book.url) }
 
@@ -899,25 +900,21 @@ struct ReaderEpubViewControllerTests {
         let (reader, delegate) = try open(bookURL: book.url, startPage: total)
         defer { dismantle(reader) }
 
-        // Held from before the book is opened, so the very first count lands into a book that
-        // already knows it is not where it belongs.
+        // Held from before the book is opened, so nothing reads the covered book as being at
+        // its head while it is measured.
         try await EpubFixture.waitUntil(timeout: 10) { reader.book != nil }
         #expect(reader.isAwaitingResume, "the resume was not outstanding while the book was counted")
+        #expect(delegate.reportedPages.isEmpty, "a position was reported while the book was still covered")
 
         try await waitUntilMeasured(reader)
         try await EpubFixture.waitUntil(timeout: 10) { delegate.currentPage == total }
 
         #expect(!reader.isAwaitingResume, "the resume stayed outstanding after it landed")
         #expect(delegate.reportedPages.last == total)
+        #expect(!delegate.reportedPages.contains(1), "the head of the book was reported over the resume")
 
-        // The total is a label rather than a place, and it is published throughout. Withholding it
-        // alongside the position froze the page count from the moment the book opened until the
-        // resume landed.
-        #expect(delegate.reportedTotals.count > 1, "the total did not climb while the resume was held")
-        #expect(
-            delegate.reportedTotals == delegate.reportedTotals.sorted(),
-            "the total did not climb in order: \(delegate.reportedTotals)"
-        )
-        #expect(delegate.reportedTotals.last == total)
+        // Once and final, never climbing: a total that grows moves every position already
+        // reported against it.
+        #expect(delegate.reportedTotals == [total], "the total was not published once, final: \(delegate.reportedTotals)")
     }
 }
