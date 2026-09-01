@@ -14,6 +14,7 @@ class SearchViewController: UIViewController {
     private let searchController: UISearchController = .init(searchResultsController: nil)
 
     private var isSearchBarActive = false
+    private var hasLoadedSources = false
     private var cancellables = Set<AnyCancellable>()
 
     private var sources: [AidokuRunner.Source] = [] {
@@ -236,6 +237,20 @@ class SearchViewController: UIViewController {
         }
     }
 
+    func search(for query: String) {
+        loadViewIfNeeded()
+        searchText = query
+        searchController.searchBar.text = query
+
+        Task {
+            if !hasLoadedSources {
+                await loadSources()
+            }
+            guard searchText == query else { return }
+            viewModel.search(query: query, delay: false)
+        }
+    }
+
     private func updateHostingControllers() {
         mainHostingController.rootView = mainView
         headerHostingController.rootView = headerView
@@ -243,6 +258,7 @@ class SearchViewController: UIViewController {
 
     private func loadSources() async {
         sources = await SourceManager.shared.getLoadedSources()
+        hasLoadedSources = true
 
         // ensure filters don't reference removed sources
         filters = filters.compactMap {

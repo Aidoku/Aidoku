@@ -36,6 +36,7 @@ struct MangaDetailsHeaderView: View {
     @Binding var chapterTitleDisplayMode: ChapterTitleDisplayMode
 
     var hasOtherDownloads: Bool
+    var onTitlePressed: (() -> Void)?
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
 
@@ -71,6 +72,7 @@ struct MangaDetailsHeaderView: View {
         descriptionExpanded: Binding<Bool>,
         chapterTitleDisplayMode: Binding<ChapterTitleDisplayMode>,
         hasOtherDownloads: Bool,
+        onTitlePressed: (() -> Void)? = nil,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
     ) {
@@ -92,6 +94,7 @@ struct MangaDetailsHeaderView: View {
         self._descriptionExpanded = descriptionExpanded
         self._chapterTitleDisplayMode = chapterTitleDisplayMode
         self.hasOtherDownloads = hasOtherDownloads
+        self.onTitlePressed = onTitlePressed
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
 
@@ -125,14 +128,20 @@ struct MangaDetailsHeaderView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: 0)
 
-                    Text(manga.title)
-                        .lineLimit(4)
-                        .font(.system(.title2).weight(.semibold))
-                        .textSelection(.enabled)
-                        .foregroundStyle(.primary)
-                        .minimumScaleFactor(0.75)
-                        .contentTransitionDisabledPlease()
-                        .padding(.bottom, 4)
+                    Button {
+                        onTitlePressed?()
+                    } label: {
+                        Text(manga.title)
+                            .lineLimit(4)
+                            .font(.system(.title2).weight(.semibold))
+                            .textSelection(.enabled)
+                            .foregroundStyle(.primary)
+                            .minimumScaleFactor(0.75)
+                            .contentTransitionDisabledPlease()
+                            .multilineTextAlignment(.leading)
+                    }
+                    .buttonStyle(.borderless)
+                    .padding(.bottom, 4)
 
                     if let authors = manga.authors, !authors.isEmpty {
                         let label = Text(authors.joined(separator: ", "))
