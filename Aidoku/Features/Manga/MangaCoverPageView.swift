@@ -21,7 +21,6 @@ struct MangaCoverPageView: View {
 
     @State private var showImagePicker = false
     @State private var uploadedCover: UIImage?
-    @State private var dismissDragOffset: CGFloat = 0
 
     @Environment(\.dismiss) private var dismiss
 
@@ -126,33 +125,6 @@ struct MangaCoverPageView: View {
                 await loadCovers()
             }
         }
-        .offset(y: dismissDragOffset)
-        .simultaneousGesture(dismissGesture)
-    }
-
-    private var dismissGesture: some Gesture {
-        DragGesture(minimumDistance: 20)
-            .onChanged { value in
-                let translation = value.translation
-                guard translation.height > abs(translation.width) else {
-                    dismissDragOffset = 0
-                    return
-                }
-                dismissDragOffset = translation.height
-            }
-            .onEnded { value in
-                let translation = value.translation
-                let isVerticalSwipe = translation.height > abs(translation.width)
-                let shouldDismiss = translation.height > 100 || value.predictedEndTranslation.height > 180
-
-                if isVerticalSwipe && shouldDismiss {
-                    dismiss()
-                } else {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        dismissDragOffset = 0
-                    }
-                }
-            }
     }
 
     func view(coverImage: String) -> some View {
