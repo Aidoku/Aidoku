@@ -121,10 +121,9 @@ class ReaderInfoPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Apply the text reader theme colors, so the transition page matches the text pages.
     func applyTextTheme() {
-        backgroundColor = ReaderTextTheme.background
-        let textColor = ReaderTextTheme.text
+        backgroundColor = ReaderTextTheme.getCurrentBackground()
+        let textColor = ReaderTextTheme.getCurrentText()
         let secondaryColor = textColor.withAlphaComponent(0.6)
         topChapterLabel.textColor = textColor
         bottomChapterLabel.textColor = textColor

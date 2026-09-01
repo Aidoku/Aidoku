@@ -615,9 +615,8 @@ extension ReaderViewController {
                 chapterLanguage: chapter.language ?? source?.languages.first
             )
         )
-        // the sheet follows the reader's appearance override (it doesn't inherit it)
         if currentReader == .text {
-            vc.overrideUserInterfaceStyle = ReaderTextTheme.interfaceStyleOverride
+            vc.overrideUserInterfaceStyle = ReaderTextTheme.getInterfaceStyleOverride()
         }
         present(vc, animated: true)
     }
@@ -793,36 +792,28 @@ extension ReaderViewController {
         updateTextThemeOverride()
     }
 
-    /// The text reader appearance setting can pin the reader (and sheets presented
-    /// from it) to a light or dark interface style, and themes color the bars and
-    /// transition pages to match the page background. Other readers are unaffected.
     func updateTextThemeOverride() {
-        let theme = ReaderTextTheme.current
+        let theme = ReaderTextTheme.getCurrent()
         let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
-        let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.interfaceStyleOverride : .unspecified
+        let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.getInterfaceStyleOverride() : .unspecified
         navigationController?.overrideUserInterfaceStyle = styleOverride
-        // presented sheets (e.g. reader settings) don't inherit the override
+        // presented sheets don't inherit the override
         presentedViewController?.overrideUserInterfaceStyle = styleOverride
         let themed = isTextReader && (theme != .default || styleOverride != .unspecified)
 
-        // the bar renders from the appearance objects set in configure(), which
-        // don't follow the trait override (they resolve against the device style),
-        // so write the theme colors (pre-resolved against the appearance override)
-        // into them directly: the bar background matches the page (like the books
-        // app) and the title uses the theme text color
-        let backgroundColor = ReaderTextTheme.background
-        let textColor = ReaderTextTheme.text
+        // the bar appearance objects don't follow the trait override,
+        // so the theme colors are written into them directly
+        let backgroundColor = ReaderTextTheme.getCurrentBackground()
+        let textColor = ReaderTextTheme.getCurrentText()
         let titleColor = themed ? textColor : nil
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
                 if themed {
                     if #available(iOS 26.0, *), reader is ReaderTextViewController {
-                        // scroll reader: text scrolls under the bar, so keep it
-                        // transparent for the liquid glass look over the page
+                        // text scrolls under the bar, so keep it transparent
                         appearance.configureWithTransparentBackground()
                     } else {
-                        // paged reader: nothing extends under the bar (the paginator
-                        // reserves the top), so match the page color seamlessly
+                        // nothing extends under the bar, so match the page color
                         appearance.backgroundEffect = nil
                         appearance.backgroundColor = backgroundColor
                         appearance.shadowColor = .clear

@@ -5,9 +5,7 @@
 
 import UIKit
 
-/// Preset color themes for the text reader, similar to the Books app.
-/// Each theme has a light and dark color variant, following the interface style;
-/// a separate appearance setting can pin the reader to a light or dark style.
+// Preset color themes for the text reader, similar to the Books app.
 enum ReaderTextTheme: String, CaseIterable {
     case `default`
     case sepia
@@ -18,12 +16,11 @@ enum ReaderTextTheme: String, CaseIterable {
     static let appearanceUserDefaultsKey = "Reader.textAppearance"
     static let changeNotification = "Reader.textTheme"
 
-    static var current: ReaderTextTheme {
+    static func getCurrent() -> ReaderTextTheme {
         UserDefaults.standard.string(forKey: userDefaultsKey).flatMap(ReaderTextTheme.init) ?? .default
     }
 
-    /// The interface style override for the reader, from the appearance setting.
-    static var interfaceStyleOverride: UIUserInterfaceStyle {
+    static func getInterfaceStyleOverride() -> UIUserInterfaceStyle {
         switch UserDefaults.standard.string(forKey: appearanceUserDefaultsKey) {
             case "light": .light
             case "dark": .dark
@@ -31,13 +28,16 @@ enum ReaderTextTheme: String, CaseIterable {
         }
     }
 
-    /// The current theme's colors, pre-resolved against the appearance override
-    /// (trait propagation doesn't reliably re-resolve dynamic colors in the reader).
-    static var background: UIColor { resolve(current.backgroundColor) }
-    static var text: UIColor { resolve(current.textColor) }
+    static func getCurrentBackground() -> UIColor {
+        resolve(getCurrent().backgroundColor)
+    }
+
+    static func getCurrentText() -> UIColor {
+        resolve(getCurrent().textColor)
+    }
 
     private static func resolve(_ color: UIColor) -> UIColor {
-        let style = interfaceStyleOverride
+        let style = getInterfaceStyleOverride()
         guard style != .unspecified else { return color }
         return color.resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
     }

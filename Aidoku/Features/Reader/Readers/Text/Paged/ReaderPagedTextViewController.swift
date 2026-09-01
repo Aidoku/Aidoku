@@ -61,7 +61,6 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     // Page view controller
     private lazy var pageViewController: UIPageViewController = {
         // Scroll is more reliable than pageCurl
-        // note: no top edge effect here — paginated text never extends under the bars
         UIPageViewController(
             transitionStyle: .scroll,
             navigationOrientation: .horizontal,
@@ -112,12 +111,14 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             self?.updateTextConfig()
         }
         for key in [
-            "Reader.textFontSize", "Reader.textLineSpacing", "Reader.textHorizontalPadding",
-            "Reader.textFontFamily", ReaderTextTheme.changeNotification
+            "Reader.textFontSize",
+            "Reader.textLineSpacing",
+            "Reader.textHorizontalPadding",
+            "Reader.textFontFamily",
+            ReaderTextTheme.changeNotification
         ] {
             addObserver(forName: key, using: textSettingChanged)
         }
-
     }
 
     private func updateTextConfig() {

@@ -55,7 +55,7 @@ extension ReaderPagedTextViewController.ChapterTransitionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = ReaderTextTheme.background
+        view.backgroundColor = ReaderTextTheme.getCurrentBackground()
 
         guard let infoView else { return }
         infoView.applyTextTheme()
@@ -103,7 +103,7 @@ extension ReaderPagedTextViewController {
 
         override func viewDidLoad() {
             super.viewDidLoad()
-            view.backgroundColor = ReaderTextTheme.background
+            view.backgroundColor = ReaderTextTheme.getCurrentBackground()
         }
     }
 }

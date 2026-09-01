@@ -48,7 +48,7 @@ struct PaginationConfig {
         [
             .font: font,
             .paragraphStyle: paragraphStyle,
-            .foregroundColor: ReaderTextTheme.text
+            .foregroundColor: ReaderTextTheme.getCurrentText()
         ]
     }
 }

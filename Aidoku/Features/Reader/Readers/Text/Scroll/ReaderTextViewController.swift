@@ -78,7 +78,7 @@ class ReaderTextViewController: BaseViewController {
 
     private lazy var scrollView: UIScrollView = {
         let scrollView = UIScrollView()
-        scrollView.backgroundColor = ReaderTextTheme.background
+        scrollView.backgroundColor = ReaderTextTheme.getCurrentBackground()
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.delegate = self
         scrollView.alwaysBounceVertical = true
@@ -120,7 +120,7 @@ class ReaderTextViewController: BaseViewController {
                 source: viewModel.source, page: page,
                 fontFamily: currentFontFamily, fontSize: currentFontSize,
                 lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
-                textColor: Color(uiColor: ReaderTextTheme.text)
+                textColor: Color(uiColor: ReaderTextTheme.getCurrentText())
             )
         )
         if #available(iOS 16.0, *) {
@@ -181,7 +181,7 @@ class ReaderTextViewController: BaseViewController {
                     source: viewModel.source, page: page,
                     fontFamily: currentFontFamily, fontSize: currentFontSize,
                     lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
-                    textColor: Color(uiColor: ReaderTextTheme.text)
+                    textColor: Color(uiColor: ReaderTextTheme.getCurrentText())
                 )
                 hc.view.invalidateIntrinsicContentSize()
             }
@@ -419,7 +419,7 @@ extension ReaderTextViewController {
     }
 
     @objc private func textStyleChanged() {
-        scrollView.backgroundColor = ReaderTextTheme.background
+        scrollView.backgroundColor = ReaderTextTheme.getCurrentBackground()
         previousTransitionView?.applyTextTheme()
         nextTransitionView?.applyTextTheme()
         for section in sections {
