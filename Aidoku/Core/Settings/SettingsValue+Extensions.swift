@@ -7,11 +7,22 @@
 
 import Foundation
 
-extension Bool: SettingsValue {}
 extension String: SettingsValue {}
 extension Int: SettingsValue {}
 extension Double: SettingsValue {}
 extension Data: SettingsValue {}
+
+extension Bool: SettingsValue {
+    static func deserialize(from object: Any) -> Bool? {
+        if let object = object as? Bool {
+            return object
+        } else if let object = object as? Int {
+            return object != 0
+        } else {
+            return nil
+        }
+    }
+}
 
 extension Optional: SettingsValue where Wrapped: SettingsValue {
     static func deserialize(from object: Any) -> Self? {

@@ -12,6 +12,7 @@ struct AppearanceSettings: Sendable {
         [
             useSystemAppearance,
             appearance,
+            layout,
             customPortraitRows,
             customLandscapeRows
         ]
