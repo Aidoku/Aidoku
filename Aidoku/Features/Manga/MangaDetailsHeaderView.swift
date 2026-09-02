@@ -128,23 +128,20 @@ struct MangaDetailsHeaderView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Spacer(minLength: 0)
 
-                    Text(manga.title)
-                        .lineLimit(4)
-                        .font(.system(.title2).weight(.semibold))
-                        .textSelection(.enabled)
-                        .foregroundStyle(.primary)
-                        .minimumScaleFactor(0.75)
-                        .contentTransitionDisabledPlease()
-                        .multilineTextAlignment(.leading)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            onTitlePressed?()
-                        }
-                        .accessibilityAddTraits(.isButton)
-                        .accessibilityAction {
-                            onTitlePressed?()
-                        }
-                        .padding(.bottom, 4)
+                    Button {
+                        onTitlePressed?()
+                    } label: {
+                        Text(manga.title)
+                            .lineLimit(4)
+                            .font(.system(.title2).weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .minimumScaleFactor(0.75)
+                            .contentTransitionDisabledPlease()
+                            .multilineTextAlignment(.leading)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.borderless)
+                    .padding(.bottom, 4)
 
                     if let authors = manga.authors, !authors.isEmpty {
                         let label = Text(authors.joined(separator: ", "))

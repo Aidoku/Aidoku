@@ -49,7 +49,6 @@ extension SearchContentView.ViewModel {
         if !delay {
             updateHistory(query: query)
         }
-        guard searchQuery != query else { return }
         searchTask?.cancel()
         isLoading = !query.isEmpty
         searchTask = Task {
