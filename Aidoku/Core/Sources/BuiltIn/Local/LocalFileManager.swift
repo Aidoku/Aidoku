@@ -297,7 +297,10 @@ extension LocalFileManager {
                 mangaId: mangaId,
                 mangaCoverImage: mangaCoverImage,
                 mangaName: mangaName,
-                mangaDescription: mangaDescription
+                mangaDescription: mangaDescription,
+                chapterName: chapterName,
+                volume: volume,
+                chapter: chapter
             )
             return
         }
@@ -489,7 +492,10 @@ extension LocalFileManager {
         mangaId: String?,
         mangaCoverImage: PlatformImage?,
         mangaName: String?,
-        mangaDescription: String?
+        mangaDescription: String?,
+        chapterName: String?,
+        volume: Float?,
+        chapter: Float?
     ) async throws(LocalFileManagerError) {
         guard let book = EpubParser.parse(url: url) else {
             throw LocalFileManagerError.cannotReadArchive
@@ -571,8 +577,9 @@ extension LocalFileManager {
             mangaId: resolvedMangaId,
             url: destURL,
             id: destURL.lastPathComponent,
-            title: book.title,
-            chapter: -1
+            title: chapterName ?? book.title,
+            volume: volume,
+            chapter: chapter
         )
     }
 }
