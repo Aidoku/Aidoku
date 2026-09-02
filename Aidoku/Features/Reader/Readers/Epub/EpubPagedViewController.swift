@@ -202,7 +202,8 @@ final class EpubPagedViewController: UIViewController {
         guard let renderer = await lease(for: controller) else { return }
         let key = ObjectIdentifier(renderer)
         do {
-            if rendererDocuments[key] != controller.document {
+            // a renderer reclaimed mid-load holds its target but no pages yet, so it loads again
+            if rendererDocuments[key] != controller.document || renderer.pageCount == 0 {
                 rendererDocuments[key] = controller.document
                 // sized and laid out before the load, as the measurement pass does: pagination
                 // happens at whatever viewport the web view has when the document lands
@@ -218,6 +219,8 @@ final class EpubPagedViewController: UIViewController {
             guard rendererLeases[key] == controller.bookPage else { return }
             controller.display(renderer.webView)
         } catch {
+            // superseded means another page took this renderer and is loading it; its lease stands
+            guard rendererLeases[key] == controller.bookPage else { return }
             rendererDocuments[key] = nil
             rendererLeases[key] = nil
             LogManager.logger.error(
