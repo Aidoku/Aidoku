@@ -209,9 +209,12 @@ actor KomgaSourceRunner: Runner {
             isEpub = known
         } else {
             let path = "api/v1/books/\(chapter.id)"
-            let book: KomgaBook = try await helper.request(path: path, lastWorkingMirror: &lastWorkingMirrorCopy)
-            isEpub = book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible
-            epubChapters[chapter.id] = isEpub
+            // a book that cannot be described is read as images, as every chapter was before epubs
+            let book: KomgaBook? = try? await helper.request(path: path, lastWorkingMirror: &lastWorkingMirrorCopy)
+            isEpub = book.map { $0.media.mediaProfile == "EPUB" && !$0.media.epubDivinaCompatible } ?? false
+            if book != nil {
+                epubChapters[chapter.id] = isEpub
+            }
         }
 
         // epubs komga can't serve as image pages are downloaded whole and read by the epub reader
