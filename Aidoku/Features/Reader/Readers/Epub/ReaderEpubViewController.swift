@@ -587,17 +587,20 @@ extension ReaderEpubViewController {
     /// there is something, and announces the wait either way.
     private func coverForRebuild() {
         guard loadingCover == nil else { return }
-        let cover: UIView
+        let cover = UIView(frame: view.bounds)
+        cover.backgroundColor = .systemBackground
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         if let content = paged?.currentWebView ?? book?.renderer?.webView,
            content.window != nil,
            let snapshot = view.snapshotView(afterScreenUpdates: false) {
-            cover = snapshot
-        } else {
-            cover = UIView()
-            cover.backgroundColor = .systemBackground
+            // frosted, so the wait reads as a change under way and the spinner shows over text
+            let frost = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+            for layer in [snapshot, frost] {
+                layer.frame = cover.bounds
+                layer.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+                cover.addSubview(layer)
+            }
         }
-        cover.frame = view.bounds
-        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(cover)
         loadingCover = cover
         showLoadingIndicator(on: cover)
