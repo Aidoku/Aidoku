@@ -110,7 +110,13 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         let textSettingChanged: (Notification) -> Void = { [weak self] _ in
             self?.updateTextConfig()
         }
-        for key in ["Reader.textFontSize", "Reader.textLineSpacing", "Reader.textHorizontalPadding", "Reader.textFontFamily"] {
+        for key in [
+            "Reader.textFontSize",
+            "Reader.textLineSpacing",
+            "Reader.textHorizontalPadding",
+            "Reader.textFontFamily",
+            ReaderTextTheme.changeNotification
+        ] {
             addObserver(forName: key, using: textSettingChanged)
         }
     }

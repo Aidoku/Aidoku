@@ -355,6 +355,9 @@ class ReaderViewController: BaseObservingViewController {
                 }
             }
         }
+        addObserver(forName: ReaderTextTheme.changeNotification) { [weak self] _ in
+            self?.updateTextThemeOverride()
+        }
         addObserver(forName: UIScene.willDeactivateNotification) { [weak self] _ in
             guard let self else { return }
             Task {
@@ -577,6 +580,8 @@ extension ReaderViewController {
             }
 
         navigationItem.setTitle(upper: volume, lower: title)
+        // re-apply theme title colors, since setTitle recreates the title view
+        updateTextThemeOverride()
     }
 
     func showLoadFailAlert() {
@@ -610,6 +615,9 @@ extension ReaderViewController {
                 chapterLanguage: chapter.language ?? source?.languages.first
             )
         )
+        if currentReader == .text {
+            vc.overrideUserInterfaceStyle = ReaderTextTheme.getInterfaceStyleOverride()
+        }
         present(vc, animated: true)
     }
 
@@ -781,6 +789,61 @@ extension ReaderViewController {
         configureDictionaryOverlayTapHandler()
         updateAutoScrollButton()
         disableSwipeGestures()
+        updateTextThemeOverride()
+    }
+
+    func updateTextThemeOverride() {
+        let theme = ReaderTextTheme.getCurrent()
+        let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
+        let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.getInterfaceStyleOverride() : .unspecified
+        navigationController?.overrideUserInterfaceStyle = styleOverride
+        // presented sheets don't inherit the override
+        presentedViewController?.overrideUserInterfaceStyle = styleOverride
+        let themed = isTextReader && (theme != .default || styleOverride != .unspecified)
+
+        // the bar appearance objects don't follow the trait override,
+        // so the theme colors are written into them directly
+        let backgroundColor = ReaderTextTheme.getCurrentBackground()
+        let textColor = ReaderTextTheme.getCurrentText()
+        let titleColor = themed ? textColor : nil
+        if let navigationBar = navigationController?.navigationBar {
+            func applyTheme(_ appearance: UINavigationBarAppearance) {
+                if themed {
+                    if #available(iOS 26.0, *), reader is ReaderTextViewController {
+                        // text scrolls under the bar, so keep it transparent
+                        appearance.configureWithTransparentBackground()
+                    } else {
+                        // nothing extends under the bar, so match the page color
+                        appearance.backgroundEffect = nil
+                        appearance.backgroundColor = backgroundColor
+                        appearance.shadowColor = .clear
+                    }
+                    appearance.titleTextAttributes[.foregroundColor] = textColor
+                } else {
+                    appearance.configureWithDefaultBackground()
+                    appearance.titleTextAttributes.removeValue(forKey: .foregroundColor)
+                }
+            }
+            let standard = navigationBar.standardAppearance
+            applyTheme(standard)
+            navigationBar.standardAppearance = standard
+            if let compact = navigationBar.compactAppearance {
+                applyTheme(compact)
+                navigationBar.compactAppearance = compact
+            }
+            if let scrollEdge = navigationBar.scrollEdgeAppearance {
+                applyTheme(scrollEdge)
+                navigationBar.scrollEdgeAppearance = scrollEdge
+            }
+        }
+        // the two-line title view (volume + chapter) uses plain labels instead
+        if let stackView = navigationItem.titleView as? UIStackView {
+            let labels = stackView.arrangedSubviews.compactMap { $0 as? UILabel }
+            if labels.count == 2 {
+                labels[0].textColor = titleColor?.withAlphaComponent(0.6) ?? .secondaryLabel
+                labels[1].textColor = titleColor ?? .label
+            }
+        }
     }
 }
 

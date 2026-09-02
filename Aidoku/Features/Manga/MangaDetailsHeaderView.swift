@@ -36,6 +36,7 @@ struct MangaDetailsHeaderView: View {
     @Binding var chapterTitleDisplayMode: ChapterTitleDisplayMode
 
     var hasOtherDownloads: Bool
+    var transitionNamespace: Namespace.ID
     var onTitlePressed: (() -> Void)?
     var onTrackerButtonPressed: (() -> Void)?
     var onReadButtonPressed: (() -> Void)?
@@ -72,6 +73,7 @@ struct MangaDetailsHeaderView: View {
         descriptionExpanded: Binding<Bool>,
         chapterTitleDisplayMode: Binding<ChapterTitleDisplayMode>,
         hasOtherDownloads: Bool,
+        transitionNamespace: Namespace.ID,
         onTitlePressed: (() -> Void)? = nil,
         onTrackerButtonPressed: (() -> Void)? = nil,
         onReadButtonPressed: (() -> Void)? = nil
@@ -94,6 +96,7 @@ struct MangaDetailsHeaderView: View {
         self._descriptionExpanded = descriptionExpanded
         self._chapterTitleDisplayMode = chapterTitleDisplayMode
         self.hasOtherDownloads = hasOtherDownloads
+        self.transitionNamespace = transitionNamespace
         self.onTitlePressed = onTitlePressed
         self.onTrackerButtonPressed = onTrackerButtonPressed
         self.onReadButtonPressed = onReadButtonPressed
@@ -123,6 +126,7 @@ struct MangaDetailsHeaderView: View {
                     }
                     .buttonStyle(DarkOverlayButtonStyle())
                     .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .matchedTransitionSourcePlease(id: manga.identifier, in: transitionNamespace)
                 }
 
                 VStack(alignment: .leading, spacing: 0) {
@@ -554,6 +558,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
     @Previewable @State var langFilter: String?
     @Previewable @State var scanlatorFilter: [String] = []
     @Previewable @State var chapterTitleDisplayMode = ChapterTitleDisplayMode.default
+    @Previewable @Namespace var transitionNamespace
 
     MangaDetailsHeaderView(
         source: Binding.constant(AidokuRunner.Source.demo()),
@@ -580,5 +585,6 @@ private struct MangaActionButtonStyle: ButtonStyle {
         descriptionExpanded: Binding.constant(false),
         chapterTitleDisplayMode: $chapterTitleDisplayMode,
         hasOtherDownloads: false,
+        transitionNamespace: transitionNamespace,
     )
 }

@@ -121,6 +121,18 @@ class ReaderInfoPageView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    func applyTextTheme() {
+        backgroundColor = ReaderTextTheme.getCurrentBackground()
+        let textColor = ReaderTextTheme.getCurrentText()
+        let secondaryColor = textColor.withAlphaComponent(0.6)
+        topChapterLabel.textColor = textColor
+        bottomChapterLabel.textColor = textColor
+        topChapterTitleLabel.textColor = secondaryColor
+        bottomChapterTitleLabel.textColor = secondaryColor
+        skippingChaptersLabel.textColor = secondaryColor
+        noChapterLabel.textColor = secondaryColor
+    }
+
     func chapterDifference(higherChapterNumber: Float, lowerChapterNumber: Float) -> Int {
         Int(floor(higherChapterNumber) - floor(lowerChapterNumber))
     }
