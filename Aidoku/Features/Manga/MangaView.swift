@@ -174,6 +174,7 @@ struct MangaView: View {
                     source: viewModel.source,
                     manga: viewModel.manga
                 )
+                .navigationTransitionZoom(sourceID: viewModel.manga.identifier, in: transitionNamespace)
             }
             .task {
                 guard !detailsLoaded else { return }
@@ -296,6 +297,7 @@ extension MangaView {
                 descriptionExpanded: $descriptionExpanded,
                 chapterTitleDisplayMode: $viewModel.chapterTitleDisplayMode,
                 hasOtherDownloads: !viewModel.otherDownloadedChapters.isEmpty,
+                transitionNamespace: transitionNamespace,
                 onTrackerButtonPressed: {
                     let vc = TrackerModalViewController(manga: viewModel.manga)
                     vc.modalPresentationStyle = .overFullScreen
