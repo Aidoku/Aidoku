@@ -400,7 +400,7 @@
 "LOCAL_FILES_SETUP" = "本地来源设置";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本地文件导入";
-"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的CBZ或ZIP文件进行阅读。";
+"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的 CBZ、ePub 或 ZIP 文件。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
 "DESCRIPTION" = "简介";

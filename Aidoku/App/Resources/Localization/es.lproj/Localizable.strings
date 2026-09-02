@@ -552,7 +552,7 @@
 "UNAVAILABLE_SOURCE_LISTS_TEXT" = "Se produjo un error al obtener las listas de fuentes anteriores.";
 "ICLOUD_SYNC_TEXT_SIDELOADED" = "La sincronización de iCloud solo está disponible cuando se instala a través de TestFlight.";
 "METADATA_DETECTED_TEXT" = "Los metadatos JSON legados se migrarán a archivos ComicInfo.xml.";
-"LOCAL_FILE_IMPORT_TEXT" = "Importa un archivo CBZ o ZIP que contenga imágenes para leer.";
+"LOCAL_FILE_IMPORT_TEXT" = "Importa un archivo CBZ. ePub, o ZIP que contenga imágenes para leer.";
 "SOURCE_NAME_INFO" = "El nombre que se mostrará en la fuente en la pestaña de exploración.";
 "SERVER_ERROR_AUTHENTICATION" = "No se puede iniciar sesión. Asegúrate de que tus credenciales se hayan ingresado correctamente.";
 "UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "Las imágenes que sean más grandes que la altura máxima de imagen no se ampliarán.";

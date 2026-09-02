@@ -17,7 +17,7 @@ actor LocalFileManager {
     private var lastScanTime = Date.distantPast
     private var scanTask: Task<Void, Never>?
 
-    static let allowedFileExtensions = Set(["cbz", "zip"])
+    static let allowedFileExtensions = Set(["cbz", "zip", "epub"])
     static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif"])
     static let allowedTextExtensions = Set(["txt", "md"])
     static let allowedPageExtensions = allowedImageExtensions.union(allowedTextExtensions)
@@ -52,6 +52,25 @@ extension LocalFileManager {
         let pathExtension = url.pathExtension.lowercased()
         guard Self.allowedFileExtensions.contains(pathExtension) else {
             return nil
+        }
+
+        if pathExtension == "epub" {
+            guard let book = EpubParser.parse(url: url), !book.chapters.isEmpty else {
+                return nil
+            }
+            // carry epub metadata through the existing ComicInfo import path
+            var comicInfo = ComicInfo()
+            comicInfo.series = book.title
+            comicInfo.summary = book.description
+            comicInfo.writer = book.author
+            return ImportFileInfo(
+                url: url,
+                previewImages: book.coverData.flatMap { PlatformImage(data: $0) }.map { [$0] } ?? [],
+                name: url.lastPathComponent,
+                pageCount: book.chapters.count,
+                fileType: .epub,
+                comicInfo: comicInfo
+            )
         }
 
         // read zip file
