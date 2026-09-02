@@ -268,6 +268,10 @@ final class ReaderEpubViewModel {
         measurer.resume()
     }
 
+    func cancelMeasuring() {
+        measurer.cancel()
+    }
+
     func showEntry(_ entry: EpubTableOfContents.Entry) async {
         pendingBookPage = nil
         await show(document: entry.document, fragment: entry.fragment)

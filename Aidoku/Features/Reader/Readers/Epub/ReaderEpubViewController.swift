@@ -263,6 +263,10 @@ class ReaderEpubViewController: BaseObservingViewController {
                 settingsReloadAnchor = book.flatMap { book in
                     book.edgeInDocument.map { (book.currentDocument, $0) }
                 }
+            } else {
+                // mid-move the book fraction is the best that is known; without it the open falls
+                // back to the stored position, which can be a whole session behind
+                settingsReloadPosition = book?.progression
             }
             settingsReloadAnchorAppliedCount = nil
         }
@@ -286,6 +290,8 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private func tearDownBook() {
         openTask?.cancel()
+        // or the superseded pass measures every document to the end beside the new one
+        book?.cancelMeasuring()
         moveTask?.cancel()
         moveTask = nil
         pendingMove = nil
