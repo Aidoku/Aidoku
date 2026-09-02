@@ -142,7 +142,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.textFontFamily": "System",
                 "Reader.textFontSize": 18,
                 "Reader.textLineSpacing": 8,
-                "Reader.textHorizontalPadding": 24
+                "Reader.textHorizontalPadding": 24,
+                "Reader.textTheme": "default",
+                "Reader.textAppearance": "system"
             ]
         )
         AppSettings.registerDefaults()
