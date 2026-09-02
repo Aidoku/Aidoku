@@ -124,7 +124,6 @@ final class ReaderEpubViewModel {
             position: { [weak self] bookPage in
                 (self?.index.position(ofBookPage: bookPage)).map { ($0.document, $0.page) }
             },
-            pageCount: { [weak self] document in self?.index.pageCount(forDocumentAt: document) },
             makeRenderer: { [provider, settings] in
                 try await EpubSpineRenderer(provider: provider, settings: settings)
             }

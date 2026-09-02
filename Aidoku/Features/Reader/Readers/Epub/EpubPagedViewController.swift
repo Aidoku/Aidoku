@@ -20,7 +20,6 @@ final class EpubPagedViewController: UIViewController {
         let spinePaths: [String]
         let total: () -> Int
         let position: (Int) -> (document: Int, page: Int)?
-        let pageCount: (Int) -> Int?
         let makeRenderer: () async throws -> EpubSpineRenderer
     }
 
@@ -34,9 +33,6 @@ final class EpubPagedViewController: UIViewController {
 
     /// The page being read changed, by gesture or by navigation.
     var onPageChanged: ((Int) -> Void)?
-
-    /// The reader swiped past either end of the book.
-    var onOverscrollEnd: ((_ forward: Bool) -> Void)?
 
     /// A swipe is about to turn the page.
     var onWillTurn: (() -> Void)?
@@ -139,10 +135,7 @@ final class EpubPagedViewController: UIViewController {
     /// One page forward or back, the same animation a swipe settles on.
     func turn(forward: Bool, animated: Bool) async {
         let target = currentBookPage + (forward ? 1 : -1)
-        guard target >= 0, target < book.total() else {
-            onOverscrollEnd?(forward)
-            return
-        }
+        guard target >= 0, target < book.total() else { return }
         await show(bookPage: target, direction: forward ? .forward : .reverse, animated: animated)
     }
 
