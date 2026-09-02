@@ -471,8 +471,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         report()
     }
 
-    /// Where the paged book opens: the rebuild's anchor first, then a stored fraction, then the
-    /// page number the host handed over.
+    // the rebuild's anchor first, then a stored fraction, then the page the host handed over
     private func startBookPage(for book: ReaderEpubViewModel, startPage: Int) -> Int {
         let total = book.bookTotal
         guard total > 0 else { return 0 }
@@ -591,8 +590,7 @@ class ReaderEpubViewController: BaseObservingViewController {
 // MARK: - Loading gate
 
 extension ReaderEpubViewController {
-    /// Covers the reader while a rebuild lays the book out again, with what was on screen when
-    /// there is something, and announces the wait either way.
+    // with what was on screen when there is something
     private func coverForRebuild() {
         guard loadingCover == nil else { return }
         let cover = UIView(frame: view.bounds)
@@ -756,7 +754,6 @@ extension ReaderEpubViewController {
 // MARK: - Going places
 
 extension ReaderEpubViewController {
-    /// A document and optional fragment, whichever style is reading.
     private func go(toDocument document: Int, fragment: String?) {
         guard let book else { return }
         if book.paged {
@@ -805,8 +802,8 @@ extension ReaderEpubViewController {
 // MARK: - Content taps
 
 extension ReaderEpubViewController {
-    /// Everything a tap on the book itself can mean: a link, an image, a table. True consumes the
-    /// tap. The paged style's pages take no touches, so this is where their links are answered.
+    // true consumes the tap. the paged style's pages take no touches, so their links are
+    // answered here
     func handleContentTap(at point: CGPoint) async -> Bool {
         guard let book else { return false }
         let renderer = book.paged ? paged?.currentRenderer : book.renderer

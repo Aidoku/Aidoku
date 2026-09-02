@@ -663,8 +663,8 @@ extension EpubSpineRenderer {
 // MARK: - Selection
 
 extension EpubSpineRenderer {
-    /// Selects the word under the point and returns it, empty where there is no text: the caret
-    /// snaps to the nearest text from an image or a margin, so the word's own rects are checked.
+    // the caret snaps to the nearest text from an image or a margin, so the word's own rects
+    // are checked against the point
     func selectWord(at point: CGPoint) async -> String {
         let script = """
         (function() {
@@ -704,9 +704,8 @@ extension EpubSpineRenderer {
         _ = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
     }
 
-    /// Holds the scroll view at the page while a selection is live. A handle dragged to the edge
-    /// has WebKit scroll the next column in, a page turn the reader never asked for, and a disabled
-    /// scroll view stops fingers but not that. Synchronous, so no frame shows the drift.
+    // a handle dragged to the edge has WebKit scroll the next column in, and a disabled scroll
+    // view stops fingers but not that. synchronous, so no frame shows the drift
     func lockPage() {
         guard settings.paged else { return }
         pageLock = webView.scrollView.observe(\.contentOffset) { [weak self] scrollView, _ in
@@ -719,10 +718,8 @@ extension EpubSpineRenderer {
         }
     }
 
-    /// Releases the lock and puts the document's own scroll position back at the page. The
-    /// autoscroll moves that in the web process before the scroll view follows, so snapping the
-    /// scroll view back left the document where the autoscroll took it, and every hit test after
-    /// landed the drift off.
+    // the autoscroll moves the document's own position in the web process before the scroll
+    // view follows, so the snap alone left it there and every hit test after landed the drift off
     func unlockPage() async {
         guard pageLock != nil else { return }
         pageLock = nil

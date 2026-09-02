@@ -26,8 +26,7 @@ final class ReaderEpubViewModel {
     private(set) var index: EpubPageIndex
     private(set) var currentDocument = 0
 
-    /// The scroll style's renderer. The paged style has no single renderer: each visible page
-    /// leases one from the paged controller's roster.
+    // the scroll style's renderer; the paged style leases one per visible page instead
     private(set) var renderer: EpubSpineRenderer?
 
     private let provider: any EpubResourceProvider
@@ -114,8 +113,7 @@ final class ReaderEpubViewModel {
 
     // MARK: - The paged style
 
-    /// What the paged controller builds its pages from. Positions all resolve because
-    /// `openPaged` completes the index before any page exists.
+    // positions all resolve because openPaged completes the index before any page exists
     func makePagedBook() -> EpubPagedViewController.Book {
         EpubPagedViewController.Book(
             spinePaths: spinePaths,
@@ -129,8 +127,8 @@ final class ReaderEpubViewModel {
         )
     }
 
-    /// Measures the whole book before anything is shown: the page controller needs every page to
-    /// have an address, and the toolbar reports the total once rather than incrementally.
+    // the whole book before anything is shown: every page needs an address, and the toolbar
+    // reports the total once
     func openPaged(viewport: CGSize) async {
         self.viewport = viewport
         isOpen = true
@@ -139,7 +137,6 @@ final class ReaderEpubViewModel {
         }
     }
 
-    /// The paged controller's report of where the reader now is.
     func notePagedPosition(bookPage: Int) {
         guard let position = index.position(ofBookPage: bookPage) else { return }
         pendingBookPage = nil
@@ -148,7 +145,6 @@ final class ReaderEpubViewModel {
         onChange?()
     }
 
-    /// Where a book page sits, for the paged controller's navigation.
     func startOfDocument(at document: Int) -> Int? {
         index.startOfDocument(at: document)
     }

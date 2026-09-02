@@ -48,8 +48,7 @@ final class EpubPageViewController: UIViewController {
         view.backgroundColor = .systemBackground
     }
 
-    /// Puts a leased web view on this page. The web view is expected to already hold this page's
-    /// document at this page's offset.
+    // the web view already holds this page's document at this page's offset
     func display(_ webView: WKWebView) {
         if let current = self.webView, current !== webView, current.superview === view {
             current.removeFromSuperview()
@@ -70,8 +69,7 @@ final class EpubPageViewController: UIViewController {
         view.layoutIfNeeded()
     }
 
-    /// Takes the web view back for another page. The page keeps its identity and can be
-    /// provisioned again if it is turned to.
+    // the page keeps its identity and is provisioned again if turned to
     func surrender() -> WKWebView? {
         guard let webView, webView.superview === view else {
             self.webView = nil

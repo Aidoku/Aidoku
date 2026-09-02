@@ -14,8 +14,7 @@ import WebKit
 // own pan recognises over text: WebKit's deferring recognisers never see the gesture
 @MainActor
 final class EpubPagedViewController: UIViewController {
-    /// What the pages are made of. The book's index is complete before this controller is built,
-    /// so every book page resolves to a document and a page within it.
+    // the index is complete before this controller exists, so every book page resolves
     struct Book {
         let spinePaths: [String]
         let total: () -> Int
@@ -31,10 +30,8 @@ final class EpubPagedViewController: UIViewController {
 
     private(set) var currentBookPage = 0
 
-    /// The page being read changed, by gesture or by navigation.
     var onPageChanged: ((Int) -> Void)?
 
-    /// A swipe is about to turn the page.
     var onWillTurn: (() -> Void)?
 
     private let pageViewController = UIPageViewController(
@@ -109,7 +106,6 @@ final class EpubPagedViewController: UIViewController {
         pageViewController.viewControllers?.first as? EpubPageViewController
     }
 
-    /// The renderer showing the page being read, for hit tests and fragment lookups.
     var currentRenderer: EpubSpineRenderer? {
         guard let controller = currentPageController else { return nil }
         return renderers.first { rendererLeases[ObjectIdentifier($0)] == controller.bookPage }
@@ -121,7 +117,7 @@ final class EpubPagedViewController: UIViewController {
 
     // MARK: - Navigation
 
-    /// Shows a book page without an animation, building it first so nothing blank is revealed.
+    // built before it is shown, so nothing blank is revealed
     func open(atBookPage bookPage: Int) async {
         await show(bookPage: bookPage, direction: .forward, animated: false)
     }
@@ -132,7 +128,6 @@ final class EpubPagedViewController: UIViewController {
         await show(bookPage: bookPage, direction: direction, animated: animated)
     }
 
-    /// One page forward or back, the same animation a swipe settles on.
     func turn(forward: Bool, animated: Bool) async {
         let target = currentBookPage + (forward ? 1 : -1)
         guard target >= 0, target < book.total() else { return }
@@ -188,7 +183,6 @@ final class EpubPagedViewController: UIViewController {
         return controller
     }
 
-    /// Loads the page's document into a leased renderer and puts its web view on the page.
     private func provision(_ controller: EpubPageViewController) async {
         guard !controller.isDisplaying else { return }
         let bookPage = controller.bookPage
@@ -237,7 +231,7 @@ final class EpubPagedViewController: UIViewController {
         return CGSize(width: max(bounds.width, 0), height: max(bounds.height, 0))
     }
 
-    /// A renderer for the page, taking one whose page has fallen out of reach if none is spare.
+    // takes one whose page has fallen out of reach when none is spare
     private func lease(for controller: EpubPageViewController) async -> EpubSpineRenderer? {
         func reclaimable(_ renderer: EpubSpineRenderer) -> Bool {
             guard let leased = rendererLeases[ObjectIdentifier(renderer)] else { return true }
@@ -302,17 +296,14 @@ final class EpubPagedViewController: UIViewController {
 
     // MARK: - Selection
 
-    /// Whether the page being read has its web view taking touches for a text selection.
     private(set) var isSelecting = false
 
-    /// The selection collapsed, by a tap or a turn.
     var onSelectionEnded: (() -> Void)?
 
     private var selectionWatch: Task<Void, Never>?
 
-    /// Selects the word under the point and hands the page's web view its touches, so WebKit's
-    /// own handles and callout take over. While it holds them the page controller's pan cannot
-    /// begin, which is what keeps a selection drag from turning the page.
+    // while the web view takes touches the page controller's pan cannot begin, which is what
+    // keeps a selection drag from turning the page
     func beginSelection(at point: CGPoint) async {
         guard !isSelecting, let renderer = currentRenderer, let webView = currentWebView else { return }
         let local = view.convert(point, to: webView)
@@ -381,7 +372,7 @@ final class EpubPagedViewController: UIViewController {
         }
     }
 
-    /// Gives back everything but the page being read and its immediate pair, for a memory warning.
+    // for a memory warning: everything but the page being read and its pair
     func releaseSpares() {
         prunePageControllers()
         renderers.removeAll { renderer in
