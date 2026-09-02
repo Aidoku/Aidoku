@@ -7,12 +7,35 @@
 
 import Foundation
 
-extension Bool: SettingsValue {}
 extension String: SettingsValue {}
 extension Int: SettingsValue {}
 extension Double: SettingsValue {}
+extension Data: SettingsValue {}
 
-extension Optional: SettingsValue where Wrapped: SettingsValue {}
+extension Bool: SettingsValue {
+    static func deserialize(from object: Any) -> Bool? {
+        if let object = object as? Bool {
+            return object
+        } else if let object = object as? Int {
+            return object != 0
+        } else {
+            return nil
+        }
+    }
+}
+
+extension Optional: SettingsValue where Wrapped: SettingsValue {
+    static func deserialize(from object: Any) -> Self? {
+        Wrapped.deserialize(from: object)
+    }
+
+    func serialize() -> Any? {
+        switch self {
+            case .some(let value): value.serialize()
+            case .none: nil
+        }
+    }
+}
 
 extension RawRepresentable where Self: SettingsValue, RawValue: SettingsValue {
     static func deserialize(from object: Any) -> Self? {

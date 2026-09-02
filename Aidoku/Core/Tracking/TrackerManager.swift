@@ -250,7 +250,7 @@ actor TrackerManager {
             await TrackerManager.shared.saveTrackItem(item: trackItem)
 
             // Sync progress from tracker if enabled or is enhanced tracker
-            if UserDefaults.standard.bool(forKey: "Tracking.autoSyncFromTracker") || (tracker is EnhancedTracker) || (tracker is PageTracker) {
+            if AppSettings.tracking.autoSyncFromTracker.get() || (tracker is EnhancedTracker) || (tracker is PageTracker) {
                 await syncProgressFromTracker(tracker: tracker, trackItem: trackItem, manga: manga)
             } else {
                 NotificationCenter.default.post(name: .syncTrackItem, object: trackItem)

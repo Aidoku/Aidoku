@@ -92,13 +92,17 @@ class BrowseViewController: BaseTableViewController {
         Task {
             await viewModel.loadInstalledSources()
             await viewModel.loadPinnedSources()
-            await viewModel.loadExternalSources()
-            viewModel.loadUpdates()
             updateDataSource()
 
-            if viewModel.hasLegacySourceList && !UserDefaults.standard.bool(forKey: "Flag.showedLegacySourceListNotice") {
+            Task {
+                await viewModel.loadExternalSources()
+                viewModel.loadUpdates()
+                updateDataSource()
+            }
+
+            if viewModel.hasLegacySourceList && !AppSettings.flags.showedLegacySourceListNotice.get() {
                 showLegacySourceListNotice()
-                UserDefaults.standard.set(true, forKey: "Flag.showedLegacySourceListNotice")
+                AppSettings.flags.showedLegacySourceListNotice.set(true)
             }
         }
     }

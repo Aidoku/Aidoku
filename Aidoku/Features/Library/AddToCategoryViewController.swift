@@ -76,7 +76,7 @@ class AddToCategoryViewController: BaseTableViewController {
                     try? context.save()
                 }
             }
-            NotificationCenter.default.post(name: NSNotification.Name("updateMangaCategories"), object: manga)
+            NotificationCenter.default.post(name: .updateMangaCategories, object: manga)
         }
     }
 }

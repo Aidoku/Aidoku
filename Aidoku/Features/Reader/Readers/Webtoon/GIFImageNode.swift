@@ -36,17 +36,7 @@ class GIFImageNode: ASControlNode {
 
     @available(iOS 16.0, *)
     var imageAnalaysisInteraction: ImageAnalysisInteraction? {
-        get {
-            imageView?.interactions.first(where: { $0 is ImageAnalysisInteraction }) as? ImageAnalysisInteraction
-        }
-        set {
-            if let index = imageView?.interactions.firstIndex(where: { $0 is ImageAnalysisInteraction }) {
-                imageView?.interactions.remove(at: index)
-            }
-            if let newValue {
-                addInteraction(newValue)
-            }
-        }
+        imageView?.interactions.first(where: { $0 is ImageAnalysisInteraction }) as? ImageAnalysisInteraction
     }
 
     override init() {
@@ -84,11 +74,33 @@ class GIFImageNode: ASControlNode {
         }
     }
 
+    func reset() {
+        animatedData = nil
+
+        Task { @MainActor [weak imageView] in
+            imageView?.stopAnimatingGIF()
+            imageView?.image = nil
+        }
+    }
+
+    @MainActor
     func addInteraction(_ interaction: UIInteraction) {
         if let imageView {
             imageView.addInteraction(interaction)
         } else {
             storedInteractions.append(interaction)
         }
+    }
+
+    @MainActor
+    @available(iOS 16.0, *)
+    func removeImageAnalysisInteraction() {
+        guard
+            let imageView,
+            let interaction = imageView.interactions.first(where: { $0 is ImageAnalysisInteraction })
+        else {
+            return
+        }
+        imageView.removeInteraction(interaction)
     }
 }

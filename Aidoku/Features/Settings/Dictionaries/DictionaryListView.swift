@@ -27,7 +27,7 @@ struct DictionaryListView: View {
     @State private var showSafari = false
     @State private var showGetDictionaries = false
 
-    @StateObject private var dismissedInfo = UserDefaultsBool(key: "Flag.dismissedDictionaryInfo")
+    @StateObject private var dismissedInfo = UserDefaultsBool(key: AppSettings.flags.dismissedDictionaryInfo.key)
 
     var body: some View {
         List {

@@ -245,25 +245,34 @@ extension MangaGridCell {
 
         self.imageView.stopAnimatingGIF()
 
+        let source: AidokuRunner.Source? = if let sourceKey = identifier?.sourceKey {
+            await SourceManager.shared.source(for: sourceKey)
+        } else {
+            nil
+        }
+
         var urlRequest = URLRequest(url: url)
         var cached = ImagePipeline.shared.cache.containsCachedImage(for: .init(urlRequest: urlRequest))
 
         if !cached {
             if let fileUrl = url.toAidokuFileUrl() {
                 urlRequest = URLRequest(url: fileUrl)
-            } else if let sourceId = identifier?.sourceKey {
-                // ensure sources are loaded so we can get the modified image request
-                if let source = await SourceManager.shared.source(for: sourceId) {
-                    urlRequest = await source.getModifiedImageRequest(url: url, context: nil)
-                }
+            } else if let source {
+                urlRequest = await source.getModifiedImageRequest(url: url, context: nil)
             }
         }
 
         self.url = (urlRequest.url ?? url).absoluteString
 
+        var processors: [ImageProcessing] = [DownsampleProcessor(width: bounds.width)]
+        if let source, source.features.processesCovers {
+            processors.append(CoverInterceptorProcessor(source: source))
+        }
+
         let request = ImageRequest(
             urlRequest: urlRequest,
-            processors: [DownsampleProcessor(width: bounds.width)]
+            processors: processors,
+            userInfo: [.processesKey: source?.features.processesCovers ?? false]
         )
 
         cached = cached || ImagePipeline.shared.cache.containsCachedImage(for: request)

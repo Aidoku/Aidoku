@@ -8,6 +8,7 @@
 import AidokuRunner
 import UIKit
 
+@MainActor
 enum Settings {
     // All available font families on the system
     private static let availableFonts: [String] = {
@@ -42,7 +43,7 @@ enum Settings {
     static let settings: [Setting] = [
         .init(value: .group(.init(items: [
             .init(
-                key: "General.incognitoMode",
+                key: AppSettings.general.incognitoMode.key,
                 title: NSLocalizedString("INCOGNITO_MODE"),
                 value: .toggle(.init(subtitle: NSLocalizedString("INCOGNITO_MODE_TEXT")))
             )
@@ -103,16 +104,16 @@ enum Settings {
                     items: [
                         .init(value: .group(.init(items: [
                             .init(
-                                key: "General.icloudSync",
+                                key: AppSettings.general.icloudSync.key,
                                 title: String(format: NSLocalizedString("%@_EXPERIMENTAL"), NSLocalizedString("ICLOUD_SYNC")),
-                                requires: "Flag.isiCloudAvailable",
+                                requires: AppSettings.flags.isiCloudAvailable.key,
                                 value: .toggle(.init())
                             )
                         ])))
                     ],
                     icon: .system(name: "icloud.fill", color: "blue"),
                     info: NSLocalizedString(
-                        UserDefaults.standard.bool(forKey: "Flag.isSideloaded")
+                        AppSettings.flags.isSideloaded.get()
                             ? "ICLOUD_SYNC_TEXT_SIDELOADED"
                             : "ICLOUD_SYNC_TEXT_EXPERIMENTAL"
                     )
@@ -181,16 +182,16 @@ extension Settings {
     private static let appearanceSettings: [Setting] = [
         .init(value: .group(.init(items: [
             .init(
-                key: "General.appearance",
+                key: AppSettings.appearance.appearance.key,
                 title: NSLocalizedString("APPEARANCE"),
-                requiresFalse: "General.useSystemAppearance",
+                requiresFalse: AppSettings.appearance.useSystemAppearance.key,
                 value: .segment(.init(options: [
                     NSLocalizedString("APPEARANCE_LIGHT"),
                     NSLocalizedString("APPEARANCE_DARK")
                 ]))
             ),
             .init(
-                key: "General.useSystemAppearance",
+                key: AppSettings.appearance.useSystemAppearance.key,
                 title: NSLocalizedString("USE_SYSTEM_APPEARANCE"),
                 value: .toggle(.init())
             )
@@ -199,7 +200,7 @@ extension Settings {
             title: NSLocalizedString("LAYOUT"),
             value: .group(.init(items: [
                 .init(
-                    key: "Appearance.layout",
+                    key: AppSettings.appearance.layout.key,
                     title: NSLocalizedString("LAYOUT"),
                     value: .custom
                 )
@@ -210,32 +211,32 @@ extension Settings {
     private static let librarySettings: [Setting] = [
         .init(value: .group(.init(items: [
             .init(
-                key: "Library.opensReaderView",
+                key: AppSettings.library.opensReaderView.key,
                 title: NSLocalizedString("OPEN_READER_VIEW"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.resumeLastOpenedChapter",
+                key: AppSettings.library.resumeLastOpenedChapter.key,
                 title: NSLocalizedString("RESUME_LAST_OPENED_CHAPTER"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.continueReadingOnReselect",
+                key: AppSettings.library.continueReadingOnReselect.key,
                 title: NSLocalizedString("CONTINUE_READING_ON_RESELECT"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.unreadChapterBadges",
+                key: AppSettings.library.unreadChapterBadges.key,
                 title: NSLocalizedString("UNREAD_CHAPTER_BADGES"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.downloadedChapterBadges",
+                key: AppSettings.library.downloadedChapterBadges.key,
                 title: NSLocalizedString("DOWNLOADED_CHAPTER_BADGES"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.pinTitles",
+                key: AppSettings.library.pinTitles.key,
                 title: NSLocalizedString("PIN_TITLES"),
                 value: .select(.init(
                     values: LibraryViewModel.PinType.allCases.map(\.rawValue),
@@ -245,7 +246,7 @@ extension Settings {
         ]))),
         .init(value: .group(.init(items: [
             .init(
-                key: "Library.lockLibrary",
+                key: AppSettings.library.lockLibrary.key,
                 title: NSLocalizedString("LOCK_LIBRARY"),
                 notification: "updateLibraryLock",
                 value: .toggle(.init(authToDisable: true))
@@ -270,19 +271,19 @@ extension Settings {
                     value: .page(.init(items: []))
                 ),
                 .init(
-                    key: "Library.defaultCategory",
+                    key: AppSettings.library.defaultCategory.key,
                     title: NSLocalizedString("DEFAULT_CATEGORY"),
                     value: .custom
                 ),
                 .init(
-                    key: "Library.lockedCategories",
+                    key: AppSettings.library.lockedCategories.key,
                     title: NSLocalizedString("LOCKED_CATEGORIES"),
                     notification: "updateLibraryLock",
-                    requires: "Library.lockLibrary",
+                    requires: AppSettings.library.lockLibrary.key,
                     value: .custom
                 ),
                 .init(
-                    key: "Library.showUncategorizedCategory",
+                    key: AppSettings.library.showUncategorizedCategory.key,
                     title: NSLocalizedString("SHOW_UNCATEGORIZED_CATEGORY"),
                     notification: "updateCategories",
                     value: .toggle(.init())
@@ -298,7 +299,7 @@ extension Settings {
                 footer: NSLocalizedString("NEW_CHAPTER_NOTIFICATIONS_TEXT"),
                 items: [
                     .init(
-                        key: "Library.updateInterval",
+                        key: AppSettings.library.updateInterval.key,
                         title: NSLocalizedString("UPDATE_INTERVAL"),
                         value: .select(.init(
                             values: ["never", "12hours", "daily", "2days", "weekly"],
@@ -312,7 +313,7 @@ extension Settings {
                         ))
                     ),
                     .init(
-                        key: "Library.skipTitles",
+                        key: AppSettings.library.skipTitles.key,
                         title: NSLocalizedString("SKIP_TITLES"),
                         value: .multiselect(.init(
                             values: ["hasUnread", "completed", "notStarted"],
@@ -324,22 +325,22 @@ extension Settings {
                         ))
                     ),
                     .init(
-                        key: "Library.excludedUpdateCategories",
+                        key: AppSettings.library.excludedUpdateCategories.key,
                         title: NSLocalizedString("EXCLUDED_CATEGORIES"),
                         value: .custom
                     ),
                     .init(
-                        key: "Library.updateOnlyOnWifi",
+                        key: AppSettings.library.updateOnlyOnWifi.key,
                         title: NSLocalizedString("ONLY_UPDATE_ON_WIFI"),
                         value: .toggle(.init())
                     ),
                     .init(
-                        key: "Library.refreshMetadata",
+                        key: AppSettings.library.refreshMetadata.key,
                         title: NSLocalizedString("REFRESH_METADATA"),
                         value: .toggle(.init())
                     ),
                     .init(
-                        key: "Library.notifyNewChapters",
+                        key: AppSettings.library.notifyNewChapters.key,
                         title: NSLocalizedString("NEW_CHAPTER_NOTIFICATIONS"),
                         value: .toggle(.init())
                     )
@@ -355,7 +356,7 @@ extension Settings {
                         footer: NSLocalizedString("BACKGROUND_REFRESH_TEXT"),
                         items: [
                             .init(
-                                key: "Library.backgroundRefresh",
+                                key: AppSettings.library.backgroundRefresh.key,
                                 title: NSLocalizedString("BACKGROUND_REFRESH"),
                                 value: .toggle(.init())
                             )
@@ -872,22 +873,22 @@ extension Settings {
     static let downloadSettings: [Setting] = {
         var baseItems: [Setting] = [
             .init(
-                key: "Library.downloadOnlyOnWifi",
+                key: AppSettings.downloads.downloadOnlyOnWifi.key,
                 title: NSLocalizedString("ONLY_DOWNLOAD_ON_WIFI"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Library.deleteDownloadAfterReading",
+                key: AppSettings.downloads.deleteDownloadAfterReading.key,
                 title: NSLocalizedString("DELETE_DOWNLOAD_AFTER_READING"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Downloads.compress",
+                key: AppSettings.downloads.compress.key,
                 title: NSLocalizedString("COMPRESS_DOWNLOADS"),
                 value: .toggle(.init())
             ),
             .init(
-                key: "Downloads.parallel",
+                key: AppSettings.downloads.parallel.key,
                 title: NSLocalizedString("PARALLEL_DOWNLOADS"),
                 value: .toggle(.init())
             )
@@ -895,7 +896,7 @@ extension Settings {
         if #available(iOS 26.0, *), !ProcessInfo.processInfo.isMacCatalystApp {
             baseItems.append(
                 .init(
-                    key: "Downloads.background",
+                    key: AppSettings.downloads.background.key,
                     title: NSLocalizedString("BACKGROUND_DOWNLOADING"),
                     value: .toggle(.init())
                 )

@@ -31,14 +31,14 @@ extension TextRecognizer {
         do {
             let results = try await request.perform(on: cgImage)
             return results.compactMap { observation in
-            guard
-                let candidate = observation.topCandidates(1).first,
-                case let characters = recognizedCharacters(from: candidate),
-                case let text = characters.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines),
-                !text.isEmpty, !characters.isEmpty
-            else {
-                return nil
-            }
+                guard
+                    let candidate = observation.topCandidates(1).first,
+                    case let characters = recognizedCharacters(from: candidate),
+                    case let text = characters.map(\.text).joined().trimmingCharacters(in: .whitespacesAndNewlines),
+                    !text.isEmpty, !characters.isEmpty
+                        else {
+                    return nil
+                }
                 return .init(
                     text: text,
                     boundingRect: observation.boundingBox.cgRect,
@@ -59,6 +59,13 @@ extension TextRecognizer {
                     characters: characters
                 )
             }
+        } catch let error as VisionError {
+            if case .requestCancelled = error {
+                // no need to print error for cancel
+            } else {
+                LogManager.logger.error("OCR Failed: \(error)")
+            }
+            return []
         } catch {
             LogManager.logger.error("OCR Failed: \(error)")
             return []

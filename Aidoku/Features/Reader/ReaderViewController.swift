@@ -480,7 +480,7 @@ extension ReaderViewController {
         let effectiveCurrentPage = currentPage ?? self.currentPage
 
         guard
-            !UserDefaults.standard.bool(forKey: "General.incognitoMode"),
+            !AppSettings.general.incognitoMode.get(),
             effectiveTotalPages > 0 // ensure chapter pages are loaded
         else {
             return
@@ -820,7 +820,7 @@ extension ReaderViewController {
 }
 
 // MARK: - Reader Holding Delegate
-extension ReaderViewController: ReaderHoldingDelegate {
+extension ReaderViewController: @MainActor ReaderHoldingDelegate {
     var barsHidden: Bool { statusBarHidden }
 
     private func areDuplicates(_ a: AidokuRunner.Chapter, _ b: AidokuRunner.Chapter) -> Bool {
@@ -1073,7 +1073,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
     }
 
     func setCompleted() {
-        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        guard !AppSettings.general.incognitoMode.get() else { return }
 
         // an epub's total is a lower bound until every spine document is counted, and unknown
         // while the book is still opening. completing on either marks a book read from its first
@@ -1090,7 +1090,7 @@ extension ReaderViewController: ReaderHoldingDelegate {
             )
         }
 
-        if UserDefaults.standard.bool(forKey: "Library.deleteDownloadAfterReading") {
+        if AppSettings.downloads.deleteDownloadAfterReading.get() {
             chaptersToRemoveDownload.append(chapter)
         }
     }
@@ -1539,10 +1539,10 @@ extension ReaderViewController {
                 if #available(iOS 26.0, *) {
                     (navigationController.value(forKey: "_floatingBarContainerView") as? UIView)?.alpha = 1
                 }
-                self.node.backgroundColor = if UserDefaults.standard.bool(forKey: "General.useSystemAppearance") {
+                self.node.backgroundColor = if AppSettings.appearance.useSystemAppearance.get() {
                     .systemBackground
                 } else {
-                    if UserDefaults.standard.integer(forKey: "General.appearance") == 0 {
+                    if AppSettings.appearance.appearance.get() == 0 {
                         .white
                     } else {
                         .black

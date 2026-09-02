@@ -8,38 +8,42 @@
 import SwiftUI
 
 struct SourceListsView: View {
-    @State private var sourceLists: [SourceList] = []
-    @State private var missingSourceLists: [URL] = []
-
-    @State private var loading = true
+    @State private var sourceListsURLs: [URL] = []
+    @State private var sourceLists: [URL: SourceList] = [:]
+    @State private var missingSourceLists: Set<URL> = []
     @State private var showAddListFailAlert = false
+
+    private var activeSourceListURLs: [URL] {
+        sourceListsURLs.filter {
+            !missingSourceLists.contains($0)
+        }
+    }
 
     var body: some View {
         List {
             Section {
-                ForEach(sourceLists, id: \.url) { sourceList in
-                    listItem(name: sourceList.name, url: sourceList.url)
+                ForEach(activeSourceListURLs, id: \.self) { url in
+                    if let sourceList = sourceLists[url] {
+                        listItem(name: sourceList.name, url: sourceList.url)
+                    } else {
+                        listItem(url: url, loading: true)
+                    }
                 }
                 .onDelete(perform: delete)
             }
 
             if !missingSourceLists.isEmpty {
                 Section {
-                    ForEach(missingSourceLists, id: \.self) { url in
-                        listItem(url: url)
+                    ForEach(sourceListsURLs, id: \.self) { url in
+                        if missingSourceLists.contains(url) {
+                            listItem(url: url)
+                        }
                     }
                 } header: {
                     Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS"))
                 } footer: {
                     Text(NSLocalizedString("UNAVAILABLE_SOURCE_LISTS_TEXT"))
                 }
-            }
-        }
-        .overlay {
-            if loading {
-                ProgressView()
-                    .progressViewStyle(.circular)
-                    .tint(.secondary)
             }
         }
         .navigationTitle(NSLocalizedString("SOURCE_LISTS"))
@@ -69,36 +73,52 @@ struct SourceListsView: View {
     }
 
     func loadSourceLists() async {
-        withAnimation {
-            loading = true
-        }
-        let newSourceLists = await SourceManager.shared.getSourceLists()
-        let newMissingSourceLists = await SourceManager.shared.getMissingSourceLists()
-        withAnimation {
-            sourceLists = newSourceLists
-            missingSourceLists = newMissingSourceLists
-            loading = false
+        sourceListsURLs = await SourceManager.shared.getSourceListURLs().sorted { $0.absoluteString < $1.absoluteString }
+
+        if await SourceManager.shared.sourceListLoadFinished {
+            missingSourceLists = await SourceManager.shared.getMissingSourceLists()
+            sourceLists = await SourceManager.shared.getLoadedSourceLists()
+        } else {
+            missingSourceLists = []
+            sourceLists = [:]
+
+            let stream = await SourceManager.shared.streamSourceListsLoad()
+            for await url in stream {
+                let sourceList = await SourceManager.shared.getSourceList(url: url)
+                withAnimation {
+                    sourceLists[url] = sourceList
+                }
+            }
+
+            let newMissingSourceLists = await SourceManager.shared.getMissingSourceLists()
+            withAnimation {
+                missingSourceLists = newMissingSourceLists
+            }
         }
     }
 
-    func listItem(name: String? = nil, url: URL) -> some View {
-        VStack(alignment: .leading) {
-            if let name {
-                Text(name)
+    func listItem(name: String? = nil, url: URL, loading: Bool = false) -> some View {
+        HStack {
+            VStack(alignment: .leading) {
+                if let name {
+                    Text(name)
+                }
+                Text(url.absoluteString)
+                    .lineLimit(1)
+                    .font(.subheadline)
+                    .foregroundStyle(name == nil ? .primary : .secondary)
             }
-            Text(url.absoluteString)
-                .lineLimit(1)
-                .font(.subheadline)
-                .foregroundStyle(name == nil ? .primary : .secondary)
+            if loading {
+                ProgressView().progressViewStyle(.circular)
+            }
         }
         .contextMenu {
             Button(role: .destructive) {
-                sourceLists.firstIndex(where: { $0.url == url }).flatMap {
-                    _ = sourceLists.remove(at: $0)
+                sourceListsURLs.firstIndex(of: url).flatMap {
+                    _ = sourceListsURLs.remove(at: $0)
                 }
-                missingSourceLists.firstIndex(of: url).flatMap {
-                    _ = missingSourceLists.remove(at: $0)
-                }
+                sourceLists.removeValue(forKey: url)
+                missingSourceLists.remove(url)
                 Task {
                     await SourceManager.shared.removeSourceList(url: url)
                 }
@@ -114,9 +134,10 @@ struct SourceListsView: View {
     }
 
     func delete(at offsets: IndexSet) {
-        let urls = offsets.map { sourceLists[$0].url }
+        let activeURLs = activeSourceListURLs
+        let deleteURLs = offsets.map { activeURLs[$0] }
         Task {
-            for url in urls {
+            for url in deleteURLs {
                 await SourceManager.shared.removeSourceList(url: url)
             }
         }

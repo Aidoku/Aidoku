@@ -209,6 +209,10 @@
 "CORRUPTED_BACKUP_TEXT" = "此備份似乎有設定錯誤的資料。無法重新命名。";
 "BACKUP_INFO" = "長按備份項目以輸出，左滑以刪除。";
 "MISSING_SOURCES" = "缺少來源";
+"RESTORE_MISSING_SOURCES" = "恢復缺失來源？";
+"RESTORE_MISSING_SOURCES_TEXT" = "是否要搜尋已恢復的來源列表並安裝找到的來源？";
+"INSTALL_SOURCES" = "安裝來源";
+"INSTALLING_SOURCES" = "正在安裝來源…";
 "RESTORE_BACKUP" = "用此備份回復？";
 "AUTH_FOR_LIBRARY" = "解鎖以查看書庫。";
 "LOCK_LIBRARY" = "鎖定書庫";
@@ -414,7 +418,7 @@
 "IMPORT" = "輸入";
 "IMPORT_FILE" = "輸入檔案";
 "LOCAL_FILE_IMPORT" = "輸入本機檔案";
-"LOCAL_FILE_IMPORT_TEXT" = "輸入包含圖片的CBZ、ePub或ZIP檔案以閱讀。";
+"LOCAL_FILE_IMPORT_TEXT" = "輸入包含圖片的CBZ或ZIP檔案以閱讀。";
 "CHAPTER_TITLE" = "章節標題";
 "SERIES_TITLE" = "作品標題";
 "DESCRIPTION" = "簡介";

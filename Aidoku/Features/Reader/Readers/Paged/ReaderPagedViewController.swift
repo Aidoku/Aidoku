@@ -42,6 +42,8 @@ class ReaderPagedViewController: BaseObservingViewController {
     private var isolatedPages: Set<Int> = []
     private var manuallyIsolatedPages: Set<Int> = []
     private lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+    private let pagePrefetcher = ReaderPagePrefetcher()
+    private var nextChapterPreloadTask: Task<Void, Never>?
 
     // Split pages tracking
     private var actualPageIndices: [Int] = []
@@ -104,6 +106,7 @@ class ReaderPagedViewController: BaseObservingViewController {
             // clear pages that aren't in the preload range if we get a memory warning
             LogManager.logger.warn("Received memory warning")
             Self.clearSplitPageCache()
+            self?.pagePrefetcher.reset()
             guard
                 let self,
                 let viewController = pageViewController.viewControllers?.first,
@@ -440,6 +443,49 @@ extension ReaderPagedViewController {
             guard i > 0 else { continue }
             guard i <= displayPageCount else { break }
             loadPage(at: i)
+        }
+        // allow prefetching into the next chapter
+        if range.upperBound > displayPageCount {
+            preloadNextChapter(pageCount: min(range.upperBound - displayPageCount, pagesToPreload))
+        }
+    }
+
+    /// Fetch the first `pageCount` pages of the next chapter ahead of time.
+    func preloadNextChapter(pageCount: Int) {
+        guard pageCount > 0, let nextChapter else { return }
+
+        let previousTask = nextChapterPreloadTask
+        nextChapterPreloadTask = Task { [weak self] in
+            // preloads run one at a time so a wider range doesn't duplicate a narrower one in flight
+            await previousTask?.value
+            guard let self, !Task.isCancelled, nextChapter == self.nextChapter else { return }
+
+            await viewModel.preload(chapter: nextChapter)
+
+            guard
+                !Task.isCancelled,
+                nextChapter == self.nextChapter,
+                viewModel.preloadedChapter == nextChapter
+            else { return }
+
+            let pages = viewModel.preloadedPages
+            guard !pages.isEmpty else { return }
+            let sourceKey = viewModel.manga.sourceKey
+
+            if
+                let firstPage = pages.first,
+                let previewController = pageViewControllers.last,
+                case .page = previewController.type
+            {
+                previewController.setPage(firstPage, sourceId: sourceKey)
+            }
+
+            await pagePrefetcher.prefetch(
+                pages: pages,
+                count: pageCount,
+                chapterKey: nextChapter.key,
+                sourceKey: sourceKey
+            )
         }
     }
 
@@ -847,6 +893,12 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
 
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
         let isChapterChange = self.chapter?.id != chapter.id
+        if isChapterChange {
+            nextChapterPreloadTask?.cancel()
+            if chapter != nextChapter {
+                pagePrefetcher.reset()
+            }
+        }
         self.chapter = chapter
         Task {
             await loadChapter(startPage: startPage, isChapterChange: isChapterChange)
@@ -967,17 +1019,7 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
             case displayPageCount + 1: // next chapter transition page
                 delegate?.setCurrentPage(displayPageCount + 1, position: nil)
                 // preload next
-                if let nextChapter = nextChapter {
-                    Task {
-                        await viewModel.preload(chapter: nextChapter)
-                        if currentIndex + 1 < pageViewControllers.count, let firstPage = viewModel.preloadedPages.first {
-                            pageViewControllers[currentIndex + 1].setPage(
-                                firstPage,
-                                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey
-                            )
-                        }
-                    }
-                }
+                preloadNextChapter(pageCount: pagesToPreload)
 
             case displayPageCount + 2: // next chapter first page
                 pendingSpreadRebuild = false
@@ -1132,7 +1174,7 @@ extension ReaderPagedViewController: UIPageViewControllerDataSource {
 
 // MARK: - Dictionary Lookup
 @available(iOS 18.0, *)
-extension ReaderPagedViewController: ReaderDictionaryReader {
+extension ReaderPagedViewController: @MainActor ReaderDictionaryReader {
     func recognizedText(at point: CGPoint) -> TextRecognizer.Result? {
         for pageVC in visiblePageControllers() {
             guard

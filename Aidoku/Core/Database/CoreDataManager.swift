@@ -34,7 +34,7 @@ final class CoreDataManager: @unchecked Sendable {
     private var lastHistoryToken: NSPersistentHistoryToken?
 
     private static var shouldUseiCloud: Bool {
-        UserDefaults.standard.bool(forKey: "General.icloudSync") && FileManager.default.ubiquityIdentityToken != nil
+        AppSettings.general.icloudSync.get() && FileManager.default.ubiquityIdentityToken != nil
     }
 
     private init() {
@@ -49,7 +49,7 @@ final class CoreDataManager: @unchecked Sendable {
         }
         .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: .init("General.icloudSync"))
+        NotificationCenter.default.publisher(for: .init(AppSettings.general.icloudSync.key))
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateCloudConfiguration()
@@ -184,7 +184,7 @@ extension CoreDataManager {
         remoteHistoryQueue.addOperation { [weak self] in
             guard let self else { return }
             let context = self.container.newBackgroundContext()
-            context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+            context.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
             context.performAndWait {
                 let historyFetchRequest = NSPersistentHistoryTransaction.fetchRequest!
                 let request = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastHistoryToken)
@@ -229,7 +229,7 @@ extension CoreDataManager {
 
     func deduplicate(objectIds: [NSManagedObjectID]) {
         let context = container.newBackgroundContext()
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        context.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
         context.performAndWait {
             for objectId in objectIds {
                 deduplicate(objectId: objectId, context: context)

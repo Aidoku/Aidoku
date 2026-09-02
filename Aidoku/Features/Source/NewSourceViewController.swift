@@ -218,7 +218,7 @@ class NewSourceViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    deinit {
+    isolated deinit {
         // if it isn't removed, an old search bar can potentially block pressing the filter
         // header buttons in a newer source view controller for some reason
         searchController.searchBar.removeFromSuperview()
@@ -743,7 +743,7 @@ extension NewSourceViewController {
 
 extension NewSourceViewController {
     private func saveEnabledFilters() {
-        guard !UserDefaults.standard.bool(forKey: "General.incognitoMode") else { return }
+        guard !AppSettings.general.incognitoMode.get() else { return }
 
         let filtersData = try? JSONEncoder().encode(enabledFilters)
         if let filtersData {

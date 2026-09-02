@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+import Foundation
 import Wasm3
 
 extension Error {
@@ -38,6 +39,8 @@ extension Error {
             }
         } else if self is DecodingError {
             NSLocalizedString("DECODING_ERROR")
+        } else if self is URLError {
+            NSLocalizedString("NETWORK_ERROR")
         } else {
             NSLocalizedString("UNKNOWN_ERROR")
         }

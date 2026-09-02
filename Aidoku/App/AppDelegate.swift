@@ -108,42 +108,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         UserDefaults.standard.register(
             defaults: [
-                "Flag.isSideloaded": Self.isSideloaded, // for icloud sync setting
-                "Flag.showedLegacySourceListNotice": false,
-
-                "General.incognitoMode": false,
-                "General.icloudSync": false,
-                "General.appearance": 0,
-                "General.useSystemAppearance": true,
-                "Appearance.layout": "standard",
-                "Appearance.customPortraitRows": UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2,
-                "Appearance.customLandscapeRows": UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4,
-
-                "Library.sortOption": 2, // lastOpened
-                "Library.sortAscending": false,
-                "Library.listView": false,
-
-                "Library.lastUpdated": Date.distantPast.timeIntervalSince1970,
-
-                "Library.opensReaderView": false,
-                "Library.resumeLastOpenedChapter": false,
-                "Library.continueReadingOnReselect": true,
-                "Library.unreadChapterBadges": true,
-                "Library.downloadedChapterBadges": true,
-                "Library.pinTitles": LibraryViewModel.PinType.none.rawValue,
-                "Library.lockLibrary": false,
-
-                "Library.lockedCategories": [String](),
-                "Library.showUncategorizedCategory": false,
-
-                "Library.updateInterval": "daily",
-                "Library.skipTitles": ["hasUnread", "completed", "notStarted"],
-                "Library.excludedUpdateCategories": [String](),
-                "Library.backgroundRefresh": true,
-                "Library.updateOnlyOnWifi": true,
-                "Library.refreshMetadata": false,
-                "Library.notifyNewChapters": false,
-
                 "History.lockHistoryTab": false,
 
                 "Reader.readingMode": "auto",
@@ -178,31 +142,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.textFontFamily": "System",
                 "Reader.textFontSize": 18,
                 "Reader.textLineSpacing": 8,
-                "Reader.textHorizontalPadding": 24,
-
-                "Tracking.updateAfterReading": true,
-                "Tracking.autoSyncFromTracker": false,
-
-                "AutomaticBackups.enabled": true,
-                "AutomaticBackups.interval": "daily",
-                "AutomaticBackups.lastBackup": Date.distantPast.timeIntervalSince1970,
-                "AutomaticBackups.libraryEntries": true,
-                "AutomaticBackups.chapters": true,
-                "AutomaticBackups.tracking": true,
-                "AutomaticBackups.history": true,
-                "AutomaticBackups.categories": true,
-                "AutomaticBackups.readingSessions": true,
-                "AutomaticBackups.vocabulary": true,
-                "AutomaticBackups.updates": false,
-                "AutomaticBackups.settings": true,
-                "AutomaticBackups.sourceLists": true,
-                "AutomaticBackups.sensitiveSettings": false,
-
-                "Library.downloadOnlyOnWifi": false,
-                "Library.deleteDownloadAfterReading": false,
-                "Downloads.compress": true,
-                "Downloads.parallel": true,
-                "Downloads.background": true
+                "Reader.textHorizontalPadding": 24
             ]
         )
         AppSettings.registerDefaults()
@@ -222,12 +162,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // time to set up iCloud and return the requested URL, you should always call it from a secondary thread.
         Task.detached {
             let isiCloudAvailable = FileManager.default.url(forUbiquityContainerIdentifier: nil) != nil
-            await MainActor.run {
-                if !isiCloudAvailable {
-                    LogManager.logger.info("iCloud unavailable")
-                }
-                UserDefaults.standard.register(defaults: ["Flag.isiCloudAvailable": isiCloudAvailable])
+            if !isiCloudAvailable {
+                LogManager.logger.info("iCloud unavailable")
             }
+            AppSettings.flags.isiCloudAvailable.register(isiCloudAvailable)
         }
 
         DataLoader.sharedUrlCache.diskCapacity = 0
@@ -271,13 +209,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             networkObserverId = await Reachability.shared.registerConnectionTypeObserver { connectionType in
                 switch connectionType {
                     case .wifi:
-                        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        if AppSettings.downloads.downloadOnlyOnWifi.get() {
                             Task {
                                 await DownloadManager.shared.resumeDownloads()
                             }
                         }
                     case .cellular, .none:
-                        if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                        if AppSettings.downloads.downloadOnlyOnWifi.get() {
                             Task {
                                 await DownloadManager.shared.pauseDownloads()
                             }
@@ -310,7 +248,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(handleNotifyNewChaptersToggle(_:)),
-            name: Notification.Name(NotificationManager.settingKey),
+            name: Notification.Name(AppSettings.library.notifyNewChapters.key),
             object: nil
         )
 
@@ -318,15 +256,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     @objc private func handleNotifyNewChaptersToggle(_ note: Notification) {
-        let enabled = (note.object as? Bool) ?? UserDefaults.standard.bool(forKey: NotificationManager.settingKey)
+        let enabled = (note.object as? Bool) ?? AppSettings.library.notifyNewChapters.get()
         guard enabled else { return }
         Task {
             let granted = await NotificationManager.shared.requestAuthorization()
             if !granted {
                 await MainActor.run {
-                    UserDefaults.standard.set(false, forKey: NotificationManager.settingKey)
+                    AppSettings.library.notifyNewChapters.set(false)
                     NotificationCenter.default.post(
-                        name: Notification.Name(NotificationManager.settingKey),
+                        name: .init(AppSettings.library.notifyNewChapters.key),
                         object: false
                     )
                 }
@@ -356,7 +294,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 extension AppDelegate {
     func performMigration() {
-        var settingsVersion = UserDefaults.standard.string(forKey: "Flag.currentVersion")
+        var settingsVersion = AppSettings.flags.currentVersion.get()
         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
 
         if let oldSettingsVersion = UserDefaults.standard.string(forKey: "currentVersion") {
@@ -386,7 +324,7 @@ extension AppDelegate {
 
         migrateSettings()
 
-        UserDefaults.standard.set(currentVersion, forKey: "Flag.currentVersion")
+        AppSettings.flags.currentVersion.set(currentVersion)
     }
 
     static nonisolated let legacySettingKeys: Set<String> = [
@@ -415,14 +353,14 @@ extension AppDelegate {
                 case 1: LibraryViewModel.PinType.updatedChapters.rawValue
                 default: LibraryViewModel.PinType.none.rawValue
             }
-            UserDefaults.standard.set(newValue, forKey: "Library.pinTitles")
+            AppSettings.library.pinTitles.set(newValue)
             UserDefaults.standard.removeObject(forKey: "Library.pinManga")
             UserDefaults.standard.removeObject(forKey: "Library.pinMangaType")
         }
 
         // migrate unprefixed settings
         if UserDefaults.standard.bool(forKey: "downloadChapterSortAscending") {
-            UserDefaults.standard.set(true, forKey: "Flag.downloadChapterSortAscending")
+            AppSettings.flags.downloadChapterSortAscending.set(true)
             UserDefaults.standard.removeObject(forKey: "downloadChapterSortAscending")
         }
         if let enabledModelFile = UserDefaults.standard.string(forKey: "enabledModelFile") {
@@ -444,13 +382,13 @@ extension AppDelegate {
         let defaultPortraitRows = UIDevice.current.userInterfaceIdiom == .pad ? 5 : 2
         let defaultLandscapeRows = UIDevice.current.userInterfaceIdiom == .pad ? 6 : 4
         if portraitRows > 0 && portraitRows != defaultPortraitRows {
-            UserDefaults.standard.set("custom", forKey: "Appearance.layout")
-            UserDefaults.standard.set(portraitRows, forKey: "Appearance.customPortraitRows")
+            AppSettings.appearance.layout.set(.custom)
+            AppSettings.appearance.customPortraitRows.set(portraitRows)
             UserDefaults.standard.removeObject(forKey: "General.portraitRows")
         }
         if landscapeRows > 0 && landscapeRows != defaultLandscapeRows {
-            UserDefaults.standard.set("custom", forKey: "Appearance.layout")
-            UserDefaults.standard.set(landscapeRows, forKey: "Appearance.customLandscapeRows")
+            AppSettings.appearance.layout.set(.custom)
+            AppSettings.appearance.customLandscapeRows.set(landscapeRows)
             UserDefaults.standard.removeObject(forKey: "General.landscapeRows")
         }
     }
@@ -518,7 +456,12 @@ extension AppDelegate {
     }
 
     /// Shows a non-interactive loading indicator.
-    func showLoadingIndicator(style: LoadingStyle = .indefinite, completion: (() -> Void)? = nil) {
+    func showLoadingIndicator(
+        style: LoadingStyle = .indefinite,
+        message: String = NSLocalizedString("LOADING_ELLIPSIS"),
+        completion: (() -> Void)? = nil
+    ) {
+        loadingAlert.message = message
         switch style {
             case .indefinite:
                 loadingIndicator.startAnimating()
@@ -530,6 +473,11 @@ extension AppDelegate {
                 progressView.isHidden = false
         }
         topViewController?.present(loadingAlert, animated: true, completion: completion)
+    }
+
+    /// Updates the  progress of a shown loading indicator.
+    func updateLoadingIndicator(progress: Float) {
+        progressView.progress = progress
     }
 
     /// Dismisses a shown loading indicator.

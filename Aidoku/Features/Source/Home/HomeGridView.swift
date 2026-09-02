@@ -38,7 +38,7 @@ struct HomeGridView: View {
     }
 
     static private func getColumns() -> [GridItem] {
-        let layout = UserDefaults.standard.string(forKey: "Appearance.layout")
+        let layout = AppSettings.appearance.layout.get()
 
         let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
         let orientation =
@@ -51,24 +51,24 @@ struct HomeGridView: View {
 
         let itemsPerRow: Int
         switch layout {
-            case "standard":
+            case .standard:
                 itemsPerRow = if UIDevice.current.userInterfaceIdiom == .pad {
                     isLandscape ? 6 : 4
                 } else {
                     isLandscape ? 4 : 2
                 }
-            case "compact":
+            case .compact:
                 itemsPerRow = if UIDevice.current.userInterfaceIdiom == .pad {
                     isLandscape ? 8 : 5
                 } else {
                     isLandscape ? 7 : 3
                 }
-            default: // custom
-                itemsPerRow = UserDefaults.standard.integer(
-                    forKey: isLandscape
-                        ? "Appearance.customLandscapeRows"
-                        : "Appearance.customPortraitRows"
-                )
+            case .custom:
+                itemsPerRow = if isLandscape {
+                    AppSettings.appearance.customLandscapeRows.get()
+                } else {
+                    AppSettings.appearance.customPortraitRows.get()
+                }
         }
 
         let idealWidth = UIScreen.main.bounds.size.width / CGFloat(itemsPerRow)
@@ -94,13 +94,13 @@ struct HomeGridView: View {
         .onReceive(NotificationCenter.default.publisher(for: .orientationDidChange)) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .layoutSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.layout.key))) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .portraitRowsSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.customPortraitRows.key))) { _ in
             columns = Self.getColumns()
         }
-        .onReceive(NotificationCenter.default.publisher(for: .landscapeRowsSetting)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .init(AppSettings.appearance.customLandscapeRows.key))) { _ in
             columns = Self.getColumns()
         }
     }

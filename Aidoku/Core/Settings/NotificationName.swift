@@ -19,9 +19,6 @@ extension Notification.Name {
     static let sourceLoaded = Self("sourceLoaded")
     static let sourceUnloaded = Self("sourceUnloaded")
 
-    // general
-    static let incognitoMode = Self("General.incognitoMode")
-
     // library
     static let updateLibrary = Self("updateLibrary")
     static let addToLibrary = Self("addToLibrary")
@@ -33,7 +30,7 @@ extension Notification.Name {
     static let updateManga = Self("updateManga")
     static let updateMangaCategories = Self("updateMangaCategories")
     static let updateLibraryLock = Self("updateLibraryLock")
-    static let pinTitles = Self("Library.pinTitles")
+    static let mangaUpdatesViewed = Self("mangaUpdatesViewed")
 
     // history
     static let updateHistory = Self("updateHistory")
@@ -66,15 +63,12 @@ extension Notification.Name {
     // reader
     static let readerShowingBars = Self("readerShowingBars")
     static let readerHidingBars = Self("readerHidingBars")
+
+    // settings
+    static let historyLockTabSetting = Self("History.lockHistoryTab")
     static let readerReadingMode = Self("Reader.readingMode")
     static let readerTapZones = Self("Reader.tapZones")
     static let readerOrientation = Self("Reader.orientation")
     static let dictionaryDictionariesChanged = Self("Dictionary.dictionariesChanged")
     static let dictionaryVocabChanged = Self("Dictionary.vocabChanged")
-
-    // settings
-    static let layoutSetting = Self("Appearance.layout")
-    static let portraitRowsSetting = Self("Appearance.customPortraitRows")
-    static let landscapeRowsSetting = Self("Appearance.customLandscapeRows")
-    static let historyLockTabSetting = Self("History.lockHistoryTab")
 }

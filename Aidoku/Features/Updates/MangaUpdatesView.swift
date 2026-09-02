@@ -71,7 +71,7 @@ struct MangaUpdatesView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .navigationTitle(NSLocalizedString("MANGA_UPDATES"))
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("mangaUpdatesViewed"))) { notification in
+        .onReceive(NotificationCenter.default.publisher(for: .mangaUpdatesViewed)) { notification in
             guard let objects = notification.object as? [MangaUpdateItem] else { return }
 
             for section in 0..<entries.count {
@@ -135,7 +135,7 @@ struct MangaUpdatesView: View {
 
 extension MangaUpdatesView {
     private func loadNewEntries() async {
-        let newUpdates = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let newUpdates = await CoreDataManager.shared.container.performBackgroundTask { [offset] context in
             CoreDataManager.shared.getRecentMangaUpdates(limit: limit, offset: offset, context: context).compactMap {
                 if let mangaObj = CoreDataManager.shared.getManga(
                     mangaId: $0.identifier.mangaIdentifier,
@@ -211,10 +211,10 @@ extension MangaUpdatesView {
     }
 
     private func setOpened(manga: AidokuRunner.Manga) {
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+        if !AppSettings.general.incognitoMode.get() {
             Task {
                 await CoreDataManager.shared.setOpened(mangaId: manga.identifier)
-                NotificationCenter.default.post(name: Notification.Name("updateLibrary"), object: nil)
+                NotificationCenter.default.post(name: .updateLibrary, object: nil)
             }
         }
     }

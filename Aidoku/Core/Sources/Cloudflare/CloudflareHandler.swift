@@ -386,6 +386,7 @@ extension CloudflareHandler {
         (document.querySelector('input[name="cf-turnstile-response"]') !== null
             || document.getElementById('challenge-error-title') !== null
             || document.getElementById('challenge-error-text') !== null) ? 1 : 0
+            || document.title === "Just a moment..."
         """
         let result = try? await webView.evaluateJavaScript(js)
         guard let result = result as? Int else { return false }

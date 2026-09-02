@@ -21,7 +21,7 @@ struct FilterListSheetView: View {
     @State private var showConfirm = false
     @State private var showSaveErrorAlert = false
     @State private var discardChanges = false
-    @StateObject private var incognitoMode = UserDefaultsBool(key: "General.incognitoMode")
+    @StateObject private var incognitoMode = UserDefaultsBool(key: AppSettings.general.incognitoMode.key)
 
     @Environment(\.dismiss) private var dismiss
 

@@ -184,7 +184,7 @@ class TabBarController: UITabBarController {
         let updateCount = AppSettings.browse.updateCount.get()
         browseViewController.tabBarItem.badgeValue = updateCount > 0 ? String(updateCount) : nil
 
-        NotificationCenter.default.publisher(for: .incognitoMode)
+        NotificationCenter.default.publisher(for: .init(AppSettings.general.incognitoMode.key))
             .sink { [weak self] _ in
                 self?.updateFrame(animated: true)
             }
@@ -203,7 +203,7 @@ class TabBarController: UITabBarController {
             )
         }
         func commit() {
-            if UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+            if AppSettings.general.incognitoMode.get() {
                 view.frame = shrunkFrame
             } else {
                 view.frame = originalFrame
@@ -315,7 +315,7 @@ extension TabBarController: UITabBarControllerDelegate {
     // let the history view know so that it can continue reading the last opened manga
     private func checkForHistoryReselection() {
         guard
-            UserDefaults.standard.bool(forKey: "Library.continueReadingOnReselect"),
+            AppSettings.library.continueReadingOnReselect.get(),
             let historyNavigationController,
             selectedViewController === historyNavigationController,
             // if there's anything pushed on top, the default behavior pops back to the history list

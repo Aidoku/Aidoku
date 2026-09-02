@@ -37,7 +37,7 @@ struct SettingsTrackingView: View {
         List {
             Section {
                 SettingView(setting: .init(
-                    key: "Tracking.updateAfterReading",
+                    key: AppSettings.tracking.updateAfterReading.key,
                     title: NSLocalizedString("UPDATE_AFTER_READING"),
                     value: .toggle(.init())
                 ))
@@ -47,7 +47,7 @@ struct SettingsTrackingView: View {
 
             Section {
                 SettingView(setting: .init(
-                    key: "Tracking.autoSyncFromTracker",
+                    key: AppSettings.tracking.autoSyncFromTracker.key,
                     title: NSLocalizedString("AUTO_SYNC_HISTORY"),
                     value: .toggle(.init())
                 ))

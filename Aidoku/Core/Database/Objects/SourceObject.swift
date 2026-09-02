@@ -29,18 +29,18 @@ extension SourceObject {
             apiVersion: apiVersion,
             path: path,
             listing: listing,
-            customSource: customSource
+            customSource: customSource as? Data
         )
     }
 }
 
-struct SourceObjectData {
+struct SourceObjectData: Sendable {
     let objectID: NSManagedObjectID
     let id: String
     let apiVersion: String?
     let path: String?
     let listing: Int16
-    let customSource: NSObject?
+    let customSource: Data?
 }
 
 extension SourceObjectData {
@@ -56,7 +56,7 @@ extension SourceObjectData {
             let source = toSource()
             return source.flatMap({ .legacy(source: $0) })
         } else if
-            let data = customSource as? Data,
+            let data = customSource,
             let config = try? CustomSourceConfig(from: data)
         {
             return config.toSource()
@@ -68,7 +68,7 @@ extension SourceObjectData {
     }
 
     func toInfo() -> SourceInfo? {
-        if let data = customSource as? Data, let config = try? CustomSourceConfig(from: data) {
+        if let data = customSource, let config = try? CustomSourceConfig(from: data) {
             return config.toSource().toInfo()
         }
         guard let path else { return nil }

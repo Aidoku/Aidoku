@@ -123,7 +123,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         else {
             return 0
         }
-        return node.getHeight()
+        return node.getHeight(for: collectionView.bounds.size)
     }
 
     func getHeightFor(section: Int, range: Range<Int>? = nil) -> CGFloat {
@@ -151,8 +151,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 }
 
 // MARK: - Zoom Support
-extension VerticalContentOffsetPreservingLayout: ZoomableLayoutProtocol {
-
+extension VerticalContentOffsetPreservingLayout: @MainActor ZoomableLayoutProtocol {
     func getScale() -> CGFloat {
         scale
     }

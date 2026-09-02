@@ -161,6 +161,50 @@ extension ReaderPageView {
         }
     }
 
+    /// Creates the image request used to fetch a page image.
+    static func imageRequest(url: URL, context: PageContext? = nil, sourceKey: String? = nil) async -> ImageRequest {
+        let source: AidokuRunner.Source? = if let sourceKey {
+            await SourceManager.shared.source(for: sourceKey)
+        } else {
+            nil
+        }
+        return await imageRequest(url: url, context: context, source: source)
+    }
+
+    static func imageRequest(url: URL, context: PageContext? = nil, source: AidokuRunner.Source?) async -> ImageRequest {
+        let urlRequest = if !url.isFileURL, let source {
+            await source.getModifiedImageRequest(url: url, context: context)
+        } else {
+            URLRequest(url: url)
+        }
+
+        var processors: [ImageProcessing] = []
+        var usePageProcessor = false
+        if let source {
+            // only process pages if the source supports it and the image isn't downloaded
+            // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
+            //       this should probably be changed in the future to be more correct though
+            if source.features.processesPages, !url.isFileURL {
+                processors.append(PageInterceptorProcessor(source: source, pageContext: context))
+                usePageProcessor = true
+            }
+        }
+        if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
+            processors.append(CropBordersProcessor())
+        }
+        if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
+            processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
+        } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
+            processors.append(UpscaleProcessor())
+        }
+
+        return ImageRequest(
+            urlRequest: urlRequest,
+            processors: processors,
+            userInfo: [.processesKey: usePageProcessor]
+        )
+    }
+
     func setPageImage(url: URL, context: PageContext? = nil, sourceId: String? = nil) async -> Bool {
         // remove text view if it exists
         if let textView {
@@ -193,42 +237,7 @@ extension ReaderPageView {
                     request = imageTask.request
             }
         } else {
-            let source: AidokuRunner.Source? = if let sourceId {
-                await SourceManager.shared.source(for: sourceId)
-            } else {
-                nil
-            }
-            let urlRequest = if !url.isFileURL, let source {
-                await source.getModifiedImageRequest(url: url, context: context)
-            } else {
-                URLRequest(url: url)
-            }
-
-            var processors: [ImageProcessing] = []
-            var usePageProcessor = false
-            if let source {
-                // only process pages if the source supports it and the image isn't downloaded
-                // note: also skips processing raw data pages (assuming final data is already provided and doesn't need to be modified)
-                //       this should probably be changed in the future to be more correct though
-                if source.features.processesPages, !url.isFileURL {
-                    processors.append(PageInterceptorProcessor(source: source, pageContext: context))
-                    usePageProcessor = true
-                }
-            }
-            if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                processors.append(CropBordersProcessor())
-            }
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                processors.append(DownsampleProcessor(width: UIScreen.main.bounds.width))
-            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
-                processors.append(UpscaleProcessor())
-            }
-
-            request = ImageRequest(
-                urlRequest: urlRequest,
-                processors: processors,
-                userInfo: [.processesKey: usePageProcessor]
-            )
+            request = await Self.imageRequest(url: url, context: context, sourceKey: sourceId)
         }
 
         // Store current image request for reload functionality

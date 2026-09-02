@@ -109,7 +109,7 @@ extension HistoryManager {
             }
         )
         Task {
-            if UserDefaults.standard.bool(forKey: "Tracking.updateAfterReading") {
+            if AppSettings.tracking.updateAfterReading.get() {
                 // update tracker with chapter with largest number
                 if let maxChapter = chapters.max(by: { $0.chapterNumber ?? 0 < $1.chapterNumber ?? 0 }) {
                     await TrackerManager.shared.setCompleted(

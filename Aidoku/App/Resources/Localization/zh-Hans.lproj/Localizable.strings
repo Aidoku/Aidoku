@@ -189,6 +189,10 @@
 "CORRUPTED_BACKUP_TEXT" = "该备份有配置错误的数据。无法重新命名。";
 "BACKUP_INFO" = "长按备份以导出它，或向左滑动以删除。";
 "MISSING_SOURCES" = "图源缺失";
+"RESTORE_MISSING_SOURCES" = "恢复缺失图源？";
+"RESTORE_MISSING_SOURCES_TEXT" = "是否要搜索已恢复的图源列表并安装找到的图源？";
+"INSTALL_SOURCES" = "安装图源";
+"INSTALLING_SOURCES" = "正在安装图源…";
 "MISSING_SOURCES_TEXT" = "恢复的备份可能包含来自以下图源的数据，但这些图源当前未安装：";
 "RESTORE_BACKUP" = "恢复到此备份？";
 "RESTORE_BACKUP_TEXT" = "所有当前数据将被删除并用此备份中的数据替换。";
@@ -396,7 +400,7 @@
 "LOCAL_FILES_SETUP" = "本地来源设置";
 "IMPORT_FILE" = "导入文件";
 "LOCAL_FILE_IMPORT" = "本地文件导入";
-"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的 CBZ、ePub 或 ZIP 文件。";
+"LOCAL_FILE_IMPORT_TEXT" = "导入包含图片的CBZ或ZIP文件进行阅读。";
 "CHAPTER_TITLE" = "章节标题";
 "SERIES_TITLE" = "系列标题";
 "DESCRIPTION" = "简介";

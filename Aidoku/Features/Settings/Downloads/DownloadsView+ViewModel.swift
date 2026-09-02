@@ -128,16 +128,15 @@ extension DownloadsView.ViewModel {
 
     private func setupNotificationObservers() {
         // High-priority updates that need immediate response
-        let immediateUpdateNotifications: [NSNotification.Name] = [
+        let immediateUpdateNotifications: [Notification.Name] = [
             .downloadRemoved,
             .downloadsRemoved
         ]
 
         for notification in immediateUpdateNotifications {
             NotificationCenter.default.publisher(for: notification)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
-                    Task {
+                    Task { @MainActor in
                         await self?.performBackgroundUpdate()
                     }
                 }
@@ -145,7 +144,7 @@ extension DownloadsView.ViewModel {
         }
 
         // Low-priority updates that can be debounced
-        let debouncedUpdateNotifications: [NSNotification.Name] = [
+        let debouncedUpdateNotifications: [Notification.Name] = [
             .downloadFinished,
             .downloadFailed,
             .downloadsCancelled,
@@ -160,9 +159,10 @@ extension DownloadsView.ViewModel {
 
         for notification in debouncedUpdateNotifications {
             NotificationCenter.default.publisher(for: notification)
-                .receive(on: DispatchQueue.main)
                 .sink { [weak self] _ in
-                    self?.scheduleBackgroundUpdate()
+                    Task { @MainActor in
+                        self?.scheduleBackgroundUpdate()
+                    }
                 }
                 .store(in: &cancellables)
         }

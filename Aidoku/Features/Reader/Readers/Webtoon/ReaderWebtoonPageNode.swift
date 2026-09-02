@@ -17,6 +17,7 @@ import ZIPFoundation
 class ReaderWebtoonPageNode: BaseObservingCellNode {
     let source: AidokuRunner.Source?
     let page: Page
+    let temporaryPageStore: ReaderTemporaryPageStore
 
     weak var delegate: ReaderWebtoonViewController?
 
@@ -28,7 +29,11 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     }
     var text: String?
     var ratio: CGFloat?
-    private var loading = false
+
+    private var pageLoadTask: Task<Void, Never>?
+    private var imageTask: ImageTask?
+    private var imageProcessingTask: Task<UIImage?, Never>?
+
     private var shouldShowLiveTextButton = false
     private var liveTextAnalysisTask: Task<Void, Never>?
     private var dictionaryAnalysisTask: Task<Void, Never>?
@@ -45,7 +50,6 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         set { _textRecognizer = newValue }
     }
 
-    // MARK: - Reload functionality properties
     private var currentImageRequest: ImageRequest?
 
     var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
@@ -53,6 +57,10 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     var pillarboxOrientation = UserDefaults.standard.string(forKey: "Reader.pillarboxOrientation")
 
     static let defaultRatio: CGFloat = 1.435
+
+    private var pageWidth: CGFloat {
+        calculatedSize.width
+    }
 
     var progressView: CircularProgressView {
         (progressNode.view as? CircularProgressView)!
@@ -75,13 +83,17 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 
     init(
         source: AidokuRunner.Source?,
-        page: Page
+        page: Page,
+        temporaryPageStore: ReaderTemporaryPageStore
     ) {
         self.source = source
         self.page = page
+        self.temporaryPageStore = temporaryPageStore
         super.init()
+
         automaticallyManagesSubnodes = true
         shouldAnimateSizeChanges = false
+
         addObserver(forName: "Reader.pillarbox") { [weak self] notification in
             self?.pillarbox = notification.object as? Bool ?? false
             self?.transition()
@@ -95,10 +107,29 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             self?.pillarboxOrientation = notification.object as? String ?? "both"
             self?.transition()
         }
+        addObserver(forName: UIApplication.didReceiveMemoryWarningNotification.rawValue) { [weak self] _ in
+            self?.handleMemoryWarning()
+        }
     }
 
     deinit {
+        cancelLiveTextAnalysis()
         cancelDictionaryTextAnalysis()
+    }
+
+    override func didEnterPreloadState() {
+        super.didEnterPreloadState()
+        startPageLoad()
+    }
+
+    override func didExitPreloadState() {
+        super.didExitPreloadState()
+        cancelPageLoad()
+    }
+
+    override func didEnterVisibleState() {
+        super.didEnterVisibleState()
+        displayPage()
     }
 
     override func didEnterDisplayState() {
@@ -109,30 +140,21 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     override func didExitDisplayState() {
         super.didExitDisplayState()
         guard !isVisible else { return }
+
         // don't hide images if zooming in/out
         if let delegate, delegate.isZooming {
             return
         }
+
+        cancelLiveTextAnalysis()
         cancelDictionaryTextAnalysis()
-        imageNode.image = nil
-        image = nil
-        text = nil
+        clearDisplayedImage()
         clearDictionaryOverlays()
+
+        text = nil
         imageNode.alpha = 0
         textNode.alpha = 0
         progressNode.isHidden = false
-    }
-
-    override func didEnterPreloadState() {
-        super.didEnterPreloadState()
-        Task {
-            await loadPage()
-        }
-    }
-
-    override func didEnterVisibleState() {
-        super.didEnterVisibleState()
-        displayPage()
     }
 
     override func animateLayoutTransition(_ context: ASContextTransitioning) {
@@ -175,22 +197,25 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
         else { return }
         layout.isInsertingCellsAbove = yOffset < collectionNode.contentOffset.y
     }
+}
 
+extension ReaderWebtoonPageNode {
     func getPillarboxHeight(percent: CGFloat, maxWidth: CGFloat) -> CGFloat {
         guard let image, image.size.width > 0 else { return 0 }
         let width = maxWidth * percent
         return width / image.size.width * image.size.height
     }
 
-    func isPillarboxOrientation() -> Bool {
-        pillarboxOrientation == "both" ||
-            (pillarboxOrientation == "portrait" && UIDevice.current.orientation.isPortrait) ||
-            (pillarboxOrientation == "landscape" && UIDevice.current.orientation.isLandscape)
+    func isPillarboxOrientation(for size: CGSize) -> Bool {
+        let isPortrait = size.height >= size.width
+        return pillarboxOrientation == "both"
+            || (pillarboxOrientation == "portrait" && isPortrait)
+            || (pillarboxOrientation == "landscape" && !isPortrait)
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         if let image {
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let height = getPillarboxHeight(percent: percent, maxWidth: constrainedSize.max.width)
 
@@ -212,7 +237,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             }
         } else if text != nil {
             // todo: the text node should probably adjust its size based on the text
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
@@ -227,7 +252,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
                 )
             }
         } else {
-            if pillarbox && isPillarboxOrientation() {
+            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
@@ -246,10 +271,30 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
 }
 
 extension ReaderWebtoonPageNode {
+    private func startPageLoad() {
+        guard pageLoadTask == nil, image == nil, text == nil else { return }
+
+        pageLoadTask = Task { [weak self] in
+            guard let self else { return }
+            await self.loadPage()
+            self.pageLoadTask = nil
+        }
+    }
+
+    private func cancelPageLoad() {
+        pageLoadTask?.cancel()
+        pageLoadTask = nil
+
+        imageTask?.cancel()
+        imageTask = nil
+
+        imageProcessingTask?.cancel()
+        imageProcessingTask = nil
+    }
+
     func loadPage() async {
-        guard image == nil, text == nil, !loading else { return }
-        cancelDictionaryTextAnalysis()
-        loading = true
+        guard image == nil, text == nil, !Task.isCancelled else { return }
+
         imageNode.alpha = 0
         textNode.alpha = 0
         progressNode.isHidden = false
@@ -260,7 +305,6 @@ extension ReaderWebtoonPageNode {
             if isNodeLoaded {
                 displayPage()
             }
-            loading = false
         } else if let zipURL = page.zipURL, let url = URL(string: zipURL), let filePath = page.imageURL {
             await loadImage(zipURL: url, filePath: filePath)
         } else if let urlString = page.imageURL, let url = URL(string: urlString) {
@@ -275,16 +319,16 @@ extension ReaderWebtoonPageNode {
     }
 
     private func loadImage(url: URL, context: PageContext?) async {
-        let urlRequest = if let source {
+        let urlRequest = if !url.isFileURL, let source {
             await source.getModifiedImageRequest(url: url, context: context)
         } else {
             URLRequest(url: url)
         }
 
-        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
+        let width = pageWidth
+        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && width > 0
         let shouldUpscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
         let shouldCropBorders = UserDefaults.standard.bool(forKey: "Reader.cropBorders")
-        let width = await UIScreen.main.bounds.width
         var processors: [ImageProcessing] = []
         var usePageProcessor = false
         if
@@ -314,8 +358,6 @@ extension ReaderWebtoonPageNode {
         // Store current image request for reload functionality
         self.currentImageRequest = request
 
-        defer { loading = false }
-
         let imageTask = ImagePipeline.shared.loadImage(
             with: request,
             progress: { [weak progressView] _, completed, total in
@@ -326,8 +368,11 @@ extension ReaderWebtoonPageNode {
             },
             completion: { _ in }
         )
+        self.imageTask = imageTask
+
         do {
             let response = try await imageTask.response
+            guard !Task.isCancelled else { return }
             image = response.image
             if response.container.type == .gif, let data = response.container.data {
                 imageNode.animate(withGIFData: data)
@@ -336,35 +381,38 @@ extension ReaderWebtoonPageNode {
                 displayPage()
             }
         } catch {
-            Task {
-                switch error {
-                    case .dataLoadingFailed, .dataIsEmpty:
-                        // we can still send to image processor even if the request failed
-                        if request.userInfo[.processesKey] as? Bool == true {
-                            let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
-                            if let processor {
-                                let result = await Task.detached {
-                                    try? processor.processWithoutImage(request: request)
-                                }.value
-                                if let result {
-                                    self.image = result.image
-                                    if result.type == .gif, let data = result.data {
-                                        self.imageNode.animate(withGIFData: data)
-                                    }
-                                    if self.isNodeLoaded {
-                                        self.displayPage()
-                                    }
-                                    return
+            guard !Task.isCancelled else { return }
+
+            switch error {
+                case .dataLoadingFailed, .dataIsEmpty:
+                    // we can still send to image processor even if the request failed
+                    if request.userInfo[.processesKey] as? Bool == true {
+                        let processor = request.processors.first(where: { $0 is PageInterceptorProcessor }) as? PageInterceptorProcessor
+                        if let processor {
+                            let result = await Task.detached {
+                                try? processor.processWithoutImage(request: request)
+                            }.value
+
+                            guard !Task.isCancelled else { return }
+
+                            if let result {
+                                self.image = result.image
+                                if result.type == .gif, let data = result.data {
+                                    self.imageNode.animate(withGIFData: data)
                                 }
+                                if self.isNodeLoaded {
+                                    self.displayPage()
+                                }
+                                return
                             }
                         }
-                    default:
-                        break
-                }
-
-                // TODO: handle failure
-                await self.progressView.setProgress(value: 0, withAnimation: true)
+                    }
+                default:
+                    break
             }
+
+            // TODO: handle failure
+            await self.progressView.setProgress(value: 0, withAnimation: true)
         }
     }
 
@@ -380,7 +428,6 @@ extension ReaderWebtoonPageNode {
         self.currentImageRequest = request
 
         progressNode.isHidden = false
-        defer { loading = false }
 
         // check cache
         if ImagePipeline.shared.cache.containsCachedImage(for: request) {
@@ -392,7 +439,10 @@ extension ReaderWebtoonPageNode {
             return
         }
 
-        let image: UIImage? = await Task.detached {
+        let downsampleWidth = pageWidth
+        let shouldDownsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages") && downsampleWidth > 0
+
+        let processingTask = Task.detached { () -> UIImage? in
             guard
                 let imageData = Data(base64Encoded: base64),
                 var image = UIImage(data: imageData)
@@ -406,8 +456,8 @@ extension ReaderWebtoonPageNode {
                     image = processedImage
                 }
             }
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
+            if shouldDownsample {
+                let processor = await DownsampleProcessor(width: downsampleWidth)
                 if let processedImage = processor.process(image) {
                     image = processedImage
                 }
@@ -419,8 +469,11 @@ extension ReaderWebtoonPageNode {
             }
 
             return image
-        }.value
-        guard let image else { return }
+        }
+        self.imageProcessingTask = processingTask
+        let image = await processingTask.value
+        self.imageProcessingTask = nil
+        guard !Task.isCancelled, let image else { return }
 
         ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
         self.image = image
@@ -430,85 +483,13 @@ extension ReaderWebtoonPageNode {
     }
 
     private func loadImage(zipURL: URL, filePath: String) async {
-        var hasher = Hasher()
-        hasher.combine(zipURL)
-        hasher.combine(filePath)
-        let key = String(hasher.finalize())
-
-        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
-        let request = ImageRequest(
-            id: fullKey,
-            data: { Data() },
-            userInfo: [:]
-        )
-
-        // Store current image request for reload functionality
-        self.currentImageRequest = request
-
-        progressNode.isHidden = false
-        defer { loading = false }
-
-        // check cache
-        if ImagePipeline.shared.cache.containsCachedImage(for: request) {
-            let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
-            image = imageContainer?.image
-            if isNodeLoaded {
-                displayPage()
-            }
+        guard let extractedURL = await self.temporaryPageStore.storeArchiveEntry(
+            from: zipURL,
+            path: filePath
+        ) else {
             return
         }
-
-        let image: UIImage? = await Task.detached {
-            do {
-                var imageData = Data()
-                let archive: Archive
-                archive = try Archive(url: zipURL, accessMode: .read)
-                guard let entry = archive.entry(at: filePath)
-                else {
-                    return nil
-                }
-                _ = try archive.extract(
-                    entry,
-                    consumer: { data in
-                        imageData.append(data)
-                    }
-                )
-                guard var image = UIImage(data: imageData) else {
-                    return nil
-                }
-
-                if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                    let processor = CropBordersProcessor()
-                    let processedImage = processor.process(image)
-                    if let processedImage = processedImage {
-                        image = processedImage
-                    }
-                }
-                if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                    let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                    let processedImage = processor.process(image)
-                    if let processedImage = processedImage {
-                        image = processedImage
-                    }
-                } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
-                    let processor = UpscaleProcessor()
-                    if let processedImage = processor.process(image) {
-                        image = processedImage
-                    }
-                }
-
-                return image
-            } catch {
-                return nil
-            }
-        }.value
-        guard let image else { return }
-
-        ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
-        self.image = image
-        if isNodeLoaded {
-            displayPage()
-        }
+        await loadImage(url: extractedURL, context: nil)
     }
 
     private func loadText(_ text: String) {
@@ -516,14 +497,11 @@ extension ReaderWebtoonPageNode {
         if isNodeLoaded {
             displayPage()
         }
-        loading = false
     }
 
     func displayPage() {
         guard text != nil || image != nil else {
-            Task {
-                await loadPage()
-            }
+            startPageLoad()
             return
         }
 
@@ -562,35 +540,59 @@ extension ReaderWebtoonPageNode {
         transition()
     }
 
+    private func clearDisplayedImage() {
+        imageNode.reset()
+        image = nil
+    }
+
     private func transition() {
+        let width = pageWidth
+        guard width > 0 else { return }
         let ratio = if let image, image.size.width > 0 {
             image.size.height / image.size.width
         } else {
             ratio ?? Self.defaultRatio
         }
-        let scaledHeight = UIScreen.main.bounds.width * ratio
-        let size = CGSize(width: UIScreen.main.bounds.width, height: scaledHeight)
+        let size = CGSize(width: width, height: width * ratio)
         frame = CGRect(origin: .zero, size: size)
         transitionLayout(with: ASSizeRange(min: .zero, max: size), animated: true, shouldMeasureAsync: false)
     }
 
     @MainActor
     private func analyzeLiveText() async {
+        guard #available(iOS 16.0, *), let image else { return }
+
+        if let liveTextAnalysisTask {
+            return await liveTextAnalysisTask.value
+        }
+
+        liveTextAnalysisTask = Task { @MainActor [weak self] in
+            let analyzer = ImageAnalyzer()
+            let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
+
+            guard
+                !Task.isCancelled,
+                let self,
+                let interaction = self.imageNode.imageAnalaysisInteraction
+            else {
+                return
+            }
+
+            interaction.analysis = analysis
+            interaction.isSupplementaryInterfaceHidden = !self.shouldShowLiveTextButton
+        }
+
+        await liveTextAnalysisTask?.value
+    }
+
+    private func cancelLiveTextAnalysis() {
+        liveTextAnalysisTask?.cancel()
+        liveTextAnalysisTask = nil
+
         if #available(iOS 16.0, *) {
-            if let liveTextAnalysisTask {
-                return await liveTextAnalysisTask.value
+            Task { @MainActor [weak imageNode] in
+                imageNode?.removeImageAnalysisInteraction()
             }
-            liveTextAnalysisTask = Task {
-                guard let image else {
-                    imageNode.imageAnalaysisInteraction?.analysis = nil
-                    return
-                }
-                let analyzer = ImageAnalyzer()
-                let analysis = try? await analyzer.analyze(image, configuration: .init([.text, .machineReadableCode]))
-                imageNode.imageAnalaysisInteraction?.analysis = analysis
-                imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = !shouldShowLiveTextButton
-            }
-            await liveTextAnalysisTask?.value
         }
     }
 
@@ -628,6 +630,24 @@ extension ReaderWebtoonPageNode {
             imageNode.imageAnalaysisInteraction?.isSupplementaryInterfaceHidden = hidden
         }
     }
+
+    private func handleMemoryWarning() {
+        cancelLiveTextAnalysis()
+        cancelDictionaryTextAnalysis()
+        clearDictionaryOverlays()
+
+        // remove data from non-visible pages
+        guard !isVisible else { return }
+
+        cancelPageLoad()
+        clearDisplayedImage()
+        text = nil
+
+        imageNode.alpha = 0
+        textNode.alpha = 0
+        progressNode.isHidden = false
+    }
+
 }
 
 // MARK: - Dictionary Overlay
@@ -674,12 +694,8 @@ extension ReaderWebtoonPageNode {
         clearCurrentImageCache()
 
         // Clear the current image and text to show loading state
-        image = nil
+        clearDisplayedImage()
         text = nil
-        imageNode.image = nil
-        imageNode.alpha = 0
-        textNode.alpha = 0
-        loading = false
 
         // Reload the image using the original page data
         await loadPage()

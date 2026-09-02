@@ -47,7 +47,7 @@ actor DownloadQueue {
         if
             bgTask == nil,
             #available(iOS 26.0, *),
-            UserDefaults.standard.bool(forKey: "Downloads.background"),
+            AppSettings.downloads.background.get(),
             !ProcessInfo.processInfo.isMacCatalystApp
         {
             await register()
@@ -83,7 +83,7 @@ actor DownloadQueue {
     func resume() async {
         paused = false
 
-        if #available(iOS 26.0, *), UserDefaults.standard.bool(forKey: "Downloads.background") {
+        if #available(iOS 26.0, *), AppSettings.downloads.background.get() {
             if bgTask == nil {
                 await start()
             }

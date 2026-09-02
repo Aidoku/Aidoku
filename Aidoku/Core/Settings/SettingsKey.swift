@@ -47,6 +47,11 @@ struct SettingsKey<Value: SettingsValue>: SettingsDefault, Sendable {
     func reset() {
         UserDefaults.standard.removeObject(forKey: key)
     }
+
+    func register(_ value: Value) {
+        guard let object = value.serialize() else { return }
+        UserDefaults.standard.register(defaults: [key: object])
+    }
 }
 
 extension SettingsKey where Value: ExpressibleByNilLiteral {

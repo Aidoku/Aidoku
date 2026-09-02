@@ -22,33 +22,33 @@ actor AniListApi {
 
 // MARK: - Data
 extension AniListApi {
-    func search(query: String, nsfw: Bool = true) async -> ALPage? {
-        let response: GraphQLResponse<AniListSearchResponse>? = await request(
+    func search(query: String, nsfw: Bool = true) async throws -> ALPage? {
+        let response: GraphQLResponse<AniListSearchResponse> = try await request(
             GraphQLVariableQuery(
                 query: nsfw ? AniListQueries.searchQueryNsfw : AniListQueries.searchQuery,
                 variables: AniListSearchVars(search: query)
             )
         )
-        return response?.data?.Page
+        return response.data?.Page
     }
 
     func getMedia(id: Int) async -> Media? {
-        let response: GraphQLResponse<AniListMediaStatusResponse>? = await request(
+        let response: GraphQLResponse<AniListMediaStatusResponse>? = try? await request(
             GraphQLVariableQuery(query: AniListQueries.mediaQuery, variables: AniListMediaStatusVars(id: id))
         )
         return response?.data?.Media
     }
 
     func getMediaState(id: Int) async -> Media? {
-        let response: GraphQLResponse<AniListMediaStatusResponse>? = await request(
+        let response: GraphQLResponse<AniListMediaStatusResponse>? = try? await request(
             GraphQLVariableQuery(query: AniListQueries.mediaStatusQuery, variables: AniListMediaStatusVars(id: id))
         )
         return response?.data?.Media
     }
 
     @discardableResult
-    func update(media: Int, update: TrackUpdate) async -> GraphQLResponse<AniListUpdateResponse>? {
-        await request(
+    func update(media: Int, update: TrackUpdate) async throws -> GraphQLResponse<AniListUpdateResponse> {
+        try await request(
             GraphQLVariableQuery(
                 query: AniListQueries.updateMediaQuery,
                 variables: AniListUpdateMediaVars(
@@ -65,23 +65,23 @@ extension AniListApi {
     }
 
     func getUser() async -> User? {
-        let response: GraphQLResponse<AniListViewerResponse>? = await request(
+        let response: GraphQLResponse<AniListViewerResponse>? = try? await request(
             GraphQLQuery(query: AniListQueries.viewerQuery)
         )
         return response?.data?.Viewer
     }
 
-    private func request<T: Codable & Sendable, D: Encodable>(_ data: D) async -> GraphQLResponse<T>? {
+    private func request<T: Codable & Sendable, D: Encodable>(_ data: D) async throws -> GraphQLResponse<T> {
         let url = URL(string: "https://graphql.anilist.co")!
         var request = await oauth.authorizedRequest(for: url)
 
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpMethod = "POST"
-        request.httpBody = try? encoder.encode(data)
+        request.httpBody = try encoder.encode(data)
 
-        let response: GraphQLResponse<T>? = try? await URLSession.shared.object(from: request)
+        let response: GraphQLResponse<T> = try await URLSession.shared.object(from: request)
         // check if token is invalid
-        if let response, response.errors?.contains(where: { $0.status == 400 }) ?? false {
+        if response.errors?.contains(where: { $0.status == 400 }) ?? false {
             // don't show the relogin alert if we're not logged in in the first place
             if TrackerManager.anilist.isLoggedIn {
                 await oauth.showReloginAlert(trackerName: "AniList")

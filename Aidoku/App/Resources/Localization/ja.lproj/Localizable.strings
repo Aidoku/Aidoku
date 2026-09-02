@@ -299,6 +299,10 @@
 "WITH_COMPLETED_STATUS" = "完結済みの漫画";
 "THAT_HAVENT_BEEN_READ" = "未読の漫画";
 "MISSING_SOURCES" = "ソースがありません";
+"RESTORE_MISSING_SOURCES" = "不足しているソースを復元しますか？";
+"RESTORE_MISSING_SOURCES_TEXT" = "復元したソースリストを検索し、見つかったソースをインストールしますか？";
+"INSTALL_SOURCES" = "ソースをインストール";
+"INSTALLING_SOURCES" = "ソースをインストール中…";
 "%@_AGO" = "%@前";
 "WEBTOON" = "Webtoon";
 "PILLARBOX_ORIENTATION" = "ピラーボックスの向き";
@@ -364,7 +368,7 @@
 "LOCAL_FILES" = "ローカルファイル";
 "LOCAL_FILES_TAGLINE" = "ローカルファイルから読む";
 "IMPORT" = "インポート";
-"LOCAL_FILE_IMPORT_TEXT" = "画像を含むCBZ、EPUB、またはZIPファイルをインポートして読み込みます。";
+"LOCAL_FILE_IMPORT_TEXT" = "画像を含むCBZかZIPファイルをインポートして読み込みます。";
 "CHAPTER_TITLE" = "章タイトル";
 "SERIES_TITLE" = "作品名";
 "DESCRIPTION" = "詳細";

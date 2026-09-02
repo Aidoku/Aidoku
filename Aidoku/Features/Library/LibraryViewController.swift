@@ -65,10 +65,10 @@ class LibraryViewController: OldMangaCollectionViewController {
 
     override var usesListLayout: Bool {
         get {
-            UserDefaults.standard.bool(forKey: "Library.listView")
+            AppSettings.library.listView.get()
         }
         set {
-            UserDefaults.standard.setValue(newValue, forKey: "Library.listView")
+            AppSettings.library.listView.set(newValue)
         }
     }
 
@@ -168,7 +168,7 @@ class LibraryViewController: OldMangaCollectionViewController {
 
             header.delegate = self
             var options: [LibraryCategorySelectionHeader.Section] = []
-            if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
+            if AppSettings.library.showUncategorizedCategory.get() {
                 options.append(.init(options: [NSLocalizedString("ALL"), NSLocalizedString("UNCATEGORIZED")]))
             } else {
                 options.append(.init(options: [NSLocalizedString("ALL")]))
@@ -191,8 +191,8 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
 
             // load locked icons
-            if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
-                let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+            if AppSettings.library.lockLibrary.get() {
+                let lockedCategories = AppSettings.library.lockedCategories.get()
                 header.lockedOptions = [IndexPath(row: 0, section: 0)] + lockedCategories.compactMap { category -> IndexPath? in
                     if let index = self.viewModel.categories.firstIndex(of: category) {
                         return IndexPath(row: index, section: 1)
@@ -328,7 +328,7 @@ class LibraryViewController: OldMangaCollectionViewController {
                 }
                 self.updateHeaderCategories()
                 // update lock state
-                if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
+                if AppSettings.library.lockLibrary.get() {
                     NotificationCenter.default.post(name: .updateLibraryLock, object: nil)
                 }
             }
@@ -343,7 +343,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         addObserver(forName: .updateManga) { [weak self] notification in
             guard let self, let id = notification.object as? MangaIdentifier else { return }
             Task {
-                let libraryReloaded = if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+                let libraryReloaded = if !AppSettings.general.incognitoMode.get() {
                     await self.viewModel.mangaOpened(mangaId: id)
                 } else {
                     false
@@ -368,7 +368,7 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
         }
 
-        addObserver(forName: .pinTitles) { [weak self] _ in
+        addObserver(forName: AppSettings.library.pinTitles.key) { [weak self] _ in
             guard let self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
             Task { @MainActor in
@@ -378,16 +378,16 @@ class LibraryViewController: OldMangaCollectionViewController {
         }
 
         // refresh badges
-        addObserver(forName: "Library.unreadChapterBadges") { [weak self] _ in
-            if UserDefaults.standard.bool(forKey: "Library.unreadChapterBadges") {
+        addObserver(forName: AppSettings.library.unreadChapterBadges.key) { [weak self] _ in
+            if AppSettings.library.unreadChapterBadges.get() {
                 self?.viewModel.badgeType.insert(.unread)
             } else {
                 self?.viewModel.badgeType.remove(.unread)
             }
             self?.reloadItems()
         }
-        addObserver(forName: "Library.downloadedChapterBadges") { [weak self] _ in
-            if UserDefaults.standard.bool(forKey: "Library.downloadedChapterBadges") {
+        addObserver(forName: AppSettings.library.downloadedChapterBadges.key) { [weak self] _ in
+            if AppSettings.library.downloadedChapterBadges.get() {
                 self?.viewModel.badgeType.insert(.downloaded)
             } else {
                 self?.viewModel.badgeType.remove(.downloaded)
@@ -638,7 +638,7 @@ extension LibraryViewController {
     }
 
     @objc func updateLibraryRefresh(refreshControl: UIRefreshControl? = nil) {
-        let isBlockedByNoWifi = UserDefaults.standard.bool(forKey: "Library.updateOnlyOnWifi") && Reachability.getConnectionType() != .wifi
+        let isBlockedByNoWifi = AppSettings.library.updateOnlyOnWifi.get() && Reachability.getConnectionType() != .wifi
 
         Task {
             // delay hiding refresh control to avoid buggy animation
@@ -869,8 +869,8 @@ extension LibraryViewController {
         ) as? LibraryCategorySelectionHeader) else {
             return
         }
-        if UserDefaults.standard.bool(forKey: "Library.lockLibrary") {
-            let lockedCategories = UserDefaults.standard.stringArray(forKey: "Library.lockedCategories") ?? []
+        if AppSettings.library.lockLibrary.get() {
+            let lockedCategories = AppSettings.library.lockedCategories.get()
             header.lockedOptions = [IndexPath(row: 0, section: 0)] + lockedCategories.compactMap { category -> IndexPath? in
                 if let index = self.viewModel.categories.firstIndex(of: category) {
                     return IndexPath(row: index, section: 1)
@@ -897,7 +897,7 @@ extension LibraryViewController {
         defer { ignoreOptionChange = false }
 
         var options: [LibraryCategorySelectionHeader.Section] = []
-        if UserDefaults.standard.bool(forKey: "Library.showUncategorizedCategory") {
+        if AppSettings.library.showUncategorizedCategory.get() {
             options.append(.init(options: [NSLocalizedString("ALL"), NSLocalizedString("UNCATEGORIZED")]))
         } else {
             options.append(.init(options: [NSLocalizedString("ALL")]))
@@ -1297,7 +1297,7 @@ extension LibraryViewController {
             return
         }
 
-        if UserDefaults.standard.bool(forKey: "Library.opensReaderView") {
+        if AppSettings.library.opensReaderView.get() {
             Task {
                 // get next chapter to read
                 let (sortedChapters, nextChapter) = await MangaManager.shared.getNextChapter(mangaId: info.id)
@@ -1351,7 +1351,7 @@ extension LibraryViewController {
             super.collectionView(collectionView, didSelectItemAt: indexPath)
         }
 
-        if !UserDefaults.standard.bool(forKey: "General.incognitoMode") {
+        if !AppSettings.general.incognitoMode.get() {
             Task {
                 await CoreDataManager.shared.setOpened(mangaId: info.id)
                 await self.viewModel.mangaOpened(mangaId: info.id)
@@ -1426,7 +1426,7 @@ extension LibraryViewController {
                 ]))
             }
 
-            if UserDefaults.standard.bool(forKey: "Library.opensReaderView"), mangaInfo.count == 1 {
+            if AppSettings.library.opensReaderView.get(), mangaInfo.count == 1 {
                 actions.append(UIAction(
                     title: NSLocalizedString("MANGA_INFO"),
                     image: UIImage(systemName: "info.circle"),
@@ -1508,9 +1508,8 @@ extension LibraryViewController {
             ]))
 
             let downloadAllAction = UIAction(title: NSLocalizedString("ALL")) { _ in
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
-                    Reachability.getConnectionType() == .wifi ||
-                    !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
+                if downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi || !downloadOnlyOnWifi  {
                     Task {
                         for mangaInfo in mangaInfo {
                             await DownloadManager.shared.downloadAll(manga: mangaInfo.toManga().toNew())
@@ -1525,9 +1524,8 @@ extension LibraryViewController {
             }
 
             let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD")) { _ in
-                if UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") &&
-                    Reachability.getConnectionType() == .wifi ||
-                    !UserDefaults.standard.bool(forKey: "Library.downloadOnlyOnWifi") {
+                let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
+                if downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi || !downloadOnlyOnWifi  {
                     Task {
                         for manga in mangaInfo {
                             await DownloadManager.shared.downloadUnread(manga: manga.toManga().toNew())

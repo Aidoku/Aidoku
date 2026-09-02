@@ -40,7 +40,11 @@ class OldMangaCollectionViewController: BaseCollectionViewController {
     }
 
     override func observe() {
-        let keys = ["Appearance.layout", "Appearance.customPortraitRows", "Appearance.customLandscapeRows"]
+        let keys = [
+            AppSettings.appearance.layout.key,
+            AppSettings.appearance.customPortraitRows.key,
+            AppSettings.appearance.customLandscapeRows.key
+        ]
         for key in keys {
             addObserver(forName: key) { [weak self] _ in
                 Task { @MainActor in
@@ -124,21 +128,24 @@ extension OldMangaCollectionViewController {
     }
 
     static func makeGridLayoutSection(environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
-        let layout = UserDefaults.standard.string(forKey: "Appearance.layout")
+        let layout = AppSettings.appearance.layout.get()
         let containerWidth = environment.container.contentSize.width
 
         let itemsPerRow: Int
         switch layout {
-            case "standard":
+            case .standard:
                 let idealWidth: CGFloat = 180
                 itemsPerRow = max(1, Int(floor(containerWidth / idealWidth)))
-            case "compact":
+            case .compact:
                 let idealWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 150 : 120
                 itemsPerRow = max(1, Int(floor(containerWidth / idealWidth)))
-            default: // custom
+            case .custom:
                 let isLandscape = containerWidth > environment.container.contentSize.height
-                let key = isLandscape ? "Appearance.customLandscapeRows" : "Appearance.customPortraitRows"
-                itemsPerRow = UserDefaults.standard.integer(forKey: key)
+                itemsPerRow = if isLandscape {
+                    AppSettings.appearance.customLandscapeRows.get()
+                } else {
+                    AppSettings.appearance.customPortraitRows.get()
+                }
         }
 
         let item = NSCollectionLayoutItem(layoutSize: NSCollectionLayoutSize(
@@ -367,11 +374,11 @@ extension OldMangaCollectionViewController {
         let itemsPerRow = if usesListLayout {
             1
         } else {
-            UserDefaults.standard.integer(
-                forKey: UIScreen.main.bounds.width > UIScreen.main.bounds.height
-                    ? "Appearance.customLandscapeRows"
-                    : "Appearance.customPortraitRows"
-            )
+            if UIScreen.main.bounds.width > UIScreen.main.bounds.height {
+                AppSettings.appearance.customLandscapeRows.get()
+            } else {
+                AppSettings.appearance.customPortraitRows.get()
+            }
         }
         switch sender.input {
             case UIKeyCommand.inputLeftArrow: position -= 1

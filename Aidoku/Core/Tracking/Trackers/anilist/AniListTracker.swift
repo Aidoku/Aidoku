@@ -93,7 +93,7 @@ final class AniListTracker: OAuthTracker {
         // set status to reading if status doesn't already exist
         let state = await api.getMediaState(id: id)
         if state?.mediaListEntry?.status == nil {
-            await api.update(media: id, update: TrackUpdate(
+            try await api.update(media: id, update: TrackUpdate(
                 status: earliestReadDate != nil ? .reading : .planning,
                 lastReadChapter: highestChapterRead,
                 startReadDate: earliestReadDate
@@ -111,7 +111,7 @@ final class AniListTracker: OAuthTracker {
         if scoreType == "POINT_10" && update.score != nil {
             update.score = update.score! * 10
         }
-        await api.update(media: id, update: update)
+        try await api.update(media: id, update: update)
     }
 
     func getState(trackId: String) async throws -> TrackState {
@@ -146,11 +146,11 @@ final class AniListTracker: OAuthTracker {
         URL(string: "https://anilist.co/manga/\(trackId)")
     }
 
-    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async -> [TrackSearchItem] {
-        await search(title: manga.title, nsfw: includeNsfw)
+    func search(for manga: AidokuRunner.Manga, includeNsfw: Bool) async throws -> [TrackSearchItem] {
+        try await search(title: manga.title, nsfw: includeNsfw)
     }
 
-    func search(title: String, includeNsfw: Bool) async -> [TrackSearchItem] {
+    func search(title: String, includeNsfw: Bool) async throws -> [TrackSearchItem] {
         if
             let url = URL(string: title),
             url.host == "anilist.co",
@@ -170,12 +170,12 @@ final class AniListTracker: OAuthTracker {
                 tracked: media.mediaListEntry != nil
             )]
         } else {
-            return await search(title: title, nsfw: includeNsfw)
+            return try await search(title: title, nsfw: includeNsfw)
         }
     }
 
-    private func search(title: String, nsfw: Bool) async -> [TrackSearchItem] {
-        guard let page = await api.search(query: title, nsfw: nsfw) else {
+    private func search(title: String, nsfw: Bool) async throws -> [TrackSearchItem] {
+        guard let page = try await api.search(query: title, nsfw: nsfw) else {
             return []
         }
 

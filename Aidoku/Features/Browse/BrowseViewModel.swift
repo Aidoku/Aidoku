@@ -68,17 +68,24 @@ class BrowseViewModel {
     // load external source lists
     func loadExternalSources(reload: Bool = false) async {
         if reload {
-            await SourceManager.shared.reloadSourceLists(skipUpdateNotification: true)
+            await SourceManager.shared.startSourceListsReload(skipUpdateNotification: true)
         }
-        let sourceLists = await SourceManager.shared.getSourceLists()
+
+        unfilteredExternalSources = []
+        updatesSources = []
 
         // ensure external sources have unique ids
         var sourceById: [String: ExternalSourceInfo] = [:]
 
-        for sourceList in sourceLists {
+        let stream = await SourceManager.shared.streamSourceListsLoad()
+
+        for await url in stream {
+            guard let sourceList = await SourceManager.shared.getSourceList(url: url) else { continue }
+
             if sourceList.legacy {
                 hasLegacySourceList = true
             }
+
             for source in sourceList.sources {
                 if let existing = sourceById[source.id] {
                     // if a newer version exists, replace it
@@ -89,24 +96,34 @@ class BrowseViewModel {
                     sourceById[source.id] = source
                 }
             }
+
+            unfilteredExternalSources = Array(sourceById.values)
+
+            updateExternalInfo(using: sourceById)
+            loadUpdates()
         }
+    }
 
-        unfilteredExternalSources = Array(sourceById.values)
-
-        func updateExternalInfo(for property: inout [SourceInfo]) {
-            property = property.map { info in
-                if let externalInfo = sourceById[info.sourceId] {
-                    var updatedInfo = info
-                    updatedInfo.externalInfo = externalInfo
-                    return updatedInfo
-                }
+    private func updateExternalInfo(using sourceById: [String: ExternalSourceInfo]) {
+        func update(_ sources: inout [SourceInfo]) {
+            sources = sources.map { info in
+                var info = info
+                info.externalInfo = sourceById[info.sourceId]
                 return info
             }
         }
 
-        if query?.isEmpty ?? true {
-            updateExternalInfo(for: &pinnedSources)
-            updateExternalInfo(for: &installedSources)
+        if var storedPinnedSources, var storedInstalledSources {
+            update(&storedPinnedSources)
+            update(&storedInstalledSources)
+
+            self.storedPinnedSources = storedPinnedSources
+            self.storedInstalledSources = storedInstalledSources
+
+            search(query: query)
+        } else {
+            update(&pinnedSources)
+            update(&installedSources)
         }
     }
 

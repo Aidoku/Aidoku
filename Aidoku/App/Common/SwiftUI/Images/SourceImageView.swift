@@ -6,6 +6,7 @@
 //
 
 import AidokuRunner
+import Nuke
 import NukeUI
 import SwiftUI
 
@@ -20,6 +21,17 @@ struct SourceImageView: View {
     var placeholder = "MangaPlaceholder"
 
     @State private var imageRequest: ImageRequest?
+
+    private var processors: [ImageProcessing] {
+        var processors: [ImageProcessing] = []
+        if let downsampleWidth {
+            processors.append(DownsampleProcessor(width: downsampleWidth))
+        }
+        if let source, source.features.processesCovers {
+            processors.append(CoverInterceptorProcessor(source: source))
+        }
+        return processors
+    }
 
     var body: some View {
         LazyImage(
@@ -46,13 +58,7 @@ struct SourceImageView: View {
                     .id(state.image != nil ? imageUrl : "placeholder") // ensures only opacity is animated
             }
         }
-        .processors({
-            if let downsampleWidth {
-                [DownsampleProcessor(width: downsampleWidth)]
-            } else {
-                []
-            }
-        }())
+        .processors(processors)
         .onAppear {
             guard imageRequest == nil else { return }
             Task {
@@ -77,6 +83,9 @@ struct SourceImageView: View {
             imageRequest = ImageRequest(url: url)
             return
         }
-        imageRequest = ImageRequest(urlRequest: await source.getModifiedImageRequest(url: url, context: nil))
+        imageRequest = ImageRequest(
+            urlRequest: await source.getModifiedImageRequest(url: url, context: nil),
+            userInfo: [.processesKey: source.features.processesCovers]
+        )
     }
 }
