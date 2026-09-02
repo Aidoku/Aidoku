@@ -144,77 +144,12 @@ final class EpubSpineRenderer: NSObject {
 
     private var overscrollTriggered = false
 
-    func imageSource(at point: CGPoint) async -> String? {
-        let script = """
-        (function() {
-            var el = document.elementFromPoint(\(point.x), \(point.y));
-            while (el) {
-                var tag = (el.tagName || '').toLowerCase();
-                if (tag === 'img') {
-                    return el.currentSrc || el.src || '';
-                }
-                if (tag === 'image') {
-                    var href = el.getAttribute('xlink:href') || el.getAttribute('href');
-                    return href ? new URL(href, document.baseURI).href : '';
-                }
-                el = el.parentElement;
-            }
-            return '';
-        })()
-        """
-        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
-        guard let source = result as? String, !source.isEmpty else { return nil }
-        return source
-    }
-
     enum LinkTarget {
         case inBook(path: String, fragment: String?)
         case external(URL)
     }
 
-    // the paged style disables the web view's touches so the page controller's pan can recognise
-    // over text, which also silences WebKit's own link taps; the reader asks here instead, at the
-    // point its own tap landed
-    func linkTarget(at point: CGPoint) async -> LinkTarget? {
-        let script = """
-        (function() {
-            var el = document.elementFromPoint(\(point.x), \(point.y));
-            while (el) {
-                if ((el.tagName || '').toLowerCase() === 'a') {
-                    var href = el.getAttribute('href');
-                    return href ? new URL(href, document.baseURI).href : '';
-                }
-                el = el.parentElement;
-            }
-            return '';
-        })()
-        """
-        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
-        guard let href = result as? String, !href.isEmpty, let url = URL(string: href) else { return nil }
-        if url.scheme == "http" || url.scheme == "https" {
-            return .external(url)
-        }
-        if url.scheme == EpubSchemeHandler.scheme {
-            // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
-            let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
-            return .inBook(path: EpubSchemeHandler.resourcePath(from: url), fragment: fragment)
-        }
-        return nil
-    }
-
-    func tableHTML(at point: CGPoint) async -> String? {
-        let script = """
-        (function() {
-            var el = document.elementFromPoint(\(point.x), \(point.y));
-            var wrap = el && el.closest ? el.closest('[data-aidoku-table]') : null;
-            var table = wrap ? wrap.querySelector('table') : null;
-            return table ? table.outerHTML : '';
-        })()
-        """
-        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
-        guard let html = result as? String, !html.isEmpty else { return nil }
-        return html
-    }
+    private var pageLock: NSKeyValueObservation?
 
     var onScroll: (() -> Void)?
 
@@ -651,6 +586,148 @@ final class EpubSpineRenderer: NSObject {
             navigationContinuation?.resume()
         }
         navigationContinuation = nil
+    }
+}
+
+// MARK: - Content hit tests
+
+extension EpubSpineRenderer {
+    func imageSource(at point: CGPoint) async -> String? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            while (el) {
+                var tag = (el.tagName || '').toLowerCase();
+                if (tag === 'img') {
+                    return el.currentSrc || el.src || '';
+                }
+                if (tag === 'image') {
+                    var href = el.getAttribute('xlink:href') || el.getAttribute('href');
+                    return href ? new URL(href, document.baseURI).href : '';
+                }
+                el = el.parentElement;
+            }
+            return '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let source = result as? String, !source.isEmpty else { return nil }
+        return source
+    }
+
+    // the paged style disables the web view's touches so the page controller's pan can recognise
+    // over text, which also silences WebKit's own link taps; the reader asks here instead, at the
+    // point its own tap landed
+    func linkTarget(at point: CGPoint) async -> LinkTarget? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            while (el) {
+                if ((el.tagName || '').toLowerCase() === 'a') {
+                    var href = el.getAttribute('href');
+                    return href ? new URL(href, document.baseURI).href : '';
+                }
+                el = el.parentElement;
+            }
+            return '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let href = result as? String, !href.isEmpty, let url = URL(string: href) else { return nil }
+        if url.scheme == "http" || url.scheme == "https" {
+            return .external(url)
+        }
+        if url.scheme == EpubSchemeHandler.scheme {
+            // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
+            let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
+            return .inBook(path: EpubSchemeHandler.resourcePath(from: url), fragment: fragment)
+        }
+        return nil
+    }
+
+    func tableHTML(at point: CGPoint) async -> String? {
+        let script = """
+        (function() {
+            var el = document.elementFromPoint(\(point.x), \(point.y));
+            var wrap = el && el.closest ? el.closest('[data-aidoku-table]') : null;
+            var table = wrap ? wrap.querySelector('table') : null;
+            return table ? table.outerHTML : '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        guard let html = result as? String, !html.isEmpty else { return nil }
+        return html
+    }
+}
+
+// MARK: - Selection
+
+extension EpubSpineRenderer {
+    /// Selects the word under the point and returns it, empty where there is no text: the caret
+    /// snaps to the nearest text from an image or a margin, so the word's own rects are checked.
+    func selectWord(at point: CGPoint) async -> String {
+        let script = """
+        (function() {
+            var x = \(point.x), y = \(point.y);
+            var el = document.elementFromPoint(x, y);
+            if (!el || el.tagName === 'IMG' || el.closest('svg')) { return ''; }
+            var range = document.caretRangeFromPoint(x, y);
+            if (!range) { return ''; }
+            var selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            selection.modify('move', 'backward', 'word');
+            selection.modify('extend', 'forward', 'word');
+            var rects = selection.rangeCount ? selection.getRangeAt(0).getClientRects() : [];
+            for (var i = 0; i < rects.length; i++) {
+                var r = rects[i];
+                if (x >= r.left - 4 && x <= r.right + 4 && y >= r.top - 4 && y <= r.bottom + 4) {
+                    return selection.toString();
+                }
+            }
+            selection.removeAllRanges();
+            return '';
+        })()
+        """
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        return (result as? String) ?? ""
+    }
+
+    func selectedText() async -> String {
+        let script = "window.getSelection().toString()"
+        let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+        return (result as? String) ?? ""
+    }
+
+    func clearSelection() async {
+        let script = "window.getSelection().removeAllRanges(); ''"
+        _ = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
+    }
+
+    /// Holds the scroll view at the page while a selection is live. A handle dragged to the edge
+    /// has WebKit scroll the next column in, a page turn the reader never asked for, and a disabled
+    /// scroll view stops fingers but not that. Synchronous, so no frame shows the drift.
+    func lockPage() {
+        guard settings.paged else { return }
+        pageLock = webView.scrollView.observe(\.contentOffset) { [weak self] scrollView, _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                let target = CGFloat(self.currentPageOffset)
+                guard abs(scrollView.contentOffset.x - target) > 0.5 else { return }
+                scrollView.contentOffset.x = target
+            }
+        }
+    }
+
+    /// Releases the lock and puts the document's own scroll position back at the page. The
+    /// autoscroll moves that in the web process before the scroll view follows, so snapping the
+    /// scroll view back left the document where the autoscroll took it, and every hit test after
+    /// landed the drift off.
+    func unlockPage() async {
+        guard pageLock != nil else { return }
+        pageLock = nil
+        let script = "window.scrollTo(\(currentPageOffset), 0); ''"
+        _ = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
     }
 }
 

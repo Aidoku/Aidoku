@@ -300,6 +300,59 @@ final class EpubPagedViewController: UIViewController {
         }
     }
 
+    // MARK: - Selection
+
+    /// Whether the page being read has its web view taking touches for a text selection.
+    private(set) var isSelecting = false
+
+    /// The selection collapsed, by a tap or a turn.
+    var onSelectionEnded: (() -> Void)?
+
+    private var selectionWatch: Task<Void, Never>?
+
+    /// Selects the word under the point and hands the page's web view its touches, so WebKit's
+    /// own handles and callout take over. While it holds them the page controller's pan cannot
+    /// begin, which is what keeps a selection drag from turning the page.
+    func beginSelection(at point: CGPoint) async {
+        guard !isSelecting, let renderer = currentRenderer, let webView = currentWebView else { return }
+        let local = view.convert(point, to: webView)
+        guard webView.bounds.contains(local) else { return }
+        let word = await renderer.selectWord(at: local)
+        guard !word.isEmpty else { return }
+        isSelecting = true
+        webView.isUserInteractionEnabled = true
+        renderer.lockPage()
+        // a handle dragged to the screen edge autoscrolls the enclosing scroll view, which is the
+        // page controller's; without a data source it has nowhere to go
+        pageViewController.dataSource = nil
+        webView.becomeFirstResponder()
+        selectionWatch = Task { [weak self, weak renderer, weak webView] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                guard let self, let renderer, let webView else { return }
+                let text = await renderer.selectedText()
+                if text.isEmpty || webView !== self.currentWebView {
+                    self.endSelection(on: webView, renderer: renderer)
+                    return
+                }
+            }
+        }
+    }
+
+    private func endSelection(on webView: WKWebView, renderer: EpubSpineRenderer) {
+        selectionWatch?.cancel()
+        selectionWatch = nil
+        isSelecting = false
+        webView.isUserInteractionEnabled = false
+        pageViewController.dataSource = self
+        webView.resignFirstResponder()
+        Task {
+            await renderer.clearSelection()
+            await renderer.unlockPage()
+        }
+        onSelectionEnded?()
+    }
+
     // MARK: - Housekeeping
 
     private func prefetchNeighbours() {

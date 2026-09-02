@@ -186,6 +186,10 @@ class ReaderEpubViewController: BaseObservingViewController {
     // stamped for every state, so the window is measured from the finger lifting
     @objc private func handleSelectionPress() {
         suppressedPageTurnAt = Date()
+        // the paged style's pages take no touches, so the selection is started for them here
+        guard selectionPress.state == .began, let book, book.paged, let paged else { return }
+        let point = selectionPress.location(in: view)
+        Task { await paged.beginSelection(at: point) }
     }
 
     private func installReturnButton() {
@@ -438,6 +442,10 @@ class ReaderEpubViewController: BaseObservingViewController {
         paged.onPageChanged = { [weak self, weak book] page in
             book?.notePagedPosition(bookPage: page)
             self?.report()
+        }
+        paged.onSelectionEnded = { [weak self] in
+            // the tap that dismissed the selection is not a page turn
+            self?.suppressedPageTurnAt = Date()
         }
         paged.onWillTurn = { [weak self] in
             if UserDefaults.standard.bool(forKey: "Reader.hideBarsOnSwipe") {
@@ -944,6 +952,7 @@ extension ReaderEpubViewController: ReaderReaderDelegate {
     // consumed either way, since a tap late enough to be its own intent has also proved the link
     // is no longer the last thing that happened
     func consumesTap() -> Bool {
+        if paged?.isSelecting == true { return true }
         guard let suppressedPageTurnAt else { return false }
         self.suppressedPageTurnAt = nil
         return Date().timeIntervalSince(suppressedPageTurnAt) < Self.suppressedPageTurnWindow
