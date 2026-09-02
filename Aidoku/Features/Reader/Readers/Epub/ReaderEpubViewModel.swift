@@ -75,7 +75,6 @@ final class ReaderEpubViewModel {
 
     // the anchor an in-session rebuild restores from
     var edgeInDocument: Double? {
-        // swiftlint:disable:next empty_count
         guard let count = index.pageCount(forDocumentAt: currentDocument), count > 0 else { return nil }
         if !paged, let precise = renderer?.scrollEdgeFraction {
             return precise

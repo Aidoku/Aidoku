@@ -300,60 +300,6 @@ class ReaderEpubViewController: BaseObservingViewController {
         book = nil
     }
 
-    // MARK: - Loading gate
-
-    /// Covers the reader while a rebuild lays the book out again, with what was on screen when
-    /// there is something, and announces the wait either way.
-    private func coverForRebuild() {
-        guard loadingCover == nil else { return }
-        let cover: UIView
-        if let content = paged?.currentWebView ?? book?.renderer?.webView,
-           content.window != nil,
-           let snapshot = view.snapshotView(afterScreenUpdates: false) {
-            cover = snapshot
-        } else {
-            cover = UIView()
-            cover.backgroundColor = .systemBackground
-        }
-        cover.frame = view.bounds
-        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(cover)
-        loadingCover = cover
-        showLoadingIndicator(on: cover)
-    }
-
-    private func coverForOpen() {
-        guard loadingCover == nil else { return }
-        let cover = UIView()
-        cover.backgroundColor = .systemBackground
-        cover.frame = view.bounds
-        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        view.addSubview(cover)
-        loadingCover = cover
-        showLoadingIndicator(on: cover)
-    }
-
-    private func showLoadingIndicator(on cover: UIView) {
-        loadingIndicator.removeFromSuperview()
-        cover.addSubview(loadingIndicator)
-        NSLayoutConstraint.activate([
-            loadingIndicator.centerXAnchor.constraint(equalTo: cover.centerXAnchor),
-            loadingIndicator.centerYAnchor.constraint(equalTo: cover.centerYAnchor)
-        ])
-        loadingIndicator.startAnimating()
-    }
-
-    private func uncover() {
-        loadingIndicator.stopAnimating()
-        guard let cover = loadingCover else { return }
-        loadingCover = nil
-        UIView.animate(withDuration: 0.15) {
-            cover.alpha = 0
-        } completion: { _ in
-            cover.removeFromSuperview()
-        }
-    }
-
     // MARK: - Opening
 
     // the archive is known only to the source, so the page list is asked for as usual
@@ -632,9 +578,67 @@ class ReaderEpubViewController: BaseObservingViewController {
     var isAwaitingResume: Bool {
         book?.pendingBookPage != nil
     }
+}
 
-    // MARK: - Reporting
+// MARK: - Loading gate
 
+extension ReaderEpubViewController {
+    /// Covers the reader while a rebuild lays the book out again, with what was on screen when
+    /// there is something, and announces the wait either way.
+    private func coverForRebuild() {
+        guard loadingCover == nil else { return }
+        let cover: UIView
+        if let content = paged?.currentWebView ?? book?.renderer?.webView,
+           content.window != nil,
+           let snapshot = view.snapshotView(afterScreenUpdates: false) {
+            cover = snapshot
+        } else {
+            cover = UIView()
+            cover.backgroundColor = .systemBackground
+        }
+        cover.frame = view.bounds
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(cover)
+        loadingCover = cover
+        showLoadingIndicator(on: cover)
+    }
+
+    private func coverForOpen() {
+        guard loadingCover == nil else { return }
+        let cover = UIView()
+        cover.backgroundColor = .systemBackground
+        cover.frame = view.bounds
+        cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.addSubview(cover)
+        loadingCover = cover
+        showLoadingIndicator(on: cover)
+    }
+
+    private func showLoadingIndicator(on cover: UIView) {
+        loadingIndicator.removeFromSuperview()
+        cover.addSubview(loadingIndicator)
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: cover.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: cover.centerYAnchor)
+        ])
+        loadingIndicator.startAnimating()
+    }
+
+    private func uncover() {
+        loadingIndicator.stopAnimating()
+        guard let cover = loadingCover else { return }
+        loadingCover = nil
+        UIView.animate(withDuration: 0.15) {
+            cover.alpha = 0
+        } completion: { _ in
+            cover.removeFromSuperview()
+        }
+    }
+}
+
+// MARK: - Reporting
+
+extension ReaderEpubViewController {
     private func report() {
         guard let book else { return }
 
@@ -692,7 +696,6 @@ class ReaderEpubViewController: BaseObservingViewController {
     // the toolbar takes its total from the page count, so a book's length reaches it as pages.
     // they carry the archive, so isEpubPage stays true of them
     private func placeholderPages(count: Int) -> [Page] {
-        // swiftlint:disable:next empty_count
         guard count > 0 else { return [] }
         let sourceId = source?.key ?? manga.sourceKey
         let chapterId = chapter?.key ?? ""
@@ -737,9 +740,11 @@ class ReaderEpubViewController: BaseObservingViewController {
             }
         }
     }
+}
 
-    // MARK: - Going places
+// MARK: - Going places
 
+extension ReaderEpubViewController {
     /// A document and optional fragment, whichever style is reading.
     private func go(toDocument document: Int, fragment: String?) {
         guard let book else { return }
@@ -784,9 +789,11 @@ class ReaderEpubViewController: BaseObservingViewController {
         safari.preferredControlTintColor = view.tintColor
         present(safari, animated: true)
     }
+}
 
-    // MARK: - Content taps
+// MARK: - Content taps
 
+extension ReaderEpubViewController {
     /// Everything a tap on the book itself can mean: a link, an image, a table. True consumes the
     /// tap. The paged style's pages take no touches, so this is where their links are answered.
     func handleContentTap(at point: CGPoint) async -> Bool {
