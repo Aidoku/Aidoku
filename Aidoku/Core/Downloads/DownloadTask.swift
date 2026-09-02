@@ -272,6 +272,11 @@ extension DownloadTask {
                 }
             }
 
+            // one archive is one unit of work: the spine documents behind the page list are not
+            // fetched one by one, and progress counts against the page list
+            pages = Array(pages.prefix(1))
+            downloads[0].total = pages.count
+
             currentPage = 0
             // failed rather than left to the page loop below, which has no request to make for an
             // epub and would finish an empty directory as a complete download
