@@ -57,8 +57,6 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private var appliedPaged = true
 
-    private var appliedColumnCount = 1
-
     // readium-css gives a scrolling document no page gutter, so its text runs to both edges
     private var appliedHorizontalGutter: CGFloat = 0
 
@@ -361,7 +359,6 @@ class ReaderEpubViewController: BaseObservingViewController {
 
         var settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
         appliedPaged = settings.paged
-        appliedColumnCount = settings.columnCount
         appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
         let clearance = scrollClearance()
         appliedScrollClearance = clearance
@@ -772,7 +769,7 @@ extension ReaderEpubViewController {
                 }
             }
         } else {
-            navigate { await $0.showEntry(.init(id: 0, title: "", document: document, fragment: fragment, depth: 0)) }
+            navigate { await $0.show(document: document, fragment: fragment) }
         }
     }
 

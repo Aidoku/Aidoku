@@ -79,10 +79,15 @@ struct EpubPaginationSettings: Equatable {
         return settings
     }
 
+    // read once: the script is rebuilt per renderer and per padding change
+    private static let beforeStylesheet = stylesheet(named: "ReadiumCSS-before")
+    private static let afterStylesheet = stylesheet(named: "ReadiumCSS-after")
+    private static let fallbackStylesheet = stylesheet(named: "ReadiumCSS-default")
+
     func injectionScript() -> String {
-        let before = Self.stylesheet(named: "ReadiumCSS-before")
-        let after = Self.stylesheet(named: "ReadiumCSS-after")
-        let fallback = Self.stylesheet(named: "ReadiumCSS-default")
+        let before = Self.beforeStylesheet
+        let after = Self.afterStylesheet
+        let fallback = Self.fallbackStylesheet
 
         return """
         (function() {

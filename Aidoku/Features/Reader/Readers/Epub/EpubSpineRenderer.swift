@@ -278,40 +278,6 @@ final class EpubSpineRenderer: NSObject {
         webView.bounds.width + CGFloat(settings.columnGapPx)
     }
 
-    // a settle continues the drag: it starts where the finger left the page and carries its speed,
-    // where a smooth scrollTo eases in from rest however fast the release was
-    func slide(toPage index: Int, velocity: CGFloat) async {
-        pageRequests += 1
-        pagesInFlight += 1
-        defer { pagesInFlight -= 1 }
-
-        currentPage = min(max(index, 0), max(pageCount - 1, 0))
-        let target = Double(currentPage) * Double(pagePitch)
-        currentPageOffset = target
-
-        let scrollView = webView.scrollView
-        let distance = target - Double(scrollView.contentOffset.x)
-        // a spring measures its velocity as a fraction of the distance left, and a release aimed
-        // away from the target starts the settle at rest rather than pulling further off it
-        let spring = distance == 0 ? 0 : min(max(Double(velocity) / distance, 0), Self.settleVelocityLimit)
-
-        await withCheckedContinuation { continuation in
-            UIView.animate(
-                withDuration: Self.settleDuration,
-                delay: 0,
-                usingSpringWithDamping: 1,
-                initialSpringVelocity: spring,
-                options: [.allowUserInteraction, .beginFromCurrentState]
-            ) {
-                scrollView.contentOffset.x = CGFloat(target)
-            } completion: { _ in
-                continuation.resume()
-            }
-        }
-
-        progression = Double(currentPage) / Double(max(pageCount - 1, 1))
-    }
-
     private static let settleDuration: TimeInterval = 0.3
 
     // a flick hard enough to carry several pages would otherwise snap the one page it turns
@@ -634,6 +600,10 @@ extension EpubSpineRenderer {
         """
         let result = try? await webView.evaluateJavaScript(script, contentWorld: EpubWebViewFactory.contentWorld)
         guard let href = result as? String, !href.isEmpty, let url = URL(string: href) else { return nil }
+        return linkTarget(for: url)
+    }
+
+    private func linkTarget(for url: URL) -> LinkTarget? {
         if url.scheme == "http" || url.scheme == "https" {
             return .external(url)
         }
@@ -737,15 +707,15 @@ extension EpubSpineRenderer: WKNavigationDelegate {
     ) async -> WKNavigationActionPolicy {
         guard let url = navigationAction.request.url else { return .cancel }
         if navigationAction.navigationType == .linkActivated {
-            if url.scheme == "http" || url.scheme == "https" {
-                onExternalLinkActivated?(url)
-                return .cancel
-            }
-            if url.scheme == EpubSchemeHandler.scheme {
-                // URL.fragment is encoded where URL.path is decoded, so this decodes exactly once
-                let fragment = url.fragment.map { $0.removingPercentEncoding ?? $0 }
-                onLinkActivated?(EpubSchemeHandler.resourcePath(from: url), fragment)
-                return .cancel
+            switch linkTarget(for: url) {
+                case let .external(url):
+                    onExternalLinkActivated?(url)
+                    return .cancel
+                case let .inBook(path, fragment):
+                    onLinkActivated?(path, fragment)
+                    return .cancel
+                case nil:
+                    break
             }
         }
         guard url.scheme == EpubSchemeHandler.scheme else {
@@ -767,9 +737,6 @@ extension EpubSpineRenderer: WKNavigationDelegate {
         pageCount = 0
         currentPage = 0
         currentPageOffset = 0
-        navigationContinuation?.resume(throwing: RenderError.navigationFailed("the web content process ended"))
-        navigationContinuation = nil
-        pendingNavigation = nil
         onContentProcessTerminated?()
     }
 

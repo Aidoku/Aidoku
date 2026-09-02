@@ -32,9 +32,6 @@ enum EpubParser {
         /// Spine files without a TOC entry are grouped into the preceding chapter.
         let hrefs: [String]
         let title: String?
-
-        /// Path of the primary (first) content file, used as the chapter identifier.
-        var href: String { hrefs[0] }
     }
 
     // distinct from Chapter, which is a run of spine documents: an entry is a place, so several
