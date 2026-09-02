@@ -148,6 +148,8 @@ struct EpubPaginationSettings: Equatable {
             root.style.setProperty('color-scheme', 'light dark');
             root.style.setProperty('--USER__backgroundColor', 'light-dark(#FFFFFF, #000000)');
             root.style.setProperty('--USER__textColor', 'light-dark(#000000, #FFFFFF)');
+            // the app tint, systemPink in both appearances
+            root.style.setProperty('--USER__linkColor', 'light-dark(#FF2D55, #FF375F)');
 
             // readium-css flags are substring matches on the style attribute, so a flag is set by
             // giving a property its name. this one is a double negative: setting it REMOVES the
