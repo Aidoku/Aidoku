@@ -33,6 +33,11 @@ struct EpubPaginationSettings: Equatable {
 
     var paged: Bool = true
 
+    // resolved css values, so the script never depends on the web view's own appearance
+    var backgroundColorCSS: String = "light-dark(#FFFFFF, #000000)"
+
+    var textColorCSS: String = "light-dark(#000000, #FFFFFF)"
+
     // scroll style passes content under the bars, so the clearance is padding inside the document
     var scrollPaddingTopPx: Int = 0
 
@@ -76,6 +81,9 @@ struct EpubPaginationSettings: Equatable {
         settings.pageGutterPx = Int(padding)
         // scroll mode is one column of natural height, counted in viewport heights
         settings.paged = defaults.string(forKey: "Reader.textReaderStyle") != "scroll"
+        // the text readers' theme; the appearance override is already resolved into the colors
+        settings.backgroundColorCSS = cssColor(ReaderTextTheme.getCurrentBackground())
+        settings.textColorCSS = cssColor(ReaderTextTheme.getCurrentText())
         return settings
     }
 
@@ -151,8 +159,8 @@ struct EpubPaginationSettings: Equatable {
             \(lineHeight.map { "root.style.setProperty('--USER__lineHeight', '\($0)');" } ?? "")
             \(paged ? "root.style.setProperty('--USER__View', 'readium-paged-on');" : "root.style.setProperty('--USER__View', 'readium-scroll-on');")
             root.style.setProperty('color-scheme', 'light dark');
-            root.style.setProperty('--USER__backgroundColor', 'light-dark(#FFFFFF, #000000)');
-            root.style.setProperty('--USER__textColor', 'light-dark(#000000, #FFFFFF)');
+            root.style.setProperty('--USER__backgroundColor', '\(backgroundColorCSS)');
+            root.style.setProperty('--USER__textColor', '\(textColorCSS)');
             // the app tint, systemPink in both appearances
             root.style.setProperty('--USER__linkColor', 'light-dark(#FF2D55, #FF375F)');
 
@@ -213,6 +221,25 @@ struct EpubPaginationSettings: Equatable {
             return "\"\""
         }
         return jsLiteral(css)
+    }
+
+    // both appearance variants in one light-dark(), so a system appearance switch mid-read
+    // recolors live without a rebuild; a forced appearance arrives pre-resolved, making both
+    // branches the same color
+    private static func cssColor(_ color: UIColor) -> String {
+        func hex(_ style: UIUserInterfaceStyle) -> String {
+            let resolved = color.resolvedColor(with: UITraitCollection(userInterfaceStyle: style))
+            var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+            resolved.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            return String(
+                format: "#%02X%02X%02X%02X",
+                Int((red * 255).rounded()),
+                Int((green * 255).rounded()),
+                Int((blue * 255).rounded()),
+                Int((alpha * 255).rounded())
+            )
+        }
+        return "light-dark(\(hex(.light)), \(hex(.dark)))"
     }
 
     // an apostrophe in a font family would close the literal and break the whole script, silently

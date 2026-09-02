@@ -84,7 +84,7 @@ final class EpubPagedViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.getCurrentBackground()
 
         pageViewController.dataSource = self
         pageViewController.delegate = self

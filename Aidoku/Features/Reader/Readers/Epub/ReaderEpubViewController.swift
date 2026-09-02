@@ -147,7 +147,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         super.viewDidLoad()
 
         // opaque, or the host's Reader.backgroundColor shows around the pages
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.getCurrentBackground()
 
         // a long press is WebKit starting a selection in the scroll style, and the tap ending it
         // is not a page turn
@@ -166,6 +166,11 @@ class ReaderEpubViewController: BaseObservingViewController {
             addObserver(forName: key) { [weak self] _ in
                 self?.scheduleSettingsReload()
             }
+        }
+        // the theme colors are baked into the injection script too, so a change rebuilds as well
+        addObserver(forName: ReaderTextTheme.changeNotification) { [weak self] _ in
+            self?.view.backgroundColor = ReaderTextTheme.getCurrentBackground()
+            self?.scheduleSettingsReload()
         }
     }
 
@@ -597,7 +602,7 @@ extension ReaderEpubViewController {
     private func coverForRebuild() {
         guard loadingCover == nil else { return }
         let cover = UIView(frame: view.bounds)
-        cover.backgroundColor = .systemBackground
+        cover.backgroundColor = ReaderTextTheme.getCurrentBackground()
         cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         if let content = paged?.currentWebView ?? book?.renderer?.webView,
            content.window != nil,
@@ -618,7 +623,7 @@ extension ReaderEpubViewController {
     private func coverForOpen() {
         guard loadingCover == nil else { return }
         let cover = UIView()
-        cover.backgroundColor = .systemBackground
+        cover.backgroundColor = ReaderTextTheme.getCurrentBackground()
         cover.frame = view.bounds
         cover.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         view.addSubview(cover)

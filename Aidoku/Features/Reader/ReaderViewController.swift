@@ -346,6 +346,10 @@ class ReaderViewController: BaseObservingViewController {
         // Switch text reader style (paged <-> scroll) without restart
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
+            // the epub reader rebuilds itself, but the bar transparency follows the style too
+            if self.reader is ReaderEpubViewController {
+                self.updateTextThemeOverride()
+            }
             // Only switch if we're currently in a text reader
             if self.reader is ReaderTextViewController || self.reader is ReaderPagedTextViewController {
                 // Save current position before switching so the new reader can restore it
@@ -632,7 +636,7 @@ extension ReaderViewController {
                 chapterLanguage: chapter.language ?? source?.languages.first
             )
         )
-        if currentReader == .text {
+        if currentReader == .text || currentReader == .epub {
             vc.overrideUserInterfaceStyle = ReaderTextTheme.getInterfaceStyleOverride()
         }
         present(vc, animated: true)
@@ -829,7 +833,9 @@ extension ReaderViewController {
 
     func updateTextThemeOverride() {
         let theme = ReaderTextTheme.getCurrent()
-        let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
+        let isTextReader = reader is ReaderTextViewController
+            || reader is ReaderPagedTextViewController
+            || reader is ReaderEpubViewController
         let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.getInterfaceStyleOverride() : .unspecified
         navigationController?.overrideUserInterfaceStyle = styleOverride
         // presented sheets don't inherit the override
@@ -844,7 +850,11 @@ extension ReaderViewController {
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
                 if themed {
-                    if #available(iOS 26.0, *), reader is ReaderTextViewController {
+                    // the epub scroll style passes content under the bars like the scroll text reader
+                    let scrollsUnderBars = reader is ReaderTextViewController
+                        || (reader is ReaderEpubViewController
+                            && UserDefaults.standard.string(forKey: "Reader.textReaderStyle") == "scroll")
+                    if #available(iOS 26.0, *), scrollsUnderBars {
                         // text scrolls under the bar, so keep it transparent
                         appearance.configureWithTransparentBackground()
                     } else {

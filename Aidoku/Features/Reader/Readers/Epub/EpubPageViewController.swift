@@ -45,7 +45,7 @@ final class EpubPageViewController: UIViewController {
         super.viewDidLoad()
         // opaque, so the instant before a leased web view arrives reads as a blank page rather
         // than a hole in the book
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = ReaderTextTheme.getCurrentBackground()
     }
 
     // the web view already holds this page's document at this page's offset
