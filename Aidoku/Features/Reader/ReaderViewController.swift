@@ -941,6 +941,8 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         }
 
         self.chapter = chapter
+        // the fraction belongs to the chapter being left
+        currentPosition = nil
         self.chaptersToMark = [chapter]
         configureBarToggleTapGestures()
         configureDictionaryLookupGesture()
