@@ -227,6 +227,8 @@ final class EpubPagedViewController: UIViewController {
             // page may have lost the renderer to one closer to where the reader ended up
             guard rendererLeases[key] == controller.bookPage else { return }
             await renderer.showPage(controller.pageInDocument)
+            // and under the scroll, which suspends the same way
+            guard rendererLeases[key] == controller.bookPage else { return }
             controller.display(renderer.webView)
         } catch {
             rendererDocuments[key] = nil
