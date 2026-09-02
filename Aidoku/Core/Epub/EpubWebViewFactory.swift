@@ -36,13 +36,39 @@ enum EpubWebViewFactory {
             forURLScheme: EpubSchemeHandler.scheme
         )
 
-        configuration.userContentController.add(try await makeRemoteBlockingRuleList())
+        configuration.userContentController.add(try await remoteBlockingRuleList())
         configuration.userContentController.addUserScript(makeInjectionScript(settings: settings))
 
         return configuration
     }
 
     // a custom scheme never reaches the content blocker, so the book's own resources still load
+    // for book content shown outside the reader, such as a table preview: no scripts, no network
+    static func makePreviewConfiguration() async throws -> WKWebViewConfiguration {
+        let configuration = WKWebViewConfiguration()
+        configuration.websiteDataStore = .nonPersistent()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        configuration.userContentController.add(try await remoteBlockingRuleList())
+        return configuration
+    }
+
+    private static var remoteBlockingRuleListTask: Task<WKContentRuleList, any Error>?
+
+    // compiled once and shared: a book opens up to five web views and rebuilds them on every reload
+    private static func remoteBlockingRuleList() async throws -> WKContentRuleList {
+        if let task = remoteBlockingRuleListTask {
+            return try await task.value
+        }
+        let task = Task { try await makeRemoteBlockingRuleList() }
+        remoteBlockingRuleListTask = task
+        do {
+            return try await task.value
+        } catch {
+            remoteBlockingRuleListTask = nil
+            throw error
+        }
+    }
+
     private static func makeRemoteBlockingRuleList() async throws -> WKContentRuleList {
         let rules = """
         [{"trigger":{"url-filter":"^https?://"},"action":{"type":"block"}}]

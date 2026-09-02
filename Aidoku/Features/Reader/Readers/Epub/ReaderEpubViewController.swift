@@ -832,8 +832,9 @@ extension ReaderEpubViewController {
             present(EpubImagePreviewController(image: image), animated: true)
             return true
         }
-        if let html = await renderer.tableHTML(at: clientPoint) {
-            present(EpubTablePreviewController(tableHTML: html), animated: true)
+        if let html = await renderer.tableHTML(at: clientPoint),
+           let configuration = try? await EpubWebViewFactory.makePreviewConfiguration() {
+            present(EpubTablePreviewController(tableHTML: html, configuration: configuration), animated: true)
             return true
         }
         return false
@@ -1109,9 +1110,11 @@ private final class EpubImagePreviewController: UIViewController {
 // fullscreen viewer for one table, at its natural size
 private final class EpubTablePreviewController: UIViewController {
     private let tableHTML: String
+    private let configuration: WKWebViewConfiguration
 
-    init(tableHTML: String) {
+    init(tableHTML: String, configuration: WKWebViewConfiguration) {
         self.tableHTML = tableHTML
+        self.configuration = configuration
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -1123,7 +1126,7 @@ private final class EpubTablePreviewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
 
-        let webView = WKWebView(frame: view.bounds)
+        let webView = WKWebView(frame: view.bounds, configuration: configuration)
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.isOpaque = false
         webView.backgroundColor = .systemBackground
