@@ -71,7 +71,7 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var loadingCover: UIView?
 
     private lazy var loadingIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .large)
+        let indicator = UIActivityIndicatorView(style: .medium)
         indicator.translatesAutoresizingMaskIntoConstraints = false
         indicator.hidesWhenStopped = true
         return indicator
@@ -84,20 +84,12 @@ class ReaderEpubViewController: BaseObservingViewController {
     private var returnPosition: Double?
 
     private lazy var returnButton: UIButton = {
-        var configuration: UIButton.Configuration
-        if #available(iOS 26.0, *) {
-            configuration = .glass()
-        } else {
-            configuration = .filled()
-            configuration.baseBackgroundColor = .secondarySystemBackground
-        }
+        var configuration = UIButton.Configuration.glassCapsule()
         configuration.baseForegroundColor = .tintColor
-        configuration.cornerStyle = .capsule
         configuration.image = UIImage(
             systemName: "arrow.uturn.backward",
             withConfiguration: UIImage.SymbolConfiguration(textStyle: .body)
         )
-        configuration.contentInsets = .init(top: 10, leading: 10, bottom: 10, trailing: 10)
         let button = UIButton(configuration: configuration)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.alpha = 0
@@ -1043,7 +1035,9 @@ private final class EpubImagePreviewController: UIViewController {
         self.image = image
         self.imageView = UIImageView(image: image)
         super.init(nibName: nil, bundle: nil)
-        modalPresentationStyle = .fullScreen
+        // over, not replacing: a full screen presentation removes the reader while dissolving,
+        // and the series view showed through
+        modalPresentationStyle = .overFullScreen
         modalTransitionStyle = .crossDissolve
     }
 
@@ -1062,14 +1056,7 @@ private final class EpubImagePreviewController: UIViewController {
         scrollView.addSubview(imageView)
         scrollView.zoomView = imageView
 
-        let closeButton = UIButton(type: .close)
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
-        view.addSubview(closeButton)
-        NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
-        ])
+        addPreviewCloseButton()
 
         // The same trick the reader's own gestures use: the dismissing tap waits for a double tap
         // to fail, so the first tap of `ZoomableScrollView`'s double-tap zoom cannot dismiss.
@@ -1107,6 +1094,25 @@ private final class EpubImagePreviewController: UIViewController {
     }
 }
 
+private extension UIViewController {
+    // the reader's floating button where a navigation bar's close item would sit
+    func addPreviewCloseButton() {
+        var configuration = UIButton.Configuration.glassCapsule()
+        configuration.image = UIImage(
+            systemName: "xmark",
+            withConfiguration: UIImage.SymbolConfiguration(textStyle: .body)
+        )
+        let button = UIButton(configuration: configuration)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
+        view.addSubview(button)
+        NSLayoutConstraint.activate([
+            button.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            button.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
+        ])
+    }
+}
+
 // MARK: - Table Preview
 
 // fullscreen viewer for one table, at its natural size
@@ -1135,14 +1141,7 @@ private final class EpubTablePreviewController: UIViewController {
         view.addSubview(webView)
         webView.loadHTMLString(Self.shell(around: tableHTML), baseURL: nil)
 
-        let closeButton = UIButton(type: .close)
-        closeButton.translatesAutoresizingMaskIntoConstraints = false
-        closeButton.addAction(UIAction { [weak self] _ in self?.dismiss(animated: true) }, for: .touchUpInside)
-        view.addSubview(closeButton)
-        NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16)
-        ])
+        addPreviewCloseButton()
     }
 
     // the book's stylesheets are not carried over, and the scale the injection script left inline

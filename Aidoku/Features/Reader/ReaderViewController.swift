@@ -82,17 +82,8 @@ class ReaderViewController: BaseObservingViewController {
     private let longSqueezeThreshold: TimeInterval = 0.5
 
     private lazy var autoScrollButton: UIButton = {
-        var configuration = UIButton.Configuration.filled()
-        if #available(iOS 26.0, *) {
-            configuration = .glass()
-        } else {
-            configuration = .filled()
-            configuration.baseBackgroundColor = .secondarySystemBackground
-            configuration.baseForegroundColor = .label
-        }
-        configuration.cornerStyle = .capsule
+        var configuration = UIButton.Configuration.glassCapsule()
         configuration.image = UIImage(systemName: "play.fill")
-        configuration.contentInsets = .init(top: 10, leading: 10, bottom: 10, trailing: 10)
 
         let button = UIButton(configuration: configuration)
         button.addTarget(self, action: #selector(toggleAutoScroll), for: .touchUpInside)
