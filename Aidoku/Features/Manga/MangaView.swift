@@ -298,6 +298,12 @@ extension MangaView {
                 chapterTitleDisplayMode: $viewModel.chapterTitleDisplayMode,
                 hasOtherDownloads: !viewModel.otherDownloadedChapters.isEmpty,
                 transitionNamespace: transitionNamespace,
+                onTitlePressed: {
+                    guard let tabBarController = path.rootViewController?.tabBarController as? TabBarController else {
+                        return
+                    }
+                    tabBarController.search(for: viewModel.manga.title)
+                },
                 onTrackerButtonPressed: {
                     let vc = TrackerModalViewController(manga: viewModel.manga)
                     vc.modalPresentationStyle = .overFullScreen
