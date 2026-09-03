@@ -1,0 +1,68 @@
+{
+  "name": "Aidoku Source",
+  "identifier": "app.aidoku.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Aidoku/Aidoku/refs/heads/altstore/apps.json",
+  "subtitle": "Home of Aidoku, free and open source manga reader for iOS and iPadOS",
+  "description": "This is the AltStore Source for Aidoku, free and open source manga reader for iOS and iPadOS.\n\nFor full details on what's included, check the website: https://aidoku.app/",
+  "website": "https://aidoku.app/",
+  "featuredApps": [
+    "app.aidoku.Aidoku"
+  ],
+  "apps": [
+    {
+      "name": "Aidoku",
+      "bundleIdentifier": "app.aidoku.Aidoku",
+      "developerName": "Skitty",
+      "subtitle": "Free and open source manga reader for iOS and iPadOS",
+      "localizedDescription": "A free and open source manga reading application for iOS and iPadOS.",
+      "iconURL": "https://aidoku.app/images/apple-touch-icon.png",
+      "tintColor": "ff375f",
+      "category": "entertainment",
+      "screenshots": [
+        {
+          "imageURL": "https://aidoku.app/images/library.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/source.png",
+          "width": 450,
+          "height": 908
+        },
+        {
+          "imageURL": "https://aidoku.app/images/reader.png",
+          "width": 450,
+          "height": 908
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [
+          "aps-environment",
+          "com.apple.developer.icloud-container-environment",
+          "com.apple.developer.icloud-container-identifiers",
+          "com.apple.developer.icloud-services",
+          "com.apple.developer.ubiquity-container-identifiers",
+          "com.apple.developer.ubiquity-kvstore-identifier",
+          "com.apple.developer.user-fonts"
+        ],
+        "privacy": {
+          "NSFaceIDUsageDescription": "Aidoku needs FaceID permissions for user-defined settings",
+          "NSPhotoLibraryUsageDescription": "Aidoku needs permission to save pages in your photo library",
+          "NSLocalNetworkUsageDescription": "Aidoku needs permission to connect to local Komga servers"
+        }
+      },
+      "versions": [
+        {
+          "version": "0.9",
+          "date": "2026-09-03",
+          "localizedDescription": "\u2022 OCR dictionary support (iOS 18+): import Yomitan\u2022compatible dictionaries in the app and look up words while reading.\n\u2022 Suwayomi built\u2022in source: read and track from a Suwayomi instance, just like Komga and Kavita.\n\u2022 Auto scroll for webtoon reader: enable and press the play button to scroll without touching your device.\n\u2022 Fixed CloudFlare handling: CloudFlare issues that caused external sources to break should be resolved.\n\u2022 Overall performance improvements: the library loads much faster (@Amqx), and the webtoon reader was improved.\n\u2022 Source stability fixes and disable option: the issue where sources were causing the app to crash should not happen again, and now you can even disable a source that is broken until it receives an update.\n\u2022 Many more things: see [the website](https://aidoku.app/release\u2022notes/) for a more complete list.",
+          "downloadURL": "https://github.com/Aidoku/Aidoku/releases/download/v0.9/Aidoku.ipa",
+          "size": 11864382,
+          "minOSVersion": "15.0",
+          "buildVersion": "2"
+        }
+      ]
+    }
+  ],
+  "news": []
+}
