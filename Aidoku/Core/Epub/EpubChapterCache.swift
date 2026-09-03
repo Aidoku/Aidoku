@@ -8,9 +8,23 @@ import Foundation
 
 // downloads a server-side epub once so it reads through the same pipeline as an imported one
 enum EpubChapterCache {
+    enum DownloadError: LocalizedError {
+        case notLoggedIn
+        case forbidden
+        case failed
+
+        var errorDescription: String? {
+            switch self {
+                case .notLoggedIn: NSLocalizedString("NOT_LOGGED_IN")
+                case .forbidden: NSLocalizedString("EPUB_DOWNLOAD_FORBIDDEN")
+                case .failed: NSLocalizedString("EPUB_DOWNLOAD_FAILED")
+            }
+        }
+    }
+
     static func fetch(request: URLRequest, sourceKey: String, chapterId: String) async throws -> URL {
         guard let root = directory else {
-            throw SourceError.message("EPUB_DOWNLOAD_FAILED")
+            throw DownloadError.failed
         }
         let file = root
             .appendingPathComponent(sanitized(sourceKey), isDirectory: true)
@@ -31,12 +45,11 @@ enum EpubChapterCache {
         } catch let error as URLSession.URLSessionError {
             guard case .httpError(let statusCode) = error else { throw error }
             LogManager.logger.error("Failed to download epub (HTTP \(statusCode)): \(request)")
-            let sourceError = switch statusCode {
-                case 401: SourceError.message("NOT_LOGGED_IN")
-                case 403: SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")
-                default: SourceError.message("EPUB_DOWNLOAD_FAILED")
+            throw switch statusCode {
+                case 401: DownloadError.notLoggedIn
+                case 403: DownloadError.forbidden
+                default: DownloadError.failed
             }
-            throw sourceError
         }
         markAccessed(file)
         evict(in: root, capacity: capacity, keeping: file)
@@ -126,7 +139,7 @@ enum EpubChapterCache {
         guard !pages.isEmpty else {
             try? FileManager.default.removeItem(at: file)
             LogManager.logger.error("Cached epub holds no readable pages, discarded: \(file)")
-            throw SourceError.message("EPUB_DOWNLOAD_FAILED")
+            throw DownloadError.failed
         }
         return pages
     }

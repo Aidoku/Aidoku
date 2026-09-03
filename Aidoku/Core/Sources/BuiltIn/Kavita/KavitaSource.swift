@@ -250,7 +250,7 @@ actor KavitaSourceRunner: Runner {
         }
         do {
             return try await EpubChapterCache.pages(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
-        } catch SourceError.message("NOT_LOGGED_IN") {
+        } catch EpubChapterCache.DownloadError.notLoggedIn {
             // an expired token is the one failure a second attempt can resolve; an account without
             // the download role answers 403 however often it is asked
             guard try await helper.refreshToken() else { throw SourceError.message("NOT_LOGGED_IN") }

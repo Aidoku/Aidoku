@@ -967,12 +967,10 @@ extension KomgaSourceRunner {
                 )
                 lastWorkingMirrorCopy = baseUrl == mainUrl ? nil : baseUrl
                 return pages
-            } catch SourceError.message("NOT_LOGGED_IN") {
+            } catch let error as EpubChapterCache.DownloadError where error != .failed {
                 // a refusal of the account rather than of the server: every mirror answers the
                 // same way, so asking the next one spends a request to be told again
-                throw SourceError.message("NOT_LOGGED_IN")
-            } catch SourceError.message("EPUB_DOWNLOAD_FORBIDDEN") {
-                throw SourceError.message("EPUB_DOWNLOAD_FORBIDDEN")
+                throw error
             } catch {
                 lastError = error
                 if index == baseUrls.count - 1 {
