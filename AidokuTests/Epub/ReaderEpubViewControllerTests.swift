@@ -334,6 +334,9 @@ struct ReaderEpubViewControllerTests {
         // with the defaults would lay the same text out at a different font size and disagree for a
         // reason that says nothing about attribution.
         try await EpubFixture.waitUntil(timeout: 10) { reader.paged?.currentWebView != nil }
+        // the page controller sizes the page on its next layout pass; until then the page view
+        // has the screen's size, which the reader here is smaller than
+        reader.view.layoutIfNeeded()
         let size = try #require(reader.paged?.currentWebView?.bounds.size)
         let settings = EpubPaginationSettings.fromUserDefaults(for: reader.view.bounds.size)
         let renderer = try await EpubFixture.makeRenderer(for: book.url, size: size, settings: settings)

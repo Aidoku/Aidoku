@@ -66,6 +66,18 @@ final class EpubPagedViewController: UIViewController {
 
     private var provisionTasks: [Int: Task<Void, Never>] = [:]
 
+    // web views wait here between pages rather than outside the window: WebKit throttles a page
+    // it cannot see, and a scroll asked of one right after it left the window sometimes took the
+    // whole second the poll allows, so the page was shown at its previous offset
+    private let backstage: UIView = {
+        let view = UIView()
+        view.clipsToBounds = true
+        view.isUserInteractionEnabled = false
+        view.accessibilityElementsHidden = true
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        return view
+    }()
+
     init(book: Book, contentInsets: UIEdgeInsets) {
         self.book = book
         self.contentInsets = contentInsets
@@ -85,10 +97,14 @@ final class EpubPagedViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = ReaderTextTheme.getCurrentBackground()
+        backstage.frame = view.bounds
+        view.addSubview(backstage)
 
         pageViewController.dataSource = self
         pageViewController.delegate = self
         addChild(pageViewController)
+        // opaque, so nothing parked behind it shows between pages
+        pageViewController.view.backgroundColor = ReaderTextTheme.getCurrentBackground()
         view.addSubview(pageViewController.view)
         pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -259,6 +275,7 @@ final class EpubPagedViewController: UIViewController {
             guard renderers.count < Self.rendererCapacity else { return nil }
             renderers.append(renderer)
             wire(renderer)
+            park(renderer.webView)
             take(renderer, for: controller)
             return renderer
         } catch {
@@ -275,9 +292,16 @@ final class EpubPagedViewController: UIViewController {
     private func take(_ renderer: EpubSpineRenderer, for controller: EpubPageViewController) {
         let key = ObjectIdentifier(renderer)
         if let previous = rendererLeases[key], let holder = pageControllers[previous] {
-            _ = holder.surrender()
+            park(holder.surrender())
         }
         rendererLeases[key] = controller.bookPage
+    }
+
+    private func park(_ webView: WKWebView?) {
+        guard let webView else { return }
+        webView.translatesAutoresizingMaskIntoConstraints = true
+        webView.frame = CGRect(origin: .zero, size: pageContentSize())
+        backstage.addSubview(webView)
     }
 
     private func wire(_ renderer: EpubSpineRenderer) {
@@ -288,7 +312,7 @@ final class EpubPagedViewController: UIViewController {
             let holder = rendererLeases[key].flatMap { self.pageControllers[$0] }
             rendererLeases[key] = nil
             if let holder {
-                _ = holder.surrender()
+                park(holder.surrender())
                 // the page being read cannot wait for a turn to be rebuilt
                 if holder === currentPageController {
                     Task { [weak self] in await self?.provision(holder) }
@@ -368,6 +392,7 @@ final class EpubPagedViewController: UIViewController {
                 if let key, rendererLeases[key] == bookPage {
                     rendererLeases[key] = nil
                 }
+                park(webView)
             }
             provisionTasks[bookPage]?.cancel()
             provisionTasks[bookPage] = nil
@@ -382,6 +407,7 @@ final class EpubPagedViewController: UIViewController {
             let key = ObjectIdentifier(renderer)
             guard rendererLeases[key] == nil else { return false }
             rendererDocuments[key] = nil
+            renderer.webView.removeFromSuperview()
             return true
         }
     }
