@@ -63,8 +63,10 @@ struct EpubSelectionTests {
         #expect(drifted == pageOffset + 90)
 
         await renderer.unlockPage()
-        let restored = try await EpubFixture.number("window.pageXOffset", in: renderer.webView)
-        #expect(restored == pageOffset)
+        // the document reports the previous offset for a moment after the script returns
+        try await EpubFixture.waitUntil(timeout: 5) {
+            (try? await EpubFixture.number("window.pageXOffset", in: renderer.webView)) == pageOffset
+        }
         try await EpubFixture.waitUntil(timeout: 5) { EpubFixture.pageOffset(in: renderer.webView) == pageOffset }
     }
 }

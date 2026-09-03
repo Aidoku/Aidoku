@@ -176,8 +176,6 @@ struct ReaderEpubViewModelTests {
         #expect(viewModel.pageInDocument == count - 1)
     }
 
-
-
     /// What the slider asks for. A page in another document has to load it.
     @Test func showingABookPageCrossesIntoTheRightDocument() async throws {
         let url = try Self.makeBook()
