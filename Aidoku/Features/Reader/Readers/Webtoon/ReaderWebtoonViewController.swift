@@ -796,10 +796,13 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             offset += layout.getHeightFor(section: chapterIndex, range: 0..<1)
         }
 
-        let height = layout.getHeightFor(
-            section: chapterIndex,
-            range: (hasStartInfo ? 1 : 0)..<currentPages.count - (hasEndInfo ? 1 : 0)
-        ) - collectionNode.bounds.height
+        let height = max(
+            0,
+            layout.getHeightFor(
+                section: chapterIndex,
+                range: (hasStartInfo ? 1 : 0)..<currentPages.count - (hasEndInfo ? 1 : 0)
+            ) - collectionNode.bounds.height
+        )
 
         scrollView.setContentOffset(
             CGPoint(x: collectionNode.contentOffset.x, y: offset + height * value),

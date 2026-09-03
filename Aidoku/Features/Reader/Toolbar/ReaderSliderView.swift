@@ -33,6 +33,15 @@ class ReaderSliderView: UIControl {
     var maximumValue: CGFloat = 1
     var currentValue: CGFloat = 0 {
         didSet {
+            let boundedValue = boundValue(
+                currentValue,
+                toLowerValue: minimumValue,
+                upperValue: maximumValue
+            )
+            if currentValue != boundedValue {
+                currentValue = boundedValue
+                return
+            }
             updateLayerFrames()
         }
     }
@@ -196,7 +205,6 @@ extension ReaderSliderView {
             } else {
                 currentValue -= deltaValue
             }
-            currentValue = boundValue(currentValue, toLowerValue: minimumValue, upperValue: maximumValue)
         }
 
         CATransaction.begin()
