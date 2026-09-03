@@ -314,9 +314,20 @@ extension SourceManager {
         return infos
     }
 
-    func getLoadedSources() async -> [AidokuRunner.Source] {
+    func getLoadedSources(sorted: Bool = false) async -> [AidokuRunner.Source] {
         await waitForSourcesLoad()
-        return Array(sourcesByKey.values)
+        if sorted {
+            return sourcesByKey.values
+                .sorted { lhs, rhs in
+                    let languageOrder = SourceLanguage.compare(lhs.languages, rhs.languages)
+                    if languageOrder != .orderedSame {
+                        return languageOrder == .orderedAscending
+                    }
+                    return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+                }
+        } else {
+            return Array(sourcesByKey.values)
+        }
     }
 
     func getSourceLists() async -> [SourceList] {

@@ -258,7 +258,7 @@ class SearchViewController: UIViewController {
     }
 
     private func loadSources() async {
-        sources = await SourceManager.shared.getLoadedSources()
+        sources = await SourceManager.shared.getLoadedSources(sorted: true)
         hasLoadedSources = true
 
         // ensure filters don't reference removed sources
