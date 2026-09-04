@@ -18,6 +18,9 @@ class TabBarController: UITabBarController {
     private var previousSelectedIndex: Int?
 
     private weak var historyNavigationController: UINavigationController?
+    private weak var searchNavigationController: UINavigationController?
+
+    private let searchController = SearchViewController()
 
     private lazy var libraryProgressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 20, height: 20))
 
@@ -73,7 +76,8 @@ class TabBarController: UITabBarController {
 
         let libraryViewController = NavigationController(rootViewController: LibraryViewController())
         let browseViewController = NavigationController(rootViewController: BrowseViewController())
-        let searchViewController = NavigationController(rootViewController: SearchViewController())
+        let searchViewController = NavigationController(rootViewController: searchController)
+        searchNavigationController = searchViewController
 
         let historyPath = NavigationCoordinator(rootViewController: nil)
         let historyHostingController = UIHostingController(rootView: HistoryView()
@@ -220,6 +224,17 @@ class TabBarController: UITabBarController {
 }
 
 extension TabBarController {
+    func search(for query: String) {
+        searchNavigationController?.popToRootViewController(animated: false)
+        searchController.search(for: query)
+
+        if #available(iOS 26.0, *) {
+            selectedTab = tabs.last
+        } else {
+            selectedViewController = searchNavigationController
+        }
+    }
+
     func showLibraryRefreshView() {
         libraryProgressView.setProgress(value: 0, withAnimation: false)
 

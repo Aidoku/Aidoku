@@ -17,6 +17,8 @@ import ZIPFoundation
 class ReaderPageView: UIView {
     weak var parent: UIViewController?
 
+    private let temporaryPageStore: ReaderTemporaryPageStore
+
     let imageView = GIFImageView()
     let progressView = CircularProgressView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
 
@@ -58,14 +60,15 @@ class ReaderPageView: UIView {
     private var currentPage: Page?
     private var currentImageRequest: ImageRequest?
 
-    init() {
+    init(temporaryPageStore: ReaderTemporaryPageStore) {
+        self.temporaryPageStore = temporaryPageStore
         super.init(frame: .zero)
         configure()
         constrain()
     }
 
-    convenience init(parent: UIViewController?) {
-        self.init()
+    convenience init(parent: UIViewController?, temporaryPageStore: ReaderTemporaryPageStore) {
+        self.init(temporaryPageStore: temporaryPageStore)
         self.parent = parent
     }
 
@@ -360,49 +363,20 @@ extension ReaderPageView {
     }
 
     func setPageImage(zipURL: URL, filePath: String) async -> Bool {
-        var hasher = Hasher()
-        hasher.combine(zipURL)
-        hasher.combine(filePath)
-        let key = String(hasher.finalize())
-
-        let fullKey = "\(key)-\(ImageProcessingSettingsKey.getProcessorSettingsKey())"
-        let request = ImageRequest(id: fullKey, data: { Data() })
-
-        // Store current image request for reload functionality
-        self.currentImageRequest = request
-
-        progressView.setProgress(value: 0, withAnimation: false)
-        progressView.isHidden = false
-        defer { progressView.isHidden = true }
-
-        if ImagePipeline.shared.cache.containsCachedImage(for: request) {
-            let imageContainer = ImagePipeline.shared.cache.cachedImage(for: request)
-            setPageImage(imageContainer?.image)
-            return true
+        guard let extractedURL = await temporaryPageStore.storeArchiveEntry(
+            from: zipURL,
+            path: filePath
+        ) else {
+            return false
         }
 
-        let result: (data: Data, isText: Bool)? = await Task.detached {
-            do {
-                var data = Data()
-                let archive = try Archive(url: zipURL, accessMode: .read)
-                guard let entry = archive.entry(at: filePath) else {
-                    return nil
-                }
-                _ = try archive.extract(
-                    entry,
-                    consumer: { readData in
-                        data.append(readData)
-                    }
-                )
-                return (data, entry.path.hasSuffix(".txt"))
-            } catch {
-                return nil
+        if filePath.lowercased().hasSuffix(".txt") {
+            guard
+                let data = try? Data(contentsOf: extractedURL),
+                let text = String(data: data, encoding: .utf8)
+            else {
+                return false
             }
-        }.value
-
-        guard let result else { return false }
-
-        if result.isText, let text = String(data: result.data, encoding: .utf8) {
             setPageText(text: text)
             return true
         }
@@ -414,37 +388,7 @@ extension ReaderPageView {
             self.textView = nil
         }
 
-        let image: UIImage? = await Task.detached {
-            guard var image = UIImage(data: result.data) else {
-                return nil
-            }
-
-            if UserDefaults.standard.bool(forKey: "Reader.cropBorders") {
-                let processor = CropBordersProcessor()
-                if let processedImage = processor.process(image) {
-                    image = processedImage
-                }
-            }
-            if UserDefaults.standard.bool(forKey: "Reader.downsampleImages") {
-                let processor = await DownsampleProcessor(width: UIScreen.main.bounds.width)
-                if let processedImage = processor.process(image) {
-                    image = processedImage
-                }
-            } else if UserDefaults.standard.bool(forKey: "Reader.upscaleImages") {
-                let processor = UpscaleProcessor()
-                if let processedImage = processor.process(image) {
-                    image = processedImage
-                }
-            }
-
-            return image
-        }.value
-        guard let image else { return false }
-
-        ImagePipeline.shared.cache.storeCachedImage(ImageContainer(image: image), for: request)
-        setPageImage(image, gifData: filePath.pathExtension().lowercased() == "gif" ? result.data : nil)
-
-        return true
+        return await setPageImage(url: extractedURL)
     }
 
     // match image constraints with image size

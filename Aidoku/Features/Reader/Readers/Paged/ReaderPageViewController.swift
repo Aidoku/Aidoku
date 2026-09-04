@@ -75,7 +75,11 @@ class ReaderPageViewController: BaseObservingViewController {
     /// Callback when image loading is complete and wide image status is determined
     var onImageisWideImage: ((Bool) -> Void)?
 
-    init(type: PageType, delegate: ReaderHoldingDelegate?) {
+    init(
+        type: PageType,
+        delegate: ReaderHoldingDelegate?,
+        temporaryPageStore: ReaderTemporaryPageStore? = nil
+    ) {
         self.type = type
         self.delegate = delegate
         super.init()
@@ -85,7 +89,10 @@ class ReaderPageViewController: BaseObservingViewController {
             case .info(let infoPageType):
                 infoView = ReaderInfoPageView(type: infoPageType == .previous ? .previous : .next)
             case .page:
-                pageView = ReaderPageView(parent: self)
+                guard let temporaryPageStore else {
+                    fatalError("ReaderPageViewController with type page requires a temporary page store")
+                }
+                pageView = ReaderPageView(parent: self, temporaryPageStore: temporaryPageStore)
         }
     }
 

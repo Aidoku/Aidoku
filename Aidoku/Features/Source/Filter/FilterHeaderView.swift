@@ -16,8 +16,27 @@ struct FilterHeaderView: View {
     let onFilterButtonClick: (() -> Void)?
     let onFilterSheetDismiss: (() -> Void)?
 
-    @State private var sortedFilters: [AidokuRunner.Filter]
     @State private var showingSheet = false
+
+    private var sortedFilters: [AidokuRunner.Filter] {
+        let enabledIDs = Set(enabledFilters.map(\.id))
+
+        var enabled: [AidokuRunner.Filter] = []
+        var disabled: [AidokuRunner.Filter] = []
+
+        enabled.reserveCapacity(filters.count)
+        disabled.reserveCapacity(filters.count)
+
+        for filter in filters {
+            if enabledIDs.contains(filter.id) {
+                enabled.append(filter)
+            } else {
+                disabled.append(filter)
+            }
+        }
+
+        return enabled + disabled
+    }
 
     init(
         sourceKey: String? = nil,
@@ -33,21 +52,6 @@ struct FilterHeaderView: View {
         self._enabledFilters = enabledFilters
         self.onFilterButtonClick = onFilterButtonClick
         self.onFilterSheetDismiss = onFilterSheetDismiss
-
-        // sort filters by moving the enabled filters to the front
-        var enabled: [AidokuRunner.Filter] = []
-        var disabled: [AidokuRunner.Filter] = []
-
-        for filter in filters {
-            if enabledFilters.wrappedValue.contains(where: { $0.id == filter.id }) {
-                enabled.append(filter)
-            } else {
-                disabled.append(filter)
-            }
-        }
-
-        enabled.append(contentsOf: disabled)
-        self._sortedFilters = State(initialValue: enabled)
     }
 
     private var filterCount: Int {
@@ -101,9 +105,6 @@ struct FilterHeaderView: View {
                 search: $search,
                 enabledFilters: $enabledFilters
             )
-        }
-        .onChange(of: enabledFilters) { _ in
-            sortFilters()
         }
     }
 
@@ -160,23 +161,6 @@ struct FilterHeaderView: View {
                     }
             }
         }
-    }
-
-    func sortFilters() {
-        var enabled: [AidokuRunner.Filter] = []
-        var disabled: [AidokuRunner.Filter] = []
-
-        for filter in filters {
-            if enabledFilters.contains(where: { $0.id == filter.id }) {
-                enabled.append(filter)
-            } else {
-                disabled.append(filter)
-            }
-        }
-
-        enabled.append(contentsOf: disabled)
-
-        sortedFilters = enabled
     }
 }
 
