@@ -34,7 +34,7 @@ final class CoreDataManager: @unchecked Sendable {
     private var lastHistoryToken: NSPersistentHistoryToken?
     private var didLoadHistoryToken = false
     private var lastHistoryPurge: Date?
-    private let usesCloudKitMirroring: Bool
+    private var usesCloudKitMirroring: Bool
 
     private static let historyTokenUrl = FileManager.default.applicationSupportDirectory
         .appendingPathComponent("historyToken.data")
@@ -50,8 +50,9 @@ final class CoreDataManager: @unchecked Sendable {
     }
 
     private init() {
-        self.usesCloudKitMirroring = Self.shouldUseiCloud
-        self.container = Self.createContainer()
+        let usesCloudKitMirroring = Self.shouldUseiCloud
+        self.usesCloudKitMirroring = usesCloudKitMirroring
+        self.container = Self.createContainer(usesCloudKitMirroring: usesCloudKitMirroring)
 
         NotificationCenter.default.publisher(
             for: .NSPersistentStoreRemoteChange,
@@ -62,7 +63,10 @@ final class CoreDataManager: @unchecked Sendable {
         }
         .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: .init(AppSettings.general.icloudSync.key))
+        Publishers.Merge(
+            NotificationCenter.default.publisher(for: .init(AppSettings.general.icloudSync.key)),
+            NotificationCenter.default.publisher(for: NSNotification.Name.NSUbiquityIdentityDidChange)
+        )
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateCloudConfiguration()
@@ -71,7 +75,7 @@ final class CoreDataManager: @unchecked Sendable {
             .store(in: &cancellables)
     }
 
-    static func createContainer() -> NSPersistentCloudKitContainer {
+    static func createContainer(usesCloudKitMirroring: Bool) -> NSPersistentCloudKitContainer {
         let container = NSPersistentCloudKitContainer(name: "Aidoku")
 
         let storeDirectory = FileManager.default.applicationSupportDirectory
@@ -89,7 +93,7 @@ final class CoreDataManager: @unchecked Sendable {
         localDescription.shouldMigrateStoreAutomatically = true
         localDescription.shouldInferMappingModelAutomatically = true
 
-        if shouldUseiCloud {
+        if usesCloudKitMirroring {
             cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
                 containerIdentifier: CoreDataManager.containerID)
         } else {
@@ -154,8 +158,13 @@ final class CoreDataManager: @unchecked Sendable {
 
     @MainActor
     func updateCloudConfiguration() {
+        let usesCloudKitMirroring = Self.shouldUseiCloud
+        remoteHistoryQueue.addOperation { [weak self] in
+            self?.usesCloudKitMirroring = usesCloudKitMirroring
+        }
+
         guard let cloudDescription = self.container.persistentStoreDescriptions.first else { return }
-        if Self.shouldUseiCloud {
+        if usesCloudKitMirroring {
             cloudDescription.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(containerIdentifier: CoreDataManager.containerID)
         } else {
             cloudDescription.cloudKitContainerOptions = nil
@@ -291,7 +300,7 @@ extension CoreDataManager {
     private func clearHistoryToken() {
         didLoadHistoryToken = true
         lastHistoryToken = nil
-        try? FileManager.default.removeItem(at: Self.historyTokenUrl)
+        Self.historyTokenUrl.removeItem()
     }
 
     private func setHistoryToken(_ token: NSPersistentHistoryToken) {
