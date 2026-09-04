@@ -32,6 +32,12 @@ final class CoreDataManager: @unchecked Sendable {
     }()
     // only accessed from remoteHistoryQueue
     private var lastHistoryToken: NSPersistentHistoryToken?
+    private var didLoadHistoryToken = false
+
+    private static let historyTokenUrl = FileManager.default.applicationSupportDirectory
+        .appendingPathComponent("historyToken.data")
+    /// How far back a cold start looks when no token has been stored yet.
+    private static let historyColdStartWindow: TimeInterval = 24 * 60 * 60
 
     private static var shouldUseiCloud: Bool {
         AppSettings.general.icloudSync.get() && FileManager.default.ubiquityIdentityToken != nil
@@ -187,7 +193,12 @@ extension CoreDataManager {
             context.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
             context.performAndWait {
                 let historyFetchRequest = NSPersistentHistoryTransaction.fetchRequest!
-                let request = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastHistoryToken)
+                let request: NSPersistentHistoryChangeRequest
+                if let token = self.historyToken() {
+                    request = .fetchHistory(after: token)
+                } else {
+                    request = .fetchHistory(after: Date().addingTimeInterval(-Self.historyColdStartWindow))
+                }
                 request.fetchRequest = historyFetchRequest
 
                 let result = (try? context.execute(request)) as? NSPersistentHistoryResult
@@ -222,9 +233,31 @@ extension CoreDataManager {
                     self.deduplicate(objectIds: newObjectIds)
                 }
 
-                self.lastHistoryToken = transactions.last!.token
+                self.setHistoryToken(transactions.last!.token)
             }
         }
+    }
+
+    private func historyToken() -> NSPersistentHistoryToken? {
+        if !didLoadHistoryToken {
+            didLoadHistoryToken = true
+            if let data = try? Data(contentsOf: Self.historyTokenUrl) {
+                lastHistoryToken = try? NSKeyedUnarchiver.unarchivedObject(
+                    ofClass: NSPersistentHistoryToken.self,
+                    from: data
+                )
+            }
+        }
+        return lastHistoryToken
+    }
+
+    private func setHistoryToken(_ token: NSPersistentHistoryToken) {
+        didLoadHistoryToken = true
+        lastHistoryToken = token
+        guard
+            let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true)
+        else { return }
+        try? data.write(to: Self.historyTokenUrl, options: .atomic)
     }
 
     func deduplicate(objectIds: [NSManagedObjectID]) {
