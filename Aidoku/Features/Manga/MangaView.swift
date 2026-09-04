@@ -178,6 +178,8 @@ struct MangaView: View {
             }
             .task {
                 guard !detailsLoaded else { return }
+
+                await viewModel.checkForCategories()
                 await viewModel.markUpdatesViewed()
                 await viewModel.fetchDetails()
 
@@ -205,6 +207,7 @@ struct MangaView: View {
                 self.targetChapterKey = nil
 
                 await viewModel.syncTrackerProgress()
+
                 detailsLoaded = true
             }
             .onAppear {
@@ -288,6 +291,7 @@ extension MangaView {
                 allChaptersRead: $viewModel.allChaptersRead,
                 initialDataLoaded: $viewModel.initialDataLoaded,
                 bookmarked: $viewModel.bookmarked,
+                hasCategories: $viewModel.hasCategories,
                 coverPressed: $showingCoverView,
                 chapterSortOption: $viewModel.chapterSortOption,
                 chapterSortAscending: $viewModel.chapterSortAscending,
@@ -882,7 +886,7 @@ private struct RightNavbarButton: View, Equatable {
         editMode: Binding<EditMode>
     ) {
         self.bookmarked = viewModel.bookmarked
-        self.hasCategories = !CoreDataManager.shared.getCategoryTitles(sorted: false).isEmpty
+        self.hasCategories = viewModel.hasCategories
         self.url = viewModel.manga.url
         self.hasDownloads = viewModel.downloadStatus.contains(where: { $0.value == .finished || $0.value == .failed })
         self.refresh = refreshController.refresh

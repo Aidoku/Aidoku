@@ -11,8 +11,9 @@ import SwiftUI
 import WebKit
 
 struct SettingsView: View {
-    @State private var categoriesOnly: [String]
-    @State private var categoriesAndGroups: [String]
+    @State private var categoriesOnly: [String] = []
+    @State private var categoriesAndGroups: [String] = []
+    @State private var categoriesLoaded = false
 
     @State private var searchText: String = ""
     @State private var searchResult: SettingSearchResult?
@@ -20,11 +21,6 @@ struct SettingsView: View {
     @EnvironmentObject private var path: NavigationCoordinator
 
     static let settings = Settings.settings
-
-    init() {
-        self._categoriesOnly = State(initialValue: CoreDataManager.shared.getCategoryTitles())
-        self._categoriesAndGroups = State(initialValue: CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false))
-    }
 }
 
 extension SettingsView {
@@ -126,20 +122,39 @@ extension SettingsView {
         .onChange(of: searchText) { _ in
             search()
         }
+        .task {
+            guard !categoriesLoaded else { return }
+            await updateCategories()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .updateCategories)) { _ in
-            categoriesOnly = CoreDataManager.shared.getCategoryTitles()
-            categoriesAndGroups = CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false)
-            if
-                let selected = AppSettings.library.defaultCategory.get(),
-                !selected.isEmpty && selected != "none" && !categoriesOnly.contains(selected)
-            {
-                AppSettings.library.defaultCategory.reset()
+            Task {
+                await updateCategories()
             }
         }
     }
 }
 
 extension SettingsView {
+    func updateCategories() async {
+        let (categoriesOnly, categoriesAndGroups) = await CoreDataManager.shared.container.performBackgroundTask { context in
+            (
+                CoreDataManager.shared.getCategoryTitles(context: context),
+                CoreDataManager.shared.getCategoryTitles(excludeFilterGroups: false, context: context)
+            )
+        }
+
+        self.categoriesOnly = categoriesOnly
+        self.categoriesAndGroups = categoriesAndGroups
+        self.categoriesLoaded = true
+
+        if
+            let selected = AppSettings.library.defaultCategory.get(),
+            !selected.isEmpty && selected != "none" && !categoriesOnly.contains(selected)
+        {
+            AppSettings.library.defaultCategory.reset()
+        }
+    }
+
     func onSettingChange(_ key: String) {
         switch key {
             case AppSettings.appearance.appearance.key, AppSettings.appearance.useSystemAppearance.key:
@@ -286,7 +301,7 @@ extension SettingsView {
     @ViewBuilder
     func pageContentHandler(_ key: String) -> (some View)? {
         if key == "Library.categories" {
-            CategoriesView()
+            CategoriesView(categories: $categoriesOnly)
         } else if key == "Library.filterGroups" {
             FilterGroupsView()
         } else if key == "Reader.tapZones" {
@@ -321,31 +336,11 @@ extension SettingsView {
         if setting.key == AppSettings.appearance.layout.key {
             LayoutSettingView()
         } else if setting.key == AppSettings.library.defaultCategory.key {
-            let newSetting = {
-                var setting = setting
-                setting.value = .select(.init(
-                    values: ["", "none"] + categoriesOnly,
-                    titles: [
-                        NSLocalizedString("ALWAYS_ASK"), NSLocalizedString("NONE")
-                    ] + categoriesOnly
-                ))
-                return setting
-            }()
-            SettingView(setting: newSetting)
+            CategorySelectSettingView(setting: setting, categories: $categoriesOnly)
         } else if setting.key == AppSettings.library.lockedCategories.key {
-            let newSetting = {
-                var setting = setting
-                setting.value = .multiselect(.init(values: categoriesAndGroups, authToOpen: true))
-                return setting
-            }()
-            SettingView(setting: newSetting)
+            CategoryMultiSelectSettingView(setting: setting, categories: $categoriesAndGroups, authToOpen: true)
         } else if setting.key == AppSettings.library.excludedUpdateCategories.key {
-            let newSetting = {
-                var setting = setting
-                setting.value = .multiselect(.init(values: categoriesOnly))
-                return setting
-            }()
-            SettingView(setting: newSetting)
+            CategoryMultiSelectSettingView(setting: setting, categories: $categoriesOnly, authToOpen: false)
         }
     }
 }
@@ -595,5 +590,47 @@ private struct LayoutSettingView: View {
         func makeBody(configuration: Configuration) -> some View {
             configuration.label
         }
+    }
+}
+
+private struct CategorySelectSettingView: View {
+    let setting: Setting
+    @Binding var categories: [String]
+
+    var body: some View {
+        let newSetting = {
+            var setting = setting
+            setting.value = .select(.init(
+                values: ["", "none"] + categories,
+                titles: [
+                    NSLocalizedString("ALWAYS_ASK"),
+                    NSLocalizedString("NONE")
+                ] + categories
+            ))
+            return setting
+        }()
+
+        SettingView(setting: newSetting)
+            .id(categories)
+    }
+}
+
+private struct CategoryMultiSelectSettingView: View {
+    let setting: Setting
+    @Binding var categories: [String]
+    let authToOpen: Bool
+
+    var body: some View {
+        let newSetting = {
+            var setting = setting
+            setting.value = .multiselect(.init(
+                values: categories,
+                authToOpen: authToOpen
+            ))
+            return setting
+        }()
+
+        SettingView(setting: newSetting)
+            .id(categories)
     }
 }

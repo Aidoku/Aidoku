@@ -296,9 +296,10 @@ extension MangaManager {
         }
     }
 
-    @MainActor
-    static func shouldAskForCategories() -> Bool {
-        let categories = CoreDataManager.shared.getCategoryTitles()
+    static func shouldAskForCategories() async -> Bool {
+        let categories = await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.getCategoryTitles(sorted: false, context: context)
+        }
         guard !categories.isEmpty else { return false }
         if
             let defaultCategory = AppSettings.library.defaultCategory.get(),

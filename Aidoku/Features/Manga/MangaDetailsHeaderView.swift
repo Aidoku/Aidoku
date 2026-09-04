@@ -23,6 +23,7 @@ struct MangaDetailsHeaderView: View {
     @Binding var initialDataLoaded: Bool
 
     @Binding var bookmarked: Bool
+    @Binding var hasCategories: Bool
     @Binding var coverPressed: Bool
     @Binding var chapterSortOption: ChapterSortOption
     @Binding var chapterSortAscending: Bool
@@ -64,6 +65,7 @@ struct MangaDetailsHeaderView: View {
         allChaptersRead: Binding<Bool>,
         initialDataLoaded: Binding<Bool>,
         bookmarked: Binding<Bool>,
+        hasCategories: Binding<Bool>,
         coverPressed: Binding<Bool>,
         chapterSortOption: Binding<ChapterSortOption>,
         chapterSortAscending: Binding<Bool>,
@@ -87,6 +89,7 @@ struct MangaDetailsHeaderView: View {
         self._allChaptersRead = allChaptersRead
         self._initialDataLoaded = initialDataLoaded
         self._bookmarked = bookmarked
+        self._hasCategories = hasCategories
         self._coverPressed = coverPressed
         self._chapterSortOption = chapterSortOption
         self._chapterSortAscending = chapterSortAscending
@@ -321,10 +324,7 @@ struct MangaDetailsHeaderView: View {
                 // on long hold, show category select
                 LongPressGesture()
                     .onEnded { _ in
-                        if
-                            bookmarked,
-                            !CoreDataManager.shared.getCategoryTitles(sorted: false).isEmpty
-                        {
+                        if bookmarked && hasCategories {
                             longHeldBookmark = true
                             path.present(
                                 UINavigationController(
@@ -430,7 +430,7 @@ struct MangaDetailsHeaderView: View {
             await MangaManager.shared.removeFromLibrary(mangaId: mangaId)
             bookmarked = false
         } else {
-            if MangaManager.shouldAskForCategories() { // open category select view
+            if await MangaManager.shouldAskForCategories() { // open category select view
                 let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: manga))
                 path.present(viewController)
             } else { // add to library
@@ -576,6 +576,7 @@ private struct MangaActionButtonStyle: ButtonStyle {
         allChaptersRead: Binding.constant(false),
         initialDataLoaded: Binding.constant(true),
         bookmarked: $bookmarked,
+        hasCategories: Binding.constant(false),
         coverPressed: Binding.constant(false),
         chapterSortOption: $chapterSortOption,
         chapterSortAscending: $chapterSortAscending,

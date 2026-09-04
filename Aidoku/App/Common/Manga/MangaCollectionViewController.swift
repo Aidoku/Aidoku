@@ -316,18 +316,19 @@ extension MangaCollectionViewController {
                     title: NSLocalizedString("ADD_TO_LIBRARY"),
                     image: UIImage(systemName: "plus.circle")
                 ) { _ in
-                    if MangaManager.shouldAskForCategories() {
-                        // open category select view
-                        let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
-                        self.present(viewController, animated: true)
-                    } else {
-                        // add bookmark icon
-                        self.bookmarkedItems.insert(entry.key)
-                        var snapshot = self.dataSource.snapshot()
-                        snapshot.reloadItems([entry])
-                        self.dataSource.apply(snapshot)
-                        // add to library
-                        Task {
+                    Task {
+                        if await MangaManager.shouldAskForCategories() {
+                            // open category select view
+                            let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
+                            self.present(viewController, animated: true)
+                        } else {
+                            // add bookmark icon
+                            self.bookmarkedItems.insert(entry.key)
+                            var snapshot = self.dataSource.snapshot()
+                            snapshot.reloadItems([entry])
+                            await self.dataSource.apply(snapshot)
+
+                            // add to library
                             await MangaManager.shared.addToLibrary(
                                 manga: entry,
                                 fetchMangaDetails: true

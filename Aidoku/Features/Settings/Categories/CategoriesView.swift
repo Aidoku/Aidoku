@@ -8,18 +8,13 @@
 import SwiftUI
 
 struct CategoriesView: View {
-    @State private var categories: [String]
+    @Binding var categories: [String]
+
+    @State private var groupTitles: Set<String> = []
+    @State private var loadedGroupTitles = false
 
     @State private var categoryTitle: String = ""
     @State private var showRenameFailedAlert = false
-
-    @State private var groupTitles: [String] = []
-
-    init() {
-        let context = CoreDataManager.shared.context
-        self._categories = State(initialValue: CoreDataManager.shared.getCategoryTitles(context: context))
-        self._groupTitles = State(initialValue: CoreDataManager.shared.getCategories(groupsOnly: true, context: context).compactMap { $0.title })
-    }
 
     var body: some View {
         List {
@@ -69,6 +64,13 @@ struct CategoriesView: View {
             Button(NSLocalizedString("OK"), role: .cancel) {}
         } message: {
             Text(NSLocalizedString("RENAME_CATEGORY_FAIL_INFO"))
+        }
+        .task {
+            guard !loadedGroupTitles else { return }
+            groupTitles = await CoreDataManager.shared.container.performBackgroundTask { context in
+                Set(CoreDataManager.shared.getCategories(groupsOnly: true, context: context).compactMap { $0.title })
+            }
+            loadedGroupTitles = true
         }
     }
 
@@ -202,9 +204,9 @@ extension CategoriesView {
             showRenameFailedAlert = true
         } else {
             Task {
-                let success = await CoreDataManager.shared.container.performBackgroundTask { context in
+                let newCategories: [String]? = await CoreDataManager.shared.container.performBackgroundTask { context in
                     let success = CoreDataManager.shared.renameCategory(title: title, newTitle: newTitle, context: context)
-                    guard success else { return false }
+                    guard success else { return nil }
                     do {
                         try context.save()
                         var locked = AppSettings.library.lockedCategories.get()
@@ -212,14 +214,14 @@ extension CategoriesView {
                             locked[oldIndex] = newTitle
                             AppSettings.library.lockedCategories.set(locked)
                         }
-                        return true
+                        return CoreDataManager.shared.getCategoryTitles(context: context)
                     } catch {
                         LogManager.logger.error("CategoriesView.renameCategory(title: \(title)): \(error)")
-                        return false
+                        return nil
                     }
                 }
-                if success {
-                    categories = CoreDataManager.shared.getCategoryTitles()
+                if let newCategories {
+                    categories = newCategories
                     NotificationCenter.default.post(name: .updateCategories, object: nil)
                 } else {
                     showRenameFailedAlert = true

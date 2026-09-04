@@ -349,11 +349,11 @@ extension SourceViewController {
                             image: UIImage(systemName: "plus.circle")
                         ) { _ in
                             let entry = mangaInfo.toManga().toNew()
-                            if MangaManager.shouldAskForCategories() { // open category select view
-                                let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
-                                self.present(viewController, animated: true)
-                            } else {
-                                Task {
+                            Task {
+                                if await MangaManager.shouldAskForCategories() { // open category select view
+                                    let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
+                                    self.present(viewController, animated: true)
+                                } else {
                                     await MangaManager.shared.addToLibrary(
                                         manga: entry,
                                         fetchMangaDetails: true
