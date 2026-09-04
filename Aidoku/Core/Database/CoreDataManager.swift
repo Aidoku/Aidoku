@@ -263,20 +263,24 @@ extension CoreDataManager {
     func deduplicate(objectIds: [NSManagedObjectID]) {
         let context = container.newBackgroundContext()
         context.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
-        context.performAndWait {
-            for objectId in objectIds {
-                deduplicate(objectId: objectId, context: context)
-            }
-            do {
-                try context.save()
-            } catch {
-                LogManager.logger.error("deduplicate: \(error.localizedDescription)")
+        // Work in batches, saving and resetting in between.
+        for batch in objectIds.chunked(into: 500) {
+            context.performAndWait {
+                for objectId in batch {
+                    deduplicate(objectId: objectId, context: context)
+                }
+                do {
+                    try context.save()
+                } catch {
+                    LogManager.logger.error("deduplicate: \(error.localizedDescription)")
+                }
+                context.reset()
             }
         }
     }
 
     func deduplicate(objectId: NSManagedObjectID, context: NSManagedObjectContext) {
-        let object = context.object(with: objectId)
+        guard let object = try? context.existingObject(with: objectId) else { return }
 
         let request: NSFetchRequest<NSFetchRequestResult>?
 
