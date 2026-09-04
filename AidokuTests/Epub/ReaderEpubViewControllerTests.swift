@@ -338,7 +338,7 @@ struct ReaderEpubViewControllerTests {
         // has the screen's size, which the reader here is smaller than
         reader.view.layoutIfNeeded()
         let size = try #require(reader.paged?.currentWebView?.bounds.size)
-        let settings = EpubPaginationSettings.fromUserDefaults(for: reader.view.bounds.size)
+        let settings = EpubPaginationSettings.fromUserDefaults(for: reader.view.bounds.size, traits: reader.traitCollection)
         let renderer = try await EpubFixture.makeRenderer(for: book.url, size: size, settings: settings)
         defer { EpubFixture.dismantle(renderer.webView) }
         var expected = 0

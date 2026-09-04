@@ -356,7 +356,7 @@ class ReaderEpubViewController: BaseObservingViewController {
         }
         guard !Task.isCancelled else { return }
 
-        var settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size)
+        var settings = EpubPaginationSettings.fromUserDefaults(for: view.bounds.size, traits: traitCollection)
         appliedPaged = settings.paged
         appliedHorizontalGutter = settings.paged ? 0 : CGFloat(settings.pageGutterPx)
         let clearance = scrollClearance()

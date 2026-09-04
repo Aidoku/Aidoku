@@ -54,9 +54,11 @@ struct EpubPaginationSettings: Equatable {
     private static let afterStylesheet = stylesheet(named: "ReadiumCSS-after")
     private static let fallbackStylesheet = stylesheet(named: "ReadiumCSS-default")
 
-    // UIDevice.current.orientation is .unknown until the device moves, so it cannot answer here
-    static func columnCount(for viewport: CGSize) -> Int {
-        UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
+    // two columns in an ipad-class window turned landscape, as Books does. the size classes rather
+    // than the idiom: a split view or stage manager window on an ipad is compact and reads as a phone
+    static func columnCount(for viewport: CGSize, traits: UITraitCollection) -> Int {
+        let regular = traits.horizontalSizeClass == .regular && traits.verticalSizeClass == .regular
+        return regular && viewport.width > viewport.height ? 2 : 1
     }
 
     mutating func applyScrollClearance(_ clearance: UIEdgeInsets) {
@@ -68,9 +70,9 @@ struct EpubPaginationSettings: Equatable {
     }
 
     // the text readers' settings mapped onto readium-css variables; viewport is the reader's size
-    static func fromUserDefaults(for viewport: CGSize) -> EpubPaginationSettings {
+    static func fromUserDefaults(for viewport: CGSize, traits: UITraitCollection) -> EpubPaginationSettings {
         var settings = EpubPaginationSettings()
-        settings.columnCount = columnCount(for: viewport)
+        settings.columnCount = columnCount(for: viewport, traits: traits)
         let defaults = UserDefaults.standard
         if let family = defaults.string(forKey: "Reader.textFontFamily") {
             // "System" is the SF font the text readers use for that value
