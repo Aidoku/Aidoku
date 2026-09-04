@@ -177,8 +177,7 @@ extension DownloadTask {
             let source = await SourceManager.shared.source(for: download.chapterIdentifier.sourceKey)
         {
             // if chapter already downloaded, skip
-            let directory = cache.directory(for: download.chapterIdentifier)
-            guard !directory.exists && !directory.appendingPathExtension("cbz").exists else {
+            guard cache.downloadedItem(for: download.chapterIdentifier) == nil else {
                 downloads.removeFirst()
                 await delegate?.downloadFinished(download: download)
                 return await next()
@@ -562,11 +561,23 @@ extension DownloadTask {
 
                 let directory = cache.directory(for: download.chapterIdentifier)
 
-                try FileManager.default.moveItem(at: tmpDirectory, to: directory)
+                if pages.first?.isEpubPage == true {
+                    // one file beside the cbz files, with ComicInfo.xml inside it as they carry it
+                    let book = tmpDirectory.appendingPathComponent("\(download.chapterIdentifier.chapterKey).epub")
+                    let metadata = tmpDirectory.appendingPathComponent("ComicInfo.xml")
+                    if metadata.exists {
+                        let archive = try Archive(url: book, accessMode: .update)
+                        try archive.addEntry(with: metadata.lastPathComponent, fileURL: metadata, compressionMethod: .deflate)
+                    }
+                    try FileManager.default.moveItem(at: book, to: directory.appendingPathExtension("epub"))
+                    tmpDirectory.removeItem()
+                } else {
+                    try FileManager.default.moveItem(at: tmpDirectory, to: directory)
 
-                if AppSettings.downloads.compress.get() && pages.first?.isEpubPage != true {
-                    try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
-                    directory.removeItem()
+                    if AppSettings.downloads.compress.get() {
+                        try FileManager.default.zipItem(at: directory, to: directory.appendingPathExtension("cbz"), shouldKeepParent: false)
+                        directory.removeItem()
+                    }
                 }
 
                 // save manga cover if not already present
