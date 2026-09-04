@@ -33,17 +33,24 @@ final class CoreDataManager: @unchecked Sendable {
     // only accessed from remoteHistoryQueue
     private var lastHistoryToken: NSPersistentHistoryToken?
     private var didLoadHistoryToken = false
+    private var lastHistoryPurge: Date?
+    private let usesCloudKitMirroring: Bool
 
     private static let historyTokenUrl = FileManager.default.applicationSupportDirectory
         .appendingPathComponent("historyToken.data")
     /// How far back a cold start looks when no token has been stored yet.
     private static let historyColdStartWindow: TimeInterval = 24 * 60 * 60
+    /// How much history to keep around while mirroring is running, which needs it to export.
+    private static let historyRetention: TimeInterval = 7 * 24 * 60 * 60
+    /// Purging on every remote change notification would run once per save, so throttle it.
+    private static let historyPurgeInterval: TimeInterval = 60 * 60
 
     private static var shouldUseiCloud: Bool {
         AppSettings.general.icloudSync.get() && FileManager.default.ubiquityIdentityToken != nil
     }
 
     private init() {
+        self.usesCloudKitMirroring = Self.shouldUseiCloud
         self.container = Self.createContainer()
 
         NotificationCenter.default.publisher(
@@ -189,6 +196,10 @@ extension CoreDataManager {
     func storeRemoteChange() {
         remoteHistoryQueue.addOperation { [weak self] in
             guard let self else { return }
+            guard self.usesCloudKitMirroring else {
+                self.purgeHistory(before: Date())
+                return
+            }
             let context = self.container.newBackgroundContext()
             context.mergePolicy = NSMergePolicy(merge: .mergeByPropertyObjectTrumpMergePolicyType)
             context.performAndWait {
@@ -201,7 +212,15 @@ extension CoreDataManager {
                 }
                 request.fetchRequest = historyFetchRequest
 
-                let result = (try? context.execute(request)) as? NSPersistentHistoryResult
+                var result = (try? context.execute(request)) as? NSPersistentHistoryResult
+                if result == nil && self.historyToken() != nil {
+                    self.clearHistoryToken()
+                    let fallback = NSPersistentHistoryChangeRequest.fetchHistory(
+                        after: Date().addingTimeInterval(-Self.historyColdStartWindow)
+                    )
+                    fallback.fetchRequest = historyFetchRequest
+                    result = (try? context.execute(fallback)) as? NSPersistentHistoryResult
+                }
                 guard
                     let transactions = result?.result as? [NSPersistentHistoryTransaction],
                     !transactions.isEmpty
@@ -235,6 +254,24 @@ extension CoreDataManager {
 
                 self.setHistoryToken(transactions.last!.token)
             }
+            self.purgeHistory(before: Date().addingTimeInterval(-Self.historyRetention))
+        }
+    }
+
+    private func purgeHistory(before date: Date) {
+        let now = Date()
+        if let lastHistoryPurge, now.timeIntervalSince(lastHistoryPurge) < Self.historyPurgeInterval {
+            return
+        }
+        lastHistoryPurge = now
+
+        let context = container.newBackgroundContext()
+        context.performAndWait {
+            do {
+                try context.execute(NSPersistentHistoryChangeRequest.deleteHistory(before: date))
+            } catch {
+                LogManager.logger.error("purgeHistory: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -249,6 +286,12 @@ extension CoreDataManager {
             }
         }
         return lastHistoryToken
+    }
+
+    private func clearHistoryToken() {
+        didLoadHistoryToken = true
+        lastHistoryToken = nil
+        try? FileManager.default.removeItem(at: Self.historyTokenUrl)
     }
 
     private func setHistoryToken(_ token: NSPersistentHistoryToken) {
