@@ -29,6 +29,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
     // How many pages before the end of the last chapter the next one starts loading
     private lazy var pagesToPreload = UserDefaults.standard.integer(forKey: "Reader.pagesToPreload")
+    // How many chapters we allow to be held in memory
+    private let maxRetainedChapters = 3
     private var loadingPrevious = false
     private var loadingNext = false
 
@@ -210,6 +212,27 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     /// Put the collection node back into the full preload range.
     private func restorePreloadRange() {
         (collectionNode as ASRangeControllerUpdateRangeProtocol).updateCurrentRange(with: .full)
+    }
+
+    private func canTrimSection(at index: Int) -> Bool {
+        guard
+            chapters.count > maxRetainedChapters,
+            pages.indices.contains(index),
+            chapters.indices.contains(index),
+            let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+        else { return false }
+        if let chapter, chapters.firstIndex(of: chapter) == index { return false }
+
+        // test the section's frame against the viewport rather than sampling index paths
+        guard
+            !pages[index].isEmpty,
+            let firstFrame = layout.layoutAttributesForItem(at: IndexPath(item: 0, section: index))?.frame,
+            let lastFrame = layout.layoutAttributesForItem(at: IndexPath(item: pages[index].count - 1, section: index))?.frame,
+            firstFrame.height > 0,
+            lastFrame.height > 0
+        else { return false }
+        let visible = CGRect(origin: collectionNode.contentOffset, size: collectionNode.bounds.size)
+        return lastFrame.maxY <= visible.minY || firstFrame.minY >= visible.maxY
     }
 
     private func setLiveTextButtonHidden(_ hidden: Bool) {
@@ -638,10 +661,12 @@ extension ReaderWebtoonViewController {
     /// Prepend the previous chapter's pages
     func prependPreviousChapter() async {
         guard let prevChapter = delegate?.getPreviousChapter() else { return }
-        await viewModel.preload(chapter: prevChapter)
+        guard !chapters.contains(prevChapter) else { return }
+        // hold our own reference
+        let preloadedPages = await viewModel.preload(chapter: prevChapter)
 
         // check if pages failed to load
-        if viewModel.preloadedPages.isEmpty {
+        if preloadedPages.isEmpty {
             return
         }
 
@@ -650,22 +675,26 @@ extension ReaderWebtoonViewController {
             try? await Task.sleep(nanoseconds: 500_000_000)
         }
 
-        // queue remove last section if we have three already
-//        let removeLast = chapters.count >= 3
-
-        chapters.insert(prevChapter, at: 0)
-        pages.insert(
-            [Page(
-                type: .prevInfoPage,
+        var chapterPages = [Page(
+            type: .prevInfoPage,
+            sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
+            chapterId: prevChapter.key,
+            index: -1
+        )] + preloadedPages
+        // A trimmed chapter may have owned the separator before the retained neighbor.
+        if pages.first?.first?.type == .imagePage {
+            chapterPages.append(Page(
+                type: .nextInfoPage,
                 sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
                 chapterId: prevChapter.key,
-                index: -1
-            )]  + viewModel.preloadedPages,
-            at: 0
-        )
+                index: -2
+            ))
+        }
+        chapters.insert(prevChapter, at: 0)
+        pages.insert(chapterPages, at: 0)
 
         let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
-        layout?.isInsertingCellsAbove = true
+        layout?.preserveOffsetAcrossChangeAbove()
 
         // disable animations and adjust offset before re-enabling
         CATransaction.begin()
@@ -674,15 +703,20 @@ extension ReaderWebtoonViewController {
         await collectionNode.performBatch(animated: false) {
             collectionNode.insertSections(IndexSet(integer: 0))
         }
-//        if removeLast {
-//            chapters.removeLast()
-//            pages.removeLast()
-//
-//            // remove last section
-//            await collectionNode.performBatchUpdates {
-//                self.collectionNode.deleteSections(IndexSet(integer: self.pages.count - 1))
-//            }
-//        }
+
+        // settle the insert's offset adjustment before the trim changes the content size
+        collectionNode.view.layoutIfNeeded()
+
+        // trim the newest section once the window is full
+        let trimIndex = pages.count - 1
+        if !loadingNext, canTrimSection(at: trimIndex) {
+            chapters.removeLast()
+            pages.removeLast()
+            await collectionNode.performBatch(animated: false) {
+                collectionNode.deleteSections(IndexSet(integer: trimIndex))
+            }
+        }
+
         self.scrollView.contentOffset = self.collectionNode.contentOffset
         self.zoomView.adjustContentSize()
         CATransaction.commit()
@@ -692,10 +726,10 @@ extension ReaderWebtoonViewController {
     func appendNextChapter() async {
         guard let nextChapter = delegate?.getNextChapter() else { return }
         guard !chapters.contains(nextChapter) else { return }
-        await viewModel.preload(chapter: nextChapter)
+        let preloadedPages = await viewModel.preload(chapter: nextChapter)
 
         // check if pages failed to load
-        if viewModel.preloadedPages.isEmpty {
+        if preloadedPages.isEmpty {
             return
         }
 
@@ -704,16 +738,23 @@ extension ReaderWebtoonViewController {
             try? await Task.sleep(nanoseconds: 500_000_000)
         }
 
-        // queue remove first section if we have three already
-//        let removeFirst = chapters.count >= 3
-
-        chapters.append(nextChapter)
-        pages.append(viewModel.preloadedPages + [Page(
+        var chapterPages = preloadedPages + [Page(
             type: .nextInfoPage,
             sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
             chapterId: nextChapter.id,
             index: -2
-        )])
+        )]
+        // A trimmed chapter may have owned the separator after the retained neighbor.
+        if pages.last?.last?.type == .imagePage {
+            chapterPages.insert(Page(
+                type: .prevInfoPage,
+                sourceId: viewModel.source?.key ?? viewModel.manga.sourceKey,
+                chapterId: nextChapter.key,
+                index: -1
+            ), at: 0)
+        }
+        chapters.append(nextChapter)
+        pages.append(chapterPages)
 
         // disable animations and adjust offset before re-enabling
         CATransaction.begin()
@@ -722,13 +763,20 @@ extension ReaderWebtoonViewController {
         await collectionNode.performBatch(animated: false) {
             collectionNode.insertSections(IndexSet(integer: pages.count - 1))
         }
-//        if removeFirst {
-//            chapters.removeFirst()
-//            pages.removeFirst()
-//            await collectionNode.performBatchUpdates {
-//                collectionNode.deleteSections(IndexSet(integer: 0))
-//            }
-//        }
+
+        collectionNode.view.layoutIfNeeded()
+
+        if !loadingPrevious, canTrimSection(at: 0) {
+            // preserve the visible cell as its section index changes
+            let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+            layout?.preserveOffsetAcrossChangeAbove()
+            chapters.removeFirst()
+            pages.removeFirst()
+            await collectionNode.performBatch(animated: false) {
+                collectionNode.deleteSections(IndexSet(integer: 0))
+            }
+        }
+
         scrollView.contentOffset = self.collectionNode.contentOffset
         zoomView.adjustContentSize()
         CATransaction.commit()

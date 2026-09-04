@@ -211,7 +211,9 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
             let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout,
             let yOffset = collectionNode.collectionViewLayout.layoutAttributesForItem(at: indexPath)?.frame.origin.y
         else { return }
-        layout.isInsertingCellsAbove = yOffset < collectionNode.contentOffset.y
+        if yOffset < collectionNode.contentOffset.y {
+            layout.preserveOffsetAcrossChangeAbove()
+        }
     }
 }
 
