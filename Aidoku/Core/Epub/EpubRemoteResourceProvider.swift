@@ -9,10 +9,10 @@ import Foundation
 
 // the caller supplies the path-to-request mapping, sources addressing resources differently
 final actor EpubRemoteResourceProvider: EpubResourceProvider {
-    typealias RequestBuilder = @Sendable (String) -> URLRequest?
-
     private let buildRequest: RequestBuilder
     private let session: URLSession
+
+    typealias RequestBuilder = @Sendable (String) -> URLRequest?
 
     init(session: URLSession = .shared, buildRequest: @escaping RequestBuilder) {
         self.session = session

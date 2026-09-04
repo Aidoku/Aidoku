@@ -10,6 +10,10 @@ import Foundation
 // resolved onto the spine the reader navigates; an entry that does not land in it is dropped,
 // a toc being free to point at a landmark the spine marks linear="no"
 struct EpubTableOfContents: Equatable {
+    let entries: [Entry]
+
+    var isEmpty: Bool { entries.isEmpty }
+
     struct Entry: Equatable, Identifiable {
         let id: Int
         let title: String
@@ -17,10 +21,6 @@ struct EpubTableOfContents: Equatable {
         let fragment: String?
         let depth: Int
     }
-
-    let entries: [Entry]
-
-    var isEmpty: Bool { entries.isEmpty }
 
     init(entries: [Entry]) {
         self.entries = entries

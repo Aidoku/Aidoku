@@ -13,20 +13,6 @@ import WebKit
 // and a layout, never a view hierarchy
 @MainActor
 final class EpubSpineMeasurer {
-    struct Outcome {
-        let measured: Int
-        // spine paths that could not be laid out, in spine order
-        let failed: [String]
-        // cancelled or superseded rather than having reached the end
-        let cancelled: Bool
-    }
-
-    private struct Reports {
-        let count: (Int, Int) -> Void
-        let failure: (Int) -> Void
-        let finish: (Outcome) -> Void
-    }
-
     private let provider: any EpubResourceProvider
     private var settings: EpubPaginationSettings
 
@@ -44,6 +30,20 @@ final class EpubSpineMeasurer {
     var isMeasuring: Bool {
         guard let task else { return false }
         return !task.isCancelled
+    }
+
+    struct Outcome {
+        let measured: Int
+        // spine paths that could not be laid out, in spine order
+        let failed: [String]
+        // cancelled or superseded rather than having reached the end
+        let cancelled: Bool
+    }
+
+    private struct Reports {
+        let count: (Int, Int) -> Void
+        let failure: (Int) -> Void
+        let finish: (Outcome) -> Void
     }
 
     init(provider: any EpubResourceProvider, settings: EpubPaginationSettings = .default) {

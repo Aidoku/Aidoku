@@ -11,12 +11,14 @@ import WebKit
 // a scheme handler cannot be replaced once built, so a configuration belongs to one book
 @MainActor
 enum EpubWebViewFactory {
+    // unaffected by allowsContentJavaScript = false, which disables only the page's own scripts
+    static let contentWorld = WKContentWorld.world(name: "aidoku-epub")
+
+    private static var remoteBlockingRuleListTask: Task<WKContentRuleList, any Error>?
+
     enum ConfigurationError: Error {
         case remoteBlockingUnavailable((any Error)?)
     }
-
-    // unaffected by allowsContentJavaScript = false, which disables only the page's own scripts
-    static let contentWorld = WKContentWorld.world(name: "aidoku-epub")
 
     // throws rather than returning a configuration without the rule list: a subresource load never
     // reaches the navigation policy delegate, so the list is all that stands between book and network
@@ -51,8 +53,6 @@ enum EpubWebViewFactory {
         configuration.userContentController.add(try await remoteBlockingRuleList())
         return configuration
     }
-
-    private static var remoteBlockingRuleListTask: Task<WKContentRuleList, any Error>?
 
     // compiled once and shared: a book opens up to five web views and rebuilds them on every reload
     private static func remoteBlockingRuleList() async throws -> WKContentRuleList {

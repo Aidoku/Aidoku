@@ -10,13 +10,6 @@ import WebKit
 
 @MainActor
 final class EpubSpineRenderer: NSObject {
-    enum RenderError: Error {
-        case unresolvablePath(String)
-        case navigationFailed(String)
-        case superseded
-        case measurementFailed(String)
-    }
-
     let webView: WKWebView
 
     private(set) var pageCount = 0
@@ -61,6 +54,46 @@ final class EpubSpineRenderer: NSObject {
     private var pageRequests = 0
     private var pagesInFlight = 0
 
+    private var scrollObservation: NSKeyValueObservation?
+
+    // above the overshoot a normal flick reaches, so momentum alone does not cross documents
+    private static let overscrollThreshold: Double = 120
+
+    private var overscrollTriggered = false
+
+    private var pageLock: NSKeyValueObservation?
+
+    var onScroll: (() -> Void)?
+
+    // true past the end, false past the start
+    var onOverscroll: ((Bool) -> Void)?
+
+    var pagePitch: CGFloat {
+        webView.bounds.width + CGFloat(settings.columnGapPx)
+    }
+
+    private static let settleDuration: TimeInterval = 0.3
+
+    // a flick hard enough to carry several pages would otherwise snap the one page it turns
+    private static let settleVelocityLimit: Double = 30
+
+    enum RenderError: Error {
+        case unresolvablePath(String)
+        case navigationFailed(String)
+        case superseded
+        case measurementFailed(String)
+    }
+
+    enum LinkTarget {
+        case inBook(path: String, fragment: String?)
+        case external(URL)
+    }
+
+    private struct Metrics {
+        let scrollExtent: Double
+        let viewportExtent: Double
+    }
+
     // throws without the rule list, which would show the book while it reached the network
     init(provider: any EpubResourceProvider, settings: EpubPaginationSettings = .default) async throws {
         self.settings = settings
@@ -104,7 +137,10 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    private var scrollObservation: NSKeyValueObservation?
+    deinit {
+        confirmationTask?.cancel()
+        sizeChangeTask?.cancel()
+    }
 
     private func handleScroll() {
         guard navigationContinuation == nil else { return }
@@ -137,28 +173,6 @@ final class EpubSpineRenderer: NSObject {
         guard abs(fraction - progression) >= 0.01 else { return }
         progression = fraction
         onScroll?()
-    }
-
-    // above the overshoot a normal flick reaches, so momentum alone does not cross documents
-    private static let overscrollThreshold: Double = 120
-
-    private var overscrollTriggered = false
-
-    enum LinkTarget {
-        case inBook(path: String, fragment: String?)
-        case external(URL)
-    }
-
-    private var pageLock: NSKeyValueObservation?
-
-    var onScroll: (() -> Void)?
-
-    // true past the end, false past the start
-    var onOverscroll: ((Bool) -> Void)?
-
-    deinit {
-        confirmationTask?.cancel()
-        sizeChangeTask?.cancel()
     }
 
     // MARK: - Rendering
@@ -274,15 +288,6 @@ final class EpubSpineRenderer: NSObject {
         }
     }
 
-    var pagePitch: CGFloat {
-        webView.bounds.width + CGFloat(settings.columnGapPx)
-    }
-
-    private static let settleDuration: TimeInterval = 0.3
-
-    // a flick hard enough to carry several pages would otherwise snap the one page it turns
-    private static let settleVelocityLimit: Double = 30
-
     func showPage(_ index: Int, animated: Bool = false, timeout: TimeInterval = 1) async {
         guard await goToPage(index, animated: animated, timeout: timeout) else { return }
         // the reader's own turns only, or the position wanders across repeated restores
@@ -391,11 +396,6 @@ final class EpubSpineRenderer: NSObject {
     }
 
     // MARK: - Measurement
-
-    private struct Metrics {
-        let scrollExtent: Double
-        let viewportExtent: Double
-    }
 
     // n columns span n * width + (n - 1) * gap; dropping the gap drifts low over a long document
     private func measurePageCount() async throws -> Int {

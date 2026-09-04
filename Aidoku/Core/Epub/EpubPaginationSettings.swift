@@ -14,11 +14,6 @@ import UIKit
 struct EpubPaginationSettings: Equatable {
     var columnCount: Int = 1
 
-    // UIDevice.current.orientation is .unknown until the device moves, so it cannot answer here
-    static func columnCount(for viewport: CGSize) -> Int {
-        UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
-    }
-
     // a page begins every viewportWidth + columnGapPx, so nothing may divide a scroll offset by
     // the viewport width alone
     var columnGapPx: Int = 10
@@ -47,6 +42,23 @@ struct EpubPaginationSettings: Equatable {
 
     var scrollPaddingRightPx: Int = 0
 
+    // -webkit-text-size-adjust rather than zoom, which would scale the column geometry too
+    var applyIOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? false : true
+
+    var applyIPadOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? true : false
+
+    static let `default` = EpubPaginationSettings()
+
+    // read once: the script is rebuilt per renderer and per padding change
+    private static let beforeStylesheet = stylesheet(named: "ReadiumCSS-before")
+    private static let afterStylesheet = stylesheet(named: "ReadiumCSS-after")
+    private static let fallbackStylesheet = stylesheet(named: "ReadiumCSS-default")
+
+    // UIDevice.current.orientation is .unknown until the device moves, so it cannot answer here
+    static func columnCount(for viewport: CGSize) -> Int {
+        UIDevice.current.userInterfaceIdiom == .pad && viewport.width > viewport.height ? 2 : 1
+    }
+
     mutating func applyScrollClearance(_ clearance: UIEdgeInsets) {
         guard !paged else { return }
         scrollPaddingTopPx = Int(clearance.top)
@@ -54,13 +66,6 @@ struct EpubPaginationSettings: Equatable {
         scrollPaddingLeftPx = Int(clearance.left)
         scrollPaddingRightPx = Int(clearance.right)
     }
-
-    // -webkit-text-size-adjust rather than zoom, which would scale the column geometry too
-    var applyIOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? false : true
-
-    var applyIPadOSPatch: Bool = UIDevice.current.userInterfaceIdiom == .pad ? true : false
-
-    static let `default` = EpubPaginationSettings()
 
     // the text readers' settings mapped onto readium-css variables; viewport is the reader's size
     static func fromUserDefaults(for viewport: CGSize) -> EpubPaginationSettings {
@@ -86,11 +91,6 @@ struct EpubPaginationSettings: Equatable {
         settings.textColorCSS = cssColor(ReaderTextTheme.getCurrentText())
         return settings
     }
-
-    // read once: the script is rebuilt per renderer and per padding change
-    private static let beforeStylesheet = stylesheet(named: "ReadiumCSS-before")
-    private static let afterStylesheet = stylesheet(named: "ReadiumCSS-after")
-    private static let fallbackStylesheet = stylesheet(named: "ReadiumCSS-default")
 
     func injectionScript() -> String {
         let before = Self.beforeStylesheet

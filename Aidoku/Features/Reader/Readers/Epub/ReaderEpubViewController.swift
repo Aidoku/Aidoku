@@ -64,8 +64,6 @@ class ReaderEpubViewController: BaseObservingViewController {
 
     private var settingsReloadTask: Task<Void, Never>?
 
-    // MARK: - Loading gate
-
     // the book is measured before it is shown, so every page has an address and the total is
     // reported once rather than climbing under the reader; what was on screen covers the wait
     private var loadingCover: UIView?
@@ -76,8 +74,6 @@ class ReaderEpubViewController: BaseObservingViewController {
         indicator.hidesWhenStopped = true
         return indicator
     }()
-
-    // MARK: - Return offer
 
     private var returnBookPage: Int?
 
@@ -115,7 +111,39 @@ class ReaderEpubViewController: BaseObservingViewController {
     // where scroll content passes beneath and pads inside the document instead
     private static let chromeBuffer: CGFloat = 50
 
-    // MARK: - Lifecycle
+    private lazy var selectionPress: UILongPressGestureRecognizer = {
+        let press = UILongPressGestureRecognizer(target: self, action: #selector(handleSelectionPress))
+        press.delegate = self
+        press.cancelsTouchesInView = false
+        return press
+    }()
+
+    // across the whole run, not per rebuild: a mid-open book reports the start of itself, so
+    // clearing this per rebuild put a reader who tapped a stepper twice on page one
+    private var settingsReloadPage: Int?
+
+    private var settingsReloadPosition: Double?
+
+    // per document, since scroll mode rounds each count up and a book fraction drifts between
+    // modes. the leading edge, not the history's column anchor, which skips text on the same device
+    private var settingsReloadAnchor: (document: Int, fraction: Double)?
+
+    // the count an anchor is applied against can be provisional in the scroll style, WebKit
+    // relayouting a moment after load, so a changed count is the signal to apply the anchor again
+    private var settingsReloadAnchorAppliedCount: Int?
+
+    // meanwhile the reported position is the head of the book: right for the toolbar, wrong for
+    // storage, where it would save page 1 over the progress being resumed to
+    var isAwaitingResume: Bool {
+        book?.pendingBookPage != nil
+    }
+
+    // the archive is known only to the source, so the page list is asked for as usual
+    private enum ChapterContent {
+        case epub(URL)
+        case pages([Page])
+        case superseded
+    }
 
     init(source: AidokuRunner.Source?, manga: AidokuRunner.Manga, bookURL: URL? = nil) {
         self.source = source
@@ -134,6 +162,8 @@ class ReaderEpubViewController: BaseObservingViewController {
         settingsReloadTask?.cancel()
         returnOfferTask?.cancel()
     }
+
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -170,13 +200,6 @@ class ReaderEpubViewController: BaseObservingViewController {
         super.didReceiveMemoryWarning()
         paged?.releaseSpares()
     }
-
-    private lazy var selectionPress: UILongPressGestureRecognizer = {
-        let press = UILongPressGestureRecognizer(target: self, action: #selector(handleSelectionPress))
-        press.delegate = self
-        press.cancelsTouchesInView = false
-        return press
-    }()
 
     // stamped for every state, so the window is measured from the finger lifting
     @objc private func handleSelectionPress() {
@@ -230,20 +253,6 @@ class ReaderEpubViewController: BaseObservingViewController {
     }
 
     // MARK: - Settings changes
-
-    // across the whole run, not per rebuild: a mid-open book reports the start of itself, so
-    // clearing this per rebuild put a reader who tapped a stepper twice on page one
-    private var settingsReloadPage: Int?
-
-    private var settingsReloadPosition: Double?
-
-    // per document, since scroll mode rounds each count up and a book fraction drifts between
-    // modes. the leading edge, not the history's column anchor, which skips text on the same device
-    private var settingsReloadAnchor: (document: Int, fraction: Double)?
-
-    // the count an anchor is applied against can be provisional in the scroll style, WebKit
-    // relayouting a moment after load, so a changed count is the signal to apply the anchor again
-    private var settingsReloadAnchorAppliedCount: Int?
 
     private func scheduleSettingsReload() {
         withdrawUnanchoredReturnOffer()
@@ -306,13 +315,6 @@ class ReaderEpubViewController: BaseObservingViewController {
     }
 
     // MARK: - Opening
-
-    // the archive is known only to the source, so the page list is asked for as usual
-    private enum ChapterContent {
-        case epub(URL)
-        case pages([Page])
-        case superseded
-    }
 
     private func chapterContent() async -> ChapterContent {
         if let bookURL {
@@ -579,12 +581,6 @@ class ReaderEpubViewController: BaseObservingViewController {
                 .scrollPosition?.doubleValue
         }
     }
-
-    // meanwhile the reported position is the head of the book: right for the toolbar, wrong for
-    // storage, where it would save page 1 over the progress being resumed to
-    var isAwaitingResume: Bool {
-        book?.pendingBookPage != nil
-    }
 }
 
 // MARK: - Loading gate
@@ -838,6 +834,15 @@ extension ReaderEpubViewController {
 // MARK: - Returning from a jump
 
 extension ReaderEpubViewController {
+    // resolved against the layout as it stands now rather than the one the offer was made in
+    private var returnTarget: Int? {
+        if let returnPosition, let book, book.isMeasured {
+            // the page containing the place, as the restore in report does
+            return min(Int(returnPosition * Double(book.bookTotal) + 0.01), book.bookTotal - 1)
+        }
+        return returnBookPage
+    }
+
     // called before the jump, since afterwards the page it would return to is the destination
     func offerReturn() {
         guard let book, let page = book.bookPage else { return }
@@ -868,15 +873,6 @@ extension ReaderEpubViewController {
         guard let target = returnTarget else { return }
         hideReturnOffer()
         showBookPage(target)
-    }
-
-    // resolved against the layout as it stands now rather than the one the offer was made in
-    private var returnTarget: Int? {
-        if let returnPosition, let book, book.isMeasured {
-            // the page containing the place, as the restore in report does
-            return min(Int(returnPosition * Double(book.bookTotal) + 0.01), book.bookTotal - 1)
-        }
-        return returnBookPage
     }
 
     // only an offer held as a bare page number, made before the book finished being measured
@@ -1031,6 +1027,9 @@ private final class EpubImagePreviewController: UIViewController {
     private let scrollView = ZoomableScrollView()
     private let imageView: UIImageView
 
+    // so a layout pass firing mid-pinch does not re-fit and reset the zoom
+    private var fittedSize: CGSize = .zero
+
     init(image: UIImage) {
         self.image = image
         self.imageView = UIImageView(image: image)
@@ -1067,9 +1066,6 @@ private final class EpubImagePreviewController: UIViewController {
         tap.require(toFail: doubleTap)
         view.addGestureRecognizer(tap)
     }
-
-    // so a layout pass firing mid-pinch does not re-fit and reset the zoom
-    private var fittedSize: CGSize = .zero
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()

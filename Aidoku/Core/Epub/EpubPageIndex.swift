@@ -14,12 +14,6 @@ struct EpubPageIndex {
 
     private var counts: [Int?]
 
-    // both zero-based
-    struct Position: Equatable {
-        let document: Int
-        let page: Int
-    }
-
     var documentCount: Int {
         spinePaths.count
     }
@@ -38,6 +32,12 @@ struct EpubPageIndex {
         counts.reduce(into: 0) { total, count in
             if let count { total += count }
         }
+    }
+
+    // both zero-based
+    struct Position: Equatable {
+        let document: Int
+        let page: Int
     }
 
     init(spinePaths: [String]) {

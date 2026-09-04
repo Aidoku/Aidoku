@@ -13,10 +13,6 @@ import UIKit
 // here; the scroll style reads through the one renderer this model owns
 @MainActor
 final class ReaderEpubViewModel {
-    enum LoadError: Error {
-        case unreadableBook(URL)
-    }
-
     let bookURL: URL
 
     let spinePaths: [String]
@@ -96,6 +92,10 @@ final class ReaderEpubViewModel {
             ? Double(settings.columnCount - 1) / Double(settings.columnCount)
             : 0
         return index.progression(forDocumentAt: currentDocument, page: pageInDocument, anchor: anchor)
+    }
+
+    enum LoadError: Error {
+        case unreadableBook(URL)
     }
 
     init(bookURL: URL, settings: EpubPaginationSettings = .default) throws {

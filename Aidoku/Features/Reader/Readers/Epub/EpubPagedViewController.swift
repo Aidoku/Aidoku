@@ -14,14 +14,6 @@ import WebKit
 // own pan recognises over text: WebKit's deferring recognisers never see the gesture
 @MainActor
 final class EpubPagedViewController: UIViewController {
-    // the index is complete before this controller exists, so every book page resolves
-    struct Book {
-        let spinePaths: [String]
-        let total: () -> Int
-        let position: (Int) -> (document: Int, page: Int)?
-        let makeRenderer: () async throws -> EpubSpineRenderer
-    }
-
     private let book: Book
 
     // around every page's web view, so each lays out at the same viewport and paginates the same
@@ -40,8 +32,6 @@ final class EpubPagedViewController: UIViewController {
         options: nil
     )
 
-    // MARK: - Renderer roster
-
     // more than the page controller retains, so prefetching the next page does not steal the web
     // view out of the one being read. anything above this is web content processes the system
     // jettisons on an iPad in two columns
@@ -55,8 +45,6 @@ final class EpubPagedViewController: UIViewController {
 
     // which page's controller a renderer is leased to
     private var rendererLeases: [ObjectIdentifier: Int] = [:]
-
-    // MARK: - Page controllers
 
     // the pages the book is currently near, so a turn lands on the same instance the data source
     // handed out and identity checks hold
@@ -76,6 +64,33 @@ final class EpubPagedViewController: UIViewController {
         return view
     }()
 
+    var currentPageController: EpubPageViewController? {
+        pageViewController.viewControllers?.first as? EpubPageViewController
+    }
+
+    var currentRenderer: EpubSpineRenderer? {
+        guard let controller = currentPageController else { return nil }
+        return renderers.first { rendererLeases[ObjectIdentifier($0)] == controller.bookPage }
+    }
+
+    var currentWebView: WKWebView? {
+        currentPageController?.webView
+    }
+
+    private(set) var isSelecting = false
+
+    var onSelectionEnded: (() -> Void)?
+
+    private var selectionWatch: Task<Void, Never>?
+
+    // the index is complete before this controller exists, so every book page resolves
+    struct Book {
+        let spinePaths: [String]
+        let total: () -> Int
+        let position: (Int) -> (document: Int, page: Int)?
+        let makeRenderer: () async throws -> EpubSpineRenderer
+    }
+
     init(book: Book, contentInsets: UIEdgeInsets) {
         self.book = book
         self.contentInsets = contentInsets
@@ -91,6 +106,8 @@ final class EpubPagedViewController: UIViewController {
             task.cancel()
         }
     }
+
+    // MARK: - Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,21 +129,6 @@ final class EpubPagedViewController: UIViewController {
             pageViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         pageViewController.didMove(toParent: self)
-    }
-
-    // MARK: - The current page
-
-    var currentPageController: EpubPageViewController? {
-        pageViewController.viewControllers?.first as? EpubPageViewController
-    }
-
-    var currentRenderer: EpubSpineRenderer? {
-        guard let controller = currentPageController else { return nil }
-        return renderers.first { rendererLeases[ObjectIdentifier($0)] == controller.bookPage }
-    }
-
-    var currentWebView: WKWebView? {
-        currentPageController?.webView
     }
 
     // MARK: - Navigation
@@ -320,12 +322,6 @@ final class EpubPagedViewController: UIViewController {
     }
 
     // MARK: - Selection
-
-    private(set) var isSelecting = false
-
-    var onSelectionEnded: (() -> Void)?
-
-    private var selectionWatch: Task<Void, Never>?
 
     // while the web view takes touches the page controller's pan cannot begin, which is what
     // keeps a selection drag from turning the page
