@@ -35,8 +35,6 @@ final class EpubPagedViewController: UIViewController {
     var onWillTurn: (() -> Void)?
 
     private let pageViewController = UIPageViewController(
-        // scroll, not pageCurl: it is what the paged text and image readers use, and the curl can
-        // become an option later without the pages changing
         transitionStyle: .scroll,
         navigationOrientation: .horizontal,
         options: nil

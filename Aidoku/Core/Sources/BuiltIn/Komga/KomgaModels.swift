@@ -228,6 +228,11 @@ struct KomgaBook: Codable, Sendable {
     let libraryId: String
     let name: String
     let media: Media
+
+    // komga serves a fixed-layout epub as image pages itself
+    var isEpub: Bool {
+        media.mediaProfile == "EPUB" && !media.epubDivinaCompatible
+    }
     let metadata: Metadata
     let readProgress: KomgaBookReadProgress?
 }

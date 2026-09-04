@@ -181,7 +181,7 @@ actor KomgaSourceRunner: Runner {
             )
 
             for book in chapters.content {
-                epubChapters[book.id] = book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible
+                epubChapters[book.id] = book.isEpub
             }
 
             manga.chapters = chapters.content
@@ -211,7 +211,7 @@ actor KomgaSourceRunner: Runner {
             let path = "api/v1/books/\(chapter.id)"
             // a book that cannot be described is read as images, as every chapter was before epubs
             let book: KomgaBook? = try? await helper.request(path: path, lastWorkingMirror: &lastWorkingMirrorCopy)
-            isEpub = book.map { $0.media.mediaProfile == "EPUB" && !$0.media.epubDivinaCompatible } ?? false
+            isEpub = book?.isEpub ?? false
             if book != nil {
                 epubChapters[chapter.id] = isEpub
             }

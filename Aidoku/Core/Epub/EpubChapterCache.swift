@@ -8,6 +8,22 @@ import Foundation
 
 // downloads a server-side epub once so it reads through the same pipeline as an imported one
 enum EpubChapterCache {
+    static let directory: URL = FileManager.default.cachesDirectory
+        .appendingPathComponent("EpubCache", isDirectory: true)
+
+    static let capacity = 500 * 1024 * 1024
+
+    static var totalSize: Int {
+        guard let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: [.fileSizeKey]) else {
+            return 0
+        }
+        var total = 0
+        for case let url as URL in enumerator {
+            total += (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        }
+        return total
+    }
+
     enum DownloadError: LocalizedError {
         case notLoggedIn
         case forbidden
@@ -22,14 +38,17 @@ enum EpubChapterCache {
         }
     }
 
+    private struct CachedBook {
+        let url: URL
+        let size: Int
+        let accessed: Date
+    }
+
     static func fetch(request: URLRequest, sourceKey: String, chapterId: String) async throws -> URL {
-        guard let root = directory else {
-            throw DownloadError.failed
-        }
-        let file = root
+        let file = directory
             .appendingPathComponent(sanitized(sourceKey), isDirectory: true)
             .appendingPathComponent("\(sanitized(chapterId)).epub")
-        if FileManager.default.fileExists(atPath: file.path), await !isStale(request: request, file: file) {
+        if file.exists, await !isStale(request: request, file: file) {
             markAccessed(file)
             return file
         }
@@ -40,7 +59,7 @@ enum EpubChapterCache {
             if let lastModified = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "Last-Modified") {
                 try? lastModified.write(to: lastModifiedSidecar(for: file), atomically: true, encoding: .utf8)
             } else {
-                try? FileManager.default.removeItem(at: lastModifiedSidecar(for: file))
+                lastModifiedSidecar(for: file).removeItem()
             }
         } catch let error as URLSession.URLSessionError {
             guard case .httpError(let statusCode) = error else { throw error }
@@ -52,33 +71,30 @@ enum EpubChapterCache {
             }
         }
         markAccessed(file)
-        evict(in: root, capacity: capacity, keeping: file)
+        evict(in: directory, capacity: capacity, keeping: file)
         return file
     }
 
-    static var directory: URL? {
-        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("EpubCache", isDirectory: true)
-    }
-
-    static var totalSize: Int {
-        guard
-            let directory,
-            let enumerator = FileManager.default.enumerator(at: directory, includingPropertiesForKeys: [.fileSizeKey])
-        else { return 0 }
-        var total = 0
-        for case let url as URL in enumerator {
-            total += (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+    // trusted only as far as it parses: a complete body that is not a book, such as a proxy error
+    // page, would be served for ever, EpubParser reporting no pages rather than an error
+    static func pages(
+        request: URLRequest,
+        sourceKey: String,
+        chapterId: String
+    ) async throws -> [AidokuRunner.Page] {
+        let file = try await fetch(request: request, sourceKey: sourceKey, chapterId: chapterId)
+        let pages = LocalFileManager.shared.readEpubPages(from: file)
+        guard !pages.isEmpty else {
+            file.removeItem()
+            LogManager.logger.error("Cached epub holds no readable pages, discarded: \(file)")
+            throw DownloadError.failed
         }
-        return total
+        return pages
     }
 
     static func removeAll() {
-        guard let directory else { return }
-        try? FileManager.default.removeItem(at: directory)
+        directory.removeItem()
     }
-
-    static let capacity = 500 * 1024 * 1024
 
     // keeping is never a victim, or a book larger than the capacity downloads again on every open
     static func evict(in root: URL, capacity: Int, keeping: URL?) {
@@ -90,9 +106,8 @@ enum EpubChapterCache {
         var total = 0
         for case let url as URL in enumerator {
             guard url.pathExtension == "epub" else {
-                if url.pathExtension == "lastmodified",
-                   !manager.fileExists(atPath: url.deletingPathExtension().path) {
-                    try? manager.removeItem(at: url)
+                if url.pathExtension == "lastmodified", !url.deletingPathExtension().exists {
+                    url.removeItem()
                 }
                 continue
             }
@@ -108,40 +123,10 @@ enum EpubChapterCache {
 
         for book in books.sorted(by: { $0.accessed < $1.accessed }) where total > capacity {
             guard book.url != keeping else { continue }
-            try? manager.removeItem(at: book.url)
-            try? manager.removeItem(at: lastModifiedSidecar(for: book.url))
+            book.url.removeItem()
+            lastModifiedSidecar(for: book.url).removeItem()
             total -= book.size
         }
-    }
-
-    private struct CachedBook {
-        let url: URL
-        let size: Int
-        let accessed: Date
-    }
-
-    private static func markAccessed(_ file: URL) {
-        var file = file
-        var values = URLResourceValues()
-        values.contentAccessDate = Date()
-        try? file.setResourceValues(values)
-    }
-
-    // trusted only as far as it parses: a complete body that is not a book, such as a proxy error
-    // page, would be served for ever, EpubParser reporting no pages rather than an error
-    static func pages(
-        request: URLRequest,
-        sourceKey: String,
-        chapterId: String
-    ) async throws -> [AidokuRunner.Page] {
-        let file = try await fetch(request: request, sourceKey: sourceKey, chapterId: chapterId)
-        let pages = LocalFileManager.shared.readEpubPages(from: file)
-        guard !pages.isEmpty else {
-            try? FileManager.default.removeItem(at: file)
-            LogManager.logger.error("Cached epub holds no readable pages, discarded: \(file)")
-            throw DownloadError.failed
-        }
-        return pages
     }
 
     // a server that cannot answer keeps the cached book readable rather than making freshness a
@@ -162,6 +147,13 @@ enum EpubChapterCache {
         guard response.expectedContentLength > 0 else { return false }
         let cachedSize = (try? FileManager.default.attributesOfItem(atPath: file.path))?[.size] as? Int64
         return cachedSize != response.expectedContentLength
+    }
+
+    private static func markAccessed(_ file: URL) {
+        var file = file
+        var values = URLResourceValues()
+        values.contentAccessDate = Date()
+        try? file.setResourceValues(values)
     }
 
     private static func lastModifiedSidecar(for file: URL) -> URL {

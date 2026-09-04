@@ -7,8 +7,8 @@
 
 import Foundation
 
-// prefix sums over counts that arrive one document at a time. every answer is nil rather than
-// approximated while they are incomplete: a total that grows is honest, a position that moves is not
+// prefix sums over per-document page counts, filled in one document at a time. a position is nil
+// until every document before it is counted
 struct EpubPageIndex {
     let spinePaths: [String]
 
@@ -18,11 +18,6 @@ struct EpubPageIndex {
     struct Position: Equatable {
         let document: Int
         let page: Int
-    }
-
-    init(spinePaths: [String]) {
-        self.spinePaths = spinePaths
-        self.counts = Array(repeating: nil, count: spinePaths.count)
     }
 
     var documentCount: Int {
@@ -43,6 +38,11 @@ struct EpubPageIndex {
         counts.reduce(into: 0) { total, count in
             if let count { total += count }
         }
+    }
+
+    init(spinePaths: [String]) {
+        self.spinePaths = spinePaths
+        self.counts = Array(repeating: nil, count: spinePaths.count)
     }
 
     mutating func setPageCount(_ count: Int, forDocumentAt index: Int) {

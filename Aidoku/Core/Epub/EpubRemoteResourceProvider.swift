@@ -55,15 +55,11 @@ final actor EpubRemoteResourceProvider: EpubResourceProvider {
             throw EpubResourceError.notFound(path)
         }
 
-        let start = Date()
         let (data, response) = try await session.data(for: request)
 
         if let response = response as? HTTPURLResponse, !(200..<300).contains(response.statusCode) {
             throw EpubResourceError.requestFailed(path: path, statusCode: response.statusCode)
         }
-
-        let elapsed = Int(Date().timeIntervalSince(start) * 1000)
-        LogManager.logger.debug("EpubRemoteResourceProvider: fetched \(path) (\(data.count) bytes) in \(elapsed)ms")
 
         return data
     }

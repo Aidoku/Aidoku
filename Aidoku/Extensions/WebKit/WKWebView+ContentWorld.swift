@@ -4,9 +4,6 @@
 //
 //  Created by Pietro Baiguini on 8/11/26.
 //
-//  Named for what it adds rather than for the type: Extensions/WebKit/WKWebView.swift already
-//  exists, and two source files sharing a basename collide in a target's build outputs.
-//
 
 import WebKit
 

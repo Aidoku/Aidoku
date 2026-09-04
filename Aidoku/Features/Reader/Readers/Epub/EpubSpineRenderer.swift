@@ -86,10 +86,10 @@ final class EpubSpineRenderer: NSObject {
         webView.scrollView.showsHorizontalScrollIndicator = false
 
         if #available(iOS 27.0, *) {
-            // a paged view does not scroll, so an edge effect there only fades the first and last
-            // lines. the horizontal pair is hidden either way, a page drag is not a scroll
-            webView.scrollView.topEdgeEffect.style = settings.paged ? .hard : .soft
-            webView.scrollView.bottomEdgeEffect.style = settings.paged ? .hard : .soft
+            // a paged view does not scroll, so its vertical edge effects only fade the first and
+            // last lines. the horizontal pair is hidden either way, a page drag is not a scroll
+            webView.scrollView.topEdgeEffect.style = .soft
+            webView.scrollView.bottomEdgeEffect.style = .soft
             webView.scrollView.topEdgeEffect.isHidden = settings.paged
             webView.scrollView.bottomEdgeEffect.isHidden = settings.paged
             webView.scrollView.leftEdgeEffect.isHidden = true
