@@ -502,7 +502,7 @@
 "LOCAL_FILES_INFO" = "A Fonte de arquivos locais permite que você faça upload e controle sua própria biblioteca diretamente dentro do Aidoku.";
 "LOCAL_FILES_SETUP" = "Configuração de arquivos locais";
 "LOCAL_FILE_IMPORT" = "Importar arquivo local";
-"LOCAL_FILE_IMPORT_TEXT" = "Importe um CBZ ou ZIP contendo imagens para ler.";
+"LOCAL_FILE_IMPORT_TEXT" = "Importe um CBZ, ePub ou ZIP contendo imagens para ler.";
 "CHAPTER_TITLE" = "Título do Capítulo";
 "SERIES_TITLE" = "Título da Série";
 "DESCRIPTION" = "Descrição";

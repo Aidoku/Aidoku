@@ -138,7 +138,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.autoScrollSpeed": 5,
                 "Reader.orientation": "device",
 
-                "Reader.textReaderStyle": "scroll",
+                "Reader.textReaderStyle": "paged",
                 "Reader.textFontFamily": "System",
                 "Reader.textFontSize": 18,
                 "Reader.textLineSpacing": 8,

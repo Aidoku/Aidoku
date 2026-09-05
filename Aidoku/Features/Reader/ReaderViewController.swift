@@ -15,6 +15,9 @@ class ReaderViewController: BaseObservingViewController {
         case paged
         case scroll
         case text
+        // inferred from page content, as text is, rather than offered in the reading-mode picker,
+        // whose entries are directional layout for images
+        case epub
     }
 
     let source: AidokuRunner.Source?
@@ -79,17 +82,8 @@ class ReaderViewController: BaseObservingViewController {
     private let longSqueezeThreshold: TimeInterval = 0.5
 
     private lazy var autoScrollButton: UIButton = {
-        var configuration = UIButton.Configuration.filled()
-        if #available(iOS 26.0, *) {
-            configuration = .glass()
-        } else {
-            configuration = .filled()
-            configuration.baseBackgroundColor = .secondarySystemBackground
-            configuration.baseForegroundColor = .label
-        }
-        configuration.cornerStyle = .capsule
+        var configuration = UIButton.Configuration.glassCapsule()
         configuration.image = UIImage(systemName: "play.fill")
-        configuration.contentInsets = .init(top: 10, leading: 10, bottom: 10, trailing: 10)
 
         let button = UIButton(configuration: configuration)
         button.addTarget(self, action: #selector(toggleAutoScroll), for: .touchUpInside)
@@ -116,6 +110,20 @@ class ReaderViewController: BaseObservingViewController {
             equalTo: autoScrollButton.leadingAnchor,
             constant: -16
         )
+
+    // the epub reader reports a new total for every spine document counted, 217 calls in five
+    // seconds on the largest book in the corpus, and rebuilding the items each time replaced the
+    // UIBarButtonItem a finger was resting on, so its action never fired
+    private struct BarButtonState: Equatable {
+        let hostsContents: Bool
+        let contentsRead: Bool
+        let web: Bool
+    }
+
+    private var builtBarState: BarButtonState?
+
+    // held so it can be disabled while contents are being read
+    private var chapterListButton: UIBarButtonItem?
 
     private var barToggleTapGesture: UITapGestureRecognizer?
     private var barToggleSecondaryTapGesture: UITapGestureRecognizer?
@@ -167,35 +175,22 @@ class ReaderViewController: BaseObservingViewController {
         navigationController?.navigationBar.prefersLargeTitles = false
 
         // navbar buttons
+        let chapterListButton = UIBarButtonItem(
+            image: UIImage(systemName: "list.bullet"),
+            style: .plain,
+            target: self,
+            action: #selector(openContents)
+        )
+        self.chapterListButton = chapterListButton
         navigationItem.leftBarButtonItems = [
             UIBarButtonItem(
                 barButtonSystemItem: .close,
                 target: self,
                 action: #selector(close)
             ),
-            UIBarButtonItem(
-                image: UIImage(systemName: "list.bullet"),
-                style: .plain,
-                target: self,
-                action: #selector(openChapterList)
-            )
+            chapterListButton
         ]
-        let moreButton = UIBarButtonItem(
-            image: UIImage(systemName: "safari"),
-            style: .plain,
-            target: self,
-            action: #selector(openWebView)
-        )
-        moreButton.isEnabled = chapter.url != nil
-        navigationItem.rightBarButtonItems = [
-            moreButton,
-            UIBarButtonItem(
-                image: UIImage(systemName: "textformat.size"),
-                style: .plain,
-                target: self,
-                action: #selector(openReaderSettings)
-            )
-        ]
+        updateBarButtonItems()
 
         // fix navbar being clear
         let navigationBarAppearance = UINavigationBarAppearance()
@@ -342,6 +337,10 @@ class ReaderViewController: BaseObservingViewController {
         // Switch text reader style (paged <-> scroll) without restart
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
+            // the epub reader rebuilds itself, but the bar transparency follows the style too
+            if self.reader is ReaderEpubViewController {
+                self.updateTextThemeOverride()
+            }
             // Only switch if we're currently in a text reader
             if self.reader is ReaderTextViewController || self.reader is ReaderPagedTextViewController {
                 // Save current position before switching so the new reader can restore it
@@ -485,6 +484,14 @@ extension ReaderViewController {
             return
         }
 
+        // an epub still being taken to the page it opened at reports the head of the book so the
+        // toolbar has numbers while the spine is counted, but writing that saves page 1 over the
+        // progress being resumed to
+        // the sibling of the guard in setCompleted, for the same reason
+        if (reader as? ReaderEpubViewController)?.isAwaitingResume == true {
+            return
+        }
+
         let currentPage = effectiveCurrentPage
         let chapter = chapter ?? self.chapter
 
@@ -560,6 +567,9 @@ extension ReaderViewController {
             }
         }
         reader?.setChapter(chapter, startPage: currentPage)
+        // the contents belong to the chapter being left, so the button goes with it rather than
+        // standing over the next chapter's load, where it opens nothing. setPages brings it back
+        updateBarButtonItems()
     }
 
     func loadNavbarTitle() {
@@ -605,6 +615,8 @@ extension ReaderViewController {
                 currentReader = .paged
             case is ReaderWebtoonViewController:
                 currentReader = .scroll
+            case is ReaderEpubViewController:
+                currentReader = .epub
             default:
                 currentReader = .paged
         }
@@ -615,7 +627,7 @@ extension ReaderViewController {
                 chapterLanguage: chapter.language ?? source?.languages.first
             )
         )
-        if currentReader == .text {
+        if currentReader == .text || currentReader == .epub {
             vc.overrideUserInterfaceStyle = ReaderTextTheme.getInterfaceStyleOverride()
         }
         present(vc, animated: true)
@@ -753,6 +765,16 @@ extension ReaderViewController {
                 } else {
                     pageController = nil
                 }
+            case .epub:
+                // an epub reads left to right regardless of the manga setting, as text does
+                toolbarView.sliderView.direction = .forward
+                // which archive to open is the reader's to resolve from the chapter it is given,
+                // since a manga folder may hold several epubs, one chapter each
+                if !(reader is ReaderEpubViewController) {
+                    pageController = ReaderEpubViewController(source: source, manga: manga)
+                } else {
+                    pageController = nil
+                }
             case .text:
                 // Text always reads left-to-right, regardless of manga setting
                 toolbarView.sliderView.direction = .forward
@@ -779,10 +801,18 @@ extension ReaderViewController {
             if let webtoonReader = reader as? ReaderWebtoonViewController {
                 webtoonReader.stopAutoScroll()
             }
+            // severed, not just removed: the reader being replaced still finishes its in-flight
+            // work, and the page the paged reader then delivered against the one-page placeholder
+            // list read as the last page of the chapter and marked it completed
+            reader?.delegate = nil
             reader?.remove()
             pageController.delegate = self
             reader = pageController
             add(child: pageController, below: descriptionButtonController.view)
+            // the bar toggle tap is built differently for a reader hosting a web view, so it is
+            // rebuilt whenever which reader is hosted changes
+            configureBarToggleTapGestures()
+            updateBarButtonItems()
         }
         reader?.readingMode = readingMode
         configureDictionaryOverlayInteractionMode()
@@ -794,7 +824,9 @@ extension ReaderViewController {
 
     func updateTextThemeOverride() {
         let theme = ReaderTextTheme.getCurrent()
-        let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
+        let isTextReader = reader is ReaderTextViewController
+            || reader is ReaderPagedTextViewController
+            || reader is ReaderEpubViewController
         let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.getInterfaceStyleOverride() : .unspecified
         navigationController?.overrideUserInterfaceStyle = styleOverride
         // presented sheets don't inherit the override
@@ -809,7 +841,11 @@ extension ReaderViewController {
         if let navigationBar = navigationController?.navigationBar {
             func applyTheme(_ appearance: UINavigationBarAppearance) {
                 if themed {
-                    if #available(iOS 26.0, *), reader is ReaderTextViewController {
+                    // the epub scroll style passes content under the bars like the scroll text reader
+                    let scrollsUnderBars = reader is ReaderTextViewController
+                        || (reader is ReaderEpubViewController
+                            && UserDefaults.standard.string(forKey: "Reader.textReaderStyle") == "scroll")
+                    if #available(iOS 26.0, *), scrollsUnderBars {
                         // text scrolls under the bar, so keep it transparent
                         appearance.configureWithTransparentBackground()
                     } else {
@@ -969,6 +1005,8 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         }
 
         self.chapter = chapter
+        // the fraction belongs to the chapter being left
+        currentPosition = nil
         self.chaptersToMark = [chapter]
         configureBarToggleTapGestures()
         configureDictionaryLookupGesture()
@@ -1048,9 +1086,19 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         self.pages = pages
         toolbarView.totalPages = pages.count
         activityIndicator.stopAnimating()
+        // a reader with contents of its own only has them once it has opened what it was given
+        updateBarButtonItems()
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
+        } else if pages.contains(where: { $0.isEpubPage }) {
+            // an epub is one chapter spanning its whole spine, so the reader is handed the book
+            // and reports its own page count back through setPages once it has been laid out
+            if !(reader is ReaderEpubViewController) {
+                setReader(.epub)
+                setChapter(chapter)
+                loadCurrentChapter()
+            }
         } else if pages.count == 1 && pages[0].isTextPage {
             // single text page, should switch to text reader
             if !(reader is ReaderPagedTextViewController) && !(reader is ReaderTextViewController) {
@@ -1064,8 +1112,12 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
             // Don't switch away - this is our internal page count update
             // Just update the toolbar, don't reload
         } else {
-            // otherwise, make sure we're not in the text reader
-            if reader is ReaderTextViewController || reader is ReaderPagedTextViewController {
+            // otherwise, make sure we're not in the text or epub reader.
+            // an epub reader reaches this by handing over a chapter that turned out not to be an
+            // epub, which a folder holding an epub beside a cbz produces.
+            if reader is ReaderTextViewController
+                || reader is ReaderPagedTextViewController
+                || reader is ReaderEpubViewController {
                 switch readingMode {
                     case .ltr, .rtl, .vertical:
                         setReader(.paged)
@@ -1088,6 +1140,14 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
 
     func setCompleted() {
         guard !AppSettings.general.incognitoMode.get() else { return }
+
+        // an epub's total is a lower bound until every spine document is counted, and unknown
+        // while the book is still opening. completing on either marks a book read from its first
+        // document and, with deleteDownloadAfterReading, deletes it. guarded here rather than at
+        // the last-page check, so it is refused whichever delegate path it arrives by
+        if let epubReader = reader as? ReaderEpubViewController, epubReader.book?.isMeasured != true {
+            return
+        }
 
         Task { [chaptersToMark] in
             await HistoryManager.shared.addHistory(
@@ -1112,6 +1172,11 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
         tap.numberOfTapsRequired = 1
         tap.delegate = self
+        // the epub reader is the only one with a web view under the tap zones, and its tap must
+        // not cancel touches, which is what lets the scroll style keep text selection and links
+        if reader is ReaderEpubViewController {
+            tap.cancelsTouchesInView = false
+        }
         let singleTapLookupEnabled = isDictionarySingleTapLookupActiveForCurrentChapter
         configureNavigationBarDismissTapGesture(enabled: singleTapLookupEnabled)
 
@@ -1286,6 +1351,12 @@ extension ReaderViewController {
             return
         }
 
+        // a tap the reader has already answered for itself, such as a link inside an epub. asked
+        // before anything here acts on it, since the alternative is undoing what was done
+        if reader?.consumesTap() == true {
+            return
+        }
+
         // toggle bars when tapping safe areas
         if singleTapLookupEnabled, isReaderControlToggleTapZone(point) {
             toggleBarVisibility()
@@ -1312,6 +1383,24 @@ extension ReaderViewController {
             }
         }
 
+        // A tap on the book's own content — a link, an image, a table — belongs to the book.
+        // Asked before the zones so a page cannot also turn out from under what was opened;
+        // taps that hit nothing of the sort fall through unchanged.
+        if let epub = reader as? ReaderEpubViewController {
+            let location = view.convert(point, to: epub.view)
+            Task { [weak self] in
+                guard let self else { return }
+                if await epub.handleContentTap(at: location) { return }
+                self.handleZoneTap(at: point)
+            }
+            return
+        }
+
+        handleZoneTap(at: point)
+    }
+
+    // the tap-zone half of handleTap: turn a page or toggle the bars
+    private func handleZoneTap(at point: CGPoint) {
         guard let reader, let tapZone else {
             toggleBarVisibility()
             return
@@ -1382,7 +1471,7 @@ extension ReaderViewController: UIPencilInteractionDelegate {
                 ) { [weak self] _ in
                     Task { @MainActor in
                         self?.longSqueezeTimer = nil
-                        self?.openChapterList()
+                        self?.openContents()
                     }
                 }
             case .ended:
@@ -1599,6 +1688,19 @@ extension ReaderViewController: UIGestureRecognizerDelegate {
         }
         return true
     }
+
+    // A WKWebView installs its own recognizers on its content view, and they claim a single tap
+    // before an ancestor's recognizer sees it. Recognising simultaneously is what lets a tap reach
+    // the tap zones while an epub's web view sits under them; no other reader puts a web view there,
+    // so everything else keeps the default exclusivity.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        (gestureRecognizer === barToggleTapGesture || gestureRecognizer === barToggleSecondaryTapGesture)
+            && reader is ReaderEpubViewController
+    }
+
 }
 
 // MARK: - Keyboard Shortcuts
@@ -1634,7 +1736,7 @@ extension ReaderViewController {
             ),
             UIKeyCommand(
                 title: NSLocalizedString("OPEN_CHAPTER_LIST"),
-                action: #selector(openChapterList),
+                action: #selector(openContents),
                 input: "\t"
             ),
             UIKeyCommand(
@@ -1675,6 +1777,94 @@ extension ReaderViewController {
         if let previousChaoter = getPreviousChapter() {
             reader?.setChapter(previousChaoter, startPage: 1)
             setChapter(previousChaoter)
+        }
+    }
+}
+
+// MARK: - Table of Contents
+
+extension ReaderViewController {
+    // decides whether the chapter-list button opens the book's contents or the series' chapters
+    private var contentsReader: ReaderTableOfContentsReader? {
+        reader as? ReaderTableOfContentsReader
+    }
+
+    // asked of the reader rather than the table: a book that declares no contents has read them
+    // and found none, and taking an empty table for "not read yet" left the button disabled for as
+    // long as such a book was open
+    private var hasReadContents: Bool {
+        contentsReader?.hasReadTableOfContents == true
+    }
+
+    // decides which list the button opens once it is enabled
+    private var hasContents: Bool {
+        contentsReader?.tableOfContents.isEmpty == false
+    }
+
+    // rebuilt rather than hidden, UIBarButtonItem.isHidden being iOS 16 where this ships to 15.
+    // called again whenever the hosted reader or its contents can have changed
+    func updateBarButtonItems() {
+        let state = BarButtonState(
+            hostsContents: contentsReader != nil,
+            contentsRead: hasReadContents,
+            web: chapter.url != nil
+        )
+        guard state != builtBarState else { return }
+        builtBarState = state
+
+        // A reader carrying contents of its own opens them from the chapter-list button, so the
+        // button waits rather than opening the wrong list. Disabled rather than removed: removing it
+        // reflowed the items either side, so the buttons moved between chapters and a tap aimed at
+        // one landed on another; a disabled item holds its place and says plainly it is not ready.
+        chapterListButton?.isEnabled = !state.hostsContents || state.contentsRead
+
+        let moreButton = UIBarButtonItem(
+            image: UIImage(systemName: "safari"),
+            style: .plain,
+            target: self,
+            action: #selector(openWebView)
+        )
+        moreButton.isEnabled = state.web
+
+        var items = [moreButton]
+        items.append(
+            UIBarButtonItem(
+                image: UIImage(systemName: "textformat.size"),
+                style: .plain,
+                target: self,
+                action: #selector(openReaderSettings)
+            )
+        )
+        navigationItem.rightBarButtonItems = items
+    }
+
+    // reached through openContents rather than a button of its own, since one epub is one chapter
+    // and its chapter list holds a single row
+    @objc func openTableOfContents() {
+        guard let reader = contentsReader else { return }
+        let view = ReaderEpubContentsView(
+            contents: reader.tableOfContents,
+            currentEntry: { await reader.currentTableOfContentsEntry() },
+            bookPage: { reader.bookPage(ofTableOfContentsEntry: $0) },
+            entrySet: { [weak self] entry in
+                self?.dismiss(animated: true)
+                reader.goToTableOfContentsEntry(entry)
+            }
+        )
+        present(UIHostingController(rootView: view), animated: true)
+    }
+
+    // a book that declares no contents still opens its own sheet, which says so, unless the series
+    // holds more than one book, that being the only way to reach the next one without leaving
+    @objc func openContents() {
+        guard contentsReader != nil else {
+            openChapterList()
+            return
+        }
+        if hasContents || chapterList.count <= 1 {
+            openTableOfContents()
+        } else {
+            openChapterList()
         }
     }
 }

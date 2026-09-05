@@ -201,6 +201,7 @@ extension SettingsView {
                 if let nukeCache = ImagePipeline.shared.configuration.dataCache as? DataCache {
                     totalCacheSize += nukeCache.totalSize
                 }
+                totalCacheSize += EpubChapterCache.totalSize
                 let message = NSLocalizedString("CLEAR_NETWORK_CACHE_TEXT")
                     + "\n\n"
                     + String(
@@ -379,6 +380,8 @@ extension SettingsView {
         if let imageCache = ImagePipeline.shared.configuration.imageCache as? Nuke.ImageCache {
             imageCache.removeAll()
         }
+        // clear downloaded epubs
+        EpubChapterCache.removeAll()
     }
 
     func resetSettings() {

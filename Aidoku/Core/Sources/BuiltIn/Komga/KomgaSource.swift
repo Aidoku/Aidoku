@@ -103,6 +103,10 @@ actor KomgaSourceRunner: Runner {
     private var storedTags: [String] = []
     private var lastWorkingMirror: URL?
 
+    // remembered as the chapter list is read, so opening an ordinary chapter needs no request of
+    // its own to find out
+    private var epubChapters: [String: Bool] = [:]
+
     init(sourceKey: String, name: String, server: String) {
         self.sourceKey = sourceKey
         self.helper = KomgaHelper(sourceKey: sourceKey)
@@ -176,8 +180,11 @@ actor KomgaSourceRunner: Runner {
                 lastWorkingMirror: &lastWorkingMirrorCopy
             )
 
+            for book in chapters.content {
+                epubChapters[book.id] = book.media.mediaProfile == "EPUB" && !book.media.epubDivinaCompatible
+            }
+
             manga.chapters = chapters.content
-                .filter { $0.media.mediaProfile != "EPUB" || $0.media.epubDivinaCompatible } // can't read epubs (yet?)
                 .map {
                     $0.intoChapter(
                         baseUrl: lastWorkingMirrorCopy ?? baseUrl,
@@ -194,6 +201,27 @@ actor KomgaSourceRunner: Runner {
         defer {
             lastWorkingMirror = lastWorkingMirrorCopy
         }
+
+        // only a chapter this source has not listed this launch, reached by resuming straight into
+        // the reader, has to ask
+        let isEpub: Bool
+        if let known = epubChapters[chapter.id] {
+            isEpub = known
+        } else {
+            let path = "api/v1/books/\(chapter.id)"
+            // a book that cannot be described is read as images, as every chapter was before epubs
+            let book: KomgaBook? = try? await helper.request(path: path, lastWorkingMirror: &lastWorkingMirrorCopy)
+            isEpub = book.map { $0.media.mediaProfile == "EPUB" && !$0.media.epubDivinaCompatible } ?? false
+            if book != nil {
+                epubChapters[chapter.id] = isEpub
+            }
+        }
+
+        // epubs komga can't serve as image pages are downloaded whole and read by the epub reader
+        if isEpub {
+            return try await epubPages(chapterId: chapter.id, lastWorkingMirror: &lastWorkingMirrorCopy)
+        }
+
         let pages: [KomgaPage] = try await helper.request(
             path: "api/v1/books/\(chapter.id)/pages",
             lastWorkingMirror: &lastWorkingMirrorCopy
@@ -908,5 +936,48 @@ extension KomgaSourceRunner {
             }
         }
         return links.compactMap { $0 }
+    }
+}
+
+extension KomgaSourceRunner {
+    private func epubPages(chapterId: String, lastWorkingMirror: inout URL?) async throws -> [AidokuRunner.Page] {
+        var lastWorkingMirrorCopy = lastWorkingMirror
+        defer { lastWorkingMirror = lastWorkingMirrorCopy }
+
+        guard let auth = helper.getAuthorizationHeader() else {
+            throw SourceError.message("NOT_LOGGED_IN")
+        }
+        // the download answers with bytes rather than json, so it can't go through helper.request.
+        // it walks the same base urls in the same order instead: without that, a stale last-working
+        // mirror leaves epub chapters failing while the image chapters beside them still open
+        let mainUrl = try helper.getConfiguredServer()
+        let baseUrls = try helper.baseUrls(lastWorkingMirror: lastWorkingMirrorCopy)
+        var lastError: any Error = SourceError.networkError
+        for (index, baseUrl) in baseUrls.enumerated() {
+            guard let url = URL(string: "api/v1/books/\(chapterId)/file", relativeTo: baseUrl) else {
+                throw SourceError.message("INVALID_SERVER_URL")
+            }
+            var request = URLRequest(url: url)
+            request.setValue(auth, forHTTPHeaderField: "Authorization")
+            do {
+                let pages = try await EpubChapterCache.pages(
+                    request: request,
+                    sourceKey: sourceKey,
+                    chapterId: chapterId
+                )
+                lastWorkingMirrorCopy = baseUrl == mainUrl ? nil : baseUrl
+                return pages
+            } catch let error as EpubChapterCache.DownloadError where error != .failed {
+                // a refusal of the account rather than of the server: every mirror answers the
+                // same way, so asking the next one spends a request to be told again
+                throw error
+            } catch {
+                lastError = error
+                if index == baseUrls.count - 1 {
+                    lastWorkingMirrorCopy = nil
+                }
+            }
+        }
+        throw lastError
     }
 }
