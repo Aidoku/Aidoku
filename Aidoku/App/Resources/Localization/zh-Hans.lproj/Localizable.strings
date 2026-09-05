@@ -827,3 +827,7 @@
 "MIGRATE_WITH_HISTORY" = "迁移并保留历史";
 "AUTO_SCROLL" = "自动滚动";
 "AUTO_SCROLL_SPEED" = "自动滚动速度";
+"TEXT_THEME" = "主题";
+"TEXT_THEME_SEPIA" = "棕褐色";
+"TEXT_THEME_GRAY" = "灰色";
+"TEXT_THEME_PAPER" = "纸张";
