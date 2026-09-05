@@ -104,9 +104,9 @@ extension MangaView.ViewModel {
                     Task { @MainActor in
                         guard
                             let self,
-                            let manga = output.object as? AidokuRunner.Manga,
-                            manga.identifier == self.manga.identifier
-                                else {
+                            let id = output.object as? MangaIdentifier,
+                            id == self.manga.identifier
+                        else {
                             return
                         }
                         await self.loadBookmarked()

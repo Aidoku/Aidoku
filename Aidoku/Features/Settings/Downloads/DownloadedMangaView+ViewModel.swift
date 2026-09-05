@@ -286,15 +286,15 @@ extension DownloadedMangaView.ViewModel {
             }),
             (.addToLibrary, { [weak self] notification in
                 guard
-                    let addedManga = notification.object as? AidokuRunner.Manga,
-                    addedManga.identifier == self?.manga.mangaIdentifier
+                    let addedMangaId = notification.object as? MangaIdentifier,
+                    addedMangaId == self?.manga.mangaIdentifier
                 else { return false }
                 return true
             }),
             (.removeFromLibrary, { [weak self] notification in
                 guard
-                    let removedManga = notification.object as? AidokuRunner.Manga,
-                    removedManga.identifier == self?.manga.mangaIdentifier
+                    let removedMangaId = notification.object as? MangaIdentifier,
+                    removedMangaId == self?.manga.mangaIdentifier
                 else { return false }
                 return true
             })

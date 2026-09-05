@@ -87,8 +87,8 @@ class MangaCollectionViewController: BaseCollectionViewController {
         addObserver(forName: .addToLibrary) { [weak self] notification in
             guard
                 let self,
-                let manga = notification.object as? AidokuRunner.Manga,
-                let index = self.entries.firstIndex(where: { $0.identifier == manga.identifier }),
+                let id = notification.object as? MangaIdentifier,
+                let index = self.entries.firstIndex(where: { $0.identifier == id }),
                 let entry = self.dataSource.itemIdentifier(for: IndexPath(item: index, section: 0))
             else {
                 return
@@ -103,8 +103,8 @@ class MangaCollectionViewController: BaseCollectionViewController {
         addObserver(forName: .removeFromLibrary) { [weak self] notification in
             guard
                 let self,
-                let manga = notification.object as? AidokuRunner.Manga,
-                let index = self.entries.firstIndex(where: { $0.identifier == manga.identifier }),
+                let id = notification.object as? MangaIdentifier,
+                let index = self.entries.firstIndex(where: { $0.identifier == id }),
                 let entry = self.dataSource.itemIdentifier(for: IndexPath(item: index, section: 0))
             else {
                 return

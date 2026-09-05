@@ -139,6 +139,13 @@ final class CoreDataManager: @unchecked Sendable {
         }
     }
 
+    func queueClear<T: NSManagedObject>(request: NSFetchRequest<T>, context: NSManagedObjectContext) {
+        let objects = (try? context.fetch(request)) ?? []
+        for object in objects {
+            context.delete(object)
+        }
+    }
+
     @MainActor
     func updateCloudConfiguration() {
         guard let cloudDescription = self.container.persistentStoreDescriptions.first else { return }

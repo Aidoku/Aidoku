@@ -1597,6 +1597,13 @@ extension LibraryViewController: UISearchResultsUpdating {
 
 // MARK: - Undoable Methods
 extension LibraryViewController {
+    struct LibraryRemovalSnapshot {
+        let manga: Manga
+        let chapters: [Chapter]
+        let trackItems: [TrackItem]
+        let categories: [String]
+    }
+
     @discardableResult
     func removeFromLibrary(mangaInfo: [MangaInfo]) -> Task<Void, Never>? {
         let mangaCount = mangaInfo.count
@@ -1605,42 +1612,53 @@ extension LibraryViewController {
             ? String(
                 format: NSLocalizedString("REMOVING_%i_ITEMS_FROM_LIBRARY"), mangaCount
             ) : NSLocalizedString("REMOVING_(ONE)_ITEM_FROM_LIBRARY")
-        undoManager.setActionName(actionName)
 
-        let removedManga = mangaInfo.map {
-            let context = CoreDataManager.shared.context
-            let manga = CoreDataManager.shared.getManga(mangaId: $0.id, context: context)?.toManga()
-            let chapters = CoreDataManager.shared.getChapters(mangaId: $0.id, context: context).map { $0.toChapter() }
-            let trackItems = CoreDataManager.shared.getTracks(mangaId: $0.id, context: context).map { $0.toItem() }
-            let categories = CoreDataManager.shared.getCategories(mangaId: $0.id, context: context).compactMap { $0.title }
-            return (manga, chapters, trackItems, categories)
-        }
+        let ids = mangaInfo.map(\.id)
 
-        undoManager.registerUndo(withTarget: self) { target in
-            target.undoManager.registerUndo(withTarget: target) { redoTarget in
-                redoTarget.removeFromLibrary(mangaInfo: mangaInfo)
-            }
+        return Task { [weak self] in
+            guard let self else { return }
 
-            Task {
-                for (manga, chapters, trackItems, categories) in removedManga {
-                    guard let manga = manga else { continue }
-                    await MangaManager.shared.restoreToLibrary(
+            let removedManga: [LibraryRemovalSnapshot] = await CoreDataManager.shared.container.performBackgroundTask { context in
+                ids.compactMap {
+                    guard let manga = CoreDataManager.shared.getManga(mangaId: $0, context: context)?.toManga() else {
+                        return nil
+                    }
+                    let chapters = CoreDataManager.shared.getChapters(mangaId: $0, context: context).map { $0.toChapter() }
+                    let trackItems = CoreDataManager.shared.getTracks(mangaId: $0, context: context).map { $0.toItem() }
+                    let categories = CoreDataManager.shared.getCategories(mangaId: $0, context: context).compactMap { $0.title }
+                    return LibraryRemovalSnapshot(
                         manga: manga,
                         chapters: chapters,
                         trackItems: trackItems,
                         categories: categories
                     )
                 }
-
-                NotificationCenter.default.post(name: .updateLibrary, object: nil)
             }
-        }
 
-        return Task {
-            for manga in mangaInfo {
-                await viewModel.removeFromLibrary(manga: manga)
+            guard !Task.isCancelled else { return }
+
+            self.undoManager.setActionName(actionName)
+            self.undoManager.registerUndo(withTarget: self) { target in
+                target.undoManager.registerUndo(withTarget: target) { redoTarget in
+                    redoTarget.removeFromLibrary(mangaInfo: mangaInfo)
+                }
+
+                Task {
+                    for snapshot in removedManga {
+                        await MangaManager.shared.restoreToLibrary(
+                            manga: snapshot.manga,
+                            chapters: snapshot.chapters,
+                            trackItems: snapshot.trackItems,
+                            categories: snapshot.categories
+                        )
+                    }
+
+                    NotificationCenter.default.post(name: .updateLibrary, object: nil)
+                }
             }
-            updateDataSource()
+
+            await self.viewModel.removeFromLibrary(mangaIds: mangaInfo.map { $0.id })
+            self.updateDataSource()
         }
     }
 
@@ -1672,12 +1690,14 @@ extension LibraryViewController {
             }
         }
 
-        return Task {
+        return Task { [weak self] in
+            guard let self else { return }
+
             for manga in mangaInfo {
-                await viewModel.removeFromCurrentCategory(manga: manga)
+                await self.viewModel.removeFromCurrentCategory(manga: manga)
             }
 
-            updateDataSource()
+            self.updateDataSource()
         }
     }
 }

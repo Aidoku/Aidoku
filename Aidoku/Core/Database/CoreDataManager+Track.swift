@@ -122,12 +122,17 @@ extension CoreDataManager {
 
     /// Removes all track items for a tracker.
     func removeTracks(trackerId: String, context: NSManagedObjectContext) {
-        let objects = getTracks(
-            trackerId: trackerId,
-            context: context
+        let request = TrackObject.fetchRequest()
+        request.predicate = NSPredicate(format: "trackerId == %@", trackerId)
+        queueClear(request: request, context: context)
+    }
+
+    func removeTracks(mangaId: MangaIdentifier, context: NSManagedObjectContext) {
+        let request = TrackObject.fetchRequest()
+        request.predicate = NSPredicate(
+            format: "mangaId == %@ AND sourceId == %@",
+            mangaId.mangaKey, mangaId.sourceKey
         )
-        for object in objects {
-            context.delete(object)
-        }
+        queueClear(request: request, context: context)
     }
 }

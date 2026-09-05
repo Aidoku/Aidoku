@@ -179,49 +179,44 @@ extension MangaManager {
         // add enhanced trackers
         await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
 
-        NotificationCenter.default.post(name: .addToLibrary, object: manga)
+        NotificationCenter.default.post(name: .addToLibrary, object: manga.identifier)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
     }
 
     func removeFromLibrary(mangaId: MangaIdentifier) async {
-        // Get manga object for notification before deletion
-        let mangaForNotification = await CoreDataManager.shared.container.performBackgroundTask { context in
-            CoreDataManager.shared.getManga(mangaId: mangaId, context: context)?.toNewManga()
-        }
-
         await CoreDataManager.shared.container.performBackgroundTask { context in
-            // remove from library
-            CoreDataManager.shared.removeManga(
-                mangaId: mangaId,
-                context: context
-            )
-            // remove chapters
+            CoreDataManager.shared.removeManga(mangaId: mangaId, context: context)
             CoreDataManager.shared.removeChapters(mangaId: mangaId, context: context)
-            // remove associated trackers
-            if
-                case let items = CoreDataManager.shared.getTracks(
-                    mangaId: mangaId,
-                    context: context
-                ).map({ $0.toItem() }),
-                !items.isEmpty
-            {
-                for item in items {
-                    TrackerManager.shared.removeTrackItem(item: item, context: context)
-                }
-            }
+            CoreDataManager.shared.removeTracks(mangaId: mangaId, context: context)
             do {
                 try context.save()
             } catch {
-                LogManager.logger.error("MangaManager.removeFromLibrary(mangaId: \(mangaId)): \(error.localizedDescription)")
+                LogManager.logger.error("Failed to remove manga: \(error)")
             }
         }
-
-        // Post specific notification for removal with manga object
-        if let mangaForNotification {
-            NotificationCenter.default.post(name: .removeFromLibrary, object: mangaForNotification)
-        }
-
+        NotificationCenter.default.post(name: .removeFromLibrary, object: mangaId)
         NotificationCenter.default.post(name: .updateLibrary, object: nil)
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+    }
+
+    func removeFromLibrary(mangaIds: [MangaIdentifier]) async {
+        if mangaIds.count > 100 {
+            await UIApplication.shared.appDelegate?.showLoadingIndicator()
+        }
+        await CoreDataManager.shared.container.performBackgroundTask { context in
+            CoreDataManager.shared.removeFromLibrary(ids: mangaIds, context: context)
+            do {
+                try context.save()
+            } catch {
+                LogManager.logger.error("Failed to remove multiple manga: \(error)")
+            }
+        }
+        for id in mangaIds {
+            NotificationCenter.default.post(name: .removeFromLibrary, object: id)
+        }
+        NotificationCenter.default.post(name: .updateLibrary, object: nil)
+        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+        await UIApplication.shared.appDelegate?.hideLoadingIndicator()
     }
 
     func restoreToLibrary(

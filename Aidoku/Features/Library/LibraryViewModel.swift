@@ -746,6 +746,13 @@ extension LibraryViewModel {
         await MangaManager.shared.removeFromLibrary(mangaId: manga.id)
     }
 
+    func removeFromLibrary(mangaIds: [MangaIdentifier]) async {
+        let set = Set(mangaIds)
+        pinnedManga.removeAll { set.contains($0.id) }
+        self.manga.removeAll { set.contains($0.id) }
+        await MangaManager.shared.removeFromLibrary(mangaIds: mangaIds)
+    }
+
     func addToCurrentCategory(manga: MangaInfo) async {
         guard let currentCategory, isInRealCategory else { return }
         await CoreDataManager.shared.addCategoriesToManga(
