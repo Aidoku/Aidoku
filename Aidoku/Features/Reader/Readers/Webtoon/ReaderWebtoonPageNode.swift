@@ -217,7 +217,7 @@ extension ReaderWebtoonPageNode {
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         if let image {
-            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
+            if pillarbox && isPillarboxOrientation() {
                 let percent = (100 - pillarboxAmount) / 100
                 let height = getPillarboxHeight(percent: percent, maxWidth: constrainedSize.max.width)
 
