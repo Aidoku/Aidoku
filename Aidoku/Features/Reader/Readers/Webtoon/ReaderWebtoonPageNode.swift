@@ -18,6 +18,7 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     let source: AidokuRunner.Source?
     let page: Page
     let temporaryPageStore: ReaderTemporaryPageStore
+    let pillarboxLayoutState: ReaderPillarboxLayoutState
 
     weak var delegate: ReaderWebtoonViewController?
 
@@ -84,11 +85,13 @@ class ReaderWebtoonPageNode: BaseObservingCellNode {
     init(
         source: AidokuRunner.Source?,
         page: Page,
-        temporaryPageStore: ReaderTemporaryPageStore
+        temporaryPageStore: ReaderTemporaryPageStore,
+        pillarboxLayoutState: ReaderPillarboxLayoutState
     ) {
         self.source = source
         self.page = page
         self.temporaryPageStore = temporaryPageStore
+        self.pillarboxLayoutState = pillarboxLayoutState
         super.init()
 
         automaticallyManagesSubnodes = true
@@ -206,11 +209,10 @@ extension ReaderWebtoonPageNode {
         return width / image.size.width * image.size.height
     }
 
-    func isPillarboxOrientation(for size: CGSize) -> Bool {
-        let isPortrait = size.height >= size.width
-        return pillarboxOrientation == "both"
-            || (pillarboxOrientation == "portrait" && isPortrait)
-            || (pillarboxOrientation == "landscape" && !isPortrait)
+    func isPillarboxOrientation() -> Bool {
+        pillarboxOrientation == "both"
+            || (pillarboxOrientation == "portrait" && pillarboxLayoutState.isPortrait)
+            || (pillarboxOrientation == "landscape" && !pillarboxLayoutState.isPortrait)
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
@@ -237,7 +239,7 @@ extension ReaderWebtoonPageNode {
             }
         } else if text != nil {
             // todo: the text node should probably adjust its size based on the text
-            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
+            if pillarbox && isPillarboxOrientation() {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
@@ -252,7 +254,7 @@ extension ReaderWebtoonPageNode {
                 )
             }
         } else {
-            if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
+            if pillarbox && isPillarboxOrientation() {
                 let percent = (100 - pillarboxAmount) / 100
                 let ratio = percent * (ratio ?? Self.defaultRatio)
 
