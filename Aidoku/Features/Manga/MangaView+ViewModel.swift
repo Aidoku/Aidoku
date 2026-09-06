@@ -23,6 +23,7 @@ extension MangaView {
         @Published var downloadStatus: [String: DownloadStatus] = [:] // chapterId: status
 
         @Published var bookmarked = false
+        @Published var hasCategories = false
 
         @Published var nextChapter: AidokuRunner.Chapter?
         @Published var readingInProgress = false
@@ -103,9 +104,9 @@ extension MangaView.ViewModel {
                     Task { @MainActor in
                         guard
                             let self,
-                            let manga = output.object as? AidokuRunner.Manga,
-                            manga.identifier == self.manga.identifier
-                                else {
+                            let id = output.object as? MangaIdentifier,
+                            id == self.manga.identifier
+                        else {
                             return
                         }
                         await self.loadBookmarked()
@@ -131,6 +132,14 @@ extension MangaView.ViewModel {
                 }
             }
             .store(in: &cancellables)
+
+            NotificationCenter.default.publisher(for: .updateCategories)
+                .sink { [weak self] _ in
+                    Task {
+                        await self?.checkForCategories()
+                    }
+                }
+                .store(in: &cancellables)
     }
 
     private func registerSourceNotifications() {
@@ -310,6 +319,12 @@ extension MangaView.ViewModel {
 }
 
 extension MangaView.ViewModel {
+    func checkForCategories() async {
+        hasCategories = await CoreDataManager.shared.container.performBackgroundTask { context in
+            !CoreDataManager.shared.getCategoryTitles(sorted: false, context: context).isEmpty
+        }
+    }
+
     func refreshReadButtonState() {
         updateReadButton()
     }
@@ -889,5 +904,6 @@ extension MangaView.ViewModel {
         manga.langFilter = chapterLangFilter
         manga.scanlatorFilter = chapterScanlatorFilter
         await CoreDataManager.shared.updateMangaDetails(manga: manga)
+        NotificationCenter.default.post(name: .filteredChapters, object: manga.identifier)
     }
 }

@@ -145,14 +145,14 @@ struct HomeGridView: View {
                 }
             } else {
                 Button {
-                    if MangaManager.shouldAskForCategories() {
-                        // open category select view
-                        let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
-                        path.present(viewController)
-                    } else {
-                        // add to library
-                        bookmarkedItems.insert(entry.key)
-                        Task {
+                    Task {
+                        if await MangaManager.shouldAskForCategories() {
+                            // open category select view
+                            let viewController = UINavigationController(rootViewController: CategorySelectViewController(manga: entry))
+                            path.present(viewController)
+                        } else {
+                            // add to library
+                            bookmarkedItems.insert(entry.key)
                             await MangaManager.shared.addToLibrary(
                                 manga: entry,
                                 fetchMangaDetails: true

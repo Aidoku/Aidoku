@@ -94,4 +94,67 @@ extension CoreDataManager {
         libraryObject.lastChapter = chapters.compactMap { $0.dateUploaded }.max()
         self.setChapters(chapters, mangaId: manga.identifier, context: context)
     }
+
+    func removeFromLibrary(ids: [MangaIdentifier], context: NSManagedObjectContext) {
+        // coredata has a predicate limit (1000?) so potentially large requests need to be batched
+        let batchSize = 100
+
+        for start in stride(from: 0, to: ids.count, by: batchSize) {
+            let end = min(start + batchSize, ids.count)
+            let batch = Array(ids[start..<end])
+
+            removeFromLibraryBatch(ids: batch, context: context)
+        }
+    }
+
+    private func removeFromLibraryBatch(ids: [MangaIdentifier], context: NSManagedObjectContext) {
+        guard !ids.isEmpty else { return }
+
+        let mangaRequest = MangaObject.fetchRequest()
+        mangaRequest.predicate = mangaIdentifierPredicate(ids: ids, mangaKeyPath: "id")
+        let mangaObjects = (try? context.fetch(mangaRequest)) ?? []
+
+        for manga in mangaObjects {
+            if manga.fileInfo != nil {
+                if let libraryObject = manga.libraryObject {
+                    context.delete(libraryObject)
+                }
+            } else {
+                context.delete(manga)
+            }
+        }
+
+        let chapterRequest = ChapterObject.fetchRequest()
+        chapterRequest.predicate = mangaIdentifierPredicate(
+            ids: ids,
+            mangaKeyPath: "mangaId",
+            extraPredicates: [NSPredicate(format: "fileInfo == nil")]
+        )
+        queueClear(request: chapterRequest, context: context)
+
+        let trackRequest = TrackObject.fetchRequest()
+        trackRequest.predicate = mangaIdentifierPredicate(ids: ids, mangaKeyPath: "mangaId")
+        queueClear(request: trackRequest, context: context)
+    }
+
+    private func mangaIdentifierPredicate(
+        ids: [MangaIdentifier],
+        mangaKeyPath: String,
+        extraPredicates: [NSPredicate] = []
+    ) -> NSPredicate {
+        let identifiers = NSCompoundPredicate(
+            orPredicateWithSubpredicates: ids.map { id in
+                NSCompoundPredicate(
+                    andPredicateWithSubpredicates: [
+                        NSPredicate(format: "sourceId == %@", id.sourceKey),
+                        NSPredicate(format: "\(mangaKeyPath) == %@", id.mangaKey)
+                    ]
+                )
+            }
+        )
+        guard !extraPredicates.isEmpty else {
+            return identifiers
+        }
+        return NSCompoundPredicate(andPredicateWithSubpredicates: [identifiers] + extraPredicates)
+    }
 }

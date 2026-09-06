@@ -8,19 +8,23 @@
 import AsyncDisplayKit
 
 class ReaderWebtoonTransitionNode: BaseObservingCellNode {
-
     let transition: Transition
+    let pillarboxLayoutState: ReaderPillarboxLayoutState
 
     var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
     var pillarboxAmount: CGFloat = CGFloat(UserDefaults.standard.double(forKey: "Reader.pillarboxAmount"))
     var pillarboxOrientation = UserDefaults.standard.string(forKey: "Reader.pillarboxOrientation")
 
-    lazy var transitionNode = ReaderTransitionNode(transition: transition)
+    private lazy var transitionNode = ReaderTransitionNode(transition: transition)
 
-    init(transition: Transition) {
+    init(transition: Transition, pillarboxLayoutState: ReaderPillarboxLayoutState) {
         self.transition = transition
+        self.pillarboxLayoutState = pillarboxLayoutState
+
         super.init()
+
         automaticallyManagesSubnodes = true
+
         addObserver(forName: "Reader.pillarbox") { [weak self] notification in
             self?.pillarbox = notification.object as? Bool ?? false
         }
@@ -33,17 +37,16 @@ class ReaderWebtoonTransitionNode: BaseObservingCellNode {
         }
     }
 
-    func isPillarboxOrientation(for size: CGSize) -> Bool {
-        let isPortrait = size.height >= size.width
-        return pillarboxOrientation == "both"
-            || (pillarboxOrientation == "portrait" && isPortrait)
-            || (pillarboxOrientation == "landscape" && !isPortrait)
+    func isPillarboxOrientation() -> Bool {
+        pillarboxOrientation == "both"
+            || (pillarboxOrientation == "portrait" && pillarboxLayoutState.isPortrait)
+            || (pillarboxOrientation == "landscape" && !pillarboxLayoutState.isPortrait)
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         transitionNode.referenceWidth = constrainedSize.max.width
 
-        if pillarbox && isPillarboxOrientation(for: constrainedSize.max) {
+        if pillarbox && isPillarboxOrientation() {
             let percent = (100 - pillarboxAmount) / 100
             let height = constrainedSize.max.width * percent
 

@@ -10,12 +10,18 @@ import SwiftUI
 
 class TrackerModalViewController: MiniModalViewController {
     let manga: AidokuRunner.Manga
-    var swiftuiViewController: UIHostingController<TrackerListView>
+
+    private lazy var swiftuiViewController: UIHostingController<TrackerListView> = {
+        let swiftuiViewController = UIHostingController(rootView: TrackerListView(manga: manga))
+        swiftuiViewController.view.backgroundColor = .clear
+        if #available(iOS 16.0, *) {
+            swiftuiViewController.sizingOptions = [.intrinsicContentSize]
+        }
+        return swiftuiViewController
+    }()
 
     init(manga: AidokuRunner.Manga) {
         self.manga = manga
-        swiftuiViewController = UIHostingController(rootView: TrackerListView(manga: manga))
-        swiftuiViewController.view.backgroundColor = .clear
         super.init(nibName: nil, bundle: nil)
     }
 

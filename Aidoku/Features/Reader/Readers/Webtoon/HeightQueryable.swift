@@ -17,7 +17,7 @@ extension ReaderWebtoonPageNode: HeightQueryable {
 
         let ratio = ratio ?? Self.defaultRatio
 
-        if pillarbox && isPillarboxOrientation(for: size) {
+        if pillarbox && isPillarboxOrientation() {
             let percent = (100 - pillarboxAmount) / 100
             return size.width * percent * ratio
         }
@@ -30,7 +30,7 @@ extension ReaderWebtoonTransitionNode: HeightQueryable {
     func getHeight(for size: CGSize) -> CGFloat {
         guard size.width > 0 else { return 0 }
 
-        if pillarbox && isPillarboxOrientation(for: size) {
+        if pillarbox && isPillarboxOrientation() {
             return size.width * (100 - pillarboxAmount) / 100
         }
 

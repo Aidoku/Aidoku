@@ -214,7 +214,7 @@ struct AddSourceView: View {
 
     var builtInSources: some View {
         Section(NSLocalizedString("BUILT_IN_SOURCES")) {
-//            if !SourceManager.shared.sources.contains(where: { $0.key == "demo" }) {
+//            if !CoreDataManager.shared.hasSource(key: "demo", context: CoreDataManager.shared.context) {
 //                ExternalSourceTableCell(
 //                    source: .init(
 //                        sourceId: "demo",
@@ -224,23 +224,8 @@ struct AddSourceView: View {
 //                        contentRating: .safe
 //                    ),
 //                    onGet: {
-//                        let config = CustomSourceConfig.demo
-//                        let source = config.toSource()
-//
-//                        // add to coredata
-//                        await CoreDataManager.shared.container.performBackgroundTask { context in
-//                            let result = CoreDataManager.shared.createSource(source: source, context: context)
-//                            result.customSource = config.encode() as NSObject
-//                            try? context.save()
-//                        }
-//
-//                        SourceManager.shared.sources.append(source)
-//                        SourceManager.shared.sortSources()
-//
-//                        NotificationCenter.default.post(name: .updateSourceList, object: nil)
-//
+//                        await SourceManager.shared.createCustomSource(.demo)
 //                        dismiss()
-//
 //                        return true
 //                    }
 //                )

@@ -110,7 +110,7 @@ class ZoomableCollectionView: ASDisplayNode {
                 }
             } else if origType == "CGDrawingView" {
                 allowNextTouchPassThrough = true
-            } else if origType == "VKImageAnalysisButton" {
+            } else if origType == "VKImageAnalysisButton" || origType == "VKCActionInfoButton" {
                 return orig
             } else if origType == "VKCImageTextSelectionView_iOS" {
                 // only allow text selection to avoid conflicting with zoom double tap gesture

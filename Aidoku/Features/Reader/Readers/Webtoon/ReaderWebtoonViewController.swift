@@ -23,7 +23,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         }
     }
 
-//    private let prefetcher = ImagePrefetcher()
+    private let pillarboxLayoutState = ReaderPillarboxLayoutState()
 
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
@@ -47,6 +47,12 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var isScrolling = false
     // Indicates if an info refresh should be done if info pages are off screen
     private var needsInfoRefresh = false
+    private(set) var isContentScrolling = false {
+        didSet {
+            guard isContentScrolling != oldValue else { return }
+            onContentScrollingChange?(isContentScrolling)
+        }
+    }
 
     // Stores the last calculated page number
     private var previousPage = 0
@@ -57,10 +63,12 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
 
     private(set) var isAutoScrolling = false {
         didSet {
+            guard isAutoScrolling != oldValue else { return }
             onAutoScrollStateChange?(isAutoScrolling)
         }
     }
     var onAutoScrollStateChange: ((Bool) -> Void)?
+    var onContentScrollingChange: ((Bool) -> Void)?
 
     init(
         source: AidokuRunner.Source?,
@@ -234,6 +242,8 @@ extension ReaderWebtoonViewController {
         autoScrollLastTimestamp = nil
         autoScrollDisplayLink?.invalidate()
         autoScrollDisplayLink = nil
+
+        updateContentScrollingState()
     }
 
     private func startAutoScroll() {
@@ -245,18 +255,22 @@ extension ReaderWebtoonViewController {
         let displayLink = CADisplayLink(target: self, selector: #selector(handleAutoScrollFrame(_:)))
         displayLink.add(to: .main, forMode: .common)
         autoScrollDisplayLink = displayLink
+
+        updateContentScrollingState()
     }
 
     func pauseAutoScroll() {
         guard isAutoScrolling else { return }
         autoScrollPausedForUserInteraction = true
         autoScrollLastTimestamp = nil
+        updateContentScrollingState()
     }
 
     func resumeAutoScroll() {
         guard isAutoScrolling else { return }
         autoScrollPausedForUserInteraction = false
         autoScrollLastTimestamp = nil
+        updateContentScrollingState()
     }
 
     @objc private func handleAutoScrollPan(_ gesture: UIPanGestureRecognizer) {
@@ -299,6 +313,13 @@ extension ReaderWebtoonViewController {
             }
         }
     }
+
+    private func updateContentScrollingState() {
+        isContentScrolling =
+            scrollView.isDragging
+            || scrollView.isDecelerating
+            || (isAutoScrolling && !autoScrollPausedForUserInteraction)
+    }
 }
 
 // MARK: - Scroll View Delegate
@@ -308,6 +329,7 @@ extension ReaderWebtoonViewController {
         restorePreloadRange()
         pauseAutoScroll()
         setLiveTextButtonHidden(true)
+        updateContentScrollingState()
     }
 
     // Update current page when scrolling
@@ -364,7 +386,15 @@ extension ReaderWebtoonViewController {
     // TODO: fix scroll offset when rotating
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
-        coordinator.animate { _ in
+
+        coordinator.animate { [weak self] _ in
+            guard let self else { return }
+
+            let isPortrait = self.view.bounds.height >= self.view.bounds.width
+            pillarboxLayoutState.setIsPortrait(isPortrait)
+
+            self.collectionNode.invalidateCalculatedLayout()
+            self.collectionNode.collectionViewLayout.invalidateLayout()
             self.zoomView.adjustContentSize()
         }
     }
@@ -535,6 +565,7 @@ extension ReaderWebtoonViewController {
             checkInfiniteLoad()
         }
         resumeAutoScroll()
+        updateContentScrollingState()
     }
 
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
@@ -544,6 +575,7 @@ extension ReaderWebtoonViewController {
             checkInfiniteLoad()
         }
         resumeAutoScroll()
+        updateContentScrollingState()
     }
 
     func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
@@ -922,7 +954,8 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 let cell = ReaderWebtoonPageNode(
                     source: self.viewModel.source,
                     page: page,
-                    temporaryPageStore: temporaryPageStore
+                    temporaryPageStore: temporaryPageStore,
+                    pillarboxLayoutState: self.pillarboxLayoutState
                 )
                 cell.delegate = self
                 if #available(iOS 18.0, *) {
@@ -946,11 +979,14 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 ? self.delegate?.getPreviousChapter()
                 : self.delegate?.getNextChapter()
             return {
-                ReaderWebtoonTransitionNode(transition: .init(
-                    type: page.type == .prevInfoPage ? .prev : .next,
-                    from: chapter,
-                    to: to
-                ))
+                ReaderWebtoonTransitionNode(
+                    transition: .init(
+                        type: page.type == .prevInfoPage ? .prev : .next,
+                        from: chapter,
+                        to: to
+                    ),
+                    pillarboxLayoutState: self.pillarboxLayoutState
+                )
             }
         }
     }

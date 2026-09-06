@@ -84,59 +84,63 @@ struct FilterGroupCreateView: View {
                         }
                     }
 
-                    DisclosureGroup {
-                        ForEach(sourceKeys, id: \.self) { key in
-                            let state = filterState(for: .source, value: key)
-                            Button {
-                                toggleFilter(method: .source, value: key)
-                            } label: {
-                                HStack {
-                                    Text(SourceManager.shared.store.source(for: key)?.name ?? key)
-                                    Spacer()
-                                    switch state {
-                                        case .included: Image(systemName: "checkmark").foregroundStyle(.tint)
-                                        case .excluded: Image(systemName: "xmark").foregroundStyle(.tint)
-                                        case .none: EmptyView()
+                    if !sourceKeys.isEmpty {
+                        DisclosureGroup {
+                            ForEach(sourceKeys, id: \.self) { key in
+                                let state = filterState(for: .source, value: key)
+                                Button {
+                                    toggleFilter(method: .source, value: key)
+                                } label: {
+                                    HStack {
+                                        Text(SourceManager.shared.store.source(for: key)?.name ?? key)
+                                        Spacer()
+                                        switch state {
+                                            case .included: Image(systemName: "checkmark").foregroundStyle(.tint)
+                                            case .excluded: Image(systemName: "xmark").foregroundStyle(.tint)
+                                            case .none: EmptyView()
+                                        }
                                     }
                                 }
+                                .foregroundStyle(.primary)
                             }
-                            .foregroundStyle(.primary)
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: LibraryFilter.FilterMethod.source.systemImageName)
-                                .frame(minWidth: 30)
-                                .foregroundStyle(.tint)
-                            Text(LibraryFilter.FilterMethod.source.title)
-                            Spacer()
+                        } label: {
+                            HStack {
+                                Image(systemName: LibraryFilter.FilterMethod.source.systemImageName)
+                                    .frame(minWidth: 30)
+                                    .foregroundStyle(.tint)
+                                Text(LibraryFilter.FilterMethod.source.title)
+                                Spacer()
+                            }
                         }
                     }
 
-                    DisclosureGroup {
-                        ForEach(categories, id: \.self) { category in
-                            let state = filterState(for: .category, value: category)
-                            Button {
-                                toggleFilter(method: .category, value: category)
-                            } label: {
-                                HStack {
-                                    Text(category)
-                                    Spacer()
-                                    switch state {
-                                        case .included: Image(systemName: "checkmark").foregroundStyle(.tint)
-                                        case .excluded: Image(systemName: "xmark").foregroundStyle(.tint)
-                                        case .none: EmptyView()
+                    if !categories.isEmpty {
+                        DisclosureGroup {
+                            ForEach(categories, id: \.self) { category in
+                                let state = filterState(for: .category, value: category)
+                                Button {
+                                    toggleFilter(method: .category, value: category)
+                                } label: {
+                                    HStack {
+                                        Text(category)
+                                        Spacer()
+                                        switch state {
+                                            case .included: Image(systemName: "checkmark").foregroundStyle(.tint)
+                                            case .excluded: Image(systemName: "xmark").foregroundStyle(.tint)
+                                            case .none: EmptyView()
+                                        }
                                     }
                                 }
+                                .foregroundStyle(.primary)
                             }
-                            .foregroundStyle(.primary)
-                        }
-                    } label: {
-                        HStack {
-                            Image(systemName: LibraryFilter.FilterMethod.category.systemImageName)
-                                .frame(minWidth: 30)
-                                .foregroundStyle(.tint)
-                            Text(LibraryFilter.FilterMethod.category.title)
-                            Spacer()
+                        } label: {
+                            HStack {
+                                Image(systemName: LibraryFilter.FilterMethod.category.systemImageName)
+                                    .frame(minWidth: 30)
+                                    .foregroundStyle(.tint)
+                                Text(LibraryFilter.FilterMethod.category.title)
+                                Spacer()
+                            }
                         }
                     }
                 }

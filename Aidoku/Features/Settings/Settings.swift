@@ -584,6 +584,15 @@ extension Settings {
                         value: .stepper(.init(minimumValue: 1, maximumValue: 10, stepValue: 1))
                     ),
                     .init(
+                        key: AppSettings.reader.autoScrollPosition.key,
+                        title: NSLocalizedString("AUTO_SCROLL_POSITION"),
+                        requires: "Reader.autoScroll",
+                        value: .select(.init(
+                            values: ReaderSettings.AutoScrollPosition.allCases.map { $0.rawValue },
+                            titles: ReaderSettings.AutoScrollPosition.allCases.map { $0.title }
+                        ))
+                    ),
+                    .init(
                         key: "Reader.pillarbox",
                         title: NSLocalizedString("PILLARBOX"),
                         value: .toggle(.init())

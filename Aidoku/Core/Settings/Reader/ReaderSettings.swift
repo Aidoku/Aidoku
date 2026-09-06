@@ -7,8 +7,12 @@
 
 struct ReaderSettings: Sendable {
     var keys: [any SettingsDefault] {
-        []
+        [
+            autoScrollPosition
+        ]
     }
 
     // todo: move reader settings here
+
+    let autoScrollPosition = SettingsKey<AutoScrollPosition>("Reader.autoScrollPosition", default: .right)
 }
