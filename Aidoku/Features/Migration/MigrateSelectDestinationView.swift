@@ -26,9 +26,9 @@ struct MigrateSelectDestinationView: View {
     var body: some View {
         List {
             if !pinnedSources.isEmpty {
-                let canSelectPinnedSources = pinnedSources.contains(where: { !selectedSources.contains($0) })
+                let canSelectPinnedSources = pinnedSources.contains(where: { !isSelected(source: $0) })
                 Button {
-                    for pinnedSource in pinnedSources where !selectedSources.contains(pinnedSource) {
+                    for pinnedSource in pinnedSources {
                         select(source: pinnedSource)
                     }
                 } label: {
@@ -55,7 +55,7 @@ struct MigrateSelectDestinationView: View {
                     } label: {
                         SourceCell(source: source)
                     }
-                    .disabled(selectedSources.contains(source))
+                    .disabled(isSelected(source: source))
                     .cellButtonFix()
                 }
             }
@@ -104,7 +104,12 @@ extension MigrateSelectDestinationView {
 }
 
 extension MigrateSelectDestinationView {
+    func isSelected(source: SourceInfo) -> Bool {
+        selectedSources.contains(where: { $0.sourceId == source.sourceId })
+    }
+
     func select(source: SourceInfo) {
+        guard !isSelected(source: source) else { return }
         selectedSources.append(source)
     }
 
