@@ -80,6 +80,19 @@ extension MangaView.ViewModel {
     }
 
     private func registerLibraryNotifications() {
+        NotificationCenter.default.publisher(for: .updateLibrary)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self else { return }
+                    await self.loadBookmarked()
+                    await self.checkForCategories()
+                    await self.loadHistory()
+                    self.chapters = self.filteredChapters()
+                    self.updateReadButton()
+                }
+            }
+            .store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: .updateMangaDetails)
             .sink { [weak self] output in
                 Task { @MainActor in
@@ -856,7 +869,10 @@ extension MangaView.ViewModel {
         let nextChapter = getNextChapter()
         switch nextChapter {
             case .none:
-                return
+                self.nextChapter = nil
+                readingInProgress = false
+                allChaptersRead = false
+                allChaptersLocked = false
             case .allRead:
                 allChaptersRead = true
                 allChaptersLocked = false
