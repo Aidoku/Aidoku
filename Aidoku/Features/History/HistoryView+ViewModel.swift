@@ -27,6 +27,7 @@ extension HistoryView {
         private var offset = 0
         private var historyData: [Int: [HistoryEntry]] = [:]
         private var loadTask: Task<Bool, Never>?
+        private var historyReloadGeneration = 0
 
         private var searchQuery: String = ""
         private var searchTask: Task<Void, Never>?
@@ -52,6 +53,9 @@ extension HistoryView.ViewModel {
                 // reset all cached history entries
                 guard let self else { return }
                 Task { @MainActor in
+                    _ = await self.loadTask?.value
+                    self.historyReloadGeneration += 1
+                    self.loadTask = nil
                     self.filteredHistory = [:]
                     self.historyData = [:]
                     self.offset = 0
@@ -171,6 +175,7 @@ extension HistoryView.ViewModel {
     func loadMore() async {
         guard loadingState == .idle else { return }
 
+        let generation = historyReloadGeneration
         loadingState = .loading
 
         if loadTask == nil {
@@ -182,6 +187,8 @@ extension HistoryView.ViewModel {
         }
         guard let loadTask else { return }
         let completed = await loadTask.value
+        // A refresh may have reset pagination while this task was suspended.
+        guard generation == historyReloadGeneration else { return }
         self.loadTask = nil
 
         loadingState = completed ? .complete : .idle
