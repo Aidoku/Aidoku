@@ -243,6 +243,7 @@ extension CoreDataManager {
                 else { return }
 
                 var newObjectIds = [NSManagedObjectID]()
+                var shouldUpdateLibrary = false
                 let entityNames = [
                     CategoryObject.entity().name,
                     ChapterObject.entity().name,
@@ -258,9 +259,12 @@ extension CoreDataManager {
                 {
                     for
                         change in transaction.changes!
-                        where entityNames.contains(change.changedObjectID.entity.name) && change.changeType == .insert
+                        where entityNames.contains(change.changedObjectID.entity.name)
                     {
-                        newObjectIds.append(change.changedObjectID)
+                        shouldUpdateLibrary = true
+                        if change.changeType == .insert {
+                            newObjectIds.append(change.changedObjectID)
+                        }
                     }
                 }
 
@@ -269,6 +273,12 @@ extension CoreDataManager {
                 }
 
                 self.setHistoryToken(transactions.last!.token)
+
+                if shouldUpdateLibrary {
+                    Task { @MainActor in
+                        NotificationCenter.default.post(name: .updateLibrary, object: nil)
+                    }
+                }
             }
             self.purgeHistory(before: Date().addingTimeInterval(-Self.historyRetention))
         }
