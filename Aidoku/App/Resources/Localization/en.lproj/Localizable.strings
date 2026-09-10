@@ -871,3 +871,27 @@
 "TOGGLE_BARS" = "Toggle bar visibility";
 "CLOSE_READER" = "Close reader";
 "TOGGLE_PAGE_OFFSET" = "Toggle page offset";
+
+// Book translation
+"BOOK_TRANSLATION" = "Apple Translate";
+"TRANSLATION_ENABLE" = "Chapter translation mode";
+"TRANSLATION_TRANSLATE_CHAPTER" = "Translate this chapter";
+"TRANSLATION_MODE_FOOTER" = "Translations use your chosen book reader: scrolling or paged. Split view is enabled separately.";
+"TRANSLATION_AUTOMATIC" = "Translate chapters automatically";
+"TRANSLATION_ONE_AHEAD" = "Translate one chapter ahead";
+"TRANSLATION_AUTOMATIC_FOOTER" = "Automatic translation starts when you open a chapter in translation mode. One chapter ahead prepares only the next chapter after the current translation is ready.";
+"TRANSLATION_SOURCE_LANGUAGE" = "Original language";
+"TRANSLATION_TARGET_LANGUAGE" = "Translation language";
+"TRANSLATION_LANGUAGES_FOOTER" = "Languages are provided by Apple Translate. Automatic detects the original language and chooses a target from your preferred languages. iOS may ask to download language models for offline translation. Translating between variants of the same language is not supported.";
+"TRANSLATION_SPLIT" = "Original above translation";
+"TRANSLATION_SPLIT_FOOTER" = "Split the screen horizontally: original on top, translation below. Scrolling either pane keeps corresponding paragraphs aligned.";
+"TRANSLATION_CACHE_FOOTER" = "The 10 most recently used translated chapters stay in memory, shared across books. Opening an eleventh replaces the least recently used chapter. Translations are never saved to disk and disappear when the app restarts; settings and Apple language downloads remain.";
+"TRANSLATION_REQUIRES_IOS18" = "Chapter translation requires iOS 18 or later.";
+"TRANSLATION_TRANSLATING" = "Translating chapter…";
+"TRANSLATION_PREPARING_NEXT" = "Preparing the next chapter…";
+"TRANSLATION_NEXT_READY" = "Next chapter is ready";
+"TRANSLATION_NEXT_LOAD_FAILED" = "Could not load the next chapter for translation.";
+"TRANSLATION_NEXT_FAILED" = "Could not translate the next chapter.";
+"TRANSLATION_NEXT_LANGUAGES" = "Open that chapter to download its required translation languages.";
+"TRANSLATION_INCOMPLETE" = "Apple Translate returned an incomplete translation. Try again.";
+"TRANSLATION_EMPTY_CHAPTER" = "Could not read the text of this chapter.";

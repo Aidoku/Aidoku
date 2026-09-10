@@ -9,11 +9,17 @@
 import AidokuRunner
 import SwiftUI
 import UIKit
-import ZIPFoundation
 
 class ReaderPagedTextViewController: BaseObservingViewController {
     // MARK: - Properties
     let viewModel: ReaderTextViewModel
+    private var translationBridgeStorage: Any?
+
+    @available(iOS 18.0, *)
+    private var translationBridge: BookTranslationBridge? { translationBridgeStorage as? BookTranslationBridge }
+
+    @available(iOS 18.0, *)
+    var translationModel: BookTranslationModel? { translationBridge?.model }
     weak var delegate: ReaderHoldingDelegate?
 
     var chapter: AidokuRunner.Chapter?
@@ -98,6 +104,12 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
         updatePageLayout()
         updateTextConfig()  // Apply saved text settings
+        if #available(iOS 18.0, *) {
+            let bridge = BookTranslationBridge(source: viewModel.source, manga: viewModel.manga)
+            translationBridgeStorage = bridge
+            bridge.didChange = { [weak self] in self?.translationChanged() }
+            bridge.attach(to: self)
+        }
     }
 
     override func observe() {
@@ -199,7 +211,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
     // MARK: - Pagination
 
-    private func repaginate() {
+    private func repaginate(position: Double? = nil) {
         guard let text = getCurrentText(), !text.isEmpty else {
             return
         }
@@ -276,7 +288,9 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
         // Determine which page to show
         let targetIndex: Int
-        if let pending = pendingStartPage {
+        if let position {
+            targetIndex = min(pages.count - 1, max(0, Int(position * Double(pages.count - 1))))
+        } else if let pending = pendingStartPage {
             pendingStartPage = nil  // Clear after using
 
             // If pending <= 0, this chapter is completed or has no history - start from beginning
@@ -331,45 +345,29 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     }
 
     private func getCurrentText() -> String? {
-        guard let page = viewModel.pages.first else {
-            return nil
-        }
-
-        // Direct text content
-        if let text = page.text {
-            return text
-        }
-
-        // Load text from ZIP archive (for downloaded chapters)
-        guard
-            let zipURLString = page.zipURL,
-            let zipURL = URL(string: zipURLString),
-            let filePath = page.imageURL
-        else {
-            return nil
-        }
-
-        do {
-            var data = Data()
-            let archive = try Archive(url: zipURL, accessMode: .read)
-            guard let entry = archive.entry(at: filePath) else {
-                return nil
-            }
-            _ = try archive.extract(
-                entry,
-                consumer: { readData in
-                    data.append(readData)
-                }
-            )
-            let text = String(data: data, encoding: .utf8)
-            return text
-        } catch {
-            return nil
-        }
+        let texts = BookTranslationRendering.texts(pages: viewModel.pages, manga: viewModel.manga).compactMap { $0 }
+        return texts.isEmpty ? nil : texts.joined(separator: "\n\n")
     }
 
     private func refreshPages() {
         repaginate()
+    }
+
+    private func translationChanged() {
+        guard !isLoadingChapter, !pages.isEmpty else { return }
+        // Character offsets differ after translation; preserve relative reading progress.
+        let progress = Double(currentPageIndex) / Double(max(1, pages.count - 1))
+        repaginate(position: progress)
+    }
+
+    private func prepareTranslation() {
+        guard #available(iOS 18.0, *), let chapter else { return }
+        translationBridge?.load(chapter: chapter, pages: viewModel.pages, next: nextChapter)
+    }
+
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+        if parent == nil, #available(iOS 18.0, *) { translationBridge?.model.cancel() }
     }
 
     // MARK: - Navigation
@@ -530,6 +528,7 @@ class ReaderPagedTextViewController: BaseObservingViewController {
             // startPage <= 0 means no history exists - start from beginning
             pendingStartPage = startPage
 
+            prepareTranslation()
             repaginate()
 
             isLoadingChapter = false
@@ -538,7 +537,17 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 }
 
 // MARK: - Reader Delegate
-extension ReaderPagedTextViewController: ReaderReaderDelegate {
+extension ReaderPagedTextViewController: ReaderBookReader {
+    func requestTranslation() {
+        if #available(iOS 18.0, *) { translationBridge?.translate() }
+    }
+
+    func updateAdjacentChapters() {
+        previousChapter = delegate?.getPreviousChapter()
+        nextChapter = delegate?.getNextChapter()
+        if #available(iOS 18.0, *) { translationBridge?.updateNextChapter(nextChapter) }
+    }
+
     func moveLeft() {
         move(direction: .reverse)
     }
@@ -574,13 +583,15 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
 
         // Check if viewModel already has the page loaded (from ReaderViewController's initial load)
         // This prevents double-fetching the chapter
-        if !viewModel.pages.isEmpty {
+        if viewModel.chapter?.key == chapter.key, !viewModel.pages.isEmpty {
             self.chapter = chapter
             isLoadingChapter = true
             hasPaginated = false
             // Store the requested start page - repaginate will use this
             // startPage <= 0 means no history exists - start from beginning
             pendingStartPage = startPage
+            updateAdjacentChapters()
+            prepareTranslation()
             view.layoutIfNeeded()
             repaginate()
             isLoadingChapter = false

@@ -29,6 +29,19 @@ extension ReaderReaderDelegate {
     }
 }
 
+@MainActor
+protocol ReaderBookReader: ReaderReaderDelegate {
+    func requestTranslation()
+    func updateAdjacentChapters()
+    @available(iOS 18.0, *) var translationModel: BookTranslationModel? { get }
+}
+
+extension ReaderBookReader {
+    func requestTranslation() {}
+    func updateAdjacentChapters() {}
+    @available(iOS 18.0, *) var translationModel: BookTranslationModel? { nil }
+}
+
 @available(iOS 18.0, *)
 protocol ReaderDictionaryReader: ReaderReaderDelegate {
     /// Returns recognized text at the given point (in the reader's view coordinates)

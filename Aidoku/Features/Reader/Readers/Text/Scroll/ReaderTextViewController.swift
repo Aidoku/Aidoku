@@ -7,10 +7,16 @@
 
 import AidokuRunner
 import SwiftUI
-import ZIPFoundation
 
 class ReaderTextViewController: BaseViewController {
     let viewModel: ReaderTextViewModel
+    private var translationBridgeStorage: Any?
+
+    @available(iOS 18.0, *)
+    private var translationBridge: BookTranslationBridge? { translationBridgeStorage as? BookTranslationBridge }
+
+    @available(iOS 18.0, *)
+    var translationModel: BookTranslationModel? { translationBridge?.model }
 
     var readingMode: ReadingMode = .rtl
     var delegate: (any ReaderHoldingDelegate)?
@@ -114,13 +120,13 @@ class ReaderTextViewController: BaseViewController {
         UserDefaults.standard.object(forKey: "Reader.textHorizontalPadding") as? Double ?? 24
     }
 
-    private func createHostingController(page: Page?) -> UIHostingController<ReaderTextView> {
+    private func createHostingController(page: Page?, textOverride: String? = nil) -> UIHostingController<ReaderTextView> {
         let hc = HostingController(
             rootView: ReaderTextView(
                 source: viewModel.source, page: page,
                 fontFamily: currentFontFamily, fontSize: currentFontSize,
                 lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
-                textColor: Color(uiColor: ReaderTextTheme.getCurrentText())
+                textColor: Color(uiColor: ReaderTextTheme.getCurrentText()), textOverride: textOverride
             )
         )
         if #available(iOS 16.0, *) {
@@ -173,19 +179,26 @@ class ReaderTextViewController: BaseViewController {
     }
 
     /// Refreshes all hosting controllers with updated text style values.
-    private func refreshTextViews() {
+    @discardableResult
+    private func refreshTextViews(onlyIfTextChanged: Bool = false) -> Bool {
+        var changed = false
         for section in sections {
+            let texts = BookTranslationRendering.texts(pages: section.pages, manga: viewModel.manga)
             for (index, hc) in section.hostingControllers.enumerated() {
                 let page = section.pages[safe: index]
+                let text = texts[safe: index] ?? nil
+                if onlyIfTextChanged && hc.rootView.text == text { continue }
                 hc.rootView = ReaderTextView(
                     source: viewModel.source, page: page,
                     fontFamily: currentFontFamily, fontSize: currentFontSize,
                     lineSpacing: currentLineSpacing, horizontalPadding: currentHorizontalPadding,
-                    textColor: Color(uiColor: ReaderTextTheme.getCurrentText())
+                    textColor: Color(uiColor: ReaderTextTheme.getCurrentText()), textOverride: text
                 )
                 hc.view.invalidateIntrinsicContentSize()
+                changed = true
             }
         }
+        return changed
     }
 
     // MARK: - Configure
@@ -225,8 +238,9 @@ class ReaderTextViewController: BaseViewController {
         // Build the initial section from viewModel.pages
         var hostingControllers: [UIHostingController<ReaderTextView>] = []
         let pagesToUse = viewModel.pages.isEmpty ? [viewModel.pages.first].compactMap { $0 } : viewModel.pages
-        for page in pagesToUse {
-            let hc = createHostingController(page: page)
+        let texts = BookTranslationRendering.texts(pages: pagesToUse, manga: viewModel.manga)
+        for (index, page) in pagesToUse.enumerated() {
+            let hc = createHostingController(page: page, textOverride: texts[safe: index] ?? nil)
             addChild(hc)
             hc.didMove(toParent: self)
             hostingControllers.append(hc)
@@ -249,6 +263,50 @@ class ReaderTextViewController: BaseViewController {
         }
 
         view.addSubview(scrollView)
+        if #available(iOS 18.0, *) {
+            let bridge = BookTranslationBridge(source: viewModel.source, manga: viewModel.manga)
+            translationBridgeStorage = bridge
+            bridge.didChange = { [weak self] in self?.translationChanged() }
+            bridge.attach(to: self)
+        }
+    }
+
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+        if parent == nil, #available(iOS 18.0, *) { translationBridge?.model.cancel() }
+    }
+
+    private func prepareTranslation() {
+        guard #available(iOS 18.0, *), let section = sections.first(where: { $0.chapter.key == chapter?.key }) else { return }
+        translationBridge?.load(chapter: section.chapter, pages: section.pages, next: delegate?.getNextChapter())
+    }
+
+    private func translationChanged() {
+        guard !isLoadingChapter, !loadingNext, !loadingPrevious, !pendingScrollRestore, !isReportingProgress,
+              let index = currentSectionIndex else { return }
+        let oldStart = sectionContentStartY(at: index)
+        let oldRange = max(0, sectionContentHeight(at: index) - scrollView.bounds.height)
+        let relativeOffset = scrollView.contentOffset.y - oldStart
+        isReportingProgress = true
+        defer { isReportingProgress = false }
+        // Switching the active chapter also updates the translation model, even
+        // with translation disabled. That alone must never reposition the reader.
+        guard refreshTextViews(onlyIfTextChanged: true) else { return }
+        view.layoutIfNeeded()
+        let newRange = max(0, sectionContentHeight(at: index) - scrollView.bounds.height)
+        let restoredOffset: CGFloat
+        if relativeOffset < 0 {
+            // The viewport still includes the transition before this chapter.
+            restoredOffset = relativeOffset
+        } else if relativeOffset > oldRange {
+            // Preserve the distance into the transition after this chapter.
+            restoredOffset = newRange + relativeOffset - oldRange
+        } else {
+            restoredOffset = oldRange > 0 ? relativeOffset / oldRange * newRange : 0
+        }
+        scrollView.setContentOffset(.init(x: 0, y: sectionContentStartY(at: index) + restoredOffset), animated: false)
+        needsPageCountUpdate = true
+        view.setNeedsLayout()
     }
 
     // MARK: - Constraints
@@ -492,8 +550,9 @@ extension ReaderTextViewController {
             // Build the initial section
             let pages = viewModel.pages
             var hostingControllers: [UIHostingController<ReaderTextView>] = []
-            for page in pages {
-                let hc = createHostingController(page: page)
+            let texts = BookTranslationRendering.texts(pages: pages, manga: viewModel.manga)
+            for (index, page) in pages.enumerated() {
+                let hc = createHostingController(page: page, textOverride: texts[safe: index] ?? nil)
                 addChild(hc)
                 hc.didMove(toParent: self)
                 contentStackView.addArrangedSubview(hc.view)
@@ -542,6 +601,7 @@ extension ReaderTextViewController {
             }
 
             isLoadingChapter = false
+            prepareTranslation()
         }
     }
 
@@ -602,8 +662,9 @@ extension ReaderTextViewController {
 
                 // Create hosting controllers for the new chapter
                 var newHCs: [UIHostingController<ReaderTextView>] = []
-                for page in newPages {
-                    let hc = createHostingController(page: page)
+                let texts = BookTranslationRendering.texts(pages: newPages, manga: viewModel.manga)
+                for (index, page) in newPages.enumerated() {
+                    let hc = createHostingController(page: page, textOverride: texts[safe: index] ?? nil)
                     addChild(hc)
                     hc.didMove(toParent: self)
                     contentStackView.addArrangedSubview(hc.view)
@@ -666,8 +727,9 @@ extension ReaderTextViewController {
 
                 // Create hosting controllers for the new chapter
                 var newHCs: [UIHostingController<ReaderTextView>] = []
-                for page in newPages {
-                    let hc = createHostingController(page: page)
+                let texts = BookTranslationRendering.texts(pages: newPages, manga: viewModel.manga)
+                for (index, page) in newPages.enumerated() {
+                    let hc = createHostingController(page: page, textOverride: texts[safe: index] ?? nil)
                     addChild(hc)
                     hc.didMove(toParent: self)
                     hc.view.translatesAutoresizingMaskIntoConstraints = false
@@ -728,10 +790,10 @@ extension ReaderTextViewController {
 
         chapter = sectionChapter
         delegate?.setChapter(sectionChapter)
+        prepareTranslation()
 
-        // Refresh navigation pointers
-        previousChapter = delegate?.getPreviousChapter()
-        nextChapter = delegate?.getNextChapter()
+        // Boundary pointers belong to the first and last loaded sections.
+        // Changing the visible chapter must not make us load an existing section again.
 
         hasReachedEnd = false
         lastReportedPage = 0
@@ -744,7 +806,21 @@ extension ReaderTextViewController {
 }
 
 // MARK: - Reader Delegate
-extension ReaderTextViewController: ReaderReaderDelegate {
+extension ReaderTextViewController: ReaderBookReader {
+    func requestTranslation() {
+        if #available(iOS 18.0, *) { translationBridge?.translate() }
+    }
+
+    func updateAdjacentChapters() {
+        let next = delegate?.getNextChapter()
+        if sections.count == 1 {
+            previousChapter = delegate?.getPreviousChapter()
+            nextChapter = next
+            updateBoundaryTransitionViews()
+        }
+        if #available(iOS 18.0, *) { translationBridge?.updateNextChapter(next) }
+    }
+
     func moveLeft() {
         let animated = UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
         let prevHeight = showsPreviousTransition ? transitionPageHeight : 0

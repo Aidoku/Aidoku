@@ -11,6 +11,8 @@ struct ReaderSettingsView: View {
     let mangaId: MangaIdentifier
     let reader: ReaderViewController.Reader
     let chapterLanguage: String?
+    let translateChapter: () -> Void
+    let translationModel: Any?
 
     @State private var sourceLanguageCodes: [String] = []
     @State private var sourceLanguageTitles: [String] = []
@@ -37,10 +39,15 @@ struct ReaderSettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader, chapterLanguage: String?) {
+    init(
+        mangaId: MangaIdentifier, reader: ReaderViewController.Reader, chapterLanguage: String?,
+        translateChapter: @escaping () -> Void = {}, translationModel: Any? = nil
+    ) {
         self.mangaId = mangaId
         self.reader = reader
         self.chapterLanguage = chapterLanguage
+        self.translateChapter = translateChapter
+        self.translationModel = translationModel
 
         self._readingMode = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
@@ -97,6 +104,18 @@ struct ReaderSettingsView: View {
                 }
 
                 if reader == .text {
+                    Section {
+                        if #available(iOS 18.0, *) {
+                            NavigationLink(destination: BookTranslationSettingsView(
+                                translateChapter: translateChapter, model: translationModel as? BookTranslationModel
+                            )) {
+                                Label(NSLocalizedString("BOOK_TRANSLATION"), systemImage: "translate")
+                            }
+                        } else {
+                            Text(NSLocalizedString("TRANSLATION_REQUIRES_IOS18"))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                     textSection
                 } else {
                     if !downsampleImages.value {

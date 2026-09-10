@@ -360,7 +360,7 @@ class ReaderViewController: BaseObservingViewController {
         addObserver(forName: "Reader.textReaderStyle") { [weak self] _ in
             guard let self else { return }
             // Only switch if we're currently in a text reader
-            if self.reader is ReaderTextViewController || self.reader is ReaderPagedTextViewController {
+            if self.reader is ReaderBookReader {
                 // Save current position before switching so the new reader can restore it
                 Task {
                     await self.updateReadPosition()
@@ -369,6 +369,18 @@ class ReaderViewController: BaseObservingViewController {
                         self.reader?.setChapter(self.chapter, startPage: self.currentPage)
                         self.updateTapZone()
                     }
+                }
+            }
+        }
+        addObserver(forName: BookTranslationSettings.changed) { [weak self] _ in
+            guard let self, self.reader is ReaderBookReader else { return }
+            Task {
+                await self.updateReadPosition()
+                let oldReader = self.reader
+                self.setReader(.text)
+                if oldReader !== self.reader {
+                    self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+                    self.updateTapZone()
                 }
             }
         }
@@ -555,6 +567,7 @@ extension ReaderViewController {
             needsChapters: true
         )
         chapterList = updatedManga?.chapters ?? []
+        (reader as? ReaderBookReader)?.updateAdjacentChapters()
     }
 
     func loadCurrentChapter() {
@@ -621,7 +634,7 @@ extension ReaderViewController {
 
         let currentReader: Reader
         switch reader {
-            case is ReaderTextViewController, is ReaderPagedTextViewController:
+            case is ReaderBookReader:
                 currentReader = .text
             case is ReaderPagedViewController:
                 currentReader = .paged
@@ -630,17 +643,43 @@ extension ReaderViewController {
             default:
                 currentReader = .paged
         }
+        let translationModel: Any?
+        if #available(iOS 18.0, *) {
+            translationModel = (reader as? ReaderBookReader)?.translationModel
+        } else {
+            translationModel = nil
+        }
         let vc = UIHostingController(
             rootView: ReaderSettingsView(
                 mangaId: manga.identifier,
                 reader: currentReader,
-                chapterLanguage: chapter.language ?? source?.languages.first
+                chapterLanguage: chapter.language ?? source?.languages.first,
+                translateChapter: { [weak self] in self?.translateCurrentBookChapter() },
+                translationModel: translationModel
             )
         )
         if currentReader == .text {
             vc.overrideUserInterfaceStyle = ReaderTextTheme.getInterfaceStyleOverride()
         }
         present(vc, animated: true)
+    }
+
+    private func translateCurrentBookChapter() {
+        guard #available(iOS 18.0, *), reader is ReaderBookReader else { return }
+        dismiss(animated: true) { [weak self] in
+            guard let self else { return }
+            Task {
+                await self.updateReadPosition()
+                UserDefaults.standard.set(true, forKey: BookTranslationSettings.enabledKey)
+                let oldReader = self.reader
+                self.setReader(.text)
+                if oldReader !== self.reader {
+                    self.reader?.setChapter(self.chapter, startPage: self.currentPage)
+                }
+                (self.reader as? ReaderBookReader)?.requestTranslation()
+                self.updateTapZone()
+            }
+        }
     }
 
     @objc func openWebView() {
@@ -716,7 +755,7 @@ extension ReaderViewController {
                 }
         }
 
-        if !(reader is ReaderTextViewController) {
+        if !(reader is ReaderBookReader) {
             switch readingMode {
                 case .ltr, .rtl, .vertical:
                     setReader(.paged)
@@ -753,7 +792,11 @@ extension ReaderViewController {
 
                 // Check user preference for text reader style
                 let textReaderStyle = UserDefaults.standard.string(forKey: "Reader.textReaderStyle") ?? "paged"
-                if textReaderStyle == "paged" {
+                let translationSettings = BookTranslationSettings()
+                if #available(iOS 18.0, *), translationSettings.enabled, translationSettings.split {
+                    pageController = reader is ReaderTranslationViewController
+                        ? nil : ReaderTranslationViewController(source: source, manga: manga)
+                } else if textReaderStyle == "paged" {
                     // Kindle-like paginated experience
                     if !(reader is ReaderPagedTextViewController) {
                         pageController = ReaderPagedTextViewController(source: source, manga: manga)
@@ -788,7 +831,7 @@ extension ReaderViewController {
 
     func updateTextThemeOverride() {
         let theme = ReaderTextTheme.getCurrent()
-        let isTextReader = reader is ReaderTextViewController || reader is ReaderPagedTextViewController
+        let isTextReader = reader is ReaderBookReader
         let styleOverride: UIUserInterfaceStyle = isTextReader ? ReaderTextTheme.getInterfaceStyleOverride() : .unspecified
         navigationController?.overrideUserInterfaceStyle = styleOverride
         // presented sheets don't inherit the override
@@ -1121,7 +1164,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
     func setPages(_ pages: [Page]) {
         // If already in a text reader with text pages, just update toolbar - don't trigger any switches
         if
-            reader is ReaderPagedTextViewController || reader is ReaderTextViewController,
+            reader is ReaderBookReader,
             pages.allSatisfy({ $0.isTextPage }),
             pages.count > 1
         {
@@ -1136,21 +1179,16 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
         if pages.isEmpty {
             // no pages, show error
             showLoadFailAlert()
-        } else if pages.count == 1 && pages[0].isTextPage {
-            // single text page, should switch to text reader
-            if !(reader is ReaderPagedTextViewController) && !(reader is ReaderTextViewController) {
+        } else if pages.allSatisfy({ $0.isTextPage }) {
+            // Book sources may provide one text page or several text fragments.
+            if !(reader is ReaderBookReader) {
                 setReader(.text)
                 setChapter(chapter)
                 loadCurrentChapter()
-            } else {
             }
-        } else if reader is ReaderPagedTextViewController && pages.allSatisfy({ $0.isTextPage }) {
-            // Already in paginated text reader with multiple text pages (from pagination)
-            // Don't switch away - this is our internal page count update
-            // Just update the toolbar, don't reload
         } else {
             // otherwise, make sure we're not in the text reader
-            if reader is ReaderTextViewController || reader is ReaderPagedTextViewController {
+            if reader is ReaderBookReader {
                 switch readingMode {
                     case .ltr, .rtl, .vertical:
                         setReader(.paged)
@@ -1338,6 +1376,7 @@ extension ReaderViewController {
                 case is ReaderWebtoonViewController: .lShaped
                 case is ReaderTextViewController: .lShaped
                 case is ReaderPagedTextViewController: .leftRight  // Kindle-style tap zones
+                case is ReaderBookReader: .lShaped
                 default: .leftRight
             }
             case "left-right": .leftRight
