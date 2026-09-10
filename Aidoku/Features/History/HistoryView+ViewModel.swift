@@ -52,6 +52,8 @@ extension HistoryView.ViewModel {
                 // reset all cached history entries
                 guard let self else { return }
                 Task { @MainActor in
+                    _ = await self.loadTask?.value
+                    self.loadTask = nil
                     self.filteredHistory = [:]
                     self.historyData = [:]
                     self.offset = 0
