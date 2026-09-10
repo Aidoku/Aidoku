@@ -86,9 +86,6 @@ extension MangaView.ViewModel {
                     guard let self else { return }
                     await self.loadBookmarked()
                     await self.checkForCategories()
-                    await self.loadHistory()
-                    self.chapters = self.filteredChapters()
-                    self.updateReadButton()
                 }
             }
             .store(in: &cancellables)
@@ -180,6 +177,7 @@ extension MangaView.ViewModel {
                 guard let self else { return }
                 Task { @MainActor in
                     await self.loadHistory()
+                    self.chapters = self.filteredChapters()
                     self.updateReadButton()
                 }
             }
