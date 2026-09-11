@@ -27,7 +27,8 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
     override func configure() {
         let host = UIHostingController(rootView: BookTranslationReaderView(
             model: model, navigation: navigation,
-            onProgress: { [weak self] in self?.reportProgress($0) }
+            onProgress: { [weak self] in self?.reportProgress($0) },
+            onChapterChange: { [weak self] in self?.loadAdjacent(next: $0) }
         ))
         addChild(host)
         host.view.translatesAutoresizingMaskIntoConstraints = false
@@ -62,11 +63,17 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
     func requestTranslation() { model.translate() }
 
     func setChapter(_ chapter: AidokuRunner.Chapter, startPage: Int) {
+        loadChapter(chapter, startPage: startPage, initialPosition: 0)
+    }
+
+    private func loadChapter(_ chapter: AidokuRunner.Chapter, startPage: Int, initialPosition: Double) {
         loadTask?.cancel()
         let id = UUID()
         loadID = id
         self.chapter = chapter
-        position = 0
+        position = initialPosition
+        navigation.previousTitle = nil
+        navigation.nextTitle = nil
         model.reset(chapter: chapter)
         navigation.move(to: 0)
         loadTask = Task { [weak self] in
@@ -91,7 +98,7 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
                 }
                 blocks = texts.compactMap { $0 }.flatMap(BookTranslationBlock.parse)
             }
-            var restored: Double = 0
+            var restored = initialPosition
             if startPage > 0 {
                 let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
                 restored = await CoreDataManager.shared.container.performBackgroundTask { context in
@@ -103,15 +110,18 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
             var marker = Page(sourceId: manga.sourceKey, chapterId: chapter.key)
             marker.text = "page"
             delegate?.setPages(Array(repeating: marker, count: pageCount))
-            let next = delegate?.getNextChapter()
-            model.loaded(blocks: blocks, next: next)
+            updateAdjacentChapters()
+            model.loaded(blocks: blocks, next: delegate?.getNextChapter())
             navigation.move(to: restored)
             reportProgress(restored)
         }
     }
 
     func updateAdjacentChapters() {
+        let previous = delegate?.getPreviousChapter()
         let next = delegate?.getNextChapter()
+        navigation.previousTitle = previous.map { $0.formattedTitle() }
+        navigation.nextTitle = next.map { $0.formattedTitle() }
         model.updateNextChapter(next)
     }
 
@@ -124,9 +134,9 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
     }
 
     private func loadAdjacent(next: Bool) {
-        guard let chapter = next ? delegate?.getNextChapter() : delegate?.getPreviousChapter() else { return }
+        guard !model.loading, let chapter = next ? delegate?.getNextChapter() : delegate?.getPreviousChapter() else { return }
         delegate?.setChapter(chapter)
-        setChapter(chapter, startPage: 0)
+        loadChapter(chapter, startPage: 0, initialPosition: next ? 0 : 1)
     }
 
     func moveLeft() {
@@ -144,6 +154,8 @@ final class ReaderTranslationViewController: BaseObservingViewController, Reader
 @available(iOS 18.0, *)
 @MainActor
 private final class BookTranslationNavigation: ObservableObject {
+    @Published var previousTitle: String?
+    @Published var nextTitle: String?
     @Published var position: Double = 0
     @Published var revision = 0
     func move(to position: Double) {
@@ -157,11 +169,14 @@ private struct BookTranslationReaderView: View {
     @ObservedObject var model: BookTranslationModel
     @ObservedObject var navigation: BookTranslationNavigation
     let onProgress: (Double) -> Void
+    let onChapterChange: (Bool) -> Void
 
     var body: some View {
         BookTranslationPanes(
             model: model, position: navigation.position,
-            positionRevision: navigation.revision, onProgress: onProgress
+            positionRevision: navigation.revision, onProgress: onProgress,
+            previousTitle: navigation.previousTitle, nextTitle: navigation.nextTitle,
+            onChapterChange: onChapterChange
         )
         .background(Color(uiColor: ReaderTextTheme.getCurrentBackground()))
         .overlay {

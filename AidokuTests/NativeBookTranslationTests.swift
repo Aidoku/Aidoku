@@ -122,6 +122,77 @@ struct NativeBookTranslationTests {
         #expect(!reader.children.contains { $0 is ReaderTranslationViewController })
     }
 
+    @Test func splitReaderNavigatesFromEitherPaneAndReturnsToPreviousChapterEnd() async throws {
+        guard #available(iOS 18.0, *) else { return }
+        let restore = preferences()
+        defer { restore() }
+        UserDefaults.standard.set(true, forKey: BookTranslationSettings.splitKey)
+        let manga = book()
+        let first = AidokuRunner.Chapter(key: "1", title: "First chapter")
+        let second = AidokuRunner.Chapter(key: "2", title: "Second chapter")
+        for chapter in [first, second] {
+            cache([.init(sourceId: manga.sourceKey, chapterId: chapter.key, text: "Original " + chapter.key)],
+                  translations: ["Translation " + chapter.key], manga: manga)
+        }
+        let progress = TranslationProgressRecorder()
+        progress.chapters = [first, second]
+        progress.chapter = first
+        let reader = ReaderTranslationViewController(source: nil, manga: manga)
+        reader.delegate = progress
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 390, height: 844))
+        window.rootViewController = reader
+        window.makeKeyAndVisible()
+        defer { window.isHidden = true }
+        reader.beginAppearanceTransition(true, animated: false)
+        reader.endAppearanceTransition()
+        reader.setChapter(first, startPage: 0)
+
+        func settle() async throws {
+            for _ in 0..<20 {
+                try await Task.sleep(for: .milliseconds(10))
+                window.layoutIfNeeded()
+                reader.view.layoutIfNeeded()
+                for child in reader.children {
+                    child.view.frame = reader.view.bounds
+                    child.view.layoutIfNeeded()
+                }
+            }
+        }
+        func descendants(_ view: UIView) -> [UIView] { [view] + view.subviews.flatMap(descendants) }
+        try await settle()
+        let scrolls = descendants(reader.view).compactMap { $0 as? UIScrollView }
+        #expect(scrolls.count == 2)
+        let upper = try #require(scrolls.first)
+        let lower = try #require(scrolls.last)
+        let panes = try #require(upper.delegate as? BookTranslationPanesController)
+
+        let bottom = lower.contentSize.height - lower.bounds.height + lower.adjustedContentInset.bottom
+        lower.setContentOffset(.init(x: 0, y: bottom + 80), animated: false)
+        #expect(progress.chapter?.key == first.key)
+        panes.scrollViewDidEndDragging(lower, willDecelerate: false)
+        try await settle()
+        #expect(progress.chapter?.key == second.key)
+        #expect(reader.model.blocks.first?.text == "Original 2")
+        #expect(abs(upper.contentOffset.y) < 1)
+
+        upper.setContentOffset(.init(x: 0, y: -upper.adjustedContentInset.top - 80), animated: false)
+        panes.scrollViewDidEndDragging(upper, willDecelerate: false)
+        try await settle()
+        #expect(progress.chapter?.key == first.key)
+        #expect(reader.model.blocks.first?.text == "Original 1")
+        #expect(upper.contentOffset.y < upper.contentSize.height)
+
+        let nextButton = try #require(lower.subviews.compactMap { $0 as? UIButton }.first { !$0.isHidden })
+        nextButton.sendActions(for: .touchUpInside)
+        try await settle()
+        #expect(progress.chapter?.key == second.key)
+        #expect(lower.subviews.compactMap { $0 as? UIButton }.filter { !$0.isHidden }.count == 1)
+        let lastBottom = lower.contentSize.height - lower.bounds.height + lower.adjustedContentInset.bottom
+        lower.setContentOffset(.init(x: 0, y: lastBottom + 80), animated: false)
+        panes.scrollViewDidEndDragging(lower, willDecelerate: false)
+        #expect(progress.chapter?.key == second.key)
+    }
+
     @Test func scrollingAcrossChapterGapKeepsItsPositionInBothDirections() async throws {
         guard #available(iOS 18.0, *) else { return }
         let restore = preferences()

@@ -6,6 +6,9 @@ struct BookTranslationPanes: UIViewControllerRepresentable {
     let position: Double
     let positionRevision: Int
     let onProgress: (Double) -> Void
+    var previousTitle: String?
+    var nextTitle: String?
+    var onChapterChange: ((Bool) -> Void)?
 
     func makeUIViewController(context: Context) -> BookTranslationPanesController {
         BookTranslationPanesController()
@@ -13,6 +16,8 @@ struct BookTranslationPanes: UIViewControllerRepresentable {
 
     func updateUIViewController(_ controller: BookTranslationPanesController, context: Context) {
         controller.onProgress = onProgress
+        controller.onChapterChange = onChapterChange
+        controller.setChapterLinks(previous: previousTitle, next: nextTitle)
         controller.update(
             blocks: model.blocks, translations: model.translations,
             appearance: .init(split: model.settings.split, revision: model.styleRevision),
@@ -34,6 +39,8 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
         let container = UIStackView()
         let scroll = UIScrollView()
         let stack = UIStackView()
+        let previousButton = UIButton(type: .system)
+        let nextButton = UIButton(type: .system)
         var hosts: [UIHostingController<AnyView>] = []
 
         var starts: [CGFloat] { stack.arrangedSubviews.map(\.frame.minY) }
@@ -52,6 +59,9 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
     private var anchor: Double = 0
     private var lastSize = CGSize.zero
     var onProgress: ((Double) -> Void)?
+    var onChapterChange: ((Bool) -> Void)?
+    private var previousTitle: String?
+    private var nextTitle: String?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -74,6 +84,19 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
             pane.stack.axis = .vertical
             pane.stack.translatesAutoresizingMaskIntoConstraints = false
             pane.scroll.addSubview(pane.stack)
+            for (button, next) in [(pane.previousButton, false), (pane.nextButton, true)] {
+                button.translatesAutoresizingMaskIntoConstraints = false
+                button.titleLabel?.lineBreakMode = .byTruncatingTail
+                button.addAction(UIAction { [weak self] _ in self?.onChapterChange?(next) }, for: .touchUpInside)
+                pane.scroll.addSubview(button)
+                NSLayoutConstraint.activate([
+                    button.centerXAnchor.constraint(equalTo: pane.stack.centerXAnchor),
+                    button.widthAnchor.constraint(equalTo: pane.stack.widthAnchor, constant: -48),
+                    button.heightAnchor.constraint(equalToConstant: 60)
+                ])
+            }
+            pane.previousButton.bottomAnchor.constraint(equalTo: pane.stack.topAnchor).isActive = true
+            pane.nextButton.topAnchor.constraint(equalTo: pane.stack.bottomAnchor).isActive = true
             pane.container.addArrangedSubview(pane.scroll)
             layout.addArrangedSubview(pane.container)
             NSLayoutConstraint.activate([
@@ -83,6 +106,18 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
                 pane.stack.trailingAnchor.constraint(equalTo: pane.scroll.contentLayoutGuide.trailingAnchor),
                 pane.stack.widthAnchor.constraint(equalTo: pane.scroll.frameLayoutGuide.widthAnchor)
             ])
+        }
+    }
+
+    func setChapterLinks(previous: String?, next: String?) {
+        loadViewIfNeeded()
+        previousTitle = previous
+        nextTitle = next
+        for pane in [original, translated] {
+            pane.previousButton.setTitle(previous.map { "↑ " + $0 }, for: .normal)
+            pane.nextButton.setTitle(next.map { $0 + " ↓" }, for: .normal)
+            pane.previousButton.isHidden = previous == nil
+            pane.nextButton.isHidden = next == nil
         }
     }
 
@@ -107,12 +142,22 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
         original.container.isHidden = translations != nil && !split
         translated.container.isHidden = translations == nil
         view.backgroundColor = ReaderTextTheme.getCurrentBackground()
-        if self.positionRevision != positionRevision {
+        let positionChanged = self.positionRevision != positionRevision
+        if positionChanged {
             self.positionRevision = positionRevision
             anchor = min(1, max(0, position)) * Double(blocks.count)
         }
         if contentChanged || layoutChanged { view.setNeedsLayout() }
         view.layoutIfNeeded()
+        if positionChanged, position >= 1 {
+            // Returning to a chapter should show its final text, not the empty
+            // alignment inset below it. Use the visible pane to find that anchor.
+            let pane = original.container.isHidden ? translated : original
+            anchor = BookTranslationScrollPosition.anchor(
+                offset: max(0, pane.stack.bounds.height - pane.scroll.bounds.height),
+                starts: pane.starts, heights: pane.heights
+            )
+        }
         restoreAnchor()
         syncing = false
     }
@@ -176,9 +221,23 @@ final class BookTranslationPanesController: UIViewController, UIScrollViewDelega
     private func restoreAnchor() {
         for pane in [original, translated] where !pane.container.isHidden {
             // Allows even the final paragraph to align at the top in either pane.
-            pane.scroll.contentInset.bottom = max(0, pane.scroll.bounds.height - 1)
+            pane.scroll.contentInset.top = previousTitle == nil ? 0 : 60
+            pane.scroll.contentInset.bottom = max(nextTitle == nil ? 0 : 60, pane.scroll.bounds.height - 1)
             let offset = BookTranslationScrollPosition.offset(anchor: anchor, starts: pane.starts, heights: pane.heights)
             pane.scroll.setContentOffset(.init(x: 0, y: offset), animated: false)
+        }
+    }
+
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        guard !syncing, !blocks.isEmpty else { return }
+        // Only a deliberate pull past the boundary changes chapters. Layout updates
+        // and synchronized scrolling in the other pane must never trigger navigation.
+        let top = -scrollView.adjustedContentInset.top
+        let bottom = max(top, scrollView.contentSize.height - scrollView.bounds.height + scrollView.adjustedContentInset.bottom)
+        if previousTitle != nil, scrollView.contentOffset.y < top - 60 {
+            onChapterChange?(false)
+        } else if nextTitle != nil, scrollView.contentOffset.y > bottom + 60 {
+            onChapterChange?(true)
         }
     }
 
