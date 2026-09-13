@@ -23,7 +23,7 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         }
     }
 
-    let pillarboxLayoutState = ReaderPillarboxLayoutState()
+    private let pillarboxLayoutState = ReaderPillarboxLayoutState()
 
     // Indicates if infinite scroll is enabled
     private lazy var infinite = UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
@@ -87,21 +87,6 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         autoScrollDisplayLink?.invalidate()
     }
 
-    override func viewWillLayoutSubviews() {
-        // Opening the reader in landscape does not necessarily trigger a rotation callback.
-        // Publish the viewport orientation before Texture measures the page nodes.
-        let size = view.bounds.size
-        if size.width > 0 && size.height > 0 {
-            let isPortrait = size.height >= size.width
-            if pillarboxLayoutState.isPortrait != isPortrait {
-                pillarboxLayoutState.setIsPortrait(isPortrait)
-                collectionNode.invalidateCalculatedLayout()
-                collectionNode.collectionViewLayout.invalidateLayout()
-            }
-        }
-        super.viewWillLayoutSubviews()
-    }
-
     override func configure() {
         super.configure()
 
@@ -150,6 +135,10 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         zoomView.onZoomScaleChanged = { [weak self] scale in
             self?.setLiveTextButtonHidden(scale != 1)
         }
+
+        // set initial portrait state before view presentation
+        let isPortrait = view.bounds.size.height >= view.bounds.size.width
+        pillarboxLayoutState.setIsPortrait(isPortrait)
     }
 
     override func observe() {
