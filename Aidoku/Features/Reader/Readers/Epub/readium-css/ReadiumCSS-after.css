@@ -1,0 +1,589 @@
+/*!
+ * Readium CSS v.2.0.5
+ * Copyright (c) 2017–2026. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ * Core maintainer: Jiminy Panoz <jiminy.panoz@edrlab.org> 
+ * Contributors: 
+ * Daniel Weck
+ * Hadrien Gardeur
+ * Innovimax
+ * L. Le Meur
+ * Mickaël Menu
+ * k_taka
+ */
+
+@namespace url("http://www.w3.org/1999/xhtml");
+
+@namespace epub url("http://www.idpf.org/2007/ops");
+
+@namespace m url("http://www.w3.org/1998/Math/MathML");
+
+@namespace svg url("http://www.w3.org/2000/svg");
+
+:root{
+
+  --RS__viewportWidth:100%;
+
+  --RS__pageGutter:0;
+
+  --RS__defaultLineLength:100%;
+
+  --RS__colGap:0;
+
+  --RS__colCount:1;
+
+  --RS__colWidth:100vw;
+}
+
+@page{
+  margin:0 !important;
+}
+
+:root{
+  position:relative;
+
+  -webkit-column-width:var(--RS__colWidth);
+  -moz-column-width:var(--RS__colWidth);
+  column-width:var(--RS__colWidth);
+  -webkit-column-count:var(--RS__colCount);
+  -moz-column-count:var(--RS__colCount);
+  column-count:var(--RS__colCount);
+
+  -webkit-column-gap:var(--RS__colGap);
+  -moz-column-gap:var(--RS__colGap);
+  column-gap:var(--RS__colGap);
+  -moz-column-fill:auto;
+  column-fill:auto;
+  width:var(--RS__viewportWidth);
+  height:100vh;
+  max-width:var(--RS__viewportWidth);
+  max-height:100vh;
+  min-width:var(--RS__viewportWidth);
+  min-height:100vh;
+  padding:0 !important;
+  margin:0 !important;
+  font-size:1rem !important;
+  box-sizing:border-box;
+  -webkit-touch-callout:none;
+}
+
+body{
+  width:100%;
+  max-width:var(--RS__defaultLineLength) !important;
+  margin:0 auto !important;
+  box-sizing:border-box;
+}
+
+:root:not([style*="readium-scroll-on"]) body{
+  padding:0 var(--RS__pageGutter) !important;
+}
+
+:root:not([style*="readium-noOverflow-on"]) body{
+  overflow:hidden;
+}
+
+@supports (overflow: clip){
+
+   :root:not([style*="readium-noOverflow-on"]){
+      overflow:clip;
+   }
+
+   :root:not([style*="readium-noOverflow-on"]) body{
+      overflow:clip;
+      overflow-clip-margin:content-box;
+   }
+}
+
+:root[style*="readium-scroll-on"]{
+  -webkit-columns:auto auto !important;
+  -moz-columns:auto auto !important;
+  columns:auto auto !important;
+  width:auto !important;
+  height:auto !important;
+  max-width:none !important;
+  max-height:none !important;
+  min-width:0 !important;
+  min-height:0 !important;
+}
+
+:root[style*="readium-scroll-on"] body{
+  max-width:var(--RS__defaultLineLength) !important;
+  box-sizing:border-box !important;
+}
+
+:root[style*="readium-scroll-on"]:not([style*="readium-noOverflow-on"]) body{
+  overflow:auto;
+}
+
+@supports (overflow: clip){
+
+  :root[style*="readium-scroll-on"]:not([style*="readium-noOverflow-on"]){
+     overflow:auto;
+  }
+
+  :root[style*="readium-scroll-on"]:not([style*="readium-noOverflow-on"]) body{
+     overflow:clip;
+  }
+}
+
+:root[style*="readium-scroll-on"][style*="--RS__scrollPaddingTop"] body{
+  padding-top:var(--RS__scrollPaddingTop) !important;
+}
+
+:root[style*="readium-scroll-on"][style*="--RS__scrollPaddingBottom"] body{
+  padding-bottom:var(--RS__scrollPaddingBottom) !important;
+}
+
+:root[style*="readium-scroll-on"][style*="--RS__scrollPaddingLeft"] body{
+  padding-left:var(--RS__scrollPaddingLeft) !important;
+}
+
+:root[style*="readium-scroll-on"][style*="--RS__scrollPaddingRight"] body{
+  padding-right:var(--RS__scrollPaddingRight) !important;
+}
+
+:root[style*="--USER__backgroundColor"]{
+  background-color:var(--USER__backgroundColor) !important;
+}
+
+:root[style*="--USER__backgroundColor"] *{
+  background-color:transparent !important;
+}
+
+:root[style*="--USER__textColor"]{
+  color:var(--USER__textColor) !important;
+}
+
+:root[style*="--USER__textColor"] *:not(a){
+  color:inherit !important;
+  background-color:transparent !important;
+  border-color:currentcolor !important;
+}
+
+:root[style*="--USER__textColor"] svg text{
+  fill:currentcolor !important;
+  stroke:none !important;
+}
+
+:root[style*="--USER__linkColor"] a:link,
+:root[style*="--USER__linkColor"] a:link *{
+  color:var(--USER__linkColor) !important;
+}
+
+:root[style*="--USER__visitedColor"] a:visited,
+:root[style*="--USER__visitedColor"] a:visited *{
+  color:var(--USER__visitedColor) !important;
+}
+
+:root[style*="--USER__selectionBackgroundColor"][style*="--USER__selectionTextColor"] ::-moz-selection{
+  color:var(--USER__selectionTextColor) !important;
+  background-color:var(--USER__selectionBackgroundColor) !important;
+}
+
+:root[style*="--USER__selectionBackgroundColor"][style*="--USER__selectionTextColor"] ::selection{
+  color:var(--USER__selectionTextColor) !important;
+  background-color:var(--USER__selectionBackgroundColor) !important;
+}
+
+:root[style*="--USER__colCount"]{
+  -webkit-column-count:var(--USER__colCount);
+  -moz-column-count:var(--USER__colCount);
+  column-count:var(--USER__colCount);
+
+  --RS__colWidth:auto;
+}
+
+:root[style*="--USER__colCount: 0"],
+:root[style*="--USER__colCount:0"]{
+  -webkit-column-count:1;
+  -moz-column-count:1;
+  column-count:1;
+}
+
+:root[style*="--USER__colCount: 0"],
+:root[style*="--USER__colCount:0"],
+:root[style*="--USER__colCount: 1"],
+:root[style*="--USER__colCount:1"]{
+  --RS__colWidth:100vw;
+}
+
+:root[style*="--USER__lineLength"] body{
+    max-width:var(--USER__lineLength) !important;
+  }
+
+:root[style*="--USER__textAlign"]{
+  text-align:var(--USER__textAlign);
+}
+
+:root[style*="--USER__textAlign"] body,
+:root[style*="--USER__textAlign"] p:not(
+  blockquote p,
+  figcaption p,
+  header p,
+  hgroup p,
+  :root[style*="readium-experimentalHeaderFiltering-on"] p[class*="title"],
+  :root[style*="readium-experimentalHeaderFiltering-on"] div:has(+ *) > h1 + p,
+  :root[style*="readium-experimentalHeaderFiltering-on"] div:has(+ *) > p:has(+ h1)
+),
+:root[style*="--USER__textAlign"] li,
+:root[style*="--USER__textAlign"] dd{
+  text-align:var(--USER__textAlign) !important;
+  -moz-text-align-last:auto !important;
+  -epub-text-align-last:auto !important;
+  text-align-last:auto !important;
+}
+
+:root[style*="--USER__bodyHyphens"]{
+  -webkit-hyphens:var(--USER__bodyHyphens) !important;
+  -moz-hyphens:var(--USER__bodyHyphens) !important;
+  -ms-hyphens:var(--USER__bodyHyphens) !important;
+  -epub-hyphens:var(--USER__bodyHyphens) !important;
+  hyphens:var(--USER__bodyHyphens) !important;
+}
+
+:root[style*="--USER__bodyHyphens"] body,
+:root[style*="--USER__bodyHyphens"] p,
+:root[style*="--USER__bodyHyphens"] li,
+:root[style*="--USER__bodyHyphens"] div,
+:root[style*="--USER__bodyHyphens"] dd{
+  -webkit-hyphens:var(--USER__bodyHyphens) !important;
+  -moz-hyphens:var(--USER__bodyHyphens) !important;
+  -ms-hyphens:var(--USER__bodyHyphens) !important;
+  -epub-hyphens:var(--USER__bodyHyphens) !important;
+  hyphens:var(--USER__bodyHyphens) !important;
+}
+
+:root[style*="--USER__fontFamily"]{
+  font-family:var(--USER__fontFamily) !important;
+}
+
+:root[style*="--USER__fontFamily"] *{
+  font-family:revert !important;
+}
+
+:root[style*="readium-a11y-on"]{
+  font-style:normal !important;
+  font-weight:normal !important;
+}
+
+:root[style*="readium-a11y-on"] body *:not(code):not(var):not(kbd):not(samp){
+  font-family:inherit !important;
+  font-style:inherit !important;
+  font-weight:inherit !important;
+}
+
+:root[style*="readium-a11y-on"] body *:not(a){
+  text-decoration:none !important;
+}
+
+:root[style*="readium-a11y-on"] body *{
+  font-variant-caps:normal !important;
+  font-variant-numeric:normal !important;
+  font-variant-position:normal !important;
+}
+
+:root[style*="readium-a11y-on"] sup,
+:root[style*="readium-a11y-on"] sub{
+  font-size:1rem !important;
+  vertical-align:baseline !important;
+}
+
+:root:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] body{
+  zoom:var(--USER__fontSize) !important;
+}
+
+:root:not([style*="readium-deprecatedFontSize-on"])[style*="readium-iOSPatch-on"][style*="--USER__fontSize"] body{
+  -webkit-text-size-adjust:var(--USER__fontSize) !important;
+}
+
+@supports selector(figure:has(> img)){
+
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> img),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> video),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> svg),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> canvas),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> iframe),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figure:has(> audio),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> img:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> video:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> svg:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> canvas:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> iframe:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] div:has(> audio:only-child),
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] table{
+    zoom:calc(100% / var(--USER__fontSize)) !important;
+  }
+
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] figcaption,
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] caption,
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] td,
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] th{
+    zoom:var(--USER__fontSize) !important;
+  }
+}
+
+@supports not (zoom: 1){
+
+  :root[style*="--USER__fontSize"]{
+    font-size:var(--USER__fontSize) !important;
+  }
+}
+
+:root[style*="readium-deprecatedFontSize-on"][style*="--USER__fontSize"]{
+  font-size:var(--USER__fontSize) !important;
+}
+
+:root[style*="--USER__lineHeight"]{
+  line-height:var(--USER__lineHeight) !important;
+}
+
+:root[style*="--USER__lineHeight"] body,
+:root[style*="--USER__lineHeight"] p,
+:root[style*="--USER__lineHeight"] li,
+:root[style*="--USER__lineHeight"] div{
+  line-height:var(--USER__lineHeight) !important;
+}
+
+:root[style*="--USER__paraSpacing"] p{
+  margin-top:var(--USER__paraSpacing) !important;
+  margin-bottom:var(--USER__paraSpacing) !important;
+}
+
+:root[style*="--USER__paraIndent"] p:not(
+  blockquote p,
+  figcaption p,
+  header p,
+  hgroup p,
+  :root[style*="readium-experimentalHeaderFiltering-on"] p[class*="title"],
+  :root[style*="readium-experimentalHeaderFiltering-on"] div:has(+ *) > h1 + p,
+  :root[style*="readium-experimentalHeaderFiltering-on"] div:has(+ *) > p:has(+ h1)
+){
+  text-indent:var(--USER__paraIndent) !important;
+}
+
+:root[style*="--USER__paraIndent"] p *{
+  text-indent:0 !important;
+}
+
+:root[style*="--USER__wordSpacing"] h1,
+:root[style*="--USER__wordSpacing"] h2,
+:root[style*="--USER__wordSpacing"] h3,
+:root[style*="--USER__wordSpacing"] h4,
+:root[style*="--USER__wordSpacing"] h5,
+:root[style*="--USER__wordSpacing"] h6,
+:root[style*="--USER__wordSpacing"] p,
+:root[style*="--USER__wordSpacing"] li,
+:root[style*="--USER__wordSpacing"] div,
+:root[style*="--USER__wordSpacing"] dt,
+:root[style*="--USER__wordSpacing"] dd{
+  word-spacing:var(--USER__wordSpacing) !important;
+}
+
+:root[style*="--USER__letterSpacing"] h1,
+:root[style*="--USER__letterSpacing"] h2,
+:root[style*="--USER__letterSpacing"] h3,
+:root[style*="--USER__letterSpacing"] h4,
+:root[style*="--USER__letterSpacing"] h5,
+:root[style*="--USER__letterSpacing"] h6,
+:root[style*="--USER__letterSpacing"] p,
+:root[style*="--USER__letterSpacing"] li,
+:root[style*="--USER__letterSpacing"] div,
+:root[style*="--USER__letterSpacing"] dt,
+:root[style*="--USER__letterSpacing"] dd{
+  letter-spacing:var(--USER__letterSpacing) !important;
+  font-variant:none !important;
+}
+
+:root[style*="--USER__ligatures"]{
+  font-variant-ligatures:var(--USER__ligatures) !important;
+}
+
+:root[style*="--USER__ligatures"] *{
+  font-variant-ligatures:inherit !important;
+}
+
+:root[style*="--USER__fontWeight"] body{
+  font-weight:var(--USER__fontWeight) !important;
+}
+
+:root[style*="--USER__fontWeight"] b,
+:root[style*="--USER__fontWeight"] strong{
+  font-weight:bolder;
+}
+
+:root[style*="--USER__fontWidth"] body{
+  font-stretch:var(--USER__fontWidth) !important;
+}
+
+:root[style*="--USER__fontOpticalSizing"] body{
+  font-optical-sizing:var(--USER__fontOpticalSizing) !important;
+}
+
+:root[style*="readium-blend-on"] svg,
+:root[style*="readium-blend-on"] img{
+  background-color:transparent !important;
+  mix-blend-mode:multiply !important;
+}
+
+:root[style*="--USER__darkenImages"] img{
+  -webkit-filter:brightness(var(--USER__darkenImages)) !important;
+  filter:brightness(var(--USER__darkenImages)) !important;
+}
+
+:root[style*="readium-darken-on"] img{
+  -webkit-filter:brightness(80%) !important;
+  filter:brightness(80%) !important;
+}
+
+:root[style*="--USER__invertImages"] img{
+  -webkit-filter:invert(var(--USER__invertImages)) !important;
+  filter:invert(var(--USER__invertImages)) !important;
+}
+
+:root[style*="readium-invert-on"] img{
+  -webkit-filter:invert(100%) !important;
+  filter:invert(100%) !important;
+}
+
+:root[style*="--USER__darkenImages"][style*="--USER__invertImages"] img{
+  -webkit-filter:brightness(var(--USER__darkenImages)) invert(var(--USER__invertImages)) !important;
+  filter:brightness(var(--USER__darkenImages)) invert(var(--USER__invertImages)) !important;
+}
+
+:root[style*="readium-darken-on"][style*="--USER__invertImages"] img{
+  -webkit-filter:brightness(80%) invert(var(--USER__invertImages)) !important;
+  filter:brightness(80%) invert(var(--USER__invertImages)) !important;
+}
+
+:root[style*="--USER__darkenImages"][style*="readium-invert-on"] img{
+  -webkit-filter:brightness(var(--USER__darkenImages)) invert(100%) !important;
+  filter:brightness(var(--USER__darkenImages)) invert(100%) !important;
+}
+
+:root[style*="readium-darken-on"][style*="readium-invert-on"] img{
+  -webkit-filter:brightness(80%) invert(100%) !important;
+  filter:brightness(80%) invert(100%) !important;
+}
+
+:root[style*="--USER__invertGaiji"] img[class*="gaiji"]{
+  -webkit-filter:invert(var(--USER__invertGaiji)) !important;
+  filter:invert(var(--USER__invertGaiji)) !important;
+}
+
+:root[style*="readium-invertGaiji-on"] img[class*="gaiji"]{
+  -webkit-filter:invert(100%) !important;
+  filter:invert(100%) !important;
+}
+
+:root[style*="readium-normalize-on"]{
+  --USER__typeScale:1.2;
+}
+
+:root[style*="readium-normalize-on"] p,
+:root[style*="readium-normalize-on"] li,
+:root[style*="readium-normalize-on"] div,
+:root[style*="readium-normalize-on"] pre,
+:root[style*="readium-normalize-on"] dd{
+  font-size:1rem !important;
+}
+
+:root[style*="readium-normalize-on"] h1{
+  font-size:1.75rem !important;
+  font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-normalize-on"] h2{
+  font-size:1.5rem !important;
+  font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-normalize-on"] h3{
+  font-size:1.25rem !important;
+  font-size:calc(1rem * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-normalize-on"] h4,
+:root[style*="readium-normalize-on"] h5,
+:root[style*="readium-normalize-on"] h6{
+  font-size:1rem !important;
+}
+
+:root[style*="readium-normalize-on"] small{
+  font-size:smaller !important;
+}
+
+:root[style*="readium-normalize-on"] sub,
+:root[style*="readium-normalize-on"] sup{
+  font-size:67.5% !important;
+}
+
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h1{
+  font-size:calc(((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h2{
+  font-size:calc((1rem * var(--USER__typeScale)) * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-normalize-on"][style*="--USER__typeScale"] h3{
+  font-size:calc(1rem * var(--USER__typeScale)) !important;
+}
+
+:root[style*="readium-iPadOSPatch-on"] body{
+  -webkit-text-size-adjust:none;
+}
+
+:root[style*="readium-iPadOSPatch-on"] p, 
+:root[style*="readium-iPadOSPatch-on"] h1, 
+:root[style*="readium-iPadOSPatch-on"] h2, 
+:root[style*="readium-iPadOSPatch-on"] h3, 
+:root[style*="readium-iPadOSPatch-on"] h4, 
+:root[style*="readium-iPadOSPatch-on"] h5, 
+:root[style*="readium-iPadOSPatch-on"] h6, 
+:root[style*="readium-iPadOSPatch-on"] li, 
+:root[style*="readium-iPadOSPatch-on"] th, 
+:root[style*="readium-iPadOSPatch-on"] td, 
+:root[style*="readium-iPadOSPatch-on"] dt, 
+:root[style*="readium-iPadOSPatch-on"] dd, 
+:root[style*="readium-iPadOSPatch-on"] pre, 
+:root[style*="readium-iPadOSPatch-on"] address, 
+:root[style*="readium-iPadOSPatch-on"] details, 
+:root[style*="readium-iPadOSPatch-on"] summary,
+:root[style*="readium-iPadOSPatch-on"] figcaption,
+:root[style*="readium-iPadOSPatch-on"] div:not(:has(p, h1, h2, h3, h4, h5, h6, li, th, td, dt, dd, pre, address, aside, details, figcaption, summary)),
+:root[style*="readium-iPadOSPatch-on"] aside:not(:has(p, h1, h2, h3, h4, h5, h6, li, th, td, dt, dd, pre, address, aside, details, figcaption, summary)){
+  -webkit-text-zoom:reset;
+}
+
+:root[style*="readium-iPadOSPatch-on"] abbr, 
+:root[style*="readium-iPadOSPatch-on"] b, 
+:root[style*="readium-iPadOSPatch-on"] bdi, 
+:root[style*="readium-iPadOSPatch-on"] bdo, 
+:root[style*="readium-iPadOSPatch-on"] cite, 
+:root[style*="readium-iPadOSPatch-on"] code, 
+:root[style*="readium-iPadOSPatch-on"] dfn, 
+:root[style*="readium-iPadOSPatch-on"] em, 
+:root[style*="readium-iPadOSPatch-on"] i, 
+:root[style*="readium-iPadOSPatch-on"] kbd, 
+:root[style*="readium-iPadOSPatch-on"] mark, 
+:root[style*="readium-iPadOSPatch-on"] q, 
+:root[style*="readium-iPadOSPatch-on"] rp, 
+:root[style*="readium-iPadOSPatch-on"] rt, 
+:root[style*="readium-iPadOSPatch-on"] ruby, 
+:root[style*="readium-iPadOSPatch-on"] s, 
+:root[style*="readium-iPadOSPatch-on"] samp, 
+:root[style*="readium-iPadOSPatch-on"] small, 
+:root[style*="readium-iPadOSPatch-on"] span, 
+:root[style*="readium-iPadOSPatch-on"] strong, 
+:root[style*="readium-iPadOSPatch-on"] sub, 
+:root[style*="readium-iPadOSPatch-on"] sup, 
+:root[style*="readium-iPadOSPatch-on"] time, 
+:root[style*="readium-iPadOSPatch-on"] u, 
+:root[style*="readium-iPadOSPatch-on"] var{
+  -webkit-text-zoom:normal;
+}
+
+:root[style*="readium-iPadOSPatch-on"] p:not(:has(b, cite, em, i, q, s, small, span, strong)):first-line{
+  -webkit-text-zoom:normal;
+}

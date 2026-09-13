@@ -64,8 +64,11 @@ actor DownloadManager {
         let directory = cache.directory(for: chapter)
 
         let archiveURL = directory.appendingPathExtension("cbz")
+        let bookURL = directory.appendingPathExtension("epub")
         if archiveURL.exists {
             return LocalFileManager.shared.readPages(from: archiveURL)
+        } else if bookURL.exists {
+            return LocalFileManager.shared.readEpubPages(from: bookURL)
         } else {
             var descriptionFiles: [URL] = []
 
@@ -128,7 +131,7 @@ actor DownloadManager {
     func downloadsCount(for identifier: MangaIdentifier) -> Int {
         cache.directory(for: identifier)
             .contents
-            .filter { ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(".tmp") }
+            .filter { DownloadCache.isChapterEntry($0) && !$0.lastPathComponent.hasPrefix(".tmp") }
             .count
     }
 
@@ -137,8 +140,7 @@ actor DownloadManager {
     }
 
     nonisolated func getDownloadStatus(for chapter: ChapterIdentifier) -> DownloadStatus {
-        let chapterDirectory = cache.directory(for: chapter)
-        if chapterDirectory.exists || chapterDirectory.appendingPathExtension("cbz").exists {
+        if cache.downloadedItem(for: chapter) != nil {
             return .finished
         } else {
             let tmpDirectory = cache.tmpDirectory(for: chapter)
@@ -160,6 +162,11 @@ actor DownloadManager {
         let chapterFile = chapterDirectory.appendingPathExtension("cbz")
         if chapterFile.exists {
             return chapterFile
+        }
+        // a book is one file already
+        let book = chapterDirectory.appendingPathExtension("epub")
+        if book.exists {
+            return book
         }
         // otherwise we can compress it ourselves
         let tmpFile = FileManager.default.temporaryDirectory.appendingPathComponent(chapterFile.lastPathComponent)
@@ -227,12 +234,13 @@ extension DownloadManager {
     func delete(chapters: [ChapterIdentifier]) async {
         for chapter in chapters {
             let directory = cache.directory(for: chapter)
-            let archiveURL = directory.appendingPathExtension("cbz")
             let tmpDirectory = cache.tmpDirectory(for: chapter)
 
-            if directory.exists || archiveURL.exists || tmpDirectory.exists {
+            if cache.downloadedItem(for: chapter) != nil || tmpDirectory.exists {
                 directory.removeItem()
-                archiveURL.removeItem()
+                for archiveExtension in DownloadCache.archiveExtensions {
+                    directory.appendingPathExtension(archiveExtension).removeItem()
+                }
                 tmpDirectory.removeItem()
                 await cache.remove(chapter: chapter)
 
@@ -241,7 +249,7 @@ extension DownloadManager {
                 let hasRemainingChapters = cache.directory(for: manga)
                     .contentsIncludingHidden
                     .contains {
-                        guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
+                        guard DownloadCache.isChapterEntry($0) else { return false }
                         guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
                         // a failed download counts as remaining
                         return cache.hasFailureMarker(inTmpDirectory: $0)
@@ -362,7 +370,7 @@ extension DownloadManager {
 
                 // Count chapters and calculate total size, including from failed downloads
                 let chapterDirectories = mangaDirectory.contentsIncludingHidden.filter {
-                    guard $0.isDirectory || $0.pathExtension == "cbz" else { return false }
+                    guard DownloadCache.isChapterEntry($0) else { return false }
                     guard $0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix) else { return true }
                     return cache.hasFailureMarker(inTmpDirectory: $0)
                 }
@@ -470,7 +478,7 @@ extension DownloadManager {
         guard mangaDirectory.exists else { return [] }
 
         let chapterDirectories = mangaDirectory.contents.filter {
-            ($0.isDirectory || $0.pathExtension == "cbz") && !$0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
+            DownloadCache.isChapterEntry($0) && !$0.lastPathComponent.hasPrefix(DownloadCache.tmpDirectoryPrefix)
         }
         let failedDirectories = mangaDirectory.contentsIncludingHidden.filter {
             $0.isDirectory && cache.hasFailureMarker(inTmpDirectory: $0)
@@ -533,7 +541,7 @@ extension DownloadManager {
     /// Load chapter metadata from chapter directory.
     private func getComicInfo(in directory: URL) -> ComicInfo? {
         do {
-            if directory.pathExtension == "cbz" {
+            if DownloadCache.archiveExtensions.contains(directory.pathExtension) {
                 return ComicInfo.load(from: directory)
             }
 
@@ -560,7 +568,7 @@ extension DownloadManager {
     /// Load metadata from manga directory.
     private func findComicInfo(in directory: URL) -> ComicInfo? {
         // check for ComicInfo.xml in any subdirectory
-        for subdirectory in directory.contents where subdirectory.isDirectory || subdirectory.pathExtension == "cbz" {
+        for subdirectory in directory.contents where DownloadCache.isChapterEntry(subdirectory) {
             do {
                 if directory.pathExtension == "cbz" {
                     if let comicInfo = ComicInfo.load(from: directory) {

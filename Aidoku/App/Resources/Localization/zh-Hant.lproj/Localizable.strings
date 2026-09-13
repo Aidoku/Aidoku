@@ -418,7 +418,7 @@
 "IMPORT" = "輸入";
 "IMPORT_FILE" = "輸入檔案";
 "LOCAL_FILE_IMPORT" = "輸入本機檔案";
-"LOCAL_FILE_IMPORT_TEXT" = "輸入包含圖片的CBZ或ZIP檔案以閱讀。";
+"LOCAL_FILE_IMPORT_TEXT" = "輸入包含圖片的CBZ、ePub或ZIP檔案以閱讀。";
 "CHAPTER_TITLE" = "章節標題";
 "SERIES_TITLE" = "作品標題";
 "DESCRIPTION" = "簡介";

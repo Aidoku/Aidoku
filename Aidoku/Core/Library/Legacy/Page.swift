@@ -39,6 +39,12 @@ struct Page: Hashable {
         text != nil || (zipURL != nil && imageURL?.lowercased().hasSuffix(".txt") == true)
     }
 
+    // the archive decides this rather than the entry, since every spine document lives inside the
+    // one .epub and the entry is an xhtml path with no extension worth testing
+    var isEpubPage: Bool {
+        zipURL?.lowercased().hasSuffix(".epub") == true
+    }
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(chapterId)
         hasher.combine(index)

@@ -53,6 +53,23 @@ class ReaderPagedViewModel {
     }
 
     private func getPages(chapter: AidokuRunner.Chapter) async -> [Page] {
+        await Self.getPages(
+            source: source,
+            manga: manga,
+            chapter: chapter,
+            temporaryPageStore: temporaryPageStore
+        )
+    }
+
+    // static because the epub reader needs a chapter's page list without keeping it: it reads one
+    // archive url out of it and shows the whole book itself, and reusing an instance for that would
+    // touch the preload slot, which belongs to the readers that display these pages
+    static func getPages(
+        source: AidokuRunner.Source?,
+        manga: AidokuRunner.Manga,
+        chapter: AidokuRunner.Chapter,
+        temporaryPageStore: ReaderTemporaryPageStore? = nil
+    ) async -> [Page] {
         let sourceId = source?.key ?? manga.sourceKey
         let identifier = ChapterIdentifier(
             sourceKey: sourceId,
