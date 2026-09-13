@@ -135,6 +135,10 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         zoomView.onZoomScaleChanged = { [weak self] scale in
             self?.setLiveTextButtonHidden(scale != 1)
         }
+
+        // set initial portrait state before view presentation
+        let isPortrait = view.bounds.size.height >= view.bounds.size.width
+        pillarboxLayoutState.setIsPortrait(isPortrait)
     }
 
     override func observe() {
@@ -390,7 +394,7 @@ extension ReaderWebtoonViewController {
         coordinator.animate { [weak self] _ in
             guard let self else { return }
 
-            let isPortrait = self.view.bounds.height >= self.view.bounds.width
+            let isPortrait = size.height >= size.width
             pillarboxLayoutState.setIsPortrait(isPortrait)
 
             self.collectionNode.invalidateCalculatedLayout()
