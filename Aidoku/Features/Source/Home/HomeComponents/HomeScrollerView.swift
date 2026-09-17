@@ -22,7 +22,6 @@ struct HomeScrollerView: View {
     static let coverHeight: CGFloat = 180
 
     @State private var bookmarkedItems: Set<String> = .init()
-    @State private var loadedBookmarks = false
 
     @EnvironmentObject private var path: NavigationCoordinator
 
@@ -187,18 +186,22 @@ struct HomeScrollerView: View {
                 }
                 .scrollViewAlignedPlease()
                 .task {
-                    if !loadedBookmarks {
-                        await loadBookmarked()
-                    }
+                    await loadBookmarked()
                 }
                 .onChange(of: entries) { _ in
                     Task {
-                        if !loadedBookmarks {
-                            await loadBookmarked()
-                        }
+                        await loadBookmarked()
                     }
                 }
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .addToLibrary).receive(on: DispatchQueue.main)) { notification in
+            guard let id = notification.object as? MangaIdentifier, id.sourceKey == source.key else { return }
+            bookmarkedItems.insert(id.mangaKey)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .removeFromLibrary).receive(on: DispatchQueue.main)) { notification in
+            guard let id = notification.object as? MangaIdentifier, id.sourceKey == source.key else { return }
+            bookmarkedItems.remove(id.mangaKey)
         }
     }
 
@@ -222,7 +225,6 @@ struct HomeScrollerView: View {
             }
             return keys
         }
-        loadedBookmarks = true
     }
 
     private func shouldAddEmptyLine(for title: String) -> Bool {
