@@ -86,7 +86,7 @@
 			</array>
 		</dict>
 	</dict>
-	<key>UIApplicationSceneManifest-macos</key>
+	<key>UIApplicationSceneManifest~mac</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<true/>
