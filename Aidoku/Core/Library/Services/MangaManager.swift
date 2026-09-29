@@ -179,8 +179,11 @@ extension MangaManager {
         // add enhanced trackers
         await TrackerManager.shared.bindEnhancedTrackers(manga: manga)
 
-        NotificationCenter.default.post(name: .addToLibrary, object: manga.identifier)
-        NotificationCenter.default.post(name: .updateLibrary, object: nil)
+        let mangaId = manga.identifier
+        await MainActor.run {
+            NotificationCenter.default.post(name: .addToLibrary, object: mangaId)
+            NotificationCenter.default.post(name: .updateLibrary, object: nil)
+        }
     }
 
     func removeFromLibrary(mangaId: MangaIdentifier) async {
@@ -194,9 +197,11 @@ extension MangaManager {
                 LogManager.logger.error("Failed to remove manga: \(error)")
             }
         }
-        NotificationCenter.default.post(name: .removeFromLibrary, object: mangaId)
-        NotificationCenter.default.post(name: .updateLibrary, object: nil)
-        NotificationCenter.default.post(name: .updateTrackers, object: nil)
+        await MainActor.run {
+            NotificationCenter.default.post(name: .removeFromLibrary, object: mangaId)
+            NotificationCenter.default.post(name: .updateLibrary, object: nil)
+            NotificationCenter.default.post(name: .updateTrackers, object: nil)
+        }
     }
 
     func removeFromLibrary(mangaIds: [MangaIdentifier]) async {
@@ -211,11 +216,13 @@ extension MangaManager {
                 LogManager.logger.error("Failed to remove multiple manga: \(error)")
             }
         }
-        for id in mangaIds {
-            NotificationCenter.default.post(name: .removeFromLibrary, object: id)
+        await MainActor.run {
+            for id in mangaIds {
+                NotificationCenter.default.post(name: .removeFromLibrary, object: id)
+            }
+            NotificationCenter.default.post(name: .updateLibrary, object: nil)
+            NotificationCenter.default.post(name: .updateTrackers, object: nil)
         }
-        NotificationCenter.default.post(name: .updateLibrary, object: nil)
-        NotificationCenter.default.post(name: .updateTrackers, object: nil)
         await UIApplication.shared.appDelegate?.hideLoadingIndicator()
     }
 
