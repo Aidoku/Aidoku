@@ -34,6 +34,44 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
     private var currentAttributes: [IndexPath: UICollectionViewLayoutAttributes] = [:]
 
+    private struct ViewportAnchor {
+        let indexPath: IndexPath
+        let position: CGPoint
+    }
+
+    private var preservedViewportAnchor: ViewportAnchor?
+
+    func preserveVisiblePosition() {
+        guard let collectionView else { return }
+
+        let bounds = collectionView.bounds
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        guard
+            let attributes = layoutAttributesForElements(in: bounds)?
+                .filter({ $0.representedElementCategory == .cell && $0.frame.width > 0 && $0.frame.height > 0 })
+                .min(by: {
+                    let first = max($0.frame.minY - center.y, center.y - $0.frame.maxY, 0)
+                    let second = max($1.frame.minY - center.y, center.y - $1.frame.maxY, 0)
+                    return first < second
+                })
+        else {
+            preservedViewportAnchor = nil
+            return
+        }
+
+        preservedViewportAnchor = ViewportAnchor(
+            indexPath: attributes.indexPath,
+            position: CGPoint(
+                x: (center.x - attributes.frame.minX) / attributes.frame.width,
+                y: (center.y - attributes.frame.minY) / attributes.frame.height
+            )
+        )
+    }
+
+    func clearPreservedPosition() {
+        preservedViewportAnchor = nil
+    }
+
     override init() {
         super.init()
         scrollDirection = .vertical
@@ -147,6 +185,30 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             attributes.append(item.value)
         }
         return attributes
+    }
+
+    override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        guard
+            let collectionView,
+            let anchor = preservedViewportAnchor,
+            let attributes = layoutAttributesForItem(at: anchor.indexPath)
+        else {
+            return proposedContentOffset
+        }
+
+        let frame = attributes.frame
+        let size = collectionView.bounds.size
+        let inset = collectionView.adjustedContentInset
+        let minimum = CGPoint(x: -inset.left, y: -inset.top)
+        let maximum = CGPoint(
+            x: max(minimum.x, collectionViewContentSize.width - size.width + inset.right),
+            y: max(minimum.y, collectionViewContentSize.height - size.height + inset.bottom)
+        )
+
+        return CGPoint(
+            x: min(max(frame.minX + frame.width * anchor.position.x - size.width / 2, minimum.x), maximum.x),
+            y: min(max(frame.minY + frame.height * anchor.position.y - size.height / 2, minimum.y), maximum.y)
+        )
     }
 }
 
