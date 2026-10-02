@@ -579,7 +579,13 @@ extension ReaderWebtoonPageNode {
 
     @MainActor
     private func analyzeLiveText() async {
-        guard #available(iOS 16.0, *), let image else { return }
+        guard
+            #available(iOS 16.0, *),
+            let image,
+            (image.cgImage?.height ?? Int(image.size.height * image.scale)) <= 8192
+        else {
+            return
+        }
 
         if let liveTextAnalysisTask {
             return await liveTextAnalysisTask.value
