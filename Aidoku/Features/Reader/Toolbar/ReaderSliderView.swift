@@ -95,12 +95,6 @@ class ReaderSliderView: UIControl {
 
     private var previousLocation = CGPoint()
 
-    override var frame: CGRect {
-        didSet {
-            updateLayerFrames()
-        }
-    }
-
     override init(frame: CGRect) {
         super.init(frame: frame)
         configure()
@@ -154,6 +148,7 @@ class ReaderSliderView: UIControl {
 
     override func layoutSubviews() {
         updateLayerFrames()
+        super.layoutSubviews()
     }
 
     override func tintColorDidChange() {
@@ -161,14 +156,17 @@ class ReaderSliderView: UIControl {
     }
 
     private func updateLayerFrames() {
-        guard trackView.frame.size != .zero else { return }
+        let trackInset: CGFloat = 5
+        let thumbWidth: CGFloat = 30
+        guard bounds.width > trackInset * 2 else { return }
+
         let position = positionForValue(currentValue)
         if direction == .forward {
-            trackWidthConstraint?.constant = position - trackView.frame.origin.x
-            thumbPositionConstraint?.constant =  position - thumbView.bounds.width / 2
+            trackWidthConstraint?.constant = position - trackInset
+            thumbPositionConstraint?.constant = position - thumbWidth / 2
         } else {
-            trackWidthConstraint?.constant = trackView.bounds.width - position - trackView.frame.origin.x
-            thumbPositionConstraint?.constant =  position - trackView.bounds.width + thumbView.bounds.width / 2
+            trackWidthConstraint?.constant = bounds.width - trackInset - position
+            thumbPositionConstraint?.constant = position + thumbWidth / 2 - bounds.width
         }
     }
 }
@@ -241,10 +239,12 @@ extension ReaderSliderView {
     }
 
     private func positionForValue(_ value: CGFloat) -> CGFloat {
+        let trackInset: CGFloat = 5
+        let trackWidth = max(bounds.width - trackInset * 2, 0)
         if direction == .forward {
-            trackView.bounds.width * value + trackView.frame.origin.x
+            return trackInset + trackWidth * value
         } else {
-            trackView.bounds.width - (trackView.bounds.width * value) - trackView.frame.origin.x
+            return bounds.width - trackInset - trackWidth * value
         }
     }
 
