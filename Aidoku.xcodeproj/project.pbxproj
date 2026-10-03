@@ -128,6 +128,7 @@
 				FB1B4831277CE1920056D02C /* Sources */,
 				FB1B4832277CE1920056D02C /* Frameworks */,
 				FB1B4833277CE1920056D02C /* Resources */,
+				FB5C1A0E2E7B4C3D00A1C0DE /* Restore Legacy App Icons */,
 				FBED233627C3C4D70095D0C0 /* ShellScript */,
 			);
 			buildRules = (
@@ -285,6 +286,30 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		FB5C1A0E2E7B4C3D00A1C0DE /* Restore Legacy App Icons */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Aidoku/App/Resources/Assets.xcassets/AppIcon.appiconset/120.png",
+				"$(SRCROOT)/Aidoku/App/Resources/Assets.xcassets/AppIcon.appiconset/180.png",
+				"$(SRCROOT)/Aidoku/App/Resources/Assets.xcassets/AppIcon.appiconset/152.png",
+			);
+			name = "Restore Legacy App Icons";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/AppIcon60x60@2x.png",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/AppIcon60x60@3x.png",
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/AppIcon76x76@2x~ipad.png",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# The Icon Composer icon makes Xcode render its glass appearance into the\n# fallback PNGs, which app managers such as AltStore display. Replace them\n# with the flat icons from the asset catalog so those views match the design.\nICON_SET=\"${SRCROOT}/Aidoku/App/Resources/Assets.xcassets/AppIcon.appiconset\"\nAPP_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"\n\ncp \"${ICON_SET}/120.png\" \"${APP_DIR}/AppIcon60x60@2x.png\"\ncp \"${ICON_SET}/180.png\" \"${APP_DIR}/AppIcon60x60@3x.png\"\ncp \"${ICON_SET}/152.png\" \"${APP_DIR}/AppIcon76x76@2x~ipad.png\"\n";
+		};
 		FBED233627C3C4D70095D0C0 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
