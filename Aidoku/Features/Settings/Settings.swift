@@ -516,6 +516,19 @@ extension Settings {
                             maximumValue: 4000,
                             stepValue: 100
                         ))
+                    ),
+                    .init(
+                        key: "Reader.upscaleQuality",
+                        title: NSLocalizedString("UPSCALE_QUALITY"),
+                        notification: .init("Reader.upscaleQuality"),
+                        requires: "Reader.upscaleImages",
+                        value: .select(.init(
+                            values: ["fast", "best"],
+                            titles: [
+                                NSLocalizedString("UPSCALE_QUALITY_FAST"),
+                                NSLocalizedString("UPSCALE_QUALITY_BEST")
+                            ]
+                        ))
                     )
                 ]
             ))

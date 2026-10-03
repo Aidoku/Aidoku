@@ -549,6 +549,9 @@
 "UPSCALING_MODELS" = "Upscaling Models";
 "UPSCALE_MAX_IMAGE_HEIGHT" = "Maximum Image Height";
 "UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "Images larger than the maxmimum image height won't be upscaled.";
+"UPSCALE_QUALITY" = "Upscaling Quality";
+"UPSCALE_QUALITY_FAST" = "Fast";
+"UPSCALE_QUALITY_BEST" = "Best Quality";
 "ENABLED_MODEL" = "Enabled Model";
 "AVAILABLE_MODELS" = "Available Models";
 "NO_AVAILABLE_MODELS" = "No Available Models";
