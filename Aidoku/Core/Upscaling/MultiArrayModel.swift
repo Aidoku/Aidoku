@@ -24,6 +24,10 @@ class MultiArrayModel: ImageProcessingModel {
     private let scale: Int
     private let tileOverlap: Int
 
+    private var configuredTileOverlap: Int {
+        UserDefaults.standard.string(forKey: "Reader.upscaleQuality") == "best" ? tileOverlap : 0
+    }
+
     required init(model: MLModel, config: [String: Any]) {
         self.mlmodel = model
         self.inputName = (config["inputName"] as? String) ?? "input"
@@ -42,8 +46,9 @@ class MultiArrayModel: ImageProcessingModel {
     }
 
     func process(_ image: CGImage) async -> CGImage? {
-        if tileOverlap > 0 && shrinkSize == 0 {
-            return await processOverlapping(image)
+        let overlap = configuredTileOverlap
+        if overlap > 0 && shrinkSize == 0 {
+            return await processOverlapping(image, overlap: overlap)
         }
 
         let width = image.width
@@ -212,16 +217,16 @@ class MultiArrayModel: ImageProcessingModel {
     }
 
     // process overlapping tiles one row at a time to bound intermediate memory
-    private func processOverlapping(_ image: CGImage) async -> CGImage? {
+    private func processOverlapping(_ image: CGImage, overlap: Int) async -> CGImage? {
         let width = image.width
         let height = image.height
         let channels = 4
         let outWidth = width * scale
         let outHeight = height * scale
         let outTileSize = blockSize * scale
-        let outOverlap = tileOverlap * scale
-        let xStarts = tileStarts(for: width)
-        let yStarts = tileStarts(for: height)
+        let outOverlap = overlap * scale
+        let xStarts = tileStarts(for: width, overlap: overlap)
+        let yStarts = tileStarts(for: height, overlap: overlap)
 
         let source = image.expand(shrinkSize: 0)
         let sourceChannelStride = width * height
@@ -378,8 +383,8 @@ class MultiArrayModel: ImageProcessingModel {
         vDSP_vfixu8(&clipped, 1, destination, 1, vDSP_Length(count))
     }
 
-    private func tileStarts(for length: Int) -> [Int] {
-        let stride = blockSize - tileOverlap
+    private func tileStarts(for length: Int, overlap: Int) -> [Int] {
+        let stride = blockSize - overlap
         var result = [0]
         while let last = result.last, last + blockSize < length {
             result.append(last + stride)

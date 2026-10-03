@@ -641,6 +641,9 @@
 "UPSCALING_MODELS" = "超解析度模型";
 "UPSCALE_MAX_IMAGE_HEIGHT" = "最大圖片高度";
 "UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "如果原圖高度大於最大高度則不會進行超解析度處理。";
+"UPSCALE_QUALITY" = "超解析度品質";
+"UPSCALE_QUALITY_FAST" = "快速";
+"UPSCALE_QUALITY_BEST" = "最佳品質";
 "ENABLED_MODEL" = "已啟用的模型";
 "AVAILABLE_MODELS" = "可用的模型";
 "NO_AVAILABLE_MODELS_TEXT" = "無法取得可用的模型。請檢查網路連接以及確保應用程式是最新版本。";
