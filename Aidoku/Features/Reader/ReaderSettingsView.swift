@@ -12,6 +12,11 @@ struct ReaderSettingsView: View {
     let reader: ReaderViewController.Reader
     let chapterLanguage: String?
 
+    // an epub is text rather than images, so the image settings do not apply to it either
+    private var isTextBased: Bool {
+        reader == .text || reader == .epub
+    }
+
     @State private var sourceLanguageCodes: [String] = []
     @State private var sourceLanguageTitles: [String] = []
 
@@ -63,7 +68,7 @@ struct ReaderSettingsView: View {
             List {
                 generalSection
 
-                if #available(iOS 18.0, *), reader != .text {
+                if #available(iOS 18.0, *), !isTextBased {
                     dictionarySection
                 }
 
@@ -96,7 +101,10 @@ struct ReaderSettingsView: View {
                     Text(NSLocalizedString("TAP_ZONES"))
                 }
 
-                if reader == .text {
+                // the text-like readers, .text and .epub. written as the negation of the image
+                // readers because || between two inequalities is always true, which once hid the
+                // image settings below and showed these on top of a manga
+                if reader != .paged && reader != .scroll {
                     textSection
                 } else {
                     if !downsampleImages.value {
@@ -183,7 +191,7 @@ struct ReaderSettingsView: View {
 extension ReaderSettingsView {
     var generalSection: some View {
         Section(NSLocalizedString("GENERAL")) {
-            if reader != .text {
+            if !isTextBased {
                 let readingModeKey = "Reader.readingMode.\(mangaId)"
                 SettingView(
                     setting: .init(
@@ -227,7 +235,7 @@ extension ReaderSettingsView {
                     value: .toggle(.init())
                 )
             )
-            if reader != .text {
+            if !isTextBased {
                 SettingView(
                     setting: .init(
                         key: "Reader.downsampleImages",
@@ -292,7 +300,7 @@ extension ReaderSettingsView {
                     value: .toggle(.init())
                 )
             )
-            if reader != .text {
+            if !isTextBased {
                 SettingView(
                     setting: .init(
                         key: "Reader.backgroundColor",

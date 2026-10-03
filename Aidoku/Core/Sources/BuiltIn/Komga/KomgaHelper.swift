@@ -41,6 +41,19 @@ struct KomgaHelper: Sendable {
             .compactMap { $0.urlWithTrailingSlash() } ?? []
     }
 
+    // in order: the mirror that last worked, the configured server, then the rest. shared with
+    // request so a caller that can't use it, such as a download answering with bytes instead of
+    // json, fails over the same way
+    func baseUrls(lastWorkingMirror: URL?) throws(SourceError) -> [URL] {
+        var urls: [URL] = []
+        if let lastWorkingMirror {
+            urls.append(lastWorkingMirror)
+        }
+        urls.append(try getConfiguredServer())
+        urls.append(contentsOf: getMirrors().filter { $0 != lastWorkingMirror })
+        return urls
+    }
+
     func request<T: Decodable>(
         path: String,
         method: HttpMethod = .GET,
@@ -62,12 +75,7 @@ struct KomgaHelper: Sendable {
 
         let mainUrl = try getConfiguredServer()
         let mirrors = getMirrors()
-        var allBaseUrls: [URL] = []
-        if let lastWorkingMirror {
-            allBaseUrls.append(lastWorkingMirror)
-        }
-        allBaseUrls.append(mainUrl)
-        allBaseUrls.append(contentsOf: mirrors.filter { $0 != lastWorkingMirror })
+        let allBaseUrls = try baseUrls(lastWorkingMirror: lastWorkingMirror)
 
         let session = if !mirrors.isEmpty {
             URLSession(configuration: {

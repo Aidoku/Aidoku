@@ -17,7 +17,7 @@ actor LocalFileManager {
     private var lastScanTime = Date.distantPast
     private var scanTask: Task<Void, Never>?
 
-    static let allowedFileExtensions = Set(["cbz", "zip"])
+    static let allowedFileExtensions = Set(["cbz", "zip", "epub"])
     static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif"])
     static let allowedTextExtensions = Set(["txt", "md"])
     static let allowedPageExtensions = allowedImageExtensions.union(allowedTextExtensions)
@@ -52,6 +52,25 @@ extension LocalFileManager {
         let pathExtension = url.pathExtension.lowercased()
         guard Self.allowedFileExtensions.contains(pathExtension) else {
             return nil
+        }
+
+        if pathExtension == "epub" {
+            guard let book = EpubParser.parse(url: url), !book.chapters.isEmpty else {
+                return nil
+            }
+            // carry epub metadata through the existing ComicInfo import path
+            var comicInfo = ComicInfo()
+            comicInfo.series = book.title
+            comicInfo.summary = book.description
+            comicInfo.writer = book.author
+            return ImportFileInfo(
+                url: url,
+                previewImages: book.coverData.flatMap { PlatformImage(data: $0) }.map { [$0] } ?? [],
+                name: url.lastPathComponent,
+                pageCount: book.chapters.count,
+                fileType: .epub,
+                comicInfo: comicInfo
+            )
         }
 
         // read zip file
@@ -127,7 +146,22 @@ extension LocalFileManager {
 
         let documentsDir = FileManager.default.documentDirectory
         let archiveURL = documentsDir.appendingPathComponent(cbzPath)
+        if archiveURL.pathExtension.lowercased() == "epub" {
+            return readEpubPages(from: archiveURL)
+        }
         return readPages(from: archiveURL)
+    }
+
+    // one page per spine document, so the epub reader can resolve the archive from the first page
+    // and paginate across the spine itself
+    nonisolated func readEpubPages(from archiveURL: URL) -> [AidokuRunner.Page] {
+        guard let book = EpubParser.parse(url: archiveURL) else {
+            LogManager.logger.error("Failed to read epub \(archiveURL.lastPathComponent)")
+            return []
+        }
+        return book.chapters.flatMap(\.hrefs).map {
+            AidokuRunner.Page(content: .zipFile(url: archiveURL, filePath: $0))
+        }
     }
 
     // read pages from an archive file
@@ -253,6 +287,22 @@ extension LocalFileManager {
             if shouldRemoveUrl {
                 try? FileManager.default.removeItem(at: url)
             }
+        }
+
+        // epub files are added as a single chapter spanning the whole book
+        if url.pathExtension.lowercased() == "epub" {
+            try await uploadEpub(
+                from: url,
+                skipUpload: skipUpload,
+                mangaId: mangaId,
+                mangaCoverImage: mangaCoverImage,
+                mangaName: mangaName,
+                mangaDescription: mangaDescription,
+                chapterName: chapterName,
+                volume: volume,
+                chapter: chapter
+            )
+            return
         }
 
         // read zip file
@@ -431,6 +481,105 @@ extension LocalFileManager {
             volume: volume,
             chapter: chapter,
             comicInfo: comicInfo
+        )
+    }
+
+    // add an epub file to the local files source as a single chapter
+    // swiftlint:disable:next function_parameter_count
+    private func uploadEpub(
+        from url: URL,
+        skipUpload: Bool,
+        mangaId: String?,
+        mangaCoverImage: PlatformImage?,
+        mangaName: String?,
+        mangaDescription: String?,
+        chapterName: String?,
+        volume: Float?,
+        chapter: Float?
+    ) async throws(LocalFileManagerError) {
+        guard let book = EpubParser.parse(url: url) else {
+            throw LocalFileManagerError.cannotReadArchive
+        }
+        guard !book.chapters.isEmpty else {
+            throw LocalFileManagerError.noImagesFound
+        }
+
+        let resolvedMangaId = (mangaId ?? mangaName ?? book.title ?? url.deletingPathExtension().lastPathComponent).normalized
+        let mangaTitle = mangaName ?? book.title ?? resolvedMangaId
+
+        // create new folder for the manga
+        let fileManager = FileManager.default
+        let localFolder = fileManager.documentDirectory.appendingPathComponent("Local", isDirectory: true)
+        localFolder.createDirectory()
+        let mangaFolder = localFolder.appendingPathComponent(resolvedMangaId, isDirectory: true)
+        mangaFolder.createDirectory()
+
+        // copy file to Documents/Local/<mangaId>/<epubfile>
+        let destURL: URL
+        if skipUpload {
+            destURL = url
+        } else {
+            var newDestURL = mangaFolder.appendingPathComponent(url.lastPathComponent)
+            var counter = 1
+            while newDestURL.exists {
+                let name = url.lastPathComponent.removingExtension() + " (\(counter)).\(url.pathExtension)"
+                newDestURL = mangaFolder.appendingPathComponent(name)
+                counter += 1
+            }
+            destURL = newDestURL
+            do {
+                try fileManager.copyItem(at: url, to: destURL)
+            } catch {
+                throw LocalFileManagerError.fileCopyFailed
+            }
+        }
+
+        // save provided cover image, or fall back to the embedded epub cover
+        var coverURL: URL?
+        let coverImage = mangaCoverImage ?? book.coverData.flatMap { PlatformImage(data: $0) }
+        if mangaCoverImage != nil || mangaId == nil, let coverImage {
+            let newCoverURL = mangaFolder.appendingPathComponent("cover.png")
+            do {
+                if newCoverURL.exists {
+                    try fileManager.removeItem(at: newCoverURL)
+                }
+                try coverImage.pngData()?.write(to: newCoverURL)
+                coverURL = newCoverURL
+            } catch {
+                throw LocalFileManagerError.fileCopyFailed
+            }
+        }
+
+        // create the manga object in db if it doesn't exist yet
+        let hasMangaObject = if let mangaId {
+            await LocalFileDataManager.shared.hasSeries(id: mangaId)
+        } else {
+            false
+        }
+        if !hasMangaObject {
+            // carry epub metadata (author) through the ComicInfo path
+            var comicInfo = ComicInfo()
+            comicInfo.writer = book.author
+            await LocalFileDataManager.shared.createManga(
+                url: mangaFolder,
+                id: resolvedMangaId,
+                title: mangaTitle,
+                cover: coverURL?.toAidokuImageUrl()?.absoluteString,
+                description: mangaDescription ?? book.description,
+                // books read left to right, unlike the rtl manga default
+                viewer: .leftToRight,
+                comicInfo: comicInfo
+            )
+        }
+
+        // the whole book is one chapter; the epub reader paginates across the spine itself
+        await LocalFileDataManager.shared.createChapter(
+            mangaId: resolvedMangaId,
+            url: destURL,
+            id: destURL.lastPathComponent,
+            title: chapterName ?? book.title,
+            volume: volume,
+            chapter: chapter
         )
     }
 }
