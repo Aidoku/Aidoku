@@ -531,7 +531,8 @@ extension ReaderPageView {
         guard
             #available(iOS 16.0, *),
             imageAnalaysisInteraction != nil,
-            let image = imageView.image
+            let image = imageView.image,
+            (image.cgImage?.height ?? Int(image.size.height * image.scale)) <= 8192
         else {
             return
         }
