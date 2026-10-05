@@ -746,3 +746,16 @@
 "NEW_CHAPTERS_AVAILABLE" = "Capítulos nuevos disponibles";
 "X_SERIES_HAVE_NEW_CHAPTERS" = "%d series tienen capítulos nuevos";
 "SUWAYOMI" = "Suwayomi";
+"DOWNLOAD_INCOMPLETE" = "Descarga Incompleta";
+"DISABLE" = "Desactivar";
+"ENABLE" = "Activar";
+"RESTART" = "Reiniciar";
+"HTML_ERROR" = "Error HTML";
+"JSON_ERROR" = "Error JSON";
+"TEXT_THEME" = "Tema";
+"TEXT_THEME_SEPIA" = "Sepia";
+"TEXT_THEME_PAPER" = "Papel";
+"TEXT_THEME_GRAY" = "Gris";
+"DICTIONARY_LOOKUP" = "Buscar en Diccionario";
+"DICTIONARIES" = "Diccionarios";
+"ABOUT_DICTIONARIES" = "Sobre los Diccionarios";
