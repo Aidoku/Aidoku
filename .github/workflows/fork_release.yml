@@ -1,0 +1,111 @@
+name: Build fork ipa and AltStore source
+
+# Builds an unsigned ipa from this fork, publishes it as a GitHub release and
+# updates apps.json on the `altstore` branch so AltStore / SideStore can install
+# and update the app from:
+#   https://raw.githubusercontent.com/<owner>/<repo>/refs/heads/altstore/apps.json
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - ".github/ISSUE_TEMPLATE/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fork-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository != 'Aidoku/Aidoku'
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26.6"
+
+      - name: Install Xcode platforms
+        run: |
+          xcrun simctl list > /dev/null # fixes next command sometimes failing
+          xcodebuild -downloadPlatform iOS
+
+      - name: Compute build info
+        id: info
+        run: |
+          base_build=$(grep -m1 -E '^[[:space:]]*CURRENT_PROJECT_VERSION = ' Aidoku.xcodeproj/project.pbxproj | sed -E 's/.*= ([^;]+);/\1/')
+          build="${base_build}.${GITHUB_RUN_NUMBER}"
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "Build number: $build"
+
+      - name: Build
+        run: |
+          xcodebuild -scheme "Aidoku" -configuration Release archive \
+            -archivePath build/Aidoku.xcarchive \
+            -skipPackagePluginValidation \
+            CURRENT_PROJECT_VERSION="${{ steps.info.outputs.build }}" \
+            DEVELOPMENT_TEAM= CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+
+      - name: Package ipa
+        id: package
+        run: |
+          mkdir Payload
+          cp -r build/Aidoku.xcarchive/Products/Applications/Aidoku.app Payload
+          zip -qr Aidoku.ipa Payload
+          version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Payload/Aidoku.app/Info.plist)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}-build.${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aidoku-iOS-${{ steps.package.outputs.version }}-${{ steps.info.outputs.sha_short }}
+          path: Aidoku.ipa
+          if-no-files-found: error
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.package.outputs.tag }}
+          TITLE: Aidoku ${{ steps.package.outputs.version }} (${{ steps.info.outputs.build }})
+        run: |
+          git log -1 --format='Built from %H%n%n%B' > notes.md
+          gh release create "$TAG" Aidoku.ipa \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$TITLE" \
+            --notes-file notes.md \
+            --latest
+
+      - name: Update AltStore source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IPA_PATH: Aidoku.ipa
+          RELEASE_TAG: ${{ steps.package.outputs.tag }}
+          SOURCE_DIR: altstore-src
+        run: |
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin altstore > /dev/null; then
+            git clone --quiet --depth 1 --branch altstore "$remote" "$SOURCE_DIR"
+          else
+            git init --quiet -b altstore "$SOURCE_DIR"
+            git -C "$SOURCE_DIR" remote add origin "$remote"
+          fi
+
+          export RELEASE_NOTES="$(git log -1 --format=%s)"
+          python3 .github/workflows/supporting/update_fork_altstore_json.py
+
+          cd "$SOURCE_DIR"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps.json
+          git commit --quiet -m "Update AltStore source (${RELEASE_TAG})"
+          git push origin altstore

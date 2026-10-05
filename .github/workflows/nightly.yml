@@ -4,6 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build:
+    if: github.repository == 'Aidoku/Aidoku'
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v7
