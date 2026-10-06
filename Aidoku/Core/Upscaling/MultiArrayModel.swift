@@ -44,7 +44,9 @@ class MultiArrayModel: ImageProcessingModel {
             self.shape = [1, 3, NSNumber(value: blockSize), NSNumber(value: blockSize)]
         }
     }
+}
 
+extension MultiArrayModel {
     func process(_ image: CGImage) async -> CGImage? {
         let overlap = configuredTileOverlap
         if overlap > 0 && shrinkSize == 0 {
@@ -216,6 +218,41 @@ class MultiArrayModel: ImageProcessingModel {
         )
     }
 
+    // calculate the rects for the image blocks
+    private func calculateRects(width: Int, height: Int, blockSize: Int) -> [CGRect] {
+        var rects: [CGRect] = []
+        let numW = width / blockSize
+        let numH = height / blockSize
+        let remW = width % blockSize
+        let remH = height % blockSize
+
+        // regular tiles
+        for i in 0..<numW {
+            for j in 0..<numH {
+                rects.append(CGRect(x: i * blockSize, y: j * blockSize, width: blockSize, height: blockSize))
+            }
+        }
+        // right edge
+        if remW > 0 {
+            for j in 0..<numH {
+                rects.append(CGRect(x: width - blockSize, y: j * blockSize, width: blockSize, height: blockSize))
+            }
+        }
+        // bottom edge
+        if remH > 0 {
+            for i in 0..<numW {
+                rects.append(CGRect(x: i * blockSize, y: height - blockSize, width: blockSize, height: blockSize))
+            }
+        }
+        // bottom right corner
+        if remW > 0 && remH > 0 {
+            rects.append(CGRect(x: width - blockSize, y: height - blockSize, width: blockSize, height: blockSize))
+        }
+        return rects
+    }
+}
+
+extension MultiArrayModel {
     // process overlapping tiles one row at a time to bound intermediate memory
     private func processOverlapping(_ image: CGImage, overlap: Int) async -> CGImage? {
         let width = image.width
@@ -399,39 +436,6 @@ class MultiArrayModel: ImageProcessingModel {
             let position = Double(index * 2 + 1) / Double(length * 2)
             return Float(0.5 - 0.5 * cos(.pi * position))
         }
-    }
-
-    // calculate the rects for the image blocks
-    private func calculateRects(width: Int, height: Int, blockSize: Int) -> [CGRect] {
-        var rects: [CGRect] = []
-        let numW = width / blockSize
-        let numH = height / blockSize
-        let remW = width % blockSize
-        let remH = height % blockSize
-
-        // regular tiles
-        for i in 0..<numW {
-            for j in 0..<numH {
-                rects.append(CGRect(x: i * blockSize, y: j * blockSize, width: blockSize, height: blockSize))
-            }
-        }
-        // right edge
-        if remW > 0 {
-            for j in 0..<numH {
-                rects.append(CGRect(x: width - blockSize, y: j * blockSize, width: blockSize, height: blockSize))
-            }
-        }
-        // bottom edge
-        if remH > 0 {
-            for i in 0..<numW {
-                rects.append(CGRect(x: i * blockSize, y: height - blockSize, width: blockSize, height: blockSize))
-            }
-        }
-        // bottom right corner
-        if remW > 0 && remH > 0 {
-            rects.append(CGRect(x: width - blockSize, y: height - blockSize, width: blockSize, height: blockSize))
-        }
-        return rects
     }
 }
 
