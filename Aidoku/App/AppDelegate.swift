@@ -116,7 +116,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 "Reader.downsampleImages": false,
                 "Reader.upscaleImages": false,
                 "Reader.upscaleMaxHeight": 2000,
-                "Reader.upscaleQuality": "fast",
                 "Reader.cropBorders": false,
                 "Reader.disableQuickActions": false,
                 "Reader.disableDoubleTap": false,

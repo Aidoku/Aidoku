@@ -518,9 +518,9 @@ extension Settings {
                         ))
                     ),
                     .init(
-                        key: "Reader.upscaleQuality",
+                        key: AppSettings.reader.upscaleQuality.key,
                         title: NSLocalizedString("UPSCALE_QUALITY"),
-                        notification: .init("Reader.upscaleQuality"),
+                        notification: .init(AppSettings.reader.upscaleQuality.key),
                         requires: "Reader.upscaleImages",
                         value: .select(.init(
                             values: ["fast", "best"],

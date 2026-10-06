@@ -13,7 +13,7 @@ enum ImageProcessingSettingsKey {
         let downsample = UserDefaults.standard.bool(forKey: "Reader.downsampleImages")
         let upscale = UserDefaults.standard.bool(forKey: "Reader.upscaleImages")
         let maxHeight = UserDefaults.standard.integer(forKey: "Reader.upscaleMaxHeight")
-        let quality = UserDefaults.standard.string(forKey: "Reader.upscaleQuality") == "best" ? "best" : "fast"
+        let quality = AppSettings.reader.upscaleQuality.get() == "best" ? "best" : "fast"
         return "\(crop)-\(downsample)-\(upscale)-\(maxHeight)-\(quality)"
     }
 }

@@ -25,7 +25,7 @@ class MultiArrayModel: ImageProcessingModel {
     private let tileOverlap: Int
 
     private var configuredTileOverlap: Int {
-        UserDefaults.standard.string(forKey: "Reader.upscaleQuality") == "best" ? tileOverlap : 0
+        AppSettings.reader.upscaleQuality.get() == "best" ? tileOverlap : 0
     }
 
     required init(model: MLModel, config: [String: Any]) {
