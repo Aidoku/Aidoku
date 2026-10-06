@@ -503,6 +503,9 @@
 "UPSCALING_MODELS" = "超分辨率模型";
 "UPSCALE_MAX_IMAGE_HEIGHT" = "最大图片高度";
 "UPSCALE_MAX_IMAGE_HEIGHT_TEXT" = "大于最大图片高度的图片将不会进行放大处理。";
+"UPSCALE_QUALITY" = "超分辨率质量";
+"UPSCALE_QUALITY_FAST" = "快速";
+"UPSCALE_QUALITY_BEST" = "最佳质量";
 "ENABLED_MODEL" = "已启用模型";
 "AVAILABLE_MODELS" = "可用模型";
 "NO_AVAILABLE_MODELS" = "无可用模型";

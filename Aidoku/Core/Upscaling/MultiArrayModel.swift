@@ -22,6 +22,11 @@ class MultiArrayModel: ImageProcessingModel {
     private let blockSize: Int
     private let shrinkSize: Int
     private let scale: Int
+    private let tileOverlap: Int
+
+    private var configuredTileOverlap: Int {
+        AppSettings.reader.upscaleQuality.get() == .best ? tileOverlap : 0
+    }
 
     required init(model: MLModel, config: [String: Any]) {
         self.mlmodel = model
@@ -30,14 +35,24 @@ class MultiArrayModel: ImageProcessingModel {
         self.blockSize = (config["blockSize"] as? Int) ?? 256
         self.shrinkSize = (config["shrinkSize"] as? Int) ?? 0
         self.scale = (config["scale"] as? Int) ?? 2
+        let tileOverlap = (config["tileOverlap"] as? Int) ?? 0
+        // prevent more than two tiles from overlapping at once
+        self.tileOverlap = min(max(0, tileOverlap), max(0, self.blockSize / 2))
         if let customShape = config["shape"] as? [Int] {
             self.shape = customShape.map { NSNumber(value: $0) }
         } else {
             self.shape = [1, 3, NSNumber(value: blockSize), NSNumber(value: blockSize)]
         }
     }
+}
 
+extension MultiArrayModel {
     func process(_ image: CGImage) async -> CGImage? {
+        let overlap = configuredTileOverlap
+        if overlap > 0 && shrinkSize == 0 {
+            return await processOverlapping(image, overlap: overlap)
+        }
+
         let width = image.width
         let height = image.height
         let channels = 4
@@ -234,6 +249,193 @@ class MultiArrayModel: ImageProcessingModel {
             rects.append(CGRect(x: width - blockSize, y: height - blockSize, width: blockSize, height: blockSize))
         }
         return rects
+    }
+}
+
+extension MultiArrayModel {
+    // process overlapping tiles one row at a time to bound intermediate memory
+    private func processOverlapping(_ image: CGImage, overlap: Int) async -> CGImage? {
+        let width = image.width
+        let height = image.height
+        let channels = 4
+        let outWidth = width * scale
+        let outHeight = height * scale
+        let outTileSize = blockSize * scale
+        let outOverlap = overlap * scale
+        let xStarts = tileStarts(for: width, overlap: overlap)
+        let yStarts = tileStarts(for: height, overlap: overlap)
+
+        let source = image.expand(shrinkSize: 0)
+        let sourceChannelStride = width * height
+        let inputChannelStride = blockSize * blockSize
+        guard let input = try? MLMultiArray(shape: shape, dataType: .float32) else {
+            LogManager.logger.error("Failed to allocate input for multiarray model")
+            return nil
+        }
+
+        let inputPointer = input.dataPointer.assumingMemoryBound(to: Float32.self)
+        let ramp = cosineRamp(length: outOverlap)
+        var imageData = [UInt8](repeating: 0, count: outWidth * outHeight * channels)
+        let predictionChannelStride = outTileSize * outTileSize
+        var channelData = [UInt8](repeating: 0, count: predictionChannelStride)
+        var multiplied = [Float32](repeating: 0, count: predictionChannelStride)
+        var clipped = [Float32](repeating: 0, count: predictionChannelStride)
+
+        for (rowIndex, originY) in yStarts.enumerated() {
+            if Task.isCancelled { return nil }
+
+            let inputHeight = min(blockSize, height - originY)
+            let outputHeight = inputHeight * scale
+            var rowData = [UInt8](repeating: 0, count: outWidth * outputHeight * channels)
+
+            for (columnIndex, originX) in xStarts.enumerated() {
+                if Task.isCancelled { return nil }
+
+                for channel in 0..<3 {
+                    let sourceOffset = channel * sourceChannelStride
+                    let inputOffset = channel * inputChannelStride
+                    for inputY in 0..<blockSize {
+                        let sourceY = min(originY + inputY, height - 1)
+                        for inputX in 0..<blockSize {
+                            let sourceX = min(originX + inputX, width - 1)
+                            inputPointer[inputOffset + inputY * blockSize + inputX] = Float32(
+                                source[sourceOffset + sourceY * width + sourceX]
+                            )
+                        }
+                    }
+                }
+
+                let prediction: MLMultiArray
+                do {
+                    guard let output = try mlmodel.prediction(
+                        inputName: inputName,
+                        outputName: outputName,
+                        input: input
+                    ) else {
+                        LogManager.logger.error("Multiarray model returned no output")
+                        return nil
+                    }
+                    prediction = output
+                } catch {
+                    LogManager.logger.error("Failed to get output from multiarray model: \(error)")
+                    return nil
+                }
+
+                let outputWidth = min(blockSize, width - originX) * scale
+                guard prediction.count >= predictionChannelStride * 3 else {
+                    LogManager.logger.error("Multiarray model returned an unexpected output shape")
+                    return nil
+                }
+                let predictionPointer = prediction.dataPointer.assumingMemoryBound(to: Float32.self)
+
+                for channel in 0..<3 {
+                    normalizeAccelerate(
+                        predictionPointer.advanced(by: channel * predictionChannelStride),
+                        &channelData,
+                        count: predictionChannelStride,
+                        multiplied: &multiplied,
+                        clipped: &clipped
+                    )
+
+                    for outputY in 0..<outputHeight {
+                        let sourceRow = outputY * outTileSize
+                        let destinationRow = outputY * outWidth
+                        for outputX in 0..<outputWidth {
+                            let destinationX = originX * scale + outputX
+                            let destinationIndex = (destinationRow + destinationX) * channels + channel
+                            let value = channelData[sourceRow + outputX]
+                            if columnIndex > 0 && outputX < outOverlap {
+                                let weight = ramp[outputX]
+                                let previous = Float(rowData[destinationIndex])
+                                rowData[destinationIndex] = UInt8(
+                                    (previous * (1 - weight) + Float(value) * weight).rounded()
+                                )
+                            } else {
+                                rowData[destinationIndex] = value
+                            }
+                        }
+                    }
+                }
+            }
+
+            let destinationOriginY = originY * scale
+            for outputY in 0..<outputHeight {
+                let destinationY = destinationOriginY + outputY
+                let rowSourceOffset = outputY * outWidth * channels
+                let imageDestinationOffset = destinationY * outWidth * channels
+                if rowIndex > 0 && outputY < outOverlap {
+                    let weight = ramp[outputY]
+                    for offset in 0..<(outWidth * channels) where offset % channels != 3 {
+                        let destinationIndex = imageDestinationOffset + offset
+                        let previous = Float(imageData[destinationIndex])
+                        let value = Float(rowData[rowSourceOffset + offset])
+                        imageData[destinationIndex] = UInt8(
+                            (previous * (1 - weight) + value * weight).rounded()
+                        )
+                    }
+                } else {
+                    imageData.replaceSubrange(
+                        imageDestinationOffset..<(imageDestinationOffset + outWidth * channels),
+                        with: rowData[rowSourceOffset..<(rowSourceOffset + outWidth * channels)]
+                    )
+                }
+            }
+        }
+
+        guard
+            let buffer = CFDataCreate(nil, &imageData, imageData.count),
+            let dataProvider = CGDataProvider(data: buffer)
+        else {
+            return nil
+        }
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGBitmapInfo.byteOrder32Big.rawValue | CGImageAlphaInfo.noneSkipLast.rawValue
+        return CGImage(
+            width: outWidth,
+            height: outHeight,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8 * channels,
+            bytesPerRow: outWidth * channels,
+            space: colorSpace,
+            bitmapInfo: CGBitmapInfo(rawValue: bitmapInfo),
+            provider: dataProvider,
+            decode: nil,
+            shouldInterpolate: true,
+            intent: CGColorRenderingIntent.defaultIntent
+        )
+    }
+
+    private func normalizeAccelerate(
+        _ source: UnsafePointer<Float32>,
+        _ destination: UnsafeMutablePointer<UInt8>,
+        count: Int,
+        multiplied: inout [Float32],
+        clipped: inout [Float32]
+    ) {
+        var scale: Float32 = 255
+        var minimum: Float32 = 0
+        var maximum: Float32 = 255
+        vDSP_vsmul(source, 1, &scale, &multiplied, 1, vDSP_Length(count))
+        vDSP_vclip(&multiplied, 1, &minimum, &maximum, &clipped, 1, vDSP_Length(count))
+        vDSP_vfixu8(&clipped, 1, destination, 1, vDSP_Length(count))
+    }
+
+    private func tileStarts(for length: Int, overlap: Int) -> [Int] {
+        let stride = blockSize - overlap
+        var result = [0]
+        while let last = result.last, last + blockSize < length {
+            result.append(last + stride)
+        }
+        return result
+    }
+
+    private func cosineRamp(length: Int) -> [Float] {
+        guard length > 0 else { return [] }
+
+        return (0..<length).map { index in
+            let position = Double(index * 2 + 1) / Double(length * 2)
+            return Float(0.5 - 0.5 * cos(.pi * position))
+        }
     }
 }
 

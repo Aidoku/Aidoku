@@ -123,6 +123,17 @@ struct ReaderSettingsView: View {
                                         ))
                                     )
                                 )
+                                SettingView(
+                                    setting: .init(
+                                        key: AppSettings.reader.upscaleQuality.key,
+                                        title: NSLocalizedString("UPSCALE_QUALITY"),
+                                        notification: .init(AppSettings.reader.upscaleQuality.key),
+                                        value: .select(.init(
+                                            values: ReaderSettings.UpscaleQuality.allCases.map(\.rawValue),
+                                            titles: ReaderSettings.UpscaleQuality.allCases.map(\.title)
+                                        ))
+                                    )
+                                )
                             }
                         } header: {
                             Text(NSLocalizedString("UPSCALING"))
