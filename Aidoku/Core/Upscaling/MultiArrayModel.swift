@@ -23,6 +23,7 @@ class MultiArrayModel: ImageProcessingModel {
     private let shrinkSize: Int
     private let scale: Int
     private let tileOverlap: Int
+    private let preserveGrayscale: Bool
 
     private var configuredTileOverlap: Int {
         AppSettings.reader.upscaleQuality.get() == .best ? tileOverlap : 0
@@ -35,6 +36,7 @@ class MultiArrayModel: ImageProcessingModel {
         self.blockSize = (config["blockSize"] as? Int) ?? 256
         self.shrinkSize = (config["shrinkSize"] as? Int) ?? 0
         self.scale = (config["scale"] as? Int) ?? 2
+        self.preserveGrayscale = (config["preserveGrayscale"] as? Bool) ?? true
         let tileOverlap = (config["tileOverlap"] as? Int) ?? 0
         // prevent more than two tiles from overlapping at once
         self.tileOverlap = min(max(0, tileOverlap), max(0, self.blockSize / 2))
@@ -90,7 +92,11 @@ extension MultiArrayModel {
         // expand image by the shrink size
         let expwidth = Int(image.width) + 2 * shrinkSize
         let expheight = Int(image.height) + 2 * shrinkSize
-        let expanded = image.expand(shrinkSize: shrinkSize)
+        let expandedImage = image.expand(
+            shrinkSize: shrinkSize,
+            preserveGrayscale: preserveGrayscale
+        )
+        let expanded = expandedImage.pixels
 
         // calculate image block rects
         let rects = calculateRects(width: width, height: height, blockSize: blockSize)
@@ -194,6 +200,14 @@ extension MultiArrayModel {
             }
         }
 
+        applyGrayscaleMask(
+            expandedImage.grayscaleMask,
+            to: &imgData,
+            width: outWidth,
+            height: outHeight,
+            sourceWidth: width
+        )
+
         // create final cgimage from imgData buffer
         guard
             let cfbuffer = CFDataCreate(nil, &imgData, outWidth * outHeight * channels),
@@ -265,7 +279,11 @@ extension MultiArrayModel {
         let xStarts = tileStarts(for: width, overlap: overlap)
         let yStarts = tileStarts(for: height, overlap: overlap)
 
-        let source = image.expand(shrinkSize: 0)
+        let expandedImage = image.expand(
+            shrinkSize: 0,
+            preserveGrayscale: preserveGrayscale
+        )
+        let source = expandedImage.pixels
         let sourceChannelStride = width * height
         let inputChannelStride = blockSize * blockSize
         guard let input = try? MLMultiArray(shape: shape, dataType: .float32) else {
@@ -382,6 +400,14 @@ extension MultiArrayModel {
             }
         }
 
+        applyGrayscaleMask(
+            expandedImage.grayscaleMask,
+            to: &imageData,
+            width: outWidth,
+            height: outHeight,
+            sourceWidth: width
+        )
+
         guard
             let buffer = CFDataCreate(nil, &imageData, imageData.count),
             let dataProvider = CGDataProvider(data: buffer)
@@ -437,6 +463,34 @@ extension MultiArrayModel {
             return Float(0.5 - 0.5 * cos(.pi * position))
         }
     }
+
+    private func applyGrayscaleMask(
+        _ mask: [UInt8]?,
+        to imageData: inout [UInt8],
+        width: Int,
+        height: Int,
+        sourceWidth: Int
+    ) {
+        guard let mask, scale > 0 else { return }
+
+        let channels = 4
+        for y in 0..<height {
+            let sourceY = y / scale
+            for x in 0..<width {
+                let sourceX = x / scale
+                guard mask[sourceY * sourceWidth + sourceX] != 0 else { continue }
+
+                let index = (y * width + x) * channels
+                let red = Int(imageData[index])
+                let green = Int(imageData[index + 1])
+                let blue = Int(imageData[index + 2])
+                let luminance = UInt8((54 * red + 183 * green + 19 * blue + 128) >> 8)
+                imageData[index] = luminance
+                imageData[index + 1] = luminance
+                imageData[index + 2] = luminance
+            }
+        }
+    }
 }
 
 private class MLInput: MLFeatureProvider {
@@ -462,8 +516,8 @@ private extension MLModel {
 }
 
 private extension CGImage {
-    // expands image by shrinkSize and returns rgb float array
-    func expand(shrinkSize: Int) -> [Float] {
+    // expands image by shrinkSize and optionally returns a grayscale mask
+    func expand(shrinkSize: Int, preserveGrayscale: Bool) -> (pixels: [Float], grayscaleMask: [UInt8]?) {
         let clipEta8: Float = 0.00196078411
 
         let exwidth = width + 2 * shrinkSize
@@ -499,6 +553,21 @@ private extension CGImage {
         let mainOffsetY = shrinkSize
 
         var arr = [Float](repeating: 0, count: 3 * exwidth * exheight)
+        var grayscaleMask: [UInt8]?
+
+        if preserveGrayscale {
+            var mask = [UInt8](repeating: 0, count: width * height)
+            for index in mask.indices {
+                let offset = index * 4
+                let red = Int(u8Array[offset])
+                let green = Int(u8Array[offset + 1])
+                let blue = Int(u8Array[offset + 2])
+                let maximum = max(red, max(green, blue))
+                let minimum = min(red, min(green, blue))
+                mask[index] = maximum - minimum <= 2 ? 1 : 0
+            }
+            grayscaleMask = mask
+        }
 
         var rArr = [Float](repeating: 0, count: mainW * mainH)
         var gArr = [Float](repeating: 0, count: mainW * mainH)
@@ -680,6 +749,6 @@ private extension CGImage {
             )
         }
 
-        return arr
+        return (pixels: arr, grayscaleMask: grayscaleMask)
     }
 }
