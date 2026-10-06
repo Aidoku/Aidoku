@@ -16,5 +16,5 @@ struct ReaderSettings: Sendable {
     // todo: move reader settings here
 
     let autoScrollPosition = SettingsKey<AutoScrollPosition>("Reader.autoScrollPosition", default: .right)
-    let upscaleQuality = SettingsKey<String>("Reader.upscaleQuality", default: "fast")
+    let upscaleQuality = SettingsKey<UpscaleQuality>("Reader.upscaleQuality", default: .fast)
 }

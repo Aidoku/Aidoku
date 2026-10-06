@@ -129,11 +129,8 @@ struct ReaderSettingsView: View {
                                         title: NSLocalizedString("UPSCALE_QUALITY"),
                                         notification: .init(AppSettings.reader.upscaleQuality.key),
                                         value: .select(.init(
-                                            values: ["fast", "best"],
-                                            titles: [
-                                                NSLocalizedString("UPSCALE_QUALITY_FAST"),
-                                                NSLocalizedString("UPSCALE_QUALITY_BEST")
-                                            ]
+                                            values: ReaderSettings.UpscaleQuality.allCases.map(\.rawValue),
+                                            titles: ReaderSettings.UpscaleQuality.allCases.map(\.title)
                                         ))
                                     )
                                 )

@@ -523,11 +523,8 @@ extension Settings {
                         notification: .init(AppSettings.reader.upscaleQuality.key),
                         requires: "Reader.upscaleImages",
                         value: .select(.init(
-                            values: ["fast", "best"],
-                            titles: [
-                                NSLocalizedString("UPSCALE_QUALITY_FAST"),
-                                NSLocalizedString("UPSCALE_QUALITY_BEST")
-                            ]
+                            values: ReaderSettings.UpscaleQuality.allCases.map(\.rawValue),
+                            titles: ReaderSettings.UpscaleQuality.allCases.map(\.title)
                         ))
                     )
                 ]
