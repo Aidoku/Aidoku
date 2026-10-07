@@ -553,20 +553,10 @@ private extension CGImage {
         let mainOffsetY = shrinkSize
 
         var arr = [Float](repeating: 0, count: 3 * exwidth * exheight)
-        var grayscaleMask: [UInt8]?
-
-        if preserveGrayscale {
-            var mask = [UInt8](repeating: 0, count: width * height)
-            for index in mask.indices {
-                let offset = index * 4
-                let red = Int(u8Array[offset])
-                let green = Int(u8Array[offset + 1])
-                let blue = Int(u8Array[offset + 2])
-                let maximum = max(red, max(green, blue))
-                let minimum = min(red, min(green, blue))
-                mask[index] = maximum - minimum <= 2 ? 1 : 0
-            }
-            grayscaleMask = mask
+        let grayscaleMask: [UInt8]? = if preserveGrayscale {
+            createGrayscaleMask(pixelData: u8Array)
+        } else {
+            []
         }
 
         var rArr = [Float](repeating: 0, count: mainW * mainH)
@@ -750,5 +740,19 @@ private extension CGImage {
         }
 
         return (pixels: arr, grayscaleMask: grayscaleMask)
+    }
+
+    private func createGrayscaleMask(pixelData: [UInt8]) -> [UInt8] {
+        var mask = [UInt8](repeating: 0, count: width * height)
+        for index in mask.indices {
+            let offset = index * 4
+            let red = Int(pixelData[offset])
+            let green = Int(pixelData[offset + 1])
+            let blue = Int(pixelData[offset + 2])
+            let maximum = max(red, max(green, blue))
+            let minimum = min(red, min(green, blue))
+            mask[index] = maximum - minimum <= 2 ? 1 : 0
+        }
+        return mask
     }
 }
