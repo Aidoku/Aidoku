@@ -11,12 +11,11 @@ import AsyncDisplayKit
 
 class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
-    var isInsertingCellsAbove: Bool = false {
-        didSet {
-            if isInsertingCellsAbove {
-                contentSizeBeforeInsertingAbove = collectionViewContentSize
-            }
-        }
+    private(set) var isChangingCellsAbove: Bool = false
+    var onOffsetPreserved: ((CGPoint) -> Void)?
+
+    func preserveOffsetAcrossChangeAbove() {
+        isChangingCellsAbove = true
     }
 
     var spacing: CGFloat {
@@ -24,7 +23,6 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         set { minimumLineSpacing = newValue }
     }
 
-    private var contentSizeBeforeInsertingAbove: CGSize?
     private var scale: CGFloat = 1
 
     private var contentSize = CGSize.zero
@@ -33,6 +31,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     }
 
     private var currentAttributes: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+    private var itemIdentifiers: [IndexPath: AnyHashable] = [:]
 
     override init() {
         super.init()
@@ -50,8 +49,17 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     override func prepare() {
         guard let collectionView else { return }
 
+        // Anchor the top visible cell using the previous layout
+        let anchor = isChangingCellsAbove ? currentAttributes.values
+            .filter { $0.frame.maxY > collectionView.contentOffset.y }
+            .min { $0.frame.minY < $1.frame.minY } : nil
+        let anchorIdentifier = anchor.flatMap { itemIdentifiers[$0.indexPath] }
+        let oldAnchorY = anchor?.frame.minY
+        isChangingCellsAbove = false
+
         // calculate collection view size
         currentAttributes = [:]
+        itemIdentifiers = [:]
 
         var origin: CGFloat = 0
         let width = collectionView.bounds.size.width
@@ -64,6 +72,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
                 let size = CGSize(width: width, height: getHeight(for: indexPath))
                 attributes.frame = CGRect(origin: CGPoint(x: 0, y: origin), size: size)
                 currentAttributes[indexPath] = attributes
+                itemIdentifiers[indexPath] = itemIdentifier(for: indexPath)
 
                 origin += attributes.frame.size.height + minimumLineSpacing
             }
@@ -99,20 +108,29 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             }
         }
 
-        // preserve offset when inserting cells above
-        if isInsertingCellsAbove {
-            if let oldContentSize = contentSizeBeforeInsertingAbove {
-                UIView.performWithoutAnimation {
-                    let newContentSize = collectionViewContentSize
-                    let contentOffsetX = collectionView.contentOffset.x + (newContentSize.width - oldContentSize.width)
-                    let contentOffsetY = collectionView.contentOffset.y + (newContentSize.height - oldContentSize.height)
-                    let newOffset = CGPoint(x: contentOffsetX, y: contentOffsetY)
-                    collectionView.contentOffset = newOffset
-                }
+        // Only movement of the anchor counts, not resizing of cells
+        if
+            let anchorIdentifier, let oldAnchorY,
+            let newIndexPath = itemIdentifiers.first(where: { $0.value == anchorIdentifier })?.key,
+            let newAnchorY = currentAttributes[newIndexPath]?.frame.minY
+        {
+            UIView.performWithoutAnimation {
+                let offset = CGPoint(
+                    x: collectionView.contentOffset.x,
+                    y: collectionView.contentOffset.y + newAnchorY - oldAnchorY
+                )
+                collectionView.contentOffset = offset
+                onOffsetPreserved?(offset)
             }
-            contentSizeBeforeInsertingAbove = nil
-            isInsertingCellsAbove = false
         }
+    }
+
+    func itemIdentifier(for indexPath: IndexPath) -> AnyHashable? {
+        guard
+            let collectionView = collectionView as? ASCollectionView,
+            let node = collectionView.collectionNode?.nodeForItem(at: indexPath)
+        else { return nil }
+        return ObjectIdentifier(node)
     }
 
     func getHeight(for indexPath: IndexPath) -> CGFloat {

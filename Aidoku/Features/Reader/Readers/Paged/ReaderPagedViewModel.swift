@@ -45,11 +45,14 @@ class ReaderPagedViewModel {
         }
     }
 
-    func preload(chapter: AidokuRunner.Chapter) async {
-        guard preloadedChapter != chapter else { return }
+    @discardableResult
+    func preload(chapter: AidokuRunner.Chapter) async -> [Page] {
+        guard preloadedChapter != chapter else { return preloadedPages }
         preloadedChapter = nil
-        preloadedPages = await getPages(chapter: chapter)
+        let pages = await getPages(chapter: chapter)
+        preloadedPages = pages
         preloadedChapter = chapter
+        return pages
     }
 
     private func getPages(chapter: AidokuRunner.Chapter) async -> [Page] {
