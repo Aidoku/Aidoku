@@ -109,9 +109,11 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         }
 
         // Only movement of the anchor counts, not resizing of cells
-        if let anchorIdentifier, let oldAnchorY,
-           let newIndexPath = itemIdentifiers.first(where: { $0.value == anchorIdentifier })?.key,
-           let newAnchorY = currentAttributes[newIndexPath]?.frame.minY {
+        if
+            let anchorIdentifier, let oldAnchorY,
+            let newIndexPath = itemIdentifiers.first(where: { $0.value == anchorIdentifier })?.key,
+            let newAnchorY = currentAttributes[newIndexPath]?.frame.minY
+        {
             UIView.performWithoutAnimation {
                 let offset = CGPoint(
                     x: collectionView.contentOffset.x,
