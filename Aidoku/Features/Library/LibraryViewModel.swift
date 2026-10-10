@@ -183,6 +183,18 @@ extension LibraryViewModel {
         PinType(rawValue: AppSettings.library.pinTitles.get()) ?? .none
     }
 
+    func reloadSettings() {
+        sortMethod = SortMethod(rawValue: AppSettings.library.sortOption.get()) ?? .lastOpened
+        sortAscending = AppSettings.library.sortAscending.get()
+        if
+            let data = AppSettings.library.filtersData.get(),
+            let restoredFilters = try? JSONDecoder().decode([LibraryFilter].self, from: data),
+            filters != restoredFilters
+        {
+            filters = restoredFilters
+        }
+    }
+
     func refreshCategories(skipDataLoad: Bool = false) async {
         (categories, filterGroups) = await CoreDataManager.shared.container.performBackgroundTask { @Sendable context in
             (
