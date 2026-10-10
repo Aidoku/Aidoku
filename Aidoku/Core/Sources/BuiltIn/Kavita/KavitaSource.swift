@@ -222,11 +222,39 @@ actor KavitaSourceRunner: Runner {
 
         baseUrl = lastWorkingMirrorCopy ?? baseUrl
 
+        // epub chapters are downloaded whole and read by the epub reader
+        if chapter.files.contains(where: { $0.format == 3 }) {
+            return try await getEpubPages(chapterId: chapter.id, baseUrl: baseUrl)
+        }
+
         return (0..<chapter.pages).compactMap { page in
             let path = "api/Reader/image?chapterId=\(chapter.id)&page=\(page)&apiKey=\(apiKey)&extractPdf=true"
             return URL(string: path, relativeTo: baseUrl).flatMap {
                 .init(content: .url(url: $0))
             }
+        }
+    }
+
+    // kavita gates the download endpoint behind the download role, so an account without it gets
+    // an http error here rather than a page list
+    private func getEpubPages(chapterId: Int, baseUrl: URL) async throws -> [AidokuRunner.Page] {
+        guard let url = URL(string: "api/download/chapter?chapterId=\(chapterId)", relativeTo: baseUrl) else {
+            throw SourceError.message("INVALID_SERVER_URL")
+        }
+        func makeRequest() throws(SourceError) -> URLRequest {
+            var request = URLRequest(url: url)
+            guard helper.authorize(request: &request) else {
+                throw SourceError.message("NOT_LOGGED_IN")
+            }
+            return request
+        }
+        do {
+            return try await EpubChapterCache.pages(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
+        } catch EpubChapterCache.DownloadError.notLoggedIn {
+            // an expired token is the one failure a second attempt can resolve; an account without
+            // the download role answers 403 however often it is asked
+            guard try await helper.refreshToken() else { throw SourceError.message("NOT_LOGGED_IN") }
+            return try await EpubChapterCache.pages(request: try makeRequest(), sourceKey: sourceKey, chapterId: "\(chapterId)")
         }
     }
 

@@ -1,0 +1,502 @@
+//
+//  ReaderEpubViewModelTests.swift
+//  Aidoku
+//
+//  Created by Pietro Baiguini on 8/13/26.
+//
+
+@testable import Aidoku
+import Foundation
+import Testing
+import UIKit
+import WebKit
+
+/// One ePub is one chapter, so the interesting behaviour is at the seams between spine documents: a
+/// page turn at the end of one continues into the next, and a turn back at the start of one lands
+/// on the **last** page of the previous rather than its first.
+@Suite(.serialized)
+@MainActor
+struct ReaderEpubViewModelTests {
+    private static let viewport = CGSize(width: 320, height: 480)
+
+    /// Four documents of deliberately different lengths, so a reader that lands on the wrong page
+    /// of the right document is still visible.
+    private static func makeBook() throws -> URL {
+        try EpubFixture.makeBook(documents: [40, 1, 25, 6]).url
+    }
+
+    private func makeViewModel(_ url: URL) throws -> ReaderEpubViewModel {
+        try ReaderEpubViewModel(bookURL: url)
+    }
+
+    /// Mirrors what the view controller does: place the web view, let it settle, then open the
+    /// book at the size it settled at. A predicted size and a settled size that disagree invalidate
+    /// every page count.
+    private func start(_ viewModel: ReaderEpubViewModel, atDocument document: Int = 0) async throws {
+        let renderer = try await viewModel.prepareRenderer()
+        renderer.webView.frame = CGRect(origin: .zero, size: Self.viewport)
+        renderer.webView.layoutIfNeeded()
+        try await viewModel.open(viewport: Self.viewport, atDocument: document)
+    }
+
+    /// Mirrors the paged style: the whole book measured first, then a page controller built over
+    /// the completed index, reporting its position back into the model the way the reader wires it.
+    private func startPaged(
+        _ viewModel: ReaderEpubViewModel,
+        atBookPage bookPage: Int = 0
+    ) async throws -> EpubPagedViewController {
+        await viewModel.openPaged(viewport: Self.viewport)
+        try #require(viewModel.isMeasured, "the paged style measures the book before showing it")
+        let paged = EpubPagedViewController(book: viewModel.makePagedBook(), contentInsets: .zero)
+        paged.onPageChanged = { [weak viewModel] page in viewModel?.notePagedPosition(bookPage: page) }
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.keyWindow }
+            .first
+        try #require(window).addSubview(paged.view)
+        paged.view.frame = CGRect(origin: .zero, size: Self.viewport)
+        paged.view.layoutIfNeeded()
+        await paged.open(atBookPage: bookPage)
+        viewModel.notePagedPosition(bookPage: paged.currentBookPage)
+        return paged
+    }
+
+    private func dismantle(_ paged: EpubPagedViewController) {
+        paged.view.removeFromSuperview()
+    }
+
+    private func waitUntilMeasured(_ viewModel: ReaderEpubViewModel, timeout: TimeInterval = 20) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while !viewModel.isMeasured && Date() < deadline {
+            try? await Task.sleep(nanoseconds: 20_000_000)
+        }
+        try #require(viewModel.isMeasured, "the book was not measured within \(timeout)s")
+    }
+
+    @Test func aBookOpensOnTheFirstPageOfTheFirstDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == 0)
+        #expect(viewModel.bookPage == 0)
+        // The opening document is counted by the reading renderer on the way in, so a total exists
+        // before the pass has been anywhere.
+        #expect(viewModel.bookTotal > 0)
+    }
+
+    @Test func turningForwardStaysInTheDocumentUntilItsEnd() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
+        try #require(count > 1, "the fixture's first document must span more than one page")
+
+        await paged.turn(forward: true, animated: false)
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == 1)
+    }
+
+    /// The seam forwards: the last page of a document turns into the first page of the next, on
+    /// the same turn as any other page.
+    @Test func turningForwardAtTheEndEntersTheNextDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
+        await paged.show(bookPage: count - 1, animated: false)
+        try #require(viewModel.currentDocument == 0)
+        try #require(viewModel.pageInDocument == count - 1)
+
+        await paged.turn(forward: true, animated: false)
+
+        #expect(viewModel.currentDocument == 1)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    /// The seam backwards, which is the asymmetric one: the previous document's **last** page.
+    @Test func turningBackAtTheStartEntersThePreviousDocumentsLastPage() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: 0))
+        await paged.show(bookPage: count, animated: false)
+        try #require(viewModel.currentDocument == 1)
+        try #require(viewModel.pageInDocument == 0)
+
+        await paged.turn(forward: false, animated: false)
+
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == count - 1)
+    }
+
+    @Test func aBookDoesNotTurnBackPastItsStart() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+
+        await paged.turn(forward: false, animated: false)
+
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    @Test func aBookDoesNotTurnForwardPastItsEnd() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+        let total = viewModel.bookTotal
+        await paged.show(bookPage: total - 1, animated: false)
+
+        await paged.turn(forward: true, animated: false)
+        await paged.turn(forward: true, animated: false)
+
+        let last = viewModel.spinePaths.count - 1
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: last))
+        #expect(viewModel.currentDocument == last)
+        #expect(viewModel.pageInDocument == count - 1)
+    }
+
+    /// What the slider asks for. A page in another document has to load it.
+    @Test func showingABookPageCrossesIntoTheRightDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+
+        let target = try #require(viewModel.index.bookPage(forDocumentAt: 2, page: 1))
+        await paged.show(bookPage: target, animated: false)
+
+        #expect(viewModel.currentDocument == 2)
+        #expect(viewModel.pageInDocument == 1)
+        #expect(viewModel.bookPage == target)
+    }
+
+    /// A page the index cannot place is refused rather than guessed at, so the reader stays put.
+    @Test func showingAnUnplaceableBookPageDoesNothing() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+
+        let document = viewModel.currentDocument
+        let page = viewModel.pageInDocument
+        await viewModel.showBookPage(viewModel.bookTotal + 100)
+
+        #expect(viewModel.currentDocument == document)
+        #expect(viewModel.pageInDocument == page)
+    }
+
+    /// The pass fills in the documents the reader has not visited, and only then is the total final
+    /// and a progression available to persist.
+    @Test func theMeasurementPassCompletesTheBook() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        #expect(viewModel.progression == nil, "a fraction of a lower bound must not be published")
+
+        try await waitUntilMeasured(viewModel)
+
+        #expect(viewModel.bookTotal > 0)
+        // One column, so the anchor is the page's leading edge and the first page is the start.
+        #expect(viewModel.progression == 0, "the first page of the book is the start of it")
+
+        let sum = (0..<viewModel.spinePaths.count).reduce(0) { total, document in
+            total + (viewModel.index.pageCount(forDocumentAt: document) ?? 0)
+        }
+        #expect(viewModel.bookTotal == sum)
+    }
+
+    /// The last page's fraction is that page's own leading edge in a one-column layout,
+    /// `(total - 1) / total`, so a restore on any layout floors into the final page, never past it.
+    @Test func theEndOfTheBookIsTheLastPagesEdge() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        let paged = try await startPaged(viewModel)
+        defer { dismantle(paged) }
+
+        let last = viewModel.spinePaths.count - 1
+        let count = try #require(viewModel.index.pageCount(forDocumentAt: last))
+        await paged.show(bookPage: viewModel.bookTotal - 1, animated: false)
+
+        #expect(viewModel.currentDocument == last)
+        #expect(viewModel.pageInDocument == count - 1)
+        #expect(viewModel.progression == (Double(viewModel.bookTotal) - 1) / Double(viewModel.bookTotal))
+    }
+
+    /// The discriminator that routes a chapter to this reader, since the reading-mode picker does
+    /// not offer an ePub entry and the choice is inferred from page content as the text reader's is.
+    @Test func onlyAnArchiveEndingInEpubIsAnEpubPage() {
+        func page(zipURL: String?, imageURL: String? = "OEBPS/1.xhtml") -> Page {
+            Page(sourceId: "local", chapterId: "c", imageURL: imageURL, zipURL: zipURL)
+        }
+
+        #expect(page(zipURL: "file:///books/Book.epub").isEpubPage)
+        #expect(page(zipURL: "file:///books/Book.EPUB").isEpubPage)
+        #expect(!page(zipURL: "file:///books/Book.cbz").isEpubPage)
+        #expect(!page(zipURL: nil).isEpubPage)
+        // A text page inside a cbz stays a text page: the two are decided by different things.
+        #expect(!page(zipURL: "file:///books/Book.cbz", imageURL: "1.txt").isEpubPage)
+        #expect(page(zipURL: "file:///books/Book.cbz", imageURL: "1.txt").isTextPage)
+    }
+
+    /// A count belongs to a viewport, so a resize drops every count and starts again.
+    @Test func aViewportChangeRecountsTheBook() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+        let narrow = viewModel.bookTotal
+
+        viewModel.renderer?.webView.frame = CGRect(origin: .zero, size: CGSize(width: 640, height: 480))
+        viewModel.viewportChanged(to: CGSize(width: 640, height: 480))
+        #expect(!viewModel.isMeasured, "the counts belonging to the old size must be dropped")
+
+        try await waitUntilMeasured(viewModel)
+        #expect(viewModel.bookTotal < narrow, "a wider viewport holds more text per page")
+    }
+
+    /// A layout pass arriving before the book is opened starts nothing.
+    ///
+    /// A host places the web view and lays it out before opening the book in it, which is a size
+    /// change and reaches `viewportChanged`. Counting the spine from there measures a book that has
+    /// not been opened, and `open` then starts a second pass across the same renderer while the
+    /// first is still walking it. See `aPassWaitsForTheOneItSupersededBeforeMeasuring` for what the
+    /// overlap does to the counts.
+    @Test func aViewportChangeBeforeOpeningCountsNothing() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        viewModel.viewportChanged(to: Self.viewport)
+
+        // Long enough for a pass to have counted the fixture's four documents several times over.
+        try await Task.sleep(nanoseconds: 2_000_000_000)
+
+        #expect(viewModel.bookTotal == 0, "a book that has not been opened was measured")
+        #expect(!viewModel.isMeasured)
+    }
+
+    /// A page asked for before the index can place it is held until it can be.
+    ///
+    /// Only the opening document is counted by the time a book is open, so a reader resuming
+    /// anywhere else asks for a page the index cannot resolve. Dropping the request leaves them at
+    /// page 1, and closing the reader then writes that 1 over the position they were resuming to.
+    @Test func aResumeBeyondTheCountedDocumentsIsHeldUntilItCanBePlaced() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        // What page the last document starts at is a property of the fixture at this size, so it is
+        // measured rather than assumed.
+        let target: Int
+        do {
+            let measured = try makeViewModel(url)
+            try await start(measured)
+            defer { measured.renderer?.webView.stopLoading() }
+            try await waitUntilMeasured(measured)
+            target = try #require(measured.index.startOfDocument(at: 3))
+        }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        // The pass checks this before each load and has not reached its first one yet, so nothing
+        // beyond the opening document is counted while it is held.
+        viewModel.pauseMeasuring()
+
+        await viewModel.showBookPage(target)
+        #expect(viewModel.pendingBookPage == target, "the request was dropped rather than held")
+        #expect(!viewModel.canShowPendingBookPage)
+        #expect(viewModel.currentDocument == 0, "the reader moved to a page the index cannot place")
+
+        viewModel.resumeMeasuring()
+        try await waitUntilMeasured(viewModel)
+
+        #expect(viewModel.canShowPendingBookPage)
+        await viewModel.showPendingBookPage()
+        #expect(viewModel.currentDocument == 3)
+        #expect(viewModel.bookPage == target)
+        #expect(viewModel.pendingBookPage == nil)
+    }
+
+    /// A reader who turns a page has taken over from the resume, so it is abandoned.
+    @Test func aPageTurnAbandonsAHeldResume() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        viewModel.pauseMeasuring()
+
+        // Beyond anything the fixture holds, so it stays unplaceable for the rest of the test.
+        await viewModel.showBookPage(10_000)
+        #expect(viewModel.pendingBookPage == 10_000)
+
+        await viewModel.moveForward()
+        #expect(viewModel.pendingBookPage == nil)
+        #expect(!viewModel.canShowPendingBookPage)
+    }
+
+    // MARK: - Table of contents
+
+    private static func entry(document: Int, fragment: String? = nil) -> EpubTableOfContents.Entry {
+        EpubTableOfContents.Entry(id: 0, title: "Somewhere", document: document, fragment: fragment, depth: 0)
+    }
+
+    @Test func showingAnEntryMovesToItsDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showEntry(Self.entry(document: 2))
+
+        #expect(viewModel.currentDocument == 2)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    /// A fragment the document does not contain leaves the reader at the head of it, which is where
+    /// the entry points even when the element it names has gone.
+    @Test func anEntryWhoseAnchorIsMissingLandsOnItsDocument() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showEntry(Self.entry(document: 3, fragment: "nowhere"))
+
+        #expect(viewModel.currentDocument == 3)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    @Test func followingALinkMovesToTheDocumentItAddresses() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showLocation(path: viewModel.spinePaths[2], fragment: nil)
+
+        #expect(viewModel.currentDocument == 2)
+    }
+
+    /// A link into a document the spine does not offer has no page in the book, so the reader stays
+    /// where they are rather than being taken somewhere arbitrary.
+    @Test func aLinkOutsideTheSpineLeavesTheReaderWhereTheyAre() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+
+        await viewModel.showLocation(path: "OEBPS/not-in-the-spine.xhtml", fragment: nil)
+
+        #expect(viewModel.currentDocument == 0)
+        #expect(viewModel.pageInDocument == 0)
+    }
+
+    /// The return offer survives the book being laid out again, which is the whole reason it is
+    /// anchored on a fraction rather than on the page number it was made at.
+    ///
+    /// Driven through the view model rather than the button: what has to hold is that the same
+    /// fraction still names the same place once every page boundary has moved.
+    @Test func aFractionNamesTheSamePlaceAcrossARelayout() async throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+
+        let total = viewModel.bookTotal
+        try #require(total > 4, "the fixture must be long enough for a fraction to be meaningful")
+        await viewModel.showBookPage(total / 2)
+        let page = try #require(viewModel.bookPage)
+        let fraction = Double(page) / Double(total - 1)
+
+        // The same width the reader would be at after a rotation, which re-fragments every document.
+        viewModel.viewportChanged(to: CGSize(width: Self.viewport.height, height: Self.viewport.width))
+        try await waitUntilMeasured(viewModel)
+
+        let resolved = Int((fraction * Double(viewModel.bookTotal - 1)).rounded())
+        #expect(viewModel.bookTotal != total, "the relayout must actually have moved the boundaries")
+        #expect(resolved >= 0 && resolved < viewModel.bookTotal)
+        await viewModel.showBookPage(resolved)
+        #expect(viewModel.bookPage == resolved)
+    }
+
+    /// One document that cannot be laid out does not take the rest of the book with it.
+    ///
+    /// `EpubPageIndex` answers nothing about a position that sits after an unmeasured document, so
+    /// leaving the failure unrecorded froze the toolbar at the last good page for the remainder of
+    /// the book, withheld `progression` for good, and left `isMeasured` false, which is what gates
+    /// the host marking the chapter read. A document that failed still occupies a place, so it is
+    /// counted as one page rather than left unknown.
+    @Test func anUnreadableDocumentDoesNotFreezeTheRestOfTheBook() async throws {
+        let book = try EpubFixture.makeBook(documents: [6, 25, 8], omitting: [1])
+        defer { EpubFixture.remove(book.url) }
+
+        let viewModel = try makeViewModel(book.url)
+        try await start(viewModel)
+        defer { viewModel.renderer?.webView.stopLoading() }
+        try await waitUntilMeasured(viewModel)
+
+        #expect(viewModel.unmeasurable == [book.spinePaths[1]], "the failure was not reported")
+        #expect(viewModel.index.pageCount(forDocumentAt: 1) == 1)
+        // Everything the reader asks about a position past the failure answers again.
+        #expect(viewModel.index.startOfDocument(at: 2) != nil)
+        #expect(viewModel.progression != nil)
+    }
+
+    /// A book with no contents offers none, rather than one entry per spine document.
+    @Test func aBookWithoutATocHasNoContents() throws {
+        let url = try Self.makeBook()
+        defer { EpubFixture.remove(url) }
+
+        let viewModel = try makeViewModel(url)
+
+        #expect(viewModel.toc.isEmpty)
+    }
+}

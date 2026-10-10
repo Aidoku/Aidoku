@@ -41,6 +41,8 @@ extension Error {
             NSLocalizedString("DECODING_ERROR")
         } else if self is URLError {
             NSLocalizedString("NETWORK_ERROR")
+        } else if let description = (self as? LocalizedError)?.errorDescription {
+            description
         } else {
             NSLocalizedString("UNKNOWN_ERROR")
         }

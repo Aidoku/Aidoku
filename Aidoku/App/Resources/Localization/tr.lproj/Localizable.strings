@@ -428,7 +428,7 @@
 "IMPORT" = "İçe aktar";
 "IMPORT_FILE" = "Dosyayı içeriye aktar";
 "LOCAL_FILE_IMPORT" = "Yerel dosyaları içeriye aktar";
-"LOCAL_FILE_IMPORT_TEXT" = "Görüntüleri içeren bir CBZ veya ZIP dosyasını okumak için içe aktarın.";
+"LOCAL_FILE_IMPORT_TEXT" = "Görüntüleri içeren bir CBZ, ePub veya ZIP dosyasını okumak için içe aktarın.";
 "%i_SERIES" = "%i seriler";
 "CONTENT_RATING" = "İçerik puanı";
 "SAFE" = "Güvenli";

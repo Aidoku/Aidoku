@@ -1,0 +1,159 @@
+/*!
+ * Readium CSS v.2.0.5
+ * Copyright (c) 2017–2026. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ * Core maintainer: Jiminy Panoz <jiminy.panoz@edrlab.org> 
+ * Contributors: 
+ * Daniel Weck
+ * Hadrien Gardeur
+ * Innovimax
+ * L. Le Meur
+ * Mickaël Menu
+ * k_taka
+ */
+
+@namespace url("http://www.w3.org/1999/xhtml");
+
+@namespace epub url("http://www.idpf.org/2007/ops");
+
+@namespace m url("http://www.w3.org/1998/Math/MathML");
+
+@namespace svg url("http://www.w3.org/2000/svg");
+
+:root{
+  --RS__compFontFamily:var(--RS__baseFontFamily);
+  --RS__codeFontFamily:var(--RS__monospaceTf);
+
+  --RS__typeScale:1.125;
+  --RS__baseFontSize:100%;
+
+  --RS__flowSpacing:1.5rem;
+  --RS__paraSpacing:0;
+  --RS__paraIndent:1em;
+
+  --RS__linkColor:#0000EE;
+  --RS__visitedColor:#551A8B;
+
+  --RS__primaryColor:;
+  --RS__secondaryColor:;
+}
+
+body{
+  font-size:var(--RS__baseFontSize);
+}
+
+h1, h2, h3, h4, h5, h6{
+  font-family:var(--RS__compFontFamily);
+}
+
+blockquote, figure, p, pre,
+aside, footer, form, hr{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:var(--RS__flowSpacing);
+}
+
+p{
+  margin-top:var(--RS__paraSpacing);
+  margin-bottom:var(--RS__paraSpacing);
+  text-indent:var(--RS__paraIndent);
+}
+
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p,
+hr + p{
+  text-indent:0;
+}
+
+pre{
+  font-family:var(--RS__codeFontFamily);
+}
+
+code, kbd, samp, tt{
+  font-family:var(--RS__codeFontFamily);
+}
+
+sub, sup{
+  position:relative;
+  font-size:67.5%;
+  line-height:1;
+}
+
+sub{
+  bottom:-0.2ex;
+}
+
+sup{
+  bottom:0;
+}
+
+:link{
+  color:var(--RS__linkColor);
+}
+
+:visited{
+  color:var(--RS__visitedColor);
+}
+
+h1{
+  margin-top:calc(var(--RS__flowSpacing) * 2);
+  margin-bottom:calc(var(--RS__flowSpacing) * 2);
+  font-size:calc(((1em * var(--RS__typeScale)) * var(--RS__typeScale)) * var(--RS__typeScale));
+}
+
+h2{
+  margin-top:calc(var(--RS__flowSpacing) * 2);
+  margin-bottom:var(--RS__flowSpacing);
+  font-size:calc((1em * var(--RS__typeScale)) * var(--RS__typeScale));
+}
+
+h3{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:var(--RS__flowSpacing);
+  font-size:calc(1em * var(--RS__typeScale));
+}
+
+h4{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:var(--RS__flowSpacing);
+  font-size:1em;
+}
+
+h5{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:var(--RS__flowSpacing);
+  font-size:1em;
+  font-variant:small-caps;
+}
+
+h6{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:0;
+  font-size:1em;
+  text-transform:lowercase;
+  font-variant:small-caps;
+}
+
+dl, ol, ul{
+  margin-top:var(--RS__flowSpacing);
+  margin-bottom:var(--RS__flowSpacing);
+}
+
+table{
+  margin:var(--RS__flowSpacing) 0;
+  border:1px solid currentcolor;
+  border-collapse:collapse;
+  empty-cells:show;
+}
+
+thead, tbody, tfoot, table > tr{
+  vertical-align:top;
+}
+
+th{
+  text-align:left;
+}
+
+th, td{
+  padding:4px;
+  border:1px solid currentcolor;
+}

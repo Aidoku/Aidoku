@@ -1,0 +1,526 @@
+/*!
+ * Readium CSS v.2.0.5
+ * Copyright (c) 2017–2026. Readium Foundation. All rights reserved.
+ * Use of this source code is governed by a BSD-style license which is detailed in the
+ * LICENSE file present in the project repository where this source code is maintained.
+ * Core maintainer: Jiminy Panoz <jiminy.panoz@edrlab.org> 
+ * Contributors: 
+ * Daniel Weck
+ * Hadrien Gardeur
+ * Innovimax
+ * L. Le Meur
+ * Mickaël Menu
+ * k_taka
+ */
+
+@namespace url("http://www.w3.org/1999/xhtml");
+
+@namespace epub url("http://www.idpf.org/2007/ops");
+
+@namespace m url("http://www.w3.org/1998/Math/MathML");
+
+@namespace svg url("http://www.w3.org/2000/svg");
+
+@-ms-viewport{
+  width:device-width;
+}
+
+@viewport{
+  width:device-width;
+  zoom:1;
+}
+
+:root{
+
+  --RS__sans-serif-ja-v:'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ W3', 'YuGothic', 'Yu Gothic Medium', 'BIZ UDGothic', 'Yu Gothic', 'ＭＳゴシック', 'MS Gothic', sans-serif;
+
+  --RS__serif-ja-v:'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'YuMincho', 'BIZ UDMincho', 'Yu Mincho', 'ＭＳ明朝', 'MS Mincho', serif;
+
+  --RS__sans-serif-ja:'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ W3', 'YuGothic', 'Yu Gothic Medium', 'BIZ UDPGothic', 'Yu Gothic', 'ＭＳ Ｐゴシック', 'MS PGothic', sans-serif;
+
+  --RS__serif-ja:'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'YuMincho', 'BIZ UDPMincho', 'Yu Mincho', 'ＭＳ Ｐ明朝', 'MS PMincho', serif;
+
+  --RS__monospaceTf:ui-monospace, 'Andale Mono', 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+
+  --RS__humanistTf:Seravek, Calibri, 'Gill Sans Nova', Roboto, Ubuntu, 'DejaVu Sans', source-sans-pro, sans-serif;
+
+  --RS__sansTf:-ui-sans-serif, -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI Variable', 'Segoe UI', Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Liberation Sans', Arial, sans-serif;
+
+  --RS__modernTf:Athelas, Constantia, Charter, 'Bitstream Charter', Cambria, 'Georgia Pro', Georgia, serif;
+
+  --RS__oldStyleTf:'Iowan Old Style', Sitka, 'Sitka Text', Palatino, 'Book Antiqua', 'URW Palladio L', P052, serif;
+
+  --RS__zh-HK-lineHeightCompensation:1.167;
+
+  --RS__zh-HK-baseFontFamily:'方體', 'PingFang HK', '方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-TW-lineHeightCompensation:1.167;
+
+  --RS__zh-TW-baseFontFamily:'方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-Hant-lineHeightCompensation:1.167;
+
+  --RS__zh-Hant-baseFontFamily:'方體', 'PingFang TC', '黑體', 'Heiti TC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK TC', sans-serif;
+
+  --RS__zh-lineHeightCompensation:1.167;
+
+  --RS__zh-baseFontFamily:'方体', 'PingFang SC', '黑体', 'Heiti SC', 'Microsoft JhengHei UI', 'Microsoft JhengHei', Roboto, Noto, 'Noto Sans CJK SC', sans-serif;
+
+  --RS__th-lineHeightCompensation:1.067;
+
+  --RS__th-baseFontFamily:Thonburi, 'Leelawadee UI', 'Cordia New', Roboto, Noto, 'Noto Sans Thai', sans-serif;
+
+  --RS__te-baseFontFamily:'Kohinoor Telugu', 'Telugu Sangam MN', 'Nirmala UI', Gautami, Roboto, Noto, 'Noto Sans Telugu', sans-serif;
+
+  --RS__ta-lineHeightCompensation:1.067;
+
+  --RS__ta-baseFontFamily:'Tamil Sangam MN', 'Nirmala UI', Latha, Roboto, Noto, 'Noto Sans Tamil', sans-serif;
+
+  --RS__si-lineHeightCompensation:1.167;
+
+  --RS__si-baseFontFamily:'Sinhala Sangam MN', 'Nirmala UI', 'Iskoola Pota', Roboto, Noto, 'Noto Sans Sinhala', sans-serif;
+
+  --RS__pa-lineHeightCompensation:1.1;
+
+  --RS__pa-baseFontFamily:'Gurmukhi MN', 'Nirmala UI', Kartika, Roboto, Noto, 'Noto Sans Gurmukhi', sans-serif;
+
+  --RS__or-lineHeightCompensation:1.167;
+
+  --RS__or-baseFontFamily:'Oriya Sangam MN', 'Nirmala UI', Kalinga, Roboto, Noto, 'Noto Sans Oriya', sans-serif;
+
+  --RS__ml-lineHeightCompensation:1.067;
+
+  --RS__ml-baseFontFamily:'Malayalam Sangam MN', 'Nirmala UI', Kartika, Roboto, Noto, 'Noto Sans Malayalam', sans-serif;
+
+  --RS__lo-baseFontFamily:'Lao Sangam MN', 'Leelawadee UI', 'Lao UI', Roboto, Noto, 'Noto Sans Lao', sans-serif;
+
+  --RS__ko-lineHeightCompensation:1.167;
+
+  --RS__ko-baseFontFamily:'Nanum Gothic', 'Apple SD Gothic Neo', 'Malgun Gothic', Roboto, Noto, 'Noto Sans CJK KR', sans-serif;
+
+  --RS__kn-lineHeightCompensation:1.1;
+
+  --RS__kn-baseFontFamily:'Kannada Sangam MN', 'Nirmala UI', Tunga, Roboto, Noto, 'Noto Sans Kannada', sans-serif;
+
+  --RS__km-lineHeightCompensation:1.067;
+
+  --RS__km-baseFontFamily:'Khmer Sangam MN', 'Leelawadee UI', 'Khmer UI', Roboto, Noto, 'Noto Sans Khmer', sans-serif;
+
+  --RS__ja-lineHeightCompensation:1.167;
+
+  --RS__ja-baseFontFamily:YuGothic, 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo UI', 'MS Gothic', Roboto, Noto, 'Noto Sans CJK JP', sans-serif;
+
+  --RS__iu-baseFontFamily:'Euphemia UCAS', Euphemia, Roboto, Noto, 'Noto Sans Canadian Aboriginal', sans-serif;
+
+  --RS__hy-baseFontFamily:Mshtakan, Sylfaen, Roboto, Noto, 'Noto Serif Armenian', serif;
+
+  --RS__hi-lineHeightCompensation:1.1;
+
+  --RS__hi-baseFontFamily:'Kohinoor Devanagari', 'Devanagari Sangam MN', Kokila, 'Nirmala UI', Roboto, Noto, 'Noto Sans Devanagari', sans-serif;
+
+  --RS__he-lineHeightCompensation:1.1;
+
+  --RS__he-baseFontFamily:'New Peninim MT', 'Arial Hebrew', Gisha, 'Times New Roman', Roboto, Noto, 'Noto Sans Hebrew', sans-serif;
+
+  --RS__gu-lineHeightCompensation:1.167;
+
+  --RS__gu-baseFontFamily:'Gujarati Sangam MN', 'Nirmala UI', Shruti, Roboto, Noto, 'Noto Sans Gujarati', sans-serif;
+
+  --RS__fa-baseFontFamily:'Geeza Pro', 'Arabic Typesetting', Roboto, Noto, 'Noto Naskh Arabic', 'Times New Roman', serif;
+
+  --RS__chr-lineHeightCompensation:1.167;
+
+  --RS__chr-baseFontFamily:'Plantagenet Cherokee', Roboto, Noto, 'Noto Sans Cherokee';
+
+  --RS__bo-baseFontFamily:Kailasa, 'Microsoft Himalaya', Roboto, Noto, 'Noto Sans Tibetan', sans-serif;
+
+  --RS__bn-lineHeightCompensation:1.067;
+
+  --RS__bn-baseFontFamily:'Kohinoor Bangla', 'Bangla Sangam MN', Vrinda, Roboto, Noto, 'Noto Sans Bengali', sans-serif;
+
+  --RS__ar-baseFontFamily:'Geeza Pro', 'Arabic Typesetting', Roboto, Noto, 'Noto Naskh Arabic', 'Times New Roman', serif;
+
+  --RS__am-lineHeightCompensation:1.167;
+
+  --RS__am-baseFontFamily:Kefa, Nyala, Roboto, Noto, 'Noto Sans Ethiopic', serif;
+
+  --RS__latin-lineHeightCompensation:1;
+
+  --RS__latin-baseFontFamily:var(--RS__oldStyleTf);
+  --RS__baseFontFamily:var(--RS__latin-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__latin-lineHeightCompensation);
+  --RS__baseLineHeight:calc(1.5 * var(--RS__lineHeightCompensation));
+
+  --RS__selectionTextColor:inherit;
+
+  --RS__selectionBackgroundColor:#b4d8fe;
+
+  --RS__visitedColor:#551A8B;
+
+  --RS__linkColor:#0000EE;
+
+  --RS__textColor:#121212;
+
+  --RS__backgroundColor:#FFFFFF;
+  color:var(--RS__textColor) !important;
+
+  background-color:var(--RS__backgroundColor) !important;
+}
+
+::-moz-selection{
+  color:var(--RS__selectionTextColor);
+  background-color:var(--RS__selectionBackgroundColor);
+}
+
+::selection{
+  color:var(--RS__selectionTextColor);
+  background-color:var(--RS__selectionBackgroundColor);
+}
+
+html{
+  font-family:var(--RS__baseFontFamily);
+  line-height:1.6;
+  line-height:var(--RS__baseLineHeight);
+  text-rendering:optimizelegibility;
+}
+
+h1, h2, h3{
+  line-height:normal;
+}
+
+:lang(ja),
+:lang(zh),
+:lang(ko){
+  word-wrap:break-word;
+  -webkit-line-break:strict;
+  -epub-line-break:strict;
+  line-break:strict;
+}
+
+math{
+  font-family:"Latin Modern Math", "STIX Two Math", "XITS Math", "STIX Math", "Libertinus Math", "TeX Gyre Termes Math", "TeX Gyre Bonum Math", "TeX Gyre Schola", "DejaVu Math TeX Gyre", "TeX Gyre Pagella Math", "Asana Math", "Cambria Math", "Lucida Bright Math", "Minion Math", STIXGeneral, STIXSizeOneSym, Symbol, "Times New Roman", serif;
+}
+
+:lang(am){
+  --RS__baseFontFamily:var(--RS__am-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__am-lineHeightCompensation);
+}
+
+:lang(ar){
+  --RS__baseFontFamily:var(--RS__ar-baseFontFamily);
+}
+
+:lang(bn){
+  --RS__baseFontFamily:var(--RS__bn-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__bn-lineHeightCompensation);
+}
+
+:lang(bo){
+  --RS__baseFontFamily:var(--RS__bo-baseFontFamily);
+}
+
+:lang(chr){
+  --RS__baseFontFamily:var(--RS__chr-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__chr-lineHeightCompensation);
+}
+
+:lang(fa){
+  --RS__baseFontFamily:var(--RS__fa-baseFontFamily);
+}
+
+:lang(gu){
+  --RS__baseFontFamily:var(--RS__gu-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__gu-lineHeightCompensation);
+}
+
+:lang(he){
+  --RS__baseFontFamily:var(--RS__he-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__he-lineHeightCompensation);
+}
+
+:lang(hi){
+  --RS__baseFontFamily:var(--RS__hi-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__hi-lineHeightCompensation);
+}
+
+:lang(hy){
+  --RS__baseFontFamily:var(--RS__hy-baseFontFamily);
+}
+
+:lang(iu){
+  --RS__baseFontFamily:var(--RS__iu-baseFontFamily);
+}
+
+:lang(ja){
+  --RS__baseFontFamily:var(--RS__ja-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ja-lineHeightCompensation);
+}
+
+:lang(km){
+  --RS__baseFontFamily:var(--RS__km-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__km-lineHeightCompensation);
+}
+
+:lang(kn){
+  --RS__baseFontFamily:var(--RS__kn-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__kn-lineHeightCompensation);
+}
+
+:lang(ko){
+  --RS__baseFontFamily:var(--RS__ko-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ko-lineHeightCompensation);
+}
+
+:lang(lo){
+  --RS__baseFontFamily:var(--RS__lo-baseFontFamily);
+}
+
+:lang(ml){
+  --RS__baseFontFamily:var(--RS__ml-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ml-lineHeightCompensation);
+}
+
+:lang(or){
+  --RS__baseFontFamily:var(--RS__or-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__or-lineHeightCompensation);
+}
+
+:lang(pa){
+  --RS__baseFontFamily:var(--RS__pa-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__pa-lineHeightCompensation);
+}
+
+:lang(si){
+  --RS__baseFontFamily:var(--RS__si-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__si-lineHeightCompensation);
+}
+
+:lang(ta){
+  --RS__baseFontFamily:var(--RS__ta-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__ta-lineHeightCompensation);
+}
+
+:lang(te){
+  --RS__baseFontFamily:var(--RS__te-baseFontFamily);
+}
+
+:lang(th){
+  --RS__baseFontFamily:var(--RS__th-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__th-lineHeightCompensation);
+}
+
+:lang(zh){
+  --RS__baseFontFamily:var(--RS__zh-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-lineHeightCompensation);
+}
+
+:lang(zh-Hant){
+  --RS__baseFontFamily:var(--RS__zh-Hant-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-Hant-lineHeightCompensation);
+}
+
+:lang(zh-TW){
+  --RS__baseFontFamily:var(--RS__zh-TW-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-TW-lineHeightCompensation);
+}
+
+:lang(zh-HK){
+  --RS__baseFontFamily:var(--RS__zh-HK-baseFontFamily);
+  --RS__lineHeightCompensation:var(--RS__zh-HK-lineHeightCompensation);
+}
+
+body{
+  widows:2;
+  orphans:2;
+}
+
+figcaption, th, td{
+  widows:1;
+  orphans:1;
+}
+
+h2, h3, h4, h5, h6, dt,
+hr, caption{
+  -webkit-column-break-after:avoid;
+  page-break-after:avoid;
+  break-after:avoid;
+}
+
+h1, h2, h3, h4, h5, h6, dt,
+figure, tr{
+  -webkit-column-break-inside:avoid;
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+
+body{
+  -webkit-hyphenate-character:"\002D";
+  -moz-hyphenate-character:"\002D";
+  -ms-hyphenate-character:"\002D";
+  hyphenate-character:"\002D";
+  -webkit-hyphenate-limit-lines:3;
+  -ms-hyphenate-limit-lines:3;
+  hyphenate-limit-lines:3;
+}
+
+h1, h2, h3, h4, h5, h6, dt,
+figcaption, pre, caption, address,
+center, code, var{
+  -ms-hyphens:none;
+  -moz-hyphens:none;
+  -webkit-hyphens:none;
+  -epub-hyphens:none;
+  hyphens:none;
+}
+
+body{
+  font-variant-numeric:oldstyle-nums proportional-nums;
+}
+
+:lang(ja) body,
+:lang(zh) body,
+:lang(ko) body{
+  font-variant-numeric:lining-nums proportional-nums;
+}
+
+h1, h2, h3, h4, h5, h6, dt{
+  font-variant-numeric:lining-nums proportional-nums;
+}
+
+table{
+  font-variant-numeric:lining-nums tabular-nums;
+}
+
+code, var{
+  font-variant-ligatures:none;
+  font-variant-numeric:lining-nums tabular-nums slashed-zero;
+}
+
+rt{
+  font-variant-east-asian:ruby;
+}
+
+:lang(ar){
+  font-variant-ligatures:common-ligatures;
+}
+
+:lang(ko){
+  font-kerning:normal;
+}
+
+hr{
+  color:inherit;
+  border-color:currentcolor;
+}
+
+table, th, td{
+  border-color:currentcolor;
+}
+
+figure, blockquote{
+  margin:1em 5%;
+}
+
+ul, ol{
+  padding-left:5%;
+}
+
+dd{
+  margin-left:5%;
+}
+
+pre{
+  white-space:pre-wrap;
+  -ms-tab-size:2;
+  -moz-tab-size:2;
+  -webkit-tab-size:2;
+  tab-size:2;
+}
+
+abbr[title], acronym[title]{
+  text-decoration:dotted underline;
+}
+
+nobr wbr{
+  white-space:normal;
+}
+
+ruby > rt, ruby > rp{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+}
+
+*:lang(ja):not(:lang(ja-Latn)):not(:lang(ja-Cyrl)),
+*:lang(zh):not(:lang(zh-Latn)):not(:lang(zh-Cyrl)),
+*:lang(ko):not(:lang(ko-Latn)):not(:lang(ko-Cyrl)),
+:lang(ja):not(:lang(ja-Latn)):not(:lang(ja-Cyrl)) cite, 
+:lang(ja):not(:lang(ja-Latn)):not(:lang(ja-Cyrl)) dfn, 
+:lang(ja):not(:lang(ja-Latn)):not(:lang(ja-Cyrl)) em, 
+:lang(ja):not(:lang(ja-Latn)):not(:lang(ja-Cyrl)) i,
+:lang(zh):not(:lang(zh-Latn)):not(:lang(zh-Cyrl)) cite, 
+:lang(zh):not(:lang(zh-Latn)):not(:lang(zh-Cyrl)) dfn, 
+:lang(zh):not(:lang(zh-Latn)):not(:lang(zh-Cyrl)) em, 
+:lang(zh):not(:lang(zh-Latn)):not(:lang(zh-Cyrl)) i,
+:lang(ko):not(:lang(ko-Latn)):not(:lang(ko-Cyrl)) cite, 
+:lang(ko):not(:lang(ko-Latn)):not(:lang(ko-Cyrl)) dfn, 
+:lang(ko):not(:lang(ko-Latn)):not(:lang(ko-Cyrl)) em, 
+:lang(ko):not(:lang(ko-Latn)):not(:lang(ko-Cyrl)) i{
+  font-style:normal;
+}
+
+:lang(ja) a,
+:lang(zh) a,
+:lang(ko) a{
+  text-decoration:none;
+}
+
+:root{
+  --RS__maxMediaWidth:100%;
+  --RS__maxMediaHeight:95vh;
+  --RS__boxSizingMedia:border-box;
+  --RS__boxSizingTable:border-box;
+}
+
+a, a span, span a, h1, h2, h3, h4, h5, h6{
+  word-wrap:break-word;
+}
+
+div{
+  max-width:var(--RS__maxMediaWidth);
+}
+
+img, svg|svg, video{
+  object-fit:contain;
+
+  width:auto;
+  height:auto;
+  max-width:var(--RS__maxMediaWidth);
+  max-height:var(--RS__maxMediaHeight) !important;
+  box-sizing:var(--RS__boxSizingMedia);
+  -webkit-column-break-inside:avoid;
+  page-break-inside:avoid;
+  break-inside:avoid;
+}
+
+@supports (zoom: 1) and (not ((-webkit-column-axis: horizontal) and (-webkit-column-progression: normal))){
+
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] img,
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] svg|svg,
+  :root[style*="readium-experimentalZoom-on"]:not([style*="readium-deprecatedFontSize-on"]):not([style*="readium-iOSPatch-on"])[style*="--USER__fontSize"] video{
+    zoom:calc(100% / var(--USER__fontSize));
+  }
+}
+
+audio{
+    max-width:100%;
+    -webkit-column-break-inside:avoid;
+    page-break-inside:avoid;
+    break-inside:avoid;
+  }
+
+table{
+  max-width:var(--RS__maxMediaWidth);
+  box-sizing:var(--RS__boxSizingTable);
+}

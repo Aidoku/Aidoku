@@ -327,7 +327,7 @@
 "IMPORT" = "Impor";
 "IMPORT_FILE" = "Impor Berkas";
 "LOCAL_FILE_IMPORT" = "Impor Berkas Lokal";
-"LOCAL_FILE_IMPORT_TEXT" = "Impor file CBZ atau ZIP yang berisi gambar untuk dibaca.";
+"LOCAL_FILE_IMPORT_TEXT" = "Impor file CBZ, ePub, atau ZIP yang berisi gambar untuk dibaca.";
 "CHAPTER_TITLE" = "Judul Bab";
 "SERIES_TITLE" = "Judul Seri";
 "DESCRIPTION" = "Deskripsi";
