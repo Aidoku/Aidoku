@@ -218,7 +218,9 @@ actor BackupManager {
             else {
                 continue
             }
-            if
+            if let data = value as? Data {
+                convertedSettings[key] = .data(data)
+            } else if
                 let number = value as? NSNumber,
                 CFGetTypeID(number) == CFBooleanGetTypeID()
             {

@@ -16,6 +16,7 @@ enum JSONAnyType: Int {
     case object = 6
     case double = 7
     case intArray = 8
+    case data = 9
 }
 
 struct JSONAnyValue: Hashable, Sendable {
@@ -28,6 +29,7 @@ struct JSONAnyValue: Hashable, Sendable {
     var intArrayValue: [Int]?
     var stringArrayValue: [String]?
     var objectValue: [String: JSONAnyValue]?
+    var dataValue: Data?
 
     func toRaw() -> Any? {
         switch type {
@@ -39,95 +41,60 @@ struct JSONAnyValue: Hashable, Sendable {
             case .object: return objectValue?.mapValues { $0.toRaw() }
             case .double: return doubleValue
             case .intArray: return intArrayValue
+            case .data: return dataValue
         }
     }
 }
 
 extension JSONAnyValue: Codable {
+    private struct EncodedData: Codable {
+        let aidokuData: Data
+    }
+
     init(from decoder: Decoder) throws {
         let container =  try decoder.singleValueContainer()
 
-        if let bool = try? container.decode(Bool.self) {
+        dataValue = nil
+        boolValue = nil
+        intValue = nil
+        doubleValue = nil
+        stringValue = nil
+        intArrayValue = nil
+        stringArrayValue = nil
+        objectValue = nil
+
+        if let data = try? container.decode(EncodedData.self) {
+            type = .data
+            dataValue = data.aidokuData
+        } else if let bool = try? container.decode(Bool.self) {
             type = .bool
             boolValue = bool
-            intValue = nil
-            doubleValue = nil
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         } else if let int = try? container.decode(Int.self) {
             type = .int
-            boolValue = nil
             intValue = int
             doubleValue = Double(int)
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         } else if let float = try? container.decode(Float.self) {
             type = .double
-            boolValue = nil
             intValue = Int(float)
             doubleValue = Double(float)
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         } else if let double = try? container.decode(Double.self) {
             type = .double
-            boolValue = nil
             intValue = Int(double)
             doubleValue = double
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         } else if let string = try? container.decode(String.self) {
             type = .string
-            boolValue = nil
-            intValue = nil
-            doubleValue = nil
             stringValue = string
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         } else if let ints = try? container.decode([Int].self) {
             type = .intArray
-            boolValue = nil
-            intValue = nil
-            doubleValue = nil
-            stringValue = nil
             intArrayValue = ints
-            stringArrayValue = nil
-            objectValue = nil
         } else if let strings = try? container.decode([String].self) {
             type = .array
-            boolValue = nil
-            intValue = nil
-            doubleValue = nil
-            stringValue = nil
-            intArrayValue = nil
             stringArrayValue = strings
-            objectValue = nil
         } else if let object = try? container.decode([String: JSONAnyValue].self) {
             type = .object
-            boolValue = nil
-            intValue = nil
-            doubleValue = nil
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
             objectValue = object
         } else {
             type = .null
-            boolValue = nil
-            intValue = nil
-            doubleValue = nil
-            stringValue = nil
-            intArrayValue = nil
-            stringArrayValue = nil
-            objectValue = nil
         }
     }
 
@@ -142,6 +109,11 @@ extension JSONAnyValue: Codable {
             case .object: try container.encode(objectValue)
             case .double: try container.encode(doubleValue)
             case .intArray: try container.encode(intArrayValue)
+            case .data:
+                guard let dataValue else {
+                    throw EncodingError.invalidValue(self, .init(codingPath: encoder.codingPath, debugDescription: "Missing data value"))
+                }
+                try container.encode(EncodedData(aidokuData: dataValue))
         }
     }
 }
@@ -173,6 +145,10 @@ extension JSONAnyValue {
 
     static func intArray(_ value: [Int]) -> JSONAnyValue {
         .init(type: .intArray, intArrayValue: value)
+    }
+
+    static func data(_ value: Data) -> JSONAnyValue {
+        .init(type: .data, dataValue: value)
     }
 
     static func object(_ value: [String: JSONAnyValue]) -> JSONAnyValue {
