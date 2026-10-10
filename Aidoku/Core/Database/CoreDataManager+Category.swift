@@ -163,6 +163,13 @@ extension CoreDataManager {
         }
     }
 
+    func addCategoriesToManga(mangaId: MangaIdentifier, categories: [CategoryObject], context: NSManagedObjectContext) {
+        guard let libraryObject = getLibraryManga(mangaId: mangaId, context: context) else { return }
+        for categoryObject in categories {
+            libraryObject.addToCategories(categoryObject)
+        }
+    }
+
     func addCategoriesToManga(mangaId: MangaIdentifier, categories: [String]) async {
         await container.performBackgroundTask { context in
             self.addCategoriesToManga(mangaId: mangaId, categories: categories, context: context)
