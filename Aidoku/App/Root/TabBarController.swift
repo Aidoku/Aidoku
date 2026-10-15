@@ -225,14 +225,14 @@ class TabBarController: UITabBarController {
 
 extension TabBarController {
     func search(for query: String) {
-        searchNavigationController?.popToRootViewController(animated: false)
-        searchController.search(for: query)
-
         if #available(iOS 26.0, *) {
             selectedTab = tabs.last
         } else {
             selectedViewController = searchNavigationController
         }
+
+        searchNavigationController?.popToRootViewController(animated: false)
+        searchController.search(for: query)
     }
 
     func showLibraryRefreshView() {
