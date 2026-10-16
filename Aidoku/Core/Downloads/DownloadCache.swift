@@ -114,6 +114,13 @@ extension DownloadCache {
 
 // MARK: Directory Provider
 extension DownloadCache {
+    // a finished chapter is a directory, a cbz, or an epub beside them
+    nonisolated static let archiveExtensions: Set<String> = ["cbz", "epub"]
+
+    nonisolated static func isChapterEntry(_ url: URL) -> Bool {
+        url.isDirectory || archiveExtensions.contains(url.pathExtension)
+    }
+
     nonisolated func directory(sourceKey: String) -> URL {
         DownloadManager.directory
             .appendingSafePathComponent(sourceKey)
@@ -130,6 +137,13 @@ extension DownloadCache {
             .appendingSafePathComponent(chapter.sourceKey)
             .appendingSafePathComponent(chapter.mangaKey)
             .appendingSafePathComponent(chapter.chapterKey)
+    }
+
+    // whichever of the directory, the cbz, or the epub a finished download left
+    nonisolated func downloadedItem(for chapter: ChapterIdentifier) -> URL? {
+        let directory = directory(for: chapter)
+        return ([directory] + Self.archiveExtensions.map { directory.appendingPathExtension($0) })
+            .first { $0.exists }
     }
 
     /// Prefix of the directory a chapter is downloaded into before it is promoted to a chapter.

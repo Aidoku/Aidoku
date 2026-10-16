@@ -48,7 +48,9 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		FB77CD38303A838B00DF3DA3 /* Aidoku */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FB77CE44303A838C00DF3DA3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Aidoku; sourceTree = "<group>"; };
+		FB77CD38303A838B00DF3DA3 /* Aidoku */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (FB77CE44303A838C00DF3DA3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (
+				"Features/Reader/Readers/Epub/readium-css",
+			); path = Aidoku; sourceTree = "<group>"; };
 		FBB44E732EC635620032EFBB /* AidokuTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AidokuTests; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
