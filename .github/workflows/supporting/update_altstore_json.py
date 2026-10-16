@@ -119,10 +119,15 @@ def update_json_file(json_file, repo):
 
     data["featuredApps"] = [bundle_id]
     app["bundleIdentifier"] = bundle_id
-    tag = latest_release["tag_name"]
-    full_version = tag.lstrip('v')
-    version = re.search(r"(\d+\.\d+(\.\d+)?)", full_version).group(1)
-    version_entry_exists = any(item["version"] == version for item in app["versions"])
+
+    # download ipa and read version/build number from it
+    download_url = asset_to_use["browser_download_url"]
+    size = asset_to_use["size"]
+    ipa_response = requests.get(download_url)
+    ipa_response.raise_for_status()
+    version, build = get_ipa_version_and_build(io.BytesIO(ipa_response.content))
+
+    version_entry_exists = any(item["version"] == version and item.get("buildVersion") == build for item in app["versions"])
     if not version_entry_exists:
         version_date = latest_release["published_at"]
         date_obj = datetime.strptime(version_date, "%Y-%m-%dT%H:%M:%SZ")
@@ -134,16 +139,6 @@ def update_json_file(json_file, repo):
             description = description.split(keypharse, 1)[1].strip()
 
         description = markdown_to_plain_text(description)
-
-        download_url = asset_to_use["browser_download_url"]
-        size = asset_to_use["size"]
-
-        # download ipa and read version/build number from it
-        ipa_response = requests.get(download_url)
-        ipa_response.raise_for_status()
-        with open("temp.ipa", "wb") as ipa_file:
-            ipa_file.write(ipa_response.content)
-        version, build = get_ipa_version_and_build("temp.ipa")
 
         version_entry = {
             "version": version,
