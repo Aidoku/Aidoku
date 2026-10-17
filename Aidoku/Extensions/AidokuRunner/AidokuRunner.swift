@@ -106,9 +106,20 @@ extension AidokuRunner.Source {
         for (key, value) in cookies {
             if key == "Cookie" {
                 var cookieString = value
-                // keep cookies in original request
+                // keep cookies in original request, skipping duplicates of jar cookies
                 if let oldCookie = request.value(forHTTPHeaderField: "Cookie") {
-                    cookieString += "; " + oldCookie
+                    let jarNames = Set(value.components(separatedBy: ";").compactMap {
+                        $0.split(separator: "=", maxSplits: 1).first?
+                            .trimmingCharacters(in: .whitespaces)
+                    })
+                    let extra = oldCookie.components(separatedBy: ";").filter {
+                        let name = $0.split(separator: "=", maxSplits: 1).first?
+                            .trimmingCharacters(in: .whitespaces) ?? ""
+                        return !name.isEmpty && !jarNames.contains(name)
+                    }
+                    if !extra.isEmpty {
+                        cookieString += "; " + extra.joined(separator: "; ")
+                    }
                 }
                 request.setValue(cookieString, forHTTPHeaderField: "Cookie")
             } else {

@@ -93,42 +93,81 @@ actor CloudflareHandler: NSObject {
         try await awaitChallenge(for: request)
 
         // retry request
-        let newRequest = if let url = request.url {
+        var newRequest = if let url = request.url {
             await AidokuRunner.Source.modify(url: url, request: request)
         } else {
             request
         }
-        let (data, response) = try await URLSession.shared.data(for: newRequest)
+        var (data, response) = try await URLSession.shared.data(for: newRequest)
+
         if
-            let response = response as? HTTPURLResponse,
-            shouldHandle(response: response, data: data)
+            let httpResponse = response as? HTTPURLResponse,
+            shouldHandle(response: httpResponse, data: data)
         {
-            throw HandleError.solveFailed
+            // silent solve wasn't accepted (fingerprint mismatch); force a fresh
+            // challenge so cloudflare can escalate to an interactive verification
+            try await awaitChallenge(for: request, forceRechallenge: true)
+
+            if let url = request.url {
+                newRequest = await AidokuRunner.Source.modify(url: url, request: request)
+            }
+            (data, response) = try await URLSession.shared.data(for: newRequest)
+
+            if
+                let httpResponse = response as? HTTPURLResponse,
+                shouldHandle(response: httpResponse, data: data)
+            {
+                throw HandleError.solveFailed
+            }
         }
         return (data, response)
     }
 }
 
 extension CloudflareHandler {
-    private func completeChallenge(for request: URLRequest) async throws {
+    private func completeChallenge(for request: URLRequest, forceRechallenge: Bool = false) async throws {
         shouldTimeout = true
 
-        guard await addWebView(for: request) else { throw HandleError.missingParentView }
+        guard let challengeWebView = await addWebView(for: request) else {
+            throw HandleError.missingParentView
+        }
 
-        _ = await webView.load(request)
-
-        try await withCheckedThrowingContinuation { continuation in
-            self.finishContinuation = continuation
-
-            // timeout after 12s if bypass doesn't work
-            timeoutTask = Task {
-                try? await Task.sleep(nanoseconds: 12_000_000_000)
-                guard !Task.isCancelled else { return }
-
-                if self.shouldTimeout, finishContinuation != nil {
-                    self.finishChallenge(with: .failure(HandleError.timedOut))
+        if forceRechallenge, let host = request.url?.host?.lowercased() {
+            // remove the existing clearance so cloudflare serves a fresh
+            // challenge instead of silently passing the web view session
+            let store = WKWebsiteDataStore.default().httpCookieStore
+            for cookie in await store.allCookies() where cookie.name == "cf_clearance" {
+                let domain = cookie.domain
+                    .lowercased()
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+                if host == domain || host.hasSuffix("." + domain) {
+                    await withCheckedContinuation { continuation in
+                        store.delete(cookie) { continuation.resume() }
+                    }
                 }
             }
+        }
+
+        _ = await challengeWebView.load(request)
+
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                self.finishContinuation = continuation
+
+                // timeout after 12s if bypass doesn't work
+                timeoutTask = Task {
+                    try? await Task.sleep(nanoseconds: 12_000_000_000)
+                    guard !Task.isCancelled else { return }
+
+                    if self.shouldTimeout, finishContinuation != nil {
+                        self.finishChallenge(with: .failure(HandleError.timedOut))
+                    }
+                }
+            }
+        } catch {
+            // remove this challenge's web view (it may not be the current one anymore)
+            await MainActor.run { challengeWebView.removeFromSuperview() }
+            throw error
         }
     }
 
@@ -136,9 +175,12 @@ extension CloudflareHandler {
         guard let continuation = finishContinuation else { return }
 
         Task { @MainActor in
-            webView.removeFromSuperview()
-            popupController?.dismiss(animated: true)
+            // capture and clear the popup before dismissing so its
+            // viewDidDisappear doesn't cancel a subsequent challenge
+            let popup = popupController
             popupController = nil
+            popup?.handler = nil
+            popup?.dismiss(animated: true)
         }
 
         timeoutTask?.cancel()
@@ -160,8 +202,8 @@ extension CloudflareHandler {
 
     // add hidden web view to a visible view controller
     @MainActor
-    private func addWebView(for request: URLRequest) async -> Bool {
-        guard let parentView else { return false }
+    private func addWebView(for request: URLRequest) async -> WKWebView? {
+        guard let parentView else { return nil }
 
         // match web view rendering mode with user agent
         let userAgent = request.value(forHTTPHeaderField: "User-Agent")
@@ -182,10 +224,10 @@ extension CloudflareHandler {
             webView.centerYAnchor.constraint(equalTo: parentView.centerYAnchor)
         ])
 
-        return true
+        return webView
     }
 
-    private func awaitChallenge(for request: URLRequest) async throws {
+    private func awaitChallenge(for request: URLRequest, forceRechallenge: Bool = false) async throws {
         guard let key = ChallengeKey(url: request.url) else {
             throw HandleError.invalidRequest
         }
@@ -203,7 +245,7 @@ extension CloudflareHandler {
 
             do {
                 try Task.checkCancellation()
-                try await self.completeChallenge(for: request)
+                try await self.completeChallenge(for: request, forceRechallenge: forceRechallenge)
                 await self.release()
             } catch {
                 await self.release()
@@ -297,7 +339,7 @@ extension CloudflareHandler {
         // check for old (expired) clearance cookie
         let oldCookie = HTTPCookieStorage.shared.allCookies(for: url)?.first { $0.name == "cf_clearance" }
 
-        // check for clearance cookie
+        // save new clearance cookies for future requests
         let hasClearance = webViewCookies.contains { cookie in
             let domain = cookie.domain
                 .lowercased()
@@ -306,20 +348,26 @@ extension CloudflareHandler {
                 && cookie.value != oldCookie?.value
                 && (host == domain || host.hasSuffix("." + domain))
         }
-        guard hasClearance else { return }
-
-        // remove old cookie and save new cookies for future requests
-        if let oldCookie {
-            HTTPCookieStorage.shared.deleteCookie(oldCookie)
-            if let idx = webViewCookies.firstIndex(of: oldCookie) {
-                webViewCookies.remove(at: idx)
+        if hasClearance {
+            // remove old cookie and save new cookies for future requests
+            if let oldCookie {
+                HTTPCookieStorage.shared.deleteCookie(oldCookie)
+                if let idx = webViewCookies.firstIndex(of: oldCookie) {
+                    webViewCookies.remove(at: idx)
+                }
             }
+            HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
         }
-        HTTPCookieStorage.shared.setCookies(webViewCookies, for: url, mainDocumentURL: url)
 
+        // the challenge is complete once the web view lands on a non-challenge page,
+        // even if no new clearance was issued (e.g. the web view session is already
+        // trusted and cloudflare doesn't re-challenge)
         let isCaptcha = await isCaptchaPage()
         guard !isCaptcha else { return }
 
+        await MainActor.run {
+            self.popupController?.handler = nil
+        }
         await webView.removeFromSuperview()
         await self.popupController?.dismiss(animated: true)
 
@@ -350,6 +398,7 @@ extension CloudflareHandler {
             return
         }
 
+        popupController?.handler = nil
         popupController?.dismiss(animated: true)
         let popup = WebViewViewController(request: request, handler: await proxy(for: request))
         popupController = popup
@@ -373,20 +422,43 @@ extension CloudflareHandler {
     private func checkForCaptcha(for request: URLRequest) {
         guard !popupShown else { return }
         Task {
-            let found = await isCaptchaPage()
+            let found = await hasInteractiveCaptcha()
             if found {
                 await showPopup(for: request)
             }
         }
     }
 
+    // whether the web view is on a cloudflare challenge page (broad check used
+    // to decide if a challenge is still in progress)
     @MainActor
     private func isCaptchaPage() async -> Bool {
         let js = """
         (document.querySelector('input[name="cf-turnstile-response"]') !== null
             || document.getElementById('challenge-error-title') !== null
-            || document.getElementById('challenge-error-text') !== null) ? 1 : 0
-            || document.title === "Just a moment..."
+            || document.getElementById('challenge-error-text') !== null
+            || document.getElementById('challenge-stage') !== null
+            || document.querySelector('.cf-turnstile') !== null
+            || document.title === "Just a moment...") ? 1 : 0
+        """
+        let result = try? await webView.evaluateJavaScript(js)
+        guard let result = result as? Int else { return false }
+        return result == 1
+    }
+
+    // whether the challenge requires user interaction (narrow check used to
+    // decide if the popup should be shown, so silent challenges don't flash it)
+    @MainActor
+    private func hasInteractiveCaptcha() async -> Bool {
+        let js = """
+        (() => {
+            const el = document.querySelector('.cf-turnstile');
+            if (!el) return 0;
+            const iframe = el.querySelector('iframe');
+            if (!iframe) return 0;
+            const rect = iframe.getBoundingClientRect();
+            return (rect.width > 0 && rect.height > 0) ? 1 : 0;
+        })()
         """
         let result = try? await webView.evaluateJavaScript(js)
         guard let result = result as? Int else { return false }
