@@ -52,16 +52,22 @@ actor SourceManager {
 
     // queue the loading of sources and source lists
     func start() {
+        startSourcesLoadIfNeeded()
+        startSourceListsReload()
+    }
+
+    private func startSourcesLoadIfNeeded() {
+        guard loadSourcesTask == nil else { return }
         loadSourcesTask = Task {
             await reloadSources()
         }
-        startSourceListsReload()
     }
 }
 
 // MARK: Source Loading
 extension SourceManager {
     func waitForSourcesLoad() async {
+        startSourcesLoadIfNeeded()
         await loadSourcesTask?.value
     }
 
@@ -447,6 +453,8 @@ extension SourceManager {
     }
 
     func importSource(from url: URL) async -> AidokuRunner.Source? {
+        await waitForSourcesLoad()
+
         // download and unzip source aix
         guard let temporaryDirectory = FileManager.default.createTemporaryDirectory() else { return nil }
         var secured = false

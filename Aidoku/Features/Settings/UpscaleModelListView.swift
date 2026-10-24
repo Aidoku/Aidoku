@@ -141,7 +141,9 @@ struct UpscaleModelListView: View {
                         .foregroundStyle(.tint)
                 }
             } else {
-                GetButton {
+                let fileName = (model.file as NSString).lastPathComponent
+                let isInstalled = models.contains(where: { $0.file == fileName })
+                GetButton(titleKey: isInstalled ? "BUTTON_UPDATE" : "BUTTON_GET") {
                     do {
                         try await ModelManager.shared.downloadModel(model)
                         let installedModels = await ModelManager.shared.getInstalledModels()

@@ -44,6 +44,14 @@ class ZoomableCollectionView: ASDisplayNode {
         automaticallyManagesSubnodes = true
         collectionNode.backgroundColor = .clear
 
+        if let layout = layout as? VerticalContentOffsetPreservingLayout {
+            layout.onOffsetPreserved = { [weak self] offset in
+                guard let self else { return }
+                self.adjustContentSize()
+                self.scrollNode.view.contentOffset = offset
+            }
+        }
+
         // remove gesture recognizers from the collection view (in order to use scroll view's)
 //        collectionNode.view.gestureRecognizers?.forEach {
 //            collectionNode.view.removeGestureRecognizer($0)
@@ -89,7 +97,9 @@ class ZoomableCollectionView: ASDisplayNode {
                 return orig
             }
             lazy var origType = String(describing: type(of: orig))
-            if orig is _ASDisplayView || orig is GIFImageView {
+            if orig is DictionaryOverlayButton {
+                return orig
+            } else if orig is _ASDisplayView || orig is GIFImageView {
                 if lastHit.timeIntervalSinceNow <= -0.1 {
                     if !tempGestures.isEmpty {
                         tempGestures.forEach {

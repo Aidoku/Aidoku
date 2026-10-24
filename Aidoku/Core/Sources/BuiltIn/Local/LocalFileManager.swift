@@ -361,6 +361,8 @@ extension LocalFileManager {
         } else {
             chapter
         }
+        let volume = volume ?? comicInfo?.volume.map { Float($0) }
+            ?? LocalFileNameParser.getMangaVolumeNumber(from: url.lastPathComponent)
 
         let destURL: URL
 

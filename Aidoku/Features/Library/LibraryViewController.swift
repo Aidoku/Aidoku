@@ -260,6 +260,22 @@ class LibraryViewController: OldMangaCollectionViewController {
     override func observe() {
         super.observe()
 
+        registerLibraryNotifications()
+        registerDownloadsNotifications()
+        registerSettingsNotifications()
+        registerHistoryNotifications()
+
+        // lock library when moving to background
+        addObserver(forName: UIApplication.willResignActiveNotification) { [weak self] _ in
+            guard let self else { return }
+            Task { @MainActor in
+                self.locked = self.viewModel.isCategoryLocked()
+                self.updateLockState()
+            }
+        }
+    }
+
+    private func registerDownloadsNotifications() {
         let checkNavbarDownloadButton: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
@@ -301,13 +317,20 @@ class LibraryViewController: OldMangaCollectionViewController {
         }
         addObserver(forName: .downloadRemoved, using: updateDownloadCounts)
         addObserver(forName: .downloadsRemoved, using: updateDownloadCounts)
+    }
 
+    private func registerLibraryNotifications() {
         addObserver(forName: .updateLibrary) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
+                self.viewModel.reloadSettings()
                 await self.viewModel.loadLibrary()
                 self.updateEmptyStack()
                 self.updateDataSource()
+                self.updateMoreMenu()
+                if #available(iOS 26.0, *) {
+                    self.updateFilterMenuState()
+                }
             }
         }
         addObserver(forName: .updateLibraryLock) { [weak self] _ in
@@ -367,7 +390,16 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
+        addObserver(forName: .filteredChapters) { [weak self] notification in
+            guard let self, let id = notification.object as? MangaIdentifier else { return }
+            Task {
+                await self.viewModel.fetchUnreads(for: id)
+                self.updateDataSource()
+            }
+        }
+    }
 
+    private func registerSettingsNotifications() {
         addObserver(forName: AppSettings.library.pinTitles.key) { [weak self] _ in
             guard let self else { return }
             self.viewModel.pinType = self.viewModel.getPinType()
@@ -376,8 +408,6 @@ class LibraryViewController: OldMangaCollectionViewController {
                 self.updateDataSource()
             }
         }
-
-        // refresh badges
         addObserver(forName: AppSettings.library.unreadChapterBadges.key) { [weak self] _ in
             if AppSettings.library.unreadChapterBadges.get() {
                 self?.viewModel.badgeType.insert(.unread)
@@ -394,15 +424,9 @@ class LibraryViewController: OldMangaCollectionViewController {
             }
             self?.reloadItems()
         }
-        addObserver(forName: .filteredChapters) { [weak self] notification in
-            guard let self, let id = notification.object as? MangaIdentifier else { return }
-            Task {
-                await self.viewModel.fetchUnreads(for: id)
-                self.updateDataSource()
-            }
-        }
+    }
 
-        // update history
+    private func registerHistoryNotifications() {
         addObserver(forName: .updateHistory) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
@@ -439,15 +463,6 @@ class LibraryViewController: OldMangaCollectionViewController {
             Task { @MainActor in
                 await self.viewModel.mangaRead(mangaId: item.chapterId.mangaIdentifier)
                 self.updateDataSource()
-            }
-        }
-
-        // lock library when moving to background
-        addObserver(forName: UIApplication.willResignActiveNotification) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                self.locked = self.viewModel.isCategoryLocked()
-                self.updateLockState()
             }
         }
     }

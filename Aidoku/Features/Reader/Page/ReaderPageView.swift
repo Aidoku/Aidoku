@@ -46,6 +46,7 @@ class ReaderPageView: UIView {
     private var liveTextTask: Task<Void, Never>?
     private var liveTextGeneration = 0
 
+    private var needsDictionaryOverlayRender = false
     private var dictionaryAnalysisTask: Task<Void, Never>?
     private let dictionaryOverlayContainerView = DictionaryOverlayPassthroughView()
     private let dictionaryOverlayController = DictionaryOverlayController()
@@ -124,6 +125,14 @@ class ReaderPageView: UIView {
             dictionaryOverlayContainerView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
             dictionaryOverlayContainerView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor)
         ])
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        if needsDictionaryOverlayRender {
+            renderDictionaryOverlaysIfNeeded()
+        }
     }
 }
 
@@ -484,6 +493,7 @@ extension ReaderPageView {
     }
 
     private func scheduleDictionaryTextAnalysis() {
+        needsDictionaryOverlayRender = false
         clearDictionaryOverlays()
 
         if #available(iOS 18.0, *) {
@@ -521,7 +531,8 @@ extension ReaderPageView {
         guard
             #available(iOS 16.0, *),
             imageAnalaysisInteraction != nil,
-            let image = imageView.image
+            let image = imageView.image,
+            (image.cgImage?.height ?? Int(image.size.height * image.scale)) <= 8192
         else {
             return
         }
@@ -558,6 +569,12 @@ extension ReaderPageView {
     }
 
     private func renderDictionaryOverlaysIfNeeded() {
+        guard imageView.bounds.width > 0 else {
+            needsDictionaryOverlayRender = true
+            return
+        }
+
+        needsDictionaryOverlayRender = false
         clearDictionaryOverlays()
 
         guard

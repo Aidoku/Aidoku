@@ -20,6 +20,24 @@ struct ModelInfo: Codable {
     var config: [String: JSONAnyValue]?
     var file: String
     var size: Int?
+    var version: Int = 1
+
+    init(file: String) {
+        self.file = file
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decodeIfPresent(String.self, forKey: .name)
+        info = try container.decodeIfPresent(String.self, forKey: .info)
+        tags = try container.decodeIfPresent([String].self, forKey: .tags)
+        type = try container.decodeIfPresent(String.self, forKey: .type)
+        miniOS = try container.decodeIfPresent(Int.self, forKey: .miniOS)
+        config = try container.decodeIfPresent([String: JSONAnyValue].self, forKey: .config)
+        file = try container.decode(String.self, forKey: .file)
+        size = try container.decodeIfPresent(Int.self, forKey: .size)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+    }
 }
 
 actor ModelManager {
@@ -37,32 +55,39 @@ actor ModelManager {
         let fileName = (model.file as NSString).lastPathComponent
         let fileURL = try modelsDirectory().appendingPathComponent(fileName)
 
+        var metadata = model
+        metadata.file = fileName // ensure file field is just the local file name
+        metadata.size = nil
+        let metadataData = try JSONEncoder().encode(metadata)
+
         if fileName.hasSuffix(".mlpackage") {
             // download as a zip
             let tempZipURL = fileURL.appendingPathExtension("zip")
-            let (data, _) = try await URLSession.shared.data(from: url.appendingPathExtension("zip"))
-            try data.write(to: tempZipURL)
-
-            // unzip
+            let tempModelURL = fileURL.appendingPathExtension("download")
             let fm = FileManager.default
+            defer {
+                try? fm.removeItem(at: tempZipURL)
+                try? fm.removeItem(at: tempModelURL)
+            }
+            let (data, _) = try await URLSession.shared.data(from: url.appendingPathExtension("zip"))
+            try data.write(to: tempZipURL, options: .atomic)
+
+            // unzip before removing an existing installation
+            try fm.unzipItem(at: tempZipURL, to: tempModelURL)
             if fm.fileExists(atPath: fileURL.path) {
                 try fm.removeItem(at: fileURL)
             }
-            try fm.unzipItem(at: tempZipURL, to: fileURL)
-            try fm.removeItem(at: tempZipURL)
+            try fm.moveItem(at: tempModelURL, to: fileURL)
         } else {
             // download as a single file (.mlmodel)
             let (data, _) = try await URLSession.shared.data(from: url)
-            try data.write(to: fileURL)
+            try data.write(to: fileURL, options: .atomic)
         }
 
-        // save metadata
+        imageModelCache[fileName] = nil
+
         let metadataURL = try metadataURL(forModelFile: fileName)
-        var model = model
-        model.file = fileName  // ensure file field is just the local file name
-        model.size = nil
-        let metadataData = try JSONEncoder().encode(model)
-        try metadataData.write(to: metadataURL)
+        try metadataData.write(to: metadataURL, options: .atomic)
     }
 
     // remove a downloaded model from disk
@@ -145,17 +170,18 @@ actor ModelManager {
         }
     }
 
-    // get available models from the server, filtering out those already installed
+    // get new models and updates from the server
     func getAvailableModels() async -> [ModelInfo]? {
         guard
-            let modelsDir = try? modelsDirectory(),
-            let files = try? FileManager.default.contentsOfDirectory(atPath: modelsDir.path),
             let modelList = try? await fetchModelList()
         else {
             return nil
         }
 
-        let installedFiles = Set(files)
+        let installedVersions = Dictionary(
+            (await getInstalledModels()).map { ($0.file, $0.version) },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         return modelList.models.filter {
             if let miniOS = $0.miniOS, miniOS > ProcessInfo.processInfo.operatingSystemVersion.majorVersion {
@@ -163,8 +189,9 @@ actor ModelManager {
                 return false
             }
             if let type = $0.type {
+                let fileName = ($0.file as NSString).lastPathComponent
                 return Self.supportedModelTypes.contains(type)
-                    && !installedFiles.contains((($0.file as NSString).lastPathComponent))
+                    && $0.version > (installedVersions[fileName] ?? 0)
             } else {
                 return false
             }

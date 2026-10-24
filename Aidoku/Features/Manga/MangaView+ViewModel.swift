@@ -80,6 +80,16 @@ extension MangaView.ViewModel {
     }
 
     private func registerLibraryNotifications() {
+        NotificationCenter.default.publisher(for: .updateLibrary)
+            .sink { [weak self] _ in
+                Task { @MainActor in
+                    guard let self else { return }
+                    await self.loadBookmarked()
+                    await self.checkForCategories()
+                }
+            }
+            .store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: .updateMangaDetails)
             .sink { [weak self] output in
                 Task { @MainActor in
@@ -167,6 +177,7 @@ extension MangaView.ViewModel {
                 guard let self else { return }
                 Task { @MainActor in
                     await self.loadHistory()
+                    self.chapters = self.filteredChapters()
                     self.updateReadButton()
                 }
             }
@@ -320,8 +331,11 @@ extension MangaView.ViewModel {
 
 extension MangaView.ViewModel {
     func checkForCategories() async {
-        hasCategories = await CoreDataManager.shared.container.performBackgroundTask { context in
+        let hasCategories = await CoreDataManager.shared.container.performBackgroundTask { context in
             !CoreDataManager.shared.getCategoryTitles(sorted: false, context: context).isEmpty
+        }
+        if self.hasCategories != hasCategories {
+            self.hasCategories = hasCategories
         }
     }
 
@@ -600,7 +614,7 @@ extension MangaView.ViewModel {
     }
 
     private func loadDownloadStatus() async {
-        for chapter in chapters + otherDownloadedChapters {
+        for chapter in (manga.chapters ?? chapters) + otherDownloadedChapters {
             downloadStatus[chapter.key] = DownloadManager.shared.getDownloadStatus(
                 for: .init(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
             )
@@ -615,7 +629,9 @@ extension MangaView.ViewModel {
                 context: context
             )
         }
-        bookmarked = inLibrary
+        if bookmarked != inLibrary {
+            bookmarked = inLibrary
+        }
     }
 
     private func loadHistory() async {
@@ -856,7 +872,10 @@ extension MangaView.ViewModel {
         let nextChapter = getNextChapter()
         switch nextChapter {
             case .none:
-                return
+                self.nextChapter = nil
+                readingInProgress = false
+                allChaptersRead = false
+                allChaptersLocked = false
             case .allRead:
                 allChaptersRead = true
                 allChaptersLocked = false

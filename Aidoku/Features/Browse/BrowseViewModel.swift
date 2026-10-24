@@ -130,8 +130,10 @@ class BrowseViewModel {
     func loadUpdates() {
         guard let appVersionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else { return }
         let appVersion = SemanticVersion(appVersionString)
+        let installedSources = storedInstalledSources ?? installedSources
+        let pinnedSources = storedPinnedSources ?? pinnedSources
 
-        updatesSources = unfilteredExternalSources
+        let updates = unfilteredExternalSources
             .compactMap { info -> SourceInfo? in
                 // check version availability
                 if let minAppVersion = info.minAppVersion {
@@ -168,6 +170,12 @@ class BrowseViewModel {
                 }
                 return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
             }
+        if storedUpdatesSources != nil {
+            storedUpdatesSources = updates
+            search(query: query)
+        } else {
+            updatesSources = updates
+        }
     }
 
     // filter sources by search query

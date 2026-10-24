@@ -21,6 +21,7 @@ class MangaCollectionViewController: BaseCollectionViewController {
 
     struct SkeletonView: View {
         let usesListLayout: Bool
+        let containerWidth: CGFloat
 
         var body: some View {
             if usesListLayout {
@@ -28,16 +29,26 @@ class MangaCollectionViewController: BaseCollectionViewController {
                     .redacted(reason: .placeholder)
                     .shimmering()
             } else {
-                HomeGridView.placeholder
+                GeometryReader { geometry in
+                    HomeGridView.placeholder(width: containerWidth, availableWidth: geometry.size.width)
+                }
             }
         }
     }
     lazy var skeletonViewController = {
-        let hostingController = UIHostingController(rootView: SkeletonView(usesListLayout: usesListLayout))
+        let hostingController = UIHostingController(rootView: SkeletonView(usesListLayout: usesListLayout, containerWidth: 0))
         hostingController.view.backgroundColor = .clear
         hostingController.view.clipsToBounds = false
         return hostingController
     }()
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+
+        let width = collectionView.bounds.width
+        guard skeletonViewController.parent != nil, skeletonViewController.rootView.containerWidth != width else { return }
+        skeletonViewController.rootView = SkeletonView(usesListLayout: usesListLayout, containerWidth: width)
+    }
 
     override func configure() {
         super.configure()

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct GetButton: View {
+    var titleKey: String = "BUTTON_GET"
     var action: () async -> Bool
 
     enum ButtonState: Equatable {
@@ -28,7 +29,7 @@ struct GetButton: View {
         } label: {
             switch buttonState {
                 case .default:
-                    Text(NSLocalizedString("BUTTON_GET"))
+                    Text(NSLocalizedString(titleKey))
                 case .loading:
                     ProgressView()
                         .progressViewStyle(.circular)

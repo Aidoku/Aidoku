@@ -11,12 +11,11 @@ import AsyncDisplayKit
 
 class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
-    var isInsertingCellsAbove: Bool = false {
-        didSet {
-            if isInsertingCellsAbove {
-                contentSizeBeforeInsertingAbove = collectionViewContentSize
-            }
-        }
+    private(set) var isChangingCellsAbove: Bool = false
+    var onOffsetPreserved: ((CGPoint) -> Void)?
+
+    func preserveOffsetAcrossChangeAbove() {
+        isChangingCellsAbove = true
     }
 
     var spacing: CGFloat {
@@ -24,7 +23,6 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         set { minimumLineSpacing = newValue }
     }
 
-    private var contentSizeBeforeInsertingAbove: CGSize?
     private var scale: CGFloat = 1
 
     private var contentSize = CGSize.zero
@@ -33,6 +31,45 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     }
 
     private var currentAttributes: [IndexPath: UICollectionViewLayoutAttributes] = [:]
+    private var itemIdentifiers: [IndexPath: AnyHashable] = [:]
+
+    private struct ViewportAnchor {
+        let indexPath: IndexPath
+        let position: CGPoint
+    }
+
+    private var preservedViewportAnchor: ViewportAnchor?
+
+    func preserveVisiblePosition() {
+        guard let collectionView else { return }
+
+        let bounds = collectionView.bounds
+        let center = CGPoint(x: bounds.midX, y: bounds.midY)
+        guard
+            let attributes = layoutAttributesForElements(in: bounds)?
+                .filter({ $0.representedElementCategory == .cell && $0.frame.width > 0 && $0.frame.height > 0 })
+                .min(by: {
+                    let first = max($0.frame.minY - center.y, center.y - $0.frame.maxY, 0)
+                    let second = max($1.frame.minY - center.y, center.y - $1.frame.maxY, 0)
+                    return first < second
+                })
+        else {
+            preservedViewportAnchor = nil
+            return
+        }
+
+        preservedViewportAnchor = ViewportAnchor(
+            indexPath: attributes.indexPath,
+            position: CGPoint(
+                x: (center.x - attributes.frame.minX) / attributes.frame.width,
+                y: (center.y - attributes.frame.minY) / attributes.frame.height
+            )
+        )
+    }
+
+    func clearPreservedPosition() {
+        preservedViewportAnchor = nil
+    }
 
     override init() {
         super.init()
@@ -50,8 +87,17 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     override func prepare() {
         guard let collectionView else { return }
 
+        // Anchor the top visible cell using the previous layout
+        let anchor = isChangingCellsAbove ? currentAttributes.values
+            .filter { $0.frame.maxY > collectionView.contentOffset.y }
+            .min { $0.frame.minY < $1.frame.minY } : nil
+        let anchorIdentifier = anchor.flatMap { itemIdentifiers[$0.indexPath] }
+        let oldAnchorY = anchor?.frame.minY
+        isChangingCellsAbove = false
+
         // calculate collection view size
         currentAttributes = [:]
+        itemIdentifiers = [:]
 
         var origin: CGFloat = 0
         let width = collectionView.bounds.size.width
@@ -64,6 +110,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
                 let size = CGSize(width: width, height: getHeight(for: indexPath))
                 attributes.frame = CGRect(origin: CGPoint(x: 0, y: origin), size: size)
                 currentAttributes[indexPath] = attributes
+                itemIdentifiers[indexPath] = itemIdentifier(for: indexPath)
 
                 origin += attributes.frame.size.height + minimumLineSpacing
             }
@@ -99,20 +146,29 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             }
         }
 
-        // preserve offset when inserting cells above
-        if isInsertingCellsAbove {
-            if let oldContentSize = contentSizeBeforeInsertingAbove {
-                UIView.performWithoutAnimation {
-                    let newContentSize = collectionViewContentSize
-                    let contentOffsetX = collectionView.contentOffset.x + (newContentSize.width - oldContentSize.width)
-                    let contentOffsetY = collectionView.contentOffset.y + (newContentSize.height - oldContentSize.height)
-                    let newOffset = CGPoint(x: contentOffsetX, y: contentOffsetY)
-                    collectionView.contentOffset = newOffset
-                }
+        // Only movement of the anchor counts, not resizing of cells
+        if
+            let anchorIdentifier, let oldAnchorY,
+            let newIndexPath = itemIdentifiers.first(where: { $0.value == anchorIdentifier })?.key,
+            let newAnchorY = currentAttributes[newIndexPath]?.frame.minY
+        {
+            UIView.performWithoutAnimation {
+                let offset = CGPoint(
+                    x: collectionView.contentOffset.x,
+                    y: collectionView.contentOffset.y + newAnchorY - oldAnchorY
+                )
+                collectionView.contentOffset = offset
+                onOffsetPreserved?(offset)
             }
-            contentSizeBeforeInsertingAbove = nil
-            isInsertingCellsAbove = false
         }
+    }
+
+    func itemIdentifier(for indexPath: IndexPath) -> AnyHashable? {
+        guard
+            let collectionView = collectionView as? ASCollectionView,
+            let node = collectionView.collectionNode?.nodeForItem(at: indexPath)
+        else { return nil }
+        return ObjectIdentifier(node)
     }
 
     func getHeight(for indexPath: IndexPath) -> CGFloat {
@@ -147,6 +203,30 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             attributes.append(item.value)
         }
         return attributes
+    }
+
+    override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        guard
+            let collectionView,
+            let anchor = preservedViewportAnchor,
+            let attributes = layoutAttributesForItem(at: anchor.indexPath)
+        else {
+            return proposedContentOffset
+        }
+
+        let frame = attributes.frame
+        let size = collectionView.bounds.size
+        let inset = collectionView.adjustedContentInset
+        let minimum = CGPoint(x: -inset.left, y: -inset.top)
+        let maximum = CGPoint(
+            x: max(minimum.x, collectionViewContentSize.width - size.width + inset.right),
+            y: max(minimum.y, collectionViewContentSize.height - size.height + inset.bottom)
+        )
+
+        return CGPoint(
+            x: min(max(frame.minX + frame.width * anchor.position.x - size.width / 2, minimum.x), maximum.x),
+            y: min(max(frame.minY + frame.height * anchor.position.y - size.height / 2, minimum.y), maximum.y)
+        )
     }
 }
 

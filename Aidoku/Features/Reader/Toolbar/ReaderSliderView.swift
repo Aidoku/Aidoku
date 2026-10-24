@@ -18,11 +18,23 @@ class ReaderSliderView: UIControl {
             thumbPositionConstraint?.isActive = false
             trackPositionConstraint?.isActive = false
             if direction == .forward {
-                thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
-                trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
+                thumbPositionConstraint = thumbView.leadingAnchor.constraint(
+                    equalTo: leadingAnchor,
+                    constant: Self.trackInset - Self.thumbWidth / 2
+                )
+                trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(
+                    equalTo: leadingAnchor,
+                    constant: Self.trackInset
+                )
             } else {
-                thumbPositionConstraint = thumbView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: 10)
-                trackPositionConstraint = progressedTrackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5)
+                thumbPositionConstraint = thumbView.trailingAnchor.constraint(
+                    equalTo: trailingAnchor,
+                    constant: Self.thumbWidth / 2 - Self.trackInset
+                )
+                trackPositionConstraint = progressedTrackView.trailingAnchor.constraint(
+                    equalTo: trailingAnchor,
+                    constant: -Self.trackInset
+                )
             }
             thumbPositionConstraint?.isActive = true
             trackPositionConstraint?.isActive = true
@@ -89,17 +101,14 @@ class ReaderSliderView: UIControl {
         return grabberView
     }()
 
+    private static let trackInset: CGFloat = 5
+    private static let thumbWidth: CGFloat = 30
+
     private var trackWidthConstraint: NSLayoutConstraint?
     private var trackPositionConstraint: NSLayoutConstraint?
     private var thumbPositionConstraint: NSLayoutConstraint?
 
     private var previousLocation = CGPoint()
-
-    override var frame: CGRect {
-        didSet {
-            updateLayerFrames()
-        }
-    }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -125,16 +134,22 @@ class ReaderSliderView: UIControl {
         thumbView.translatesAutoresizingMaskIntoConstraints = false
         grabberView.translatesAutoresizingMaskIntoConstraints = false
 
-        trackWidthConstraint = progressedTrackView.widthAnchor.constraint(equalToConstant: 5)
+        trackWidthConstraint = progressedTrackView.widthAnchor.constraint(equalToConstant: Self.trackInset)
         trackWidthConstraint?.isActive = true
-        trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5)
+        trackPositionConstraint = progressedTrackView.leadingAnchor.constraint(
+            equalTo: leadingAnchor,
+            constant: Self.trackInset
+        )
         trackPositionConstraint?.isActive = true
-        thumbPositionConstraint = thumbView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: -10)
+        thumbPositionConstraint = thumbView.leadingAnchor.constraint(
+            equalTo: leadingAnchor,
+            constant: Self.trackInset - Self.thumbWidth / 2
+        )
         thumbPositionConstraint?.isActive = true
 
         NSLayoutConstraint.activate([
-            trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 5),
-            trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5),
+            trackView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: Self.trackInset),
+            trackView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -Self.trackInset),
             trackView.centerYAnchor.constraint(equalTo: centerYAnchor),
             trackView.heightAnchor.constraint(equalToConstant: 3),
 
@@ -142,8 +157,8 @@ class ReaderSliderView: UIControl {
             progressedTrackView.heightAnchor.constraint(equalToConstant: 3),
 
             thumbView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            thumbView.heightAnchor.constraint(equalToConstant: 30),
-            thumbView.widthAnchor.constraint(equalToConstant: 30),
+            thumbView.heightAnchor.constraint(equalToConstant: Self.thumbWidth),
+            thumbView.widthAnchor.constraint(equalToConstant: Self.thumbWidth),
 
             grabberView.centerXAnchor.constraint(equalTo: thumbView.centerXAnchor),
             grabberView.centerYAnchor.constraint(equalTo: thumbView.centerYAnchor),
@@ -154,6 +169,7 @@ class ReaderSliderView: UIControl {
 
     override func layoutSubviews() {
         updateLayerFrames()
+        super.layoutSubviews()
     }
 
     override func tintColorDidChange() {
@@ -161,14 +177,15 @@ class ReaderSliderView: UIControl {
     }
 
     private func updateLayerFrames() {
-        guard trackView.frame.size != .zero else { return }
+        guard bounds.width > Self.trackInset * 2 else { return }
+
         let position = positionForValue(currentValue)
         if direction == .forward {
-            trackWidthConstraint?.constant = position - trackView.frame.origin.x
-            thumbPositionConstraint?.constant =  position - thumbView.bounds.width / 2
+            trackWidthConstraint?.constant = position - Self.trackInset
+            thumbPositionConstraint?.constant = position - Self.thumbWidth / 2
         } else {
-            trackWidthConstraint?.constant = trackView.bounds.width - position - trackView.frame.origin.x
-            thumbPositionConstraint?.constant =  position - trackView.bounds.width + thumbView.bounds.width / 2
+            trackWidthConstraint?.constant = bounds.width - Self.trackInset - position
+            thumbPositionConstraint?.constant = position + Self.thumbWidth / 2 - bounds.width
         }
     }
 }
@@ -241,10 +258,11 @@ extension ReaderSliderView {
     }
 
     private func positionForValue(_ value: CGFloat) -> CGFloat {
+        let trackWidth = max(bounds.width - Self.trackInset * 2, 0)
         if direction == .forward {
-            trackView.bounds.width * value + trackView.frame.origin.x
+            return Self.trackInset + trackWidth * value
         } else {
-            trackView.bounds.width - (trackView.bounds.width * value) - trackView.frame.origin.x
+            return bounds.width - Self.trackInset - trackWidth * value
         }
     }
 

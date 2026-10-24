@@ -13,6 +13,7 @@ extension HistoryView {
     @MainActor
     class ViewModel: ObservableObject {
         @Published var filteredHistory: [Int: HistorySection] = [:]
+        @Published var sourceCache: [String: AidokuRunner.Source] = [:]
         @Published var mangaCache: [MangaIdentifier: AidokuRunner.Manga] = [:]
         @Published var chapterCache: [ChapterIdentifier: AidokuRunner.Chapter] = [:]
 
@@ -27,6 +28,7 @@ extension HistoryView {
         private var offset = 0
         private var historyData: [Int: [HistoryEntry]] = [:]
         private var loadTask: Task<Bool, Never>?
+        private var historyReloadGeneration = 0
 
         private var searchQuery: String = ""
         private var searchTask: Task<Void, Never>?
@@ -52,6 +54,9 @@ extension HistoryView.ViewModel {
                 // reset all cached history entries
                 guard let self else { return }
                 Task { @MainActor in
+                    _ = await self.loadTask?.value
+                    self.historyReloadGeneration += 1
+                    self.loadTask = nil
                     self.filteredHistory = [:]
                     self.historyData = [:]
                     self.offset = 0
@@ -171,6 +176,7 @@ extension HistoryView.ViewModel {
     func loadMore() async {
         guard loadingState == .idle else { return }
 
+        let generation = historyReloadGeneration
         loadingState = .loading
 
         if loadTask == nil {
@@ -182,6 +188,8 @@ extension HistoryView.ViewModel {
         }
         guard let loadTask else { return }
         let completed = await loadTask.value
+        // A refresh may have reset pagination while this task was suspended.
+        guard generation == historyReloadGeneration else { return }
         self.loadTask = nil
 
         loadingState = completed ? .complete : .idle
@@ -326,9 +334,14 @@ extension HistoryView.ViewModel {
 
     // load manga and chapter data from source into cache
     private func loadMangaAndChapters(mangaId: MangaIdentifier, chapterIds: Set<String>) async {
-        guard let source = await SourceManager.shared.source(for: mangaId.sourceKey) else { return }
-        let tempManga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
+        var source = sourceCache[mangaId.sourceKey]
+        if source == nil {
+            source = await SourceManager.shared.source(for: mangaId.sourceKey)
+            sourceCache[mangaId.sourceKey] = source
+        }
+        guard let source else { return }
 
+        let tempManga = AidokuRunner.Manga(sourceKey: mangaId.sourceKey, key: mangaId.mangaKey, title: "")
         let needsManga = mangaCache[mangaId] == nil
 
         if let newManga = try? await source.getMangaUpdate(
@@ -386,6 +399,7 @@ extension HistoryView.ViewModel {
         var newHistoryData = await historyData
         var newMangaCacheItems: [MangaIdentifier: AidokuRunner.Manga] = [:]
         var newChapterCacheItems: [ChapterIdentifier: AidokuRunner.Chapter] = [:]
+        var sourceKeys: Set<String> = []
 
         for obj in historyObj {
             let readDate = obj.dateRead ?? Date.distantPast
@@ -424,6 +438,8 @@ extension HistoryView.ViewModel {
                 await addToQueue(mangaId: mangaId, chapterKey: chapterId.chapterKey)
             }
 
+            sourceKeys.insert(obj.chapterId.sourceKey)
+
             if let manga { newMangaCacheItems[mangaId] = manga }
             if let chapter { newChapterCacheItems[chapterId] = chapter }
 
@@ -452,6 +468,13 @@ extension HistoryView.ViewModel {
                 daysAgo: day,
                 entries: await filterDay(entries: newHistoryData[day] ?? [])
             )
+        }
+
+        for sourceKey in sourceKeys {
+            guard let source = await SourceManager.shared.source(for: sourceKey) else { continue }
+            await MainActor.run {
+                sourceCache[sourceKey] = source
+            }
         }
 
         await addMangaCacheItems(newMangaCacheItems)
