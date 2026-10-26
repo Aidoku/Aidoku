@@ -92,6 +92,9 @@ private struct _SwiftUIReaderNavigationController: UIViewControllerRepresentable
     final class Coordinator {
         var nav: ReaderNavigationController?
         var reader: ReaderViewController?
+        // the chapter last passed in by SwiftUI, which can differ from the reader's current
+        // chapter once the reader moves to another one (infinite scroll, chapter list, next/previous)
+        var chapter: AidokuRunner.Chapter?
     }
 
     func makeCoordinator() -> Coordinator { Coordinator() }
@@ -108,6 +111,7 @@ private struct _SwiftUIReaderNavigationController: UIViewControllerRepresentable
         let nav = ReaderNavigationController(readerViewController: reader)
         context.coordinator.reader = reader
         context.coordinator.nav = nav
+        context.coordinator.chapter = chapter
         return nav
     }
 
@@ -123,9 +127,11 @@ private struct _SwiftUIReaderNavigationController: UIViewControllerRepresentable
                 startPage: startPage
             )
             context.coordinator.reader = newReader
+            context.coordinator.chapter = chapter
             uiViewController.setViewControllers([newReader], animated: false)
-        } else {
+        } else if context.coordinator.chapter?.key != chapter.key {
             // Otherwise, update the existing reader instance
+            context.coordinator.chapter = chapter
             if reader.chapter != chapter {
                 reader.setChapter(chapter)
                 reader.loadCurrentChapter()
