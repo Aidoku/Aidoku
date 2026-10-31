@@ -242,23 +242,27 @@ struct KavitaVolume: Codable, Sendable {
     let id: Int
     let name: String
     let number: Int
+    let minNumber: Float?
     let seriesId: Int
     let chapters: [Chapter]
+
+    // the legacy number field truncates fractional volumes (9.5 -> 9), so prefer minNumber
+    var resolvedNumber: Float {
+        minNumber ?? Float(number)
+    }
 }
 
 extension KavitaVolume {
     func intoChapters(baseUrl: URL, apiKey: String) -> [AidokuRunner.Chapter] {
         chapters.compactMap { chapter -> AidokuRunner.Chapter? in
-            let isEpub = chapter.files.contains(where: { $0.format == 3 })
-            guard !isEpub else { return nil }
             let chapterNumber = Float(chapter.number) ?? 0
-            let noVolume = number < 0 || number >= 100000
+            let noVolume = resolvedNumber < 0 || resolvedNumber >= 100000
             let noChapter = chapterNumber < 0 || chapterNumber >= 100000
             return .init(
                 key: "\(chapter.id)",
                 title: (chapter.titleName?.isEmpty ?? true) ? nil : chapter.titleName,
                 chapterNumber: noChapter ? nil : chapterNumber,
-                volumeNumber: noVolume ? nil : Float(number),
+                volumeNumber: noVolume ? nil : resolvedNumber,
                 dateUploaded: chapter.createdUtc,
                 url: URL(string: "library/1/series/\(seriesId)/chapter/\(chapter.id)", relativeTo: baseUrl),
                 language: chapter.language,
