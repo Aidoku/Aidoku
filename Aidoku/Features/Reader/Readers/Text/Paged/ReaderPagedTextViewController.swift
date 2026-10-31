@@ -574,8 +574,7 @@ extension ReaderPagedTextViewController: ReaderReaderDelegate {
 
         // Check if viewModel already has the page loaded (from ReaderViewController's initial load)
         // This prevents double-fetching the chapter
-        if !viewModel.pages.isEmpty {
-            self.chapter = chapter
+        if !viewModel.pages.isEmpty, self.chapter == chapter {
             isLoadingChapter = true
             hasPaginated = false
             // Store the requested start page - repaginate will use this
