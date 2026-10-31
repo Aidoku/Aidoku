@@ -251,7 +251,7 @@
 "TRACK_DROPPED" = "Abandonado";
 "ONESHOT" = "One-Shot";
 "STATUS_NOT_PUBLISHED" = "No Publicado";
-"MANHWA" = "Manhwa";
+"MANHWA" = "Manga";
 "MANHUA" = "Manhua";
 "LIGHT_NOVEL" = "Novela Ligera";
 "TRACK" = "Seguir";
@@ -623,7 +623,7 @@
 "BACKUP_INTERVAL" = "Intervalo de copias de seguridad";
 "READING_SESSIONS" = "Sesiones de lectura";
 "CLEAR_SOURCE_CACHE" = "Borrar caché de fuentes";
-"CLEAR_SOURCE_CACHE_TEXT" = "Se borrarán los datos de red almacenados en caché de las URL de las fuentes. Esto puede provocar un aumento temporal en los tiempos de carga.";
+"CLEAR_SOURCE_CACHE_TEXT" = "Se borrarán los datos de red almacenados en caché de las url(s) de las fuentes. Esto puede provocar un aumento temporal en los tiempos de carga.";
 "SPLIT_WIDE_IMAGES" = "Dividir imágenes anchas";
 "REVERSE_SPLIT_ORDER" = "Orden de división inverso";
 "TITLE_DISPLAY_MODE" = "Modo de visualización del título";
@@ -746,3 +746,18 @@
 "NEW_CHAPTERS_AVAILABLE" = "Capítulos nuevos disponibles";
 "X_SERIES_HAVE_NEW_CHAPTERS" = "%d series tienen capítulos nuevos";
 "SUWAYOMI" = "Suwayomi";
+"DOWNLOAD_INCOMPLETE" = "Descarga Incompleta";
+"DISABLE" = "Desactivar";
+"ENABLE" = "Activar";
+"RESTART" = "Reiniciar";
+"HTML_ERROR" = "Error HTML";
+"JSON_ERROR" = "Error JSON";
+"TEXT_THEME" = "Tema";
+"TEXT_THEME_SEPIA" = "Sepia";
+"TEXT_THEME_PAPER" = "Papel";
+"TEXT_THEME_GRAY" = "Gris";
+"DICTIONARY_LOOKUP" = "Buscar en Diccionario";
+"DICTIONARIES" = "Diccionarios";
+"ABOUT_DICTIONARIES" = "Sobre los Diccionarios";
+"LIBRARY_REFRESH_INTERRUPTED" = "Actualización de Biblioteca Interrumpida";
+"LIBRARY_REFRESH_INTERRUPTED_TEXT" = "La ultima actualización de Biblioteca fue interrumpida antes de completarse. Te gustaría reanudar el proceso?";
