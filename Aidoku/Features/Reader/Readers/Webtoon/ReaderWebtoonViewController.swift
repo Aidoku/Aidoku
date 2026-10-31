@@ -49,6 +49,8 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     private var isScrolling = false
     // Indicates if an info refresh should be done if info pages are off screen
     private var needsInfoRefresh = false
+    // How many size transitions haven't completed yet, so overlapping ones share the first anchor
+    private var pendingSizeTransitions = 0
     private(set) var isContentScrolling = false {
         didSet {
             guard isContentScrolling != oldValue else { return }
@@ -416,7 +418,11 @@ extension ReaderWebtoonViewController {
         collectionNode.contentOffset = offset
 
         let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
-        layout?.preserveVisiblePosition()
+        // a transition that starts before the last one completes would capture an in-between position
+        if pendingSizeTransitions == 0 {
+            layout?.preserveVisiblePosition()
+        }
+        pendingSizeTransitions += 1
 
         super.viewWillTransition(to: size, with: coordinator)
 
@@ -432,8 +438,14 @@ extension ReaderWebtoonViewController {
         } completion: { [weak self] _ in
             guard let self else { return }
 
-            let offset = collectionNode.contentOffset
-            layout?.clearPreservedPosition()
+            // restore the anchor against the final bounds, rather than relying on the collection view
+            // to have asked for a target offset (it may not, or may ask before the size settles)
+            collectionNode.view.layoutIfNeeded()
+            let offset = layout?.preservedContentOffset() ?? collectionNode.contentOffset
+            pendingSizeTransitions -= 1
+            if pendingSizeTransitions == 0 {
+                layout?.clearPreservedPosition()
+            }
             zoomView.adjustContentSize()
             scrollView.contentOffset = offset
             collectionNode.contentOffset = offset

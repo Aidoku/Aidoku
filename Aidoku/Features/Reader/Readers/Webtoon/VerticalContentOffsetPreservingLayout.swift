@@ -35,6 +35,8 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
     private struct ViewportAnchor {
         let indexPath: IndexPath
+        // the anchored node, so the anchor follows its page if sections change above it
+        let identifier: AnyHashable?
         let position: CGPoint
     }
 
@@ -60,6 +62,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
         preservedViewportAnchor = ViewportAnchor(
             indexPath: attributes.indexPath,
+            identifier: itemIdentifiers[attributes.indexPath],
             position: CGPoint(
                 x: (center.x - attributes.frame.minX) / attributes.frame.width,
                 y: (center.y - attributes.frame.minY) / attributes.frame.height
@@ -206,13 +209,19 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
     }
 
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
-        guard
-            let collectionView,
-            let anchor = preservedViewportAnchor,
-            let attributes = layoutAttributesForItem(at: anchor.indexPath)
-        else {
-            return proposedContentOffset
+        preservedContentOffset() ?? proposedContentOffset
+    }
+
+    /// The content offset that puts the preserved anchor back at the center of the current bounds.
+    func preservedContentOffset() -> CGPoint? {
+        guard let collectionView, let anchor = preservedViewportAnchor else { return nil }
+
+        let indexPath = if let identifier = anchor.identifier {
+            itemIdentifiers.first(where: { $0.value == identifier })?.key
+        } else {
+            anchor.indexPath
         }
+        guard let indexPath, let attributes = layoutAttributesForItem(at: indexPath) else { return nil }
 
         let frame = attributes.frame
         let size = collectionView.bounds.size

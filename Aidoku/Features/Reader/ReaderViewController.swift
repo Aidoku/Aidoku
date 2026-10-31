@@ -777,6 +777,10 @@ extension ReaderViewController {
             reader?.remove()
             pageController.delegate = self
             reader = pageController
+            // the reader's view isn't guaranteed to start at this view's size (e.g. on iPhone Duo, or when
+            // switching reading modes in split view), and autoresizing would keep any difference
+            pageController.view.frame = view.bounds
+            pageController.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
             add(child: pageController, below: descriptionButtonController.view)
         }
         reader?.readingMode = readingMode
