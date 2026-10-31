@@ -40,6 +40,19 @@ enum KomgaReadStatus: String {
 struct KomgaSearchBody: Encodable {
     var condition: KomgaSearchCondition?
     var fullTextSearch: String?
+
+    static func escapeLuceneQuery(_ query: String) -> String {
+        let reserved: Set<Character> = [
+            "+", "-", "&", "|", "!", "(", ")", "{", "}", "[", "]", "^", "\"", "~", "*", "?", ":", "\\",
+            "/"
+        ]
+        return query.reduce(into: "") { result, character in
+            if reserved.contains(character) {
+                result.append("\\")
+            }
+            result.append(character)
+        }
+    }
 }
 
 // https://github.com/gotson/komga/blob/master/komga/src/main/kotlin/org/gotson/komga/domain/model/SearchCondition.kt
