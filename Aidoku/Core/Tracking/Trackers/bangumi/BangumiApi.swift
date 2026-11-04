@@ -7,10 +7,22 @@
 
 import Foundation
 
+enum BangumiApiError: Error {
+    /// The access token is invalid and could not be refreshed; the user needs to log in again.
+    case notLoggedIn
+    /// The requested resource does not exist (e.g. progress update on an uncollected subject).
+    case notFound
+    /// The request failed or the response could not be decoded.
+    case requestFailed
+}
+
 actor BangumiApi {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private let userAgent = "Aidoku/Aidoku (https://github.com/Aidoku/Aidoku)"
+
+    /// Base URL of the Bangumi Next API. Injectable for testing.
+    let apiBase: URL
 
     nonisolated let oauth = OAuthClient(
         id: "bangumi",
@@ -19,7 +31,8 @@ actor BangumiApi {
         baseUrl: "https://bgm.tv/oauth"
     )
 
-    init() {
+    init(apiBase: URL = URL(string: "https://next.bgm.tv")!) {
+        self.apiBase = apiBase
         decoder.dateDecodingStrategy = .iso8601
     }
 
@@ -74,126 +87,104 @@ actor BangumiApi {
 
 // MARK: - Data
 extension BangumiApi {
-    func search(query: String, nsfw: Bool = false) async -> [BangumiSubject]? {
-        // Try the new v0 API first
-        let url = URL(string: "https://api.bgm.tv/v0/search/subjects?limit=20")!
+    /// Builds a Next API endpoint URL from the (injectable) base URL.
+    private nonisolated func endpoint(_ path: String) -> URL {
+        var base = apiBase.absoluteString
+        while base.hasSuffix("/") { base.removeLast() }
+        return URL(string: base + "/" + path)!
+    }
 
-        // Add type parameter (type=1 for books/manga)
-        var filter: [String: Any] = ["type": [1]]
-        if !nsfw {
-            filter["nsfw"] = false
-        }
-        let searchBody: [String: Any] = ["keyword": query, "sort": "match", "filter": filter]
-        let body = try? JSONSerialization.data(withJSONObject: searchBody)
+    func search(query: String, nsfw: Bool = false) async throws -> [BangumiSubject] {
+        let url = endpoint("p1/search/subjects?limit=20")
+        let searchBody = BangumiSearchRequest(
+            keyword: query,
+            sort: "match",
+            filter: .init(type: [1], nsfw: nsfw)
+        )
+        let response: BangumiSearchResponse = try await request(
+            url, method: "POST", body: try encoder.encode(searchBody)
+        )
+        return response.data ?? []
+    }
 
-        if let response: BangumiSearchResponse = await request(url, method: "POST", body: body) {
-            return response.subjects
-        }
+    /// Single subject detail. The response embeds the current user's `interest`
+    /// (collection status/score/progress) as well as `eps`/`volumes`.
+    func getSubject(id: Int) async throws -> BangumiSubject {
+        try await request(endpoint("p1/subjects/\(id)"))
+    }
 
-        // Fallback to old API
-        var fallbackUrl = URL(string: "https://api.bgm.tv/search/subject/\(query.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")")!
-        // Add type parameter (type=1 for books/manga)
-        if var urlComponents = URLComponents(url: fallbackUrl, resolvingAgainstBaseURL: false) {
-            urlComponents.queryItems = [URLQueryItem(name: "type", value: "1")]
-            if let urlWithType = urlComponents.url {
-                fallbackUrl = urlWithType
+    /// Next API splits updates in two: collection status/score (PUT, where
+    /// `type` and `rate` must be sent together) and reading progress (PATCH).
+    /// Fields not present in `update` are omitted. Date fields have no writable
+    /// endpoint and are ignored.
+    func update(subject id: Int, update: TrackUpdate) async throws {
+        var collectionType = update.status.flatMap { getStatusString(status: $0) }?.rawValue
+        var rate = update.score
+        let progressBody = BangumiProgressPatch(
+            epStatus: update.lastReadChapter.map { Int($0.rounded(.down)) },
+            volStatus: update.lastReadVolume
+        )
+
+        let hasCollectionUpdate = collectionType != nil || rate != nil
+        let hasProgressUpdate = progressBody.epStatus != nil || progressBody.volStatus != nil
+        // Empty update (or date-only): nothing to send.
+        guard hasCollectionUpdate || hasProgressUpdate else { return }
+
+        let url = endpoint("p1/collections/subjects/\(id)")
+
+        // PUT requires type/rate as a pair: when only one changes, read the
+        // current collection value to fill in the other (defaults for an
+        // uncollected subject are type=3 "doing" / rate=0).
+        if hasCollectionUpdate && (collectionType == nil || rate == nil) {
+            let interest = try await getSubject(id: id).interest
+            if collectionType == nil {
+                collectionType = interest?.type ?? BangumiCollectionStatus.doing.rawValue
+            }
+            if rate == nil {
+                rate = interest?.rate ?? 0
             }
         }
-        var fallbackRequest = URLRequest(url: fallbackUrl)
-        fallbackRequest.setValue("application/json", forHTTPHeaderField: "Accept")
-        fallbackRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
 
-        let fallbackResponse: BangumiSearchResponse? = try? await URLSession.shared.object(from: fallbackRequest)
-        return fallbackResponse?.subjects
-    }
-
-    func getUser() async -> BangumiUser? {
-        let url = URL(string: "https://api.bgm.tv/v0/me")!
-        return await request(url)
-    }
-
-    func getSubject(id: Int) async -> BangumiSubject? {
-        let url = URL(string: "https://api.bgm.tv/v0/subjects/\(id)")!
-        return await request(url)
-    }
-
-    func getSubjectState(id: Int) async -> BangumiCollection? {
-        // First get current user info
-        guard let user = await getUser() else {
-            return nil
+        if hasCollectionUpdate, let collectionType, let rate {
+            try await send(url, method: "PUT", body: BangumiCollectionPut(
+                type: collectionType,
+                rate: rate
+            ))
         }
 
-        let url = URL(string: "https://api.bgm.tv/v0/users/\(user.username)/collections/\(id)")!
-        return await request(url)
+        if hasProgressUpdate {
+            do {
+                try await send(url, method: "PATCH", body: progressBody)
+            } catch BangumiApiError.notFound where !hasCollectionUpdate {
+                // Progress PATCH on an uncollected subject returns 404: create a
+                // default collection first, then retry the progress update.
+                try await send(url, method: "PUT", body: BangumiCollectionPut(
+                    type: BangumiCollectionStatus.doing.rawValue,
+                    rate: 0
+                ))
+                try await send(url, method: "PATCH", body: progressBody)
+            }
+        }
+    }
+}
+
+// MARK: - Networking
+private extension BangumiApi {
+    func request<T: Decodable>(_ url: URL, method: String = "GET", body: Data? = nil) async throws -> T {
+        let (data, _) = try await perform(url, method: method, body: body)
+        guard let decoded = try? decoder.decode(T.self, from: data) else {
+            throw BangumiApiError.requestFailed
+        }
+        return decoded
     }
 
     @discardableResult
-    func update(subject: Int, update: TrackUpdate) async -> Bool {
-        let url = URL(string: "https://api.bgm.tv/v0/users/-/collections/\(subject)")!
-        var request = await authorizedRequest(for: url)
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-        request.httpMethod = "POST"
-
-        let collectionUpdate = BangumiCollectionUpdate(
-            type: getStatusString(status: update.status),
-            rate: update.score,
-            comment: nil,
-            tags: nil,
-            vol_status: update.lastReadVolume.map { Int($0) },
-            ep_status: update.lastReadChapter.map { Int($0) }
-        )
-
-        request.httpBody = try? encoder.encode(collectionUpdate)
-
-        do {
-            let (_, response) = try await requestData(urlRequest: request)
-            if let httpResponse = response as? HTTPURLResponse {
-                return httpResponse.statusCode == 200 || httpResponse.statusCode == 201
-            }
-            return false
-        } catch {
-            // Update error - silently fail
-            return false
-        }
+    func send<B: Encodable>(_ url: URL, method: String, body: B) async throws -> HTTPURLResponse {
+        try await perform(url, method: method, body: try encoder.encode(body)).1
     }
 
-    private func requestData(urlRequest: URLRequest) async throws -> (Data, URLResponse) {
-        var (data, response) = try await URLSession.shared.data(for: urlRequest)
-        let statusCode = (response as? HTTPURLResponse)?.statusCode
-
-        if await oauth.tokens == nil {
-            await oauth.loadTokens()
-        }
-
-        let tokenExpired = await oauth.tokens?.expired == true
-
-        // Check if token expired (401 Unauthorized)
-        if statusCode == 401 || statusCode == 40101 || statusCode == 40102 || tokenExpired {
-            // ensure we have a refresh token, otherwise we need to fully re-auth
-            let reloginNeeded = await oauth.checkIfReloginNeeded(trackerName: "Bangumi")
-            guard !reloginNeeded else {
-                return (data, response)
-            }
-
-            // Try to refresh token and retry request
-            guard await refreshAccessToken() != nil else {
-                return (data, response)
-            }
-
-            // Retry the original request with refreshed token
-            if let newAuthorization = await oauth.authorizedRequest(for: urlRequest.url!).value(forHTTPHeaderField: "Authorization") {
-                var newRequest = urlRequest
-                newRequest.setValue(newAuthorization, forHTTPHeaderField: "Authorization")
-                newRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
-                (data, response) = try await URLSession.shared.data(for: newRequest)
-            }
-        }
-
-        return (data, response)
-    }
-
-    private func request<T: Codable>(_ url: URL, method: String = "GET", body: Data? = nil) async -> T? {
+    @discardableResult
+    func perform(_ url: URL, method: String, body: Data? = nil) async throws -> (Data, HTTPURLResponse) {
         var request = await authorizedRequest(for: url)
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.httpMethod = method
@@ -202,22 +193,58 @@ extension BangumiApi {
             request.httpBody = body
         }
 
-        guard let (data, _) = try? await requestData(urlRequest: request) else {
-            return nil
+        let (data, response) = try await dataWithAuthRetry(for: request)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw BangumiApiError.requestFailed
+        }
+        switch httpResponse.statusCode {
+            case 200..<300:
+                return (data, httpResponse)
+            case 404:
+                throw BangumiApiError.notFound
+            default:
+                throw BangumiApiError.requestFailed
+        }
+    }
+
+    /// Sends the request; on 401 refreshes the token and retries once. Only when
+    /// the refresh fails or the retry is still 401 does it throw `notLoggedIn`.
+    func dataWithAuthRetry(for request: URLRequest) async throws -> (Data, URLResponse) {
+        if await oauth.tokens == nil {
+            await oauth.loadTokens()
         }
 
-        return try? JSONDecoder().decode(T.self, from: data)
-    }
-}
+        var (data, response) = try await URLSession.shared.data(for: request)
+        guard (response as? HTTPURLResponse)?.statusCode == 401 else {
+            return (data, response)
+        }
 
-private extension BangumiApi {
-    func getStatusString(status: TrackStatus?) -> BangumiCollectionStatus? {
+        // Ensure we have a refresh token, otherwise we need to fully re-auth.
+        let reloginNeeded = await oauth.checkIfReloginNeeded(trackerName: "Bangumi")
+        guard !reloginNeeded, await refreshAccessToken() != nil, let url = request.url else {
+            throw BangumiApiError.notLoggedIn
+        }
+
+        // Retry the original request with the refreshed token.
+        var retried = request
+        if let authorization = await oauth.authorizedRequest(for: url)
+            .value(forHTTPHeaderField: "Authorization") {
+            retried.setValue(authorization, forHTTPHeaderField: "Authorization")
+        }
+        (data, response) = try await URLSession.shared.data(for: retried)
+        if (response as? HTTPURLResponse)?.statusCode == 401 {
+            throw BangumiApiError.notLoggedIn
+        }
+        return (data, response)
+    }
+
+    func getStatusString(status: TrackStatus) -> BangumiCollectionStatus? {
         switch status {
             case .reading: return .doing
             case .planning: return .wish
             case .completed: return .collect
             case .dropped: return .dropped
-            case .paused: return .on_hold
+            case .paused: return .onHold
             case .rereading: return .doing
             default: return nil
         }

@@ -8,7 +8,7 @@
 import AidokuRunner
 import Foundation
 
-/// Bangumi tracker for Aidoku.
+/// Bangumi tracker for Aidoku, backed by the Next API (next.bgm.tv/p1).
 final class BangumiTracker: OAuthTracker {
     let id = "bangumi"
     let name = "Bangumi"
@@ -28,9 +28,9 @@ final class BangumiTracker: OAuthTracker {
             throw BangumiTrackerError.invalidId
         }
         // set status to reading if status doesn't already exist
-        let state = await api.getSubjectState(id: id)
-        if state?.collect == nil {
-            await api.update(subject: id, update: TrackUpdate(
+        let subject = try? await api.getSubject(id: id)
+        if subject?.interest == nil {
+            try? await api.update(subject: id, update: TrackUpdate(
                 status: earliestReadDate != nil ? .reading : .planning,
                 lastReadChapter: highestChapterRead,
                 startReadDate: earliestReadDate
@@ -43,8 +43,11 @@ final class BangumiTracker: OAuthTracker {
         guard let id = Int(trackId) else {
             throw BangumiTrackerError.invalidId
         }
-        let success = await api.update(subject: id, update: update)
-        if !success {
+        do {
+            try await api.update(subject: id, update: update)
+        } catch BangumiApiError.notLoggedIn {
+            throw BangumiTrackerError.notLoggedIn
+        } catch {
             throw BangumiTrackerError.updateFailed
         }
     }
@@ -59,20 +62,26 @@ final class BangumiTracker: OAuthTracker {
             throw BangumiTrackerError.notLoggedIn
         }
 
-        guard let result = await api.getSubjectState(id: id) else {
+        // Single request: the detail response embeds the current user's interest
+        // (collection status/score/progress) as well as eps/volumes.
+        let subject: BangumiSubject
+        do {
+            subject = try await api.getSubject(id: id)
+        } catch BangumiApiError.notLoggedIn {
+            throw BangumiTrackerError.notLoggedIn
+        } catch {
             throw BangumiTrackerError.getStateFailed
         }
 
-        // Get subject info for total chapters/volumes
-        let subject = await api.getSubject(id: id)
-
+        // interest is nil when the subject is not collected yet
+        let interest = subject.interest
         return TrackState(
-            score: result.rate,
-            status: getStatus(statusString: result.collect),
-            lastReadChapter: Float(result.ep_status ?? 0),
-            lastReadVolume: result.vol_status.map { Int($0) },
-            totalChapters: subject?.eps ?? subject?.total_episodes,
-            totalVolumes: subject?.volumes,
+            score: interest?.rate,
+            status: interest.flatMap { getStatus(collectionType: $0.type) },
+            lastReadChapter: interest?.epStatus.map { Float($0) },
+            lastReadVolume: interest?.volStatus,
+            totalChapters: subject.eps,
+            totalVolumes: subject.volumes,
         )
     }
 
@@ -94,37 +103,19 @@ final class BangumiTracker: OAuthTracker {
             let id = Int(pathComponents[2])
         {
             // use bangumi url to search
-            guard let subject = await api.getSubject(id: id) else { return [] }
-            return [TrackSearchItem(
-                id: String(subject.id),
-                title: getDisplayTitle(for: subject),
-                coverUrl: getCoverUrl(for: subject),
-                description: subject.summary,
-                status: getPublishingStatus(subject: subject),
-                type: getSubjectType(for: subject),
-                tracked: false // TODO: check if tracked
-            )]
+            guard let subject = try? await api.getSubject(id: id) else { return [] }
+            return [trackSearchItem(for: subject)]
         } else {
             return await search(title: title, nsfw: includeNsfw)
         }
     }
 
     private func search(title: String, nsfw: Bool) async -> [TrackSearchItem] {
-        guard let subjects = await api.search(query: title, nsfw: nsfw) else {
+        guard let subjects = try? await api.search(query: title, nsfw: nsfw) else {
             return []
         }
 
-        return subjects.map {
-            TrackSearchItem(
-                id: String($0.id),
-                title: getDisplayTitle(for: $0),
-                coverUrl: getCoverUrl(for: $0),
-                description: $0.summary,
-                status: getPublishingStatus(subject: $0),
-                type: getSubjectType(for: $0),
-                tracked: false
-            )
-        }
+        return subjects.map { trackSearchItem(for: $0) }
     }
 
     func getAuthenticationUrl() async -> URL? {
@@ -143,9 +134,22 @@ final class BangumiTracker: OAuthTracker {
 }
 
 private extension BangumiTracker {
+    func trackSearchItem(for subject: BangumiSubject) -> TrackSearchItem {
+        TrackSearchItem(
+            id: String(subject.id),
+            title: getDisplayTitle(for: subject),
+            coverUrl: getCoverUrl(for: subject),
+            description: subject.summary,
+            status: getPublishingStatus(subject: subject),
+            type: getSubjectType(for: subject),
+            // Next API embeds the user's collection state in search results
+            tracked: subject.interest != nil
+        )
+    }
+
     func getDisplayTitle(for subject: BangumiSubject) -> String {
         // Prefer Chinese name if it's not empty, otherwise fall back to original name
-        if let nameCn = subject.name_cn, !nameCn.isEmpty {
+        if let nameCn = subject.nameCN, !nameCn.isEmpty {
             return nameCn
         } else if let name = subject.name, !name.isEmpty {
             return name
@@ -174,21 +178,22 @@ private extension BangumiTracker {
         return nil
     }
 
-    func getStatus(statusString: String?) -> TrackStatus {
-        switch statusString {
-            case "wish": return .planning
-            case "collect": return .completed
-            case "do": return .reading
-            case "on_hold": return .paused
-            case "dropped": return .dropped
+    func getStatus(collectionType: Int?) -> TrackStatus {
+        // Bangumi collection types: 1=wish, 2=collect, 3=do, 4=on_hold, 5=dropped
+        switch collectionType {
+            case 1: return .planning
+            case 2: return .completed
+            case 3: return .reading
+            case 4: return .paused
+            case 5: return .dropped
             case nil: return .none
             default: return .planning
         }
     }
 
     func getPublishingStatus(subject: BangumiSubject) -> PublishingStatus {
-        // Check if subject has volumes, eps, or total_episodes > 0 (completed)
-        if (subject.volumes ?? 0) > 0 || (subject.eps ?? 0) > 0 || (subject.total_episodes ?? 0) > 0 {
+        // Check if subject has volumes or eps > 0 (completed)
+        if (subject.volumes ?? 0) > 0 || (subject.eps ?? 0) > 0 {
             return .completed
         }
         return .ongoing
@@ -200,12 +205,12 @@ private extension BangumiTracker {
             if !series {
                 // series is false, it's a one-shot
                 return .oneShot
-            } else {
-                // series is true, check platform
-                if let platform = subject.platform, platform == "漫画" {
-                    return .manga
-                } else {
+            } else if let typeCN = subject.platform?.typeCN {
+                // series is true, classify by the platform carrier label
+                if typeCN.contains("小说") {
                     return .novel
+                } else if typeCN.contains("漫画") {
+                    return .manga
                 }
             }
         }
