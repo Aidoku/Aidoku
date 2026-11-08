@@ -273,7 +273,7 @@
 "SKIP_DUPLICATE_CHAPTERS" = "Bỏ qua chương bị trùng";
 "RENAME_CATEGORY" = "Đổi tên danh mục";
 "CATEGORY_NAME" = "Tên danh mục";
-"SORT_UNREAD_CHAPTERS" = "Chương chưa đọc";
+"SORT_UNREAD_CHAPTERS" = "Hiển thị số chương chưa đọc";
 "RELOAD" = "Tải lại";
 "%i_OF_%i" = "%i của %i";
 "%i_PAGES_LEFT" = "Còn lại %i trang";
@@ -696,3 +696,6 @@
 "SEARCH_MANUALLY" = "Tìm kiếm thủ công";
 "SELECTED_%i_OF_%i" = "Đã chọn (%i/%i)";
 "TOGGLE_PAGE_OFFSET" = "Chuyển đổi độ lệch trang";
+"DOWNLOAD_INCOMPLETE" = "Tải về chưa hoàn tất";
+"CATEGORY_SEARCH" = "Tìm trong Danh mục";
+"UNSET_AS_SINGLE_PAGE" = "Đặt làm Trang đơn";

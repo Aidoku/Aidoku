@@ -824,3 +824,13 @@
 "MIGRATE_WITH_HISTORY" = "Migrasi dan Pertahankan Riwayat";
 "AUTO_SCROLL" = "Gulir Otomatis";
 "AUTO_SCROLL_SPEED" = "Kecepatan Gulir Otomatis";
+"UPSCALE_QUALITY" = "Kualitas Peningkatan Resolusi";
+"UPSCALE_QUALITY_FAST" = "Cepat";
+"UPSCALE_QUALITY_BEST" = "Kualitas Terbaik";
+"TEXT_THEME" = "Tema";
+"TEXT_THEME_SEPIA" = "Sepia";
+"TEXT_THEME_PAPER" = "Kertas";
+"TEXT_THEME_GRAY" = "Abu-abu";
+"AUTO_SCROLL_POSITION" = "Posisi Gulir Otomatis";
+"POSITION_LEFT" = "Kiri";
+"POSITION_RIGHT" = "Kanan";
