@@ -62,8 +62,6 @@ final class BangumiTracker: OAuthTracker {
             throw BangumiTrackerError.notLoggedIn
         }
 
-        // Single request: the detail response embeds the current user's interest
-        // (collection status/score/progress) as well as eps/volumes.
         let subject: BangumiSubject
         do {
             subject = try await api.getSubject(id: id)
@@ -142,7 +140,6 @@ private extension BangumiTracker {
             description: subject.summary,
             status: getPublishingStatus(subject: subject),
             type: getSubjectType(for: subject),
-            // Next API embeds the user's collection state in search results
             tracked: subject.interest != nil
         )
     }

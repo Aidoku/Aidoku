@@ -27,9 +27,6 @@ struct BangumiSearchResponse: Decodable {
 }
 
 // MARK: - Subject
-/// Next API (next.bgm.tv/p1) subject. Search results and detail share the same
-/// structure; detail additionally embeds `eps`/`volumes` and the current
-/// user's collection state in `interest` (null when not collected).
 struct BangumiSubject: Decodable {
     var id: Int
     var type: Int? // 1: Book, 2: Anime, 3: Music, 4: Game, 6: Real
@@ -78,13 +75,13 @@ enum BangumiCollectionStatus: Int, Codable {
 }
 
 // MARK: - Update bodies
-/// Next API splits collection updates: status/score via PUT (both fields are
-/// required together) and reading progress via PATCH.
+/// PUT body: status and score, which must always be sent together.
 struct BangumiCollectionPut: Encodable {
     var type: Int
     var rate: Int
 }
 
+/// PATCH body: reading progress.
 struct BangumiProgressPatch: Encodable {
     var epStatus: Int?
     var volStatus: Int?

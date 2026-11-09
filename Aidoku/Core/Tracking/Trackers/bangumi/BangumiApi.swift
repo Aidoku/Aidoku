@@ -8,11 +8,9 @@
 import Foundation
 
 enum BangumiApiError: Error {
-    /// The access token is invalid and could not be refreshed; the user needs to log in again.
     case notLoggedIn
-    /// The requested resource does not exist (e.g. progress update on an uncollected subject).
+    /// e.g. progress update on an uncollected subject
     case notFound
-    /// The request failed or the response could not be decoded.
     case requestFailed
 }
 
@@ -21,7 +19,6 @@ actor BangumiApi {
     private let decoder = JSONDecoder()
     private let userAgent = "Aidoku/Aidoku (https://github.com/Aidoku/Aidoku)"
 
-    /// Base URL of the Bangumi Next API. Injectable for testing.
     let apiBase: URL
 
     nonisolated let oauth = OAuthClient(
@@ -87,15 +84,15 @@ actor BangumiApi {
 
 // MARK: - Data
 extension BangumiApi {
-    /// Builds a Next API endpoint URL from the (injectable) base URL.
-    private nonisolated func endpoint(_ path: String) -> URL {
-        var base = apiBase.absoluteString
-        while base.hasSuffix("/") { base.removeLast() }
-        return URL(string: base + "/" + path)!
+    private nonisolated func endpoint(_ path: String) throws -> URL {
+        guard let url = URL(string: path, relativeTo: apiBase) else {
+            throw BangumiApiError.requestFailed
+        }
+        return url
     }
 
     func search(query: String, nsfw: Bool = false) async throws -> [BangumiSubject] {
-        let url = endpoint("p1/search/subjects?limit=20")
+        let url = try endpoint("p1/search/subjects?limit=20")
         let searchBody = BangumiSearchRequest(
             keyword: query,
             sort: "match",
@@ -107,16 +104,10 @@ extension BangumiApi {
         return response.data ?? []
     }
 
-    /// Single subject detail. The response embeds the current user's `interest`
-    /// (collection status/score/progress) as well as `eps`/`volumes`.
     func getSubject(id: Int) async throws -> BangumiSubject {
-        try await request(endpoint("p1/subjects/\(id)"))
+        try await request(try endpoint("p1/subjects/\(id)"))
     }
 
-    /// Next API splits updates in two: collection status/score (PUT, where
-    /// `type` and `rate` must be sent together) and reading progress (PATCH).
-    /// Fields not present in `update` are omitted. Date fields have no writable
-    /// endpoint and are ignored.
     func update(subject id: Int, update: TrackUpdate) async throws {
         var collectionType = update.status.flatMap { getStatusString(status: $0) }?.rawValue
         var rate = update.score
@@ -127,14 +118,10 @@ extension BangumiApi {
 
         let hasCollectionUpdate = collectionType != nil || rate != nil
         let hasProgressUpdate = progressBody.epStatus != nil || progressBody.volStatus != nil
-        // Empty update (or date-only): nothing to send.
         guard hasCollectionUpdate || hasProgressUpdate else { return }
 
-        let url = endpoint("p1/collections/subjects/\(id)")
+        let url = try endpoint("p1/collections/subjects/\(id)")
 
-        // PUT requires type/rate as a pair: when only one changes, read the
-        // current collection value to fill in the other (defaults for an
-        // uncollected subject are type=3 "doing" / rate=0).
         if hasCollectionUpdate && (collectionType == nil || rate == nil) {
             let interest = try await getSubject(id: id).interest
             if collectionType == nil {
@@ -156,8 +143,7 @@ extension BangumiApi {
             do {
                 try await send(url, method: "PATCH", body: progressBody)
             } catch BangumiApiError.notFound where !hasCollectionUpdate {
-                // Progress PATCH on an uncollected subject returns 404: create a
-                // default collection first, then retry the progress update.
+                // PATCH 404s on uncollected subjects: create a default collection first
                 try await send(url, method: "PUT", body: BangumiCollectionPut(
                     type: BangumiCollectionStatus.doing.rawValue,
                     rate: 0
@@ -207,8 +193,6 @@ private extension BangumiApi {
         }
     }
 
-    /// Sends the request; on 401 refreshes the token and retries once. Only when
-    /// the refresh fails or the retry is still 401 does it throw `notLoggedIn`.
     func dataWithAuthRetry(for request: URLRequest) async throws -> (Data, URLResponse) {
         if await oauth.tokens == nil {
             await oauth.loadTokens()
