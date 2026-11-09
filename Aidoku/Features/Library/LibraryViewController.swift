@@ -1545,19 +1545,29 @@ extension LibraryViewController {
                 }
             }
 
-            let downloadUnreadAction = UIAction(title: NSLocalizedString("UNREAD")) { _ in
-                let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
-                if downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi || !downloadOnlyOnWifi  {
-                    Task {
-                        for manga in mangaInfo {
-                            await DownloadManager.shared.downloadUnread(manga: manga.toManga().toNew())
-                        }
-                    }
+            func downloadUnreadAction(limit: Int? = nil) -> UIAction {
+                let title = if limit == 1 {
+                    NSLocalizedString("NEXT_UNREAD")
                 } else {
-                    self.presentAlert(
-                        title: NSLocalizedString("NO_WIFI_ALERT_TITLE"),
-                        message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE")
-                    )
+                    limit.map {
+                        String(format: NSLocalizedString("NEXT_%i_UNREAD"), $0)
+                    } ?? NSLocalizedString("UNREAD")
+                }
+
+                return UIAction(title: title) { _ in
+                    let downloadOnlyOnWifi = AppSettings.downloads.downloadOnlyOnWifi.get()
+                    if downloadOnlyOnWifi && Reachability.getConnectionType() == .wifi || !downloadOnlyOnWifi {
+                        Task {
+                            for manga in mangaInfo {
+                                await DownloadManager.shared.downloadUnread(manga: manga.toManga().toNew(), limit: limit)
+                            }
+                        }
+                    } else {
+                        self.presentAlert(
+                            title: NSLocalizedString("NO_WIFI_ALERT_TITLE"),
+                            message: NSLocalizedString("NO_WIFI_ALERT_MESSAGE")
+                        )
+                    }
                 }
             }
 
@@ -1568,7 +1578,13 @@ extension LibraryViewController {
                 bottomMenuChildren.append(UIMenu(
                     title: NSLocalizedString("DOWNLOAD"),
                     image: UIImage(systemName: "arrow.down.circle"),
-                    children: [downloadAllAction, downloadUnreadAction]
+                    children: [
+                        downloadUnreadAction(limit: 1),
+                        downloadUnreadAction(limit: 5),
+                        downloadUnreadAction(limit: 10),
+                        downloadUnreadAction(),
+                        downloadAllAction
+                    ]
                 ))
             }
 

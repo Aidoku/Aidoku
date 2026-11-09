@@ -33,6 +33,8 @@
 
 // Downloads
 "DOWNLOAD" = "Download";
+"NEXT_UNREAD" = "Next Unread";
+"NEXT_%i_UNREAD" = "Next %i Unread";
 "DOWNLOADED" = "Downloaded";
 "DOWNLOADING" = "Downloading";
 "DOWNLOAD_QUEUE" = "Download Queue";

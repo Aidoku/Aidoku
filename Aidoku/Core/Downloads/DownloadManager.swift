@@ -175,17 +175,25 @@ actor DownloadManager {
 // MARK: File Management
 
 extension DownloadManager {
+    private func chapters(for manga: AidokuRunner.Manga) async -> [AidokuRunner.Chapter] {
+        if let chapters = manga.chapters {
+            return chapters
+        }
+        return await CoreDataManager.shared.getChapters(mangaId: manga.identifier).map { $0.toNew() }
+    }
+
     /// Download all chapters for a manga.
     func downloadAll(manga: AidokuRunner.Manga) async {
-        let allChapters = await CoreDataManager.shared.getChapters(mangaId: manga.identifier)
+        let allChapters = await chapters(for: manga)
 
         var chaptersToDownload: [AidokuRunner.Chapter] = []
 
         for chapter in allChapters {
             guard !chapter.locked else { continue }
-            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            let downloaded = await isChapterDownloaded(chapter: identifier)
             if !downloaded {
-                chaptersToDownload.append(chapter.toNew())
+                chaptersToDownload.append(chapter)
             }
         }
 
@@ -193,23 +201,30 @@ extension DownloadManager {
     }
 
     /// Download unread chapters for a manga.
-    func downloadUnread(manga: AidokuRunner.Manga) async {
+    func downloadUnread(manga: AidokuRunner.Manga, limit: Int? = nil) async {
+        if let limit, limit <= 0 { return }
+
         let readingHistory = await CoreDataManager.shared.getReadingHistory(mangaId: manga.identifier)
-        let allChapters = await CoreDataManager.shared.getChapters(mangaId: manga.identifier)
+        let allChapters = await chapters(for: manga)
+        let queuedDownloads = await queue.queue[manga.sourceKey] ?? []
+        let queuedChapters = Set(queuedDownloads.map(\.chapterIdentifier))
 
         var chaptersToDownload: [AidokuRunner.Chapter] = []
 
-        for chapter in allChapters {
+        for chapter in allChapters.reversed() {
             guard !chapter.locked else { continue }
-            let isUnread = readingHistory[chapter.id] == nil || readingHistory[chapter.id]?.page != -1
+            let isUnread = readingHistory[chapter.key] == nil || readingHistory[chapter.key]?.page != -1
             guard isUnread else { continue }
-            let downloaded = await isChapterDownloaded(chapter: chapter.identifier)
+            let identifier = ChapterIdentifier(sourceKey: manga.sourceKey, mangaKey: manga.key, chapterKey: chapter.key)
+            guard !queuedChapters.contains(identifier) else { continue }
+            let downloaded = await isChapterDownloaded(chapter: identifier)
             if !downloaded {
-                chaptersToDownload.append(chapter.toNew())
+                chaptersToDownload.append(chapter)
+                if let limit, chaptersToDownload.count >= limit { break }
             }
         }
 
-        await download(manga: manga, chapters: chaptersToDownload.reversed())
+        await download(manga: manga, chapters: chaptersToDownload)
     }
 
     /// Download given chapters from a manga.
