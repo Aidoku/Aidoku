@@ -18,7 +18,7 @@ actor LocalFileManager {
     private var scanTask: Task<Void, Never>?
 
     static let allowedFileExtensions = Set(["cbz", "zip"])
-    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif"])
+    static let allowedImageExtensions = Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "avif", "jxl"])
     static let allowedTextExtensions = Set(["txt", "md"])
     static let allowedPageExtensions = allowedImageExtensions.union(allowedTextExtensions)
 
