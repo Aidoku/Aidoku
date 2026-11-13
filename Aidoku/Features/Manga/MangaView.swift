@@ -342,7 +342,11 @@ extension MangaView {
 
     @ViewBuilder
     func viewForChapter(_ chapter: AidokuRunner.Chapter, index: Int, secondSection: Bool = false) -> some View {
-        let last = index == (secondSection ? viewModel.otherDownloadedChapters : viewModel.chapters).count - 1
+        let last = if viewModel.chapterSortAscending {
+            index == 0
+        } else {
+            index == (secondSection ? viewModel.otherDownloadedChapters : viewModel.chapters).count - 1
+        }
         let downloadStatus = viewModel.downloadStatus[chapter.key, default: .none]
         let downloaded = downloadStatus == .finished
         let locked = chapter.locked && !downloaded
@@ -474,11 +478,10 @@ extension MangaView {
                 }
             }
             if !last && !secondSection {
+                let previousRange = viewModel.chapterSortAscending ? 0..<index : index + 1..<viewModel.chapters.count
                 Menu(NSLocalizedString("MARK_PREVIOUS")) {
                     Button {
-                        let chapters = [AidokuRunner.Chapter](viewModel.chapters[
-                            index + 1..<viewModel.chapters.count
-                        ])
+                        let chapters = [AidokuRunner.Chapter](viewModel.chapters[previousRange])
                         Task {
                             await viewModel.markRead(chapters: chapters)
                         }
@@ -486,9 +489,7 @@ extension MangaView {
                         Label(NSLocalizedString("READ"), systemImage: "checkmark.circle")
                     }
                     Button {
-                        let chapters = [AidokuRunner.Chapter](viewModel.chapters[
-                            index + 1..<viewModel.chapters.count
-                        ])
+                        let chapters = [AidokuRunner.Chapter](viewModel.chapters[previousRange])
                         Task {
                             await viewModel.markUnread(chapters: chapters)
                         }
