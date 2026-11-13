@@ -939,9 +939,15 @@ extension MangaManager {
                 )
 
                 var maxChapterRead = storedOldHistory
-                    .compactMap { $0.chapter?.chapter != nil ? $0.chapter : nil }
-                    .max { $0.chapter!.decimalValue < $1.chapter!.decimalValue }?
-                    .chapter?.floatValue
+                    .compactMap { history -> NSNumber? in
+                        if history.completed, let chapterNum = history.chapter?.chapter {
+                            return chapterNum
+                        } else {
+                            return nil
+                        }
+                    }
+                    .max { $0.decimalValue < $1.decimalValue }?
+                    .floatValue
 
                 if maxChapterRead == nil || maxChapterRead == -1 {
                     // try finding max volume read instead, in case of no chapters
