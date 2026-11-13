@@ -14,6 +14,7 @@ struct SourceInfo: Hashable {
     var iconUrl: URL?
     var name: String
     var altNames: [String] = []
+    var urls: [String] = []
     var languages: [String]
     var version: Int
     var contentRating: SourceContentRating

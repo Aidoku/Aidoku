@@ -74,6 +74,7 @@ extension ExternalSourceInfo {
             iconUrl: iconUrl,
             name: name,
             altNames: altNames ?? [],
+            urls: baseURL.flatMap { [$0] } ?? [],
             languages: languages ?? lang.flatMap { [$0] } ?? [],
             version: version,
             contentRating: resolvedContentRating,

@@ -83,7 +83,10 @@ struct AddSourceView: View {
                             externalSources
                         } else {
                             externalSources.filter {
-                                ([$0.name.lowercased()] + ($0.altNames.map { $0.lowercased() }))
+                                let fields: [String] = [$0.name.lowercased()]
+                                    + $0.altNames.map({ $0.lowercased() })
+                                    + $0.urls.map({ $0.lowercased() })
+                                return fields
                                     .contains {
                                         $0.contains(searchText.lowercased())
                                     }

@@ -192,10 +192,18 @@ class BrowseViewModel {
                 let storedUpdatesSources = storedUpdatesSources,
                 let storedPinnedSources = storedPinnedSources,
                 let storedInstalledSources = storedInstalledSources
-            else { return }
-            updatesSources = storedUpdatesSources.filter { $0.name.lowercased().contains(query) }
-            pinnedSources = storedPinnedSources.filter { $0.name.lowercased().contains(query) }
-            installedSources = storedInstalledSources.filter { $0.name.lowercased().contains(query) }
+            else {
+                return
+            }
+            func searchFilter(_ info: SourceInfo) -> Bool {
+                let fields: [String] = [info.name.lowercased()]
+                    + info.altNames.map({ $0.lowercased() })
+                    + info.urls.map({ $0.lowercased() })
+                return fields.contains { $0.contains(query) }
+            }
+            updatesSources = storedUpdatesSources.filter(searchFilter)
+            pinnedSources = storedPinnedSources.filter(searchFilter)
+            installedSources = storedInstalledSources.filter(searchFilter)
         } else {
             // reset search, restore source arrays
             if let storedUpdatesSources = storedUpdatesSources {
