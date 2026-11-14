@@ -135,7 +135,7 @@ actor KomgaSourceRunner: Runner {
             method: .POST,
             body: .init(
                 condition: .allOf([.deleted(false)] + conditions),
-                fullTextSearch: (query?.isEmpty ?? true) ? nil : query
+                fullTextSearch: query.flatMap { $0.isEmpty ? nil : KomgaSearchBody.escapeLuceneQuery($0) }
             ),
             lastWorkingMirror: &lastWorkingMirrorCopy
         )
