@@ -10,7 +10,6 @@ import UIKit
 import VisionKit
 
 class ReaderPagedViewController: BaseObservingViewController {
-
     let viewModel: ReaderPagedViewModel
 
     weak var delegate: ReaderHoldingDelegate?
@@ -185,6 +184,17 @@ class ReaderPagedViewController: BaseObservingViewController {
                 default: return false
             }
         }()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+
+        // fix isTransitioning not getting reset when cancelling a dismiss gesture while also mid page transition
+        transitionCoordinator?.animate(alongsideTransition: nil) { [weak self] context in
+            guard let self, context.isCancelled else { return }
+            self.isTransitioning = false
+            self.setLiveTextButtonHidden(self.delegate?.barsHidden ?? false)
+        }
     }
 
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -971,7 +981,6 @@ extension ReaderPagedViewController: ReaderReaderDelegate {
 
 // MARK: - Page Controller Delegate
 extension ReaderPagedViewController: UIPageViewControllerDelegate {
-
     func pageViewController(
         _ pageViewController: UIPageViewController,
         didFinishAnimating finished: Bool,
@@ -1107,7 +1116,6 @@ extension ReaderPagedViewController: UIPageViewControllerDelegate {
 
 // MARK: - Page Controller Data Source
 extension ReaderPagedViewController: UIPageViewControllerDataSource {
-
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         switch readingMode {
             case .rtl:
