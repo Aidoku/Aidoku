@@ -28,6 +28,8 @@ class ReaderViewController: BaseObservingViewController {
 
     private var chapterList: [AidokuRunner.Chapter]
     private var chaptersToMark: [AidokuRunner.Chapter] = []
+    // chapters already marked read in this session, so repeated end-of-chapter updates don't write history again
+    private var markedChapterKeys: Set<String> = []
     private var chaptersToRemoveDownload: [AidokuRunner.Chapter] = [] {
         didSet {
             // ensure chapters queued for deletion are persistent, in case of app termination
@@ -327,6 +329,23 @@ class ReaderViewController: BaseObservingViewController {
         }
         addObserver(forName: .readerTapZones) { [weak self] _ in
             self?.updateTapZone()
+        }
+        // let chapters marked unread elsewhere be marked read again
+        addObserver(forName: .historyRemoved) { [weak self] notification in
+            let object = notification.object
+            Task { @MainActor in
+                guard let self else { return }
+                if let chapterIds = object as? [ChapterIdentifier] {
+                    for chapterId in chapterIds where chapterId.mangaIdentifier == self.manga.identifier {
+                        self.markedChapterKeys.remove(chapterId.chapterKey)
+                    }
+                } else if
+                    let mangaId = object as? MangaIdentifier,
+                    mangaId == self.manga.identifier
+                {
+                    self.markedChapterKeys.removeAll()
+                }
+            }
         }
         let reloadBlock: (Notification) -> Void = { [weak self] _ in
             guard let self else { return }
@@ -999,7 +1018,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
                 if nextChapterInList == nil {
                     nextChapterInList = new
                 }
-                if markDuplicates && isDuplicate {
+                if markDuplicates && isDuplicate && !chaptersToMark.contains(new) {
                     chaptersToMark.append(new)
                 }
                 if !isDuplicate {
@@ -1035,7 +1054,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
                 if !isDuplicate {
                     return findBestChapterMatch(from: index, step: 1)
                 }
-                if markDuplicates {
+                if markDuplicates && !chaptersToMark.contains(new) {
                     chaptersToMark.append(new)
                 }
             }
@@ -1179,14 +1198,23 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
     func setCompleted() {
         guard !AppSettings.general.incognitoMode.get() else { return }
 
-        Task { [chaptersToMark] in
+        // this is called on every page update at the end of a chapter, so mark each chapter only once.
+        // each history write makes the series page reload read state for its whole chapter list
+        let newChapters = chaptersToMark.filter { !markedChapterKeys.contains($0.key) }
+        guard !newChapters.isEmpty else { return }
+        markedChapterKeys.formUnion(newChapters.map { $0.key })
+
+        Task {
             await HistoryManager.shared.addHistory(
                 mangaId: manga.identifier,
-                chapters: chaptersToMark
+                chapters: newChapters
             )
         }
 
-        if AppSettings.downloads.deleteDownloadAfterReading.get() {
+        if
+            AppSettings.downloads.deleteDownloadAfterReading.get(),
+            !chaptersToRemoveDownload.contains(chapter)
+        {
             chaptersToRemoveDownload.append(chapter)
         }
     }
