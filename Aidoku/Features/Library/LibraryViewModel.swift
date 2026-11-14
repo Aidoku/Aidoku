@@ -745,10 +745,14 @@ extension LibraryViewModel {
 
         if let pinnedIndex = pinnedManga.firstIndex(where: { $0.id == mangaId }) {
             let manga = pinnedManga.remove(at: pinnedIndex)
-            self.manga.insert(manga, at: 0)
+            if pinType == .updatedChapters {
+                self.manga.insert(manga, at: sortAscending ? self.manga.count : 0)
+            } else {
+                pinnedManga.insert(manga, at: sortAscending ? pinnedManga.count : 0)
+            }
         } else if let index = manga.firstIndex(where: { $0.id == mangaId }) {
             let manga = manga.remove(at: index)
-            self.manga.insert(manga, at: 0)
+            self.manga.insert(manga, at: sortAscending ? self.manga.count : 0)
         }
     }
 
