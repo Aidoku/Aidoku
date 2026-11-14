@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct InsightPlatterView<Content: View>: View {
-    @ViewBuilder var content: Content
+    @ContentBuilder var content: Content
 
     private let cornerRadius: CGFloat = 12
 

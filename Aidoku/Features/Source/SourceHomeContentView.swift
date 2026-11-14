@@ -176,7 +176,6 @@ struct SourceHomeContentView: View {
         }
     }
 
-
     @ContentBuilder
     private func scrollContent(containerWidth: CGFloat) -> some View {
         if loading {

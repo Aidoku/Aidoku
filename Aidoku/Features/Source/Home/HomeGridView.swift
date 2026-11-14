@@ -157,7 +157,7 @@ struct HomeGridView: View {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var loadMoreView: some View {
         if !loadingMore, !entries.isEmpty, let loadMore {
             Spacer()

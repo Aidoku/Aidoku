@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LargeButton<Content: View>: View {
     var action: () -> Void
-    @ViewBuilder var label: Content
+    @ContentBuilder var label: Content
 
     var body: some View {
         Button {

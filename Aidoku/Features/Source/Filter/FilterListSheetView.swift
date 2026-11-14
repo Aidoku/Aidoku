@@ -106,7 +106,7 @@ struct FilterListSheetView: View {
         }
     }
 
-    @ToolbarContentBuilder
+    @ContentBuilder
     var commonToolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button(NSLocalizedString("CANCEL")) {
@@ -126,7 +126,7 @@ struct FilterListSheetView: View {
     }
 
     @available(iOS 26.0, *)
-    @ToolbarContentBuilder
+    @ContentBuilder
     var toolbarContentiOS26: some ToolbarContent {
         commonToolbarContent
 
@@ -148,7 +148,7 @@ struct FilterListSheetView: View {
         }
     }
 
-    @ToolbarContentBuilder
+    @ContentBuilder
     var toolbarContentiOS18: some ToolbarContent {
         commonToolbarContent
 
@@ -410,7 +410,7 @@ private struct FilterListView: View {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var savedSearchesView: some View {
         if !savedSearches.isEmpty {
             VStack(spacing: 6) {
@@ -472,7 +472,7 @@ private struct FilterListView: View {
         .padding(.horizontal)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     private func searchField(id: String) -> some View {
         let searchText = search[id] ?? ""
         textField {

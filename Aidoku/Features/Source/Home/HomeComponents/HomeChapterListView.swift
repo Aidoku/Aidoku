@@ -102,7 +102,7 @@ struct HomeChapterListView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     func view(for entry: MangaWithChapter) -> some View {
         Button {
             path.push(MangaViewController(source: source, manga: entry.manga, parent: path.rootViewController))

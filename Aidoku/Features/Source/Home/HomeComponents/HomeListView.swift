@@ -133,7 +133,7 @@ struct HomeListView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var loadMoreView: some View {
         if loadingMore {
             EmptyView()
@@ -148,7 +148,7 @@ struct HomeListView: View {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     func view(for entry: HomeComponent.Value.Link, position: Int) -> some View {
         let label = HStack(spacing: 12) {
             let mangaKey: String? = switch entry.value {

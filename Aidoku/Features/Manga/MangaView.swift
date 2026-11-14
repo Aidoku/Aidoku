@@ -340,7 +340,7 @@ extension MangaView {
         .listRowInsets(.zero)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     func viewForChapter(_ chapter: AidokuRunner.Chapter, index: Int, secondSection: Bool = false) -> some View {
         let last = if viewModel.chapterSortAscending {
             index == 0
@@ -396,7 +396,7 @@ extension MangaView {
         .matchedTransitionSourcePlease(id: chapter, in: transitionNamespace)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     func contextMenu(
         chapter: AidokuRunner.Chapter,
         downloadStatus: DownloadStatus,
@@ -542,7 +542,7 @@ extension MangaView {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var rightNavbarButton: some View {
         RightNavbarButton(
             viewModel: viewModel,
@@ -616,7 +616,7 @@ extension MangaView {
 }
 
 extension MangaView {
-    @ToolbarContentBuilder
+    @ContentBuilder
     var toolbarContentBase: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             rightNavbarButton
@@ -646,7 +646,7 @@ extension MangaView {
     }
 
     @available(iOS 26.0, *)
-    @ToolbarContentBuilder
+    @ContentBuilder
     var toolbarContentiOS26: some ToolbarContent {
         toolbarContentBase
 
@@ -710,7 +710,7 @@ extension MangaView {
         .disabled(selectedChapters.isEmpty)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var toolbarDownloadButton: some View {
         let allChaptersQueued = !selectedChapters.contains(where: {
             viewModel.downloadStatus[$0] != .queued

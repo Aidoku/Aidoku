@@ -22,7 +22,7 @@ struct SwiftUIWrapper<T: View>: UIViewControllerRepresentable {
 }
 
 extension View {
-    @ViewBuilder
+    @ContentBuilder
     func userInteractionDisabled(_ disabled: Bool = true) -> some View {
         if disabled {
             self.modifier(NoHitTesting())
@@ -31,7 +31,7 @@ extension View {
         }
     }
 
-//    @ViewBuilder
+//    @ContentBuilder
 //    func hidden(_ hidden: Bool) -> some View {
 //        if hidden {
 //            self.hidden()
@@ -42,7 +42,7 @@ extension View {
 }
 
 extension View {
-    @ViewBuilder
+    @ContentBuilder
     func offsetListSeparator() -> some View {
         if #available(iOS 16.0, *) {
             self.alignmentGuide(.listRowSeparatorLeading) { d in
@@ -197,7 +197,7 @@ extension View {
 }
 
 extension View {
-    @ViewBuilder
+    @ContentBuilder
     func tag<T: Hashable>(_ tag: T, selectable: Bool) -> some View {
         if #available(iOS 17.0, macOS 14.0, *) {
             self
@@ -298,7 +298,7 @@ extension View {
     ///   - condition: The condition to evaluate.
     ///   - transform: The transform to apply to the source `View`.
     /// - Returns: Either the original `View` or the modified `View` if the condition is `true`.
-    @ViewBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+    @ContentBuilder func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
         if condition {
             transform(self)
         } else {
@@ -308,19 +308,19 @@ extension View {
 }
 
 extension View {
-    @ViewBuilder func modifier<Content: View>(@ViewBuilder _ transform: (Self) -> Content) -> some View {
+    @ContentBuilder func modifier<Content: View>(@ContentBuilder _ transform: (Self) -> Content) -> some View {
         transform(self)
     }
 }
 
 extension View {
-    @ViewBuilder
+    @ContentBuilder
     func confirmationDialogOrAlert<S, A, M>(
         _ title: S,
         isPresented: Binding<Bool>,
         titleVisibility: Visibility = .automatic,
-        @ViewBuilder actions: () -> A,
-        @ViewBuilder message: () -> M
+        @ContentBuilder actions: () -> A,
+        @ContentBuilder message: () -> M
     ) -> some View where S: StringProtocol, A: View, M: View {
         if #available(iOS 26.0, *) {
             self.alert(

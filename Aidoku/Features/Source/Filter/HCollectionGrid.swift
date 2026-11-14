@@ -32,7 +32,7 @@ where
         .frame(width: contentSize.width, height: contentSize.height)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     private func generateContent() -> some View {
         var alignments = Array(repeating: CGFloat.zero, count: rows)
         var currentIndex = -1
@@ -92,7 +92,7 @@ where
 //        verticalSpacing: CGFloat = 0,
 //        horizontalSpacing: CGFloat = 0,
 //        _ data: Data,
-//        @ViewBuilder content: @escaping (Data.Element) -> Content
+//        @ContentBuilder content: @escaping (Data.Element) -> Content
 //    ) {
 //        self.rows = max(1, rows)
 //        self.data = data
@@ -111,7 +111,7 @@ extension HCollectionGrid {
         _ data: Data,
         id: KeyPath<Data.Element,
         ID>,
-        @ViewBuilder content: @escaping (Data.Element) -> Content
+        @ContentBuilder content: @escaping (Data.Element) -> Content
     ) {
         self.rows = max(1, rows)
         self.data = data

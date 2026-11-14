@@ -223,7 +223,7 @@ struct SettingView: View {
             }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     private var content: some View {
         switch setting.value {
             case let .group(value):
@@ -337,7 +337,7 @@ struct SettingView: View {
 
 // MARK: Group View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func groupView(value: GroupSetting) -> some View {
         if !disabled {
             let body = ForEach(value.items.indices, id: \.self) { offset in
@@ -376,7 +376,7 @@ extension SettingView {
 
 // MARK: Select View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func selectView(value: SelectSetting) -> some View {
         Button {
             if value.authToOpen ?? false {
@@ -470,7 +470,7 @@ extension SettingView {
 }
 
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func multiSelectView(value: MultiSelectSetting) -> some View {
         Button {
             if value.authToOpen ?? false {
@@ -558,7 +558,7 @@ extension SettingView {
 
 // MARK: Toggle View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func toggleView(value: ToggleSetting) -> some View {
         HStack {
             VStack(alignment: .leading) {
@@ -610,7 +610,7 @@ extension SettingView {
 
 // MARK: Stepper View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func stepperView(value: StepperSetting) -> some View {
         HStack {
             Text(setting.title)
@@ -639,7 +639,7 @@ extension SettingView {
 
 // MARK: Segment View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func segmentView(value: SegmentSetting) -> some View {
         HStack {
             Text(setting.title)
@@ -661,7 +661,7 @@ extension SettingView {
 
 // MARK: Text View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func textView(value: TextSetting) -> some View {
         let autocapitalizationType: TextInputAutocapitalization? = value.autocapitalizationType.flatMap {
             switch UITextAutocapitalizationType(rawValue: $0) ?? .sentences {
@@ -735,7 +735,7 @@ extension SettingView {
 
 // MARK: Button View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func buttonView(value: ButtonSetting) -> some View {
         Button(setting.title, role: (value.destructive ?? false) ? .destructive : nil) {
             if value.confirmTitle != nil || value.confirmText != nil {
@@ -765,7 +765,7 @@ extension SettingView {
 
 // MARK: Link View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func linkView(value: LinkSetting) -> some View {
         Button(setting.title) {
             showSafari = true
@@ -787,7 +787,7 @@ extension SettingView {
     static let cookieValuesKeySuffix = ".values"
     static let localStoragePrefix = ".ls."
 
-    @ViewBuilder
+    @ContentBuilder
     func loginView(value: LoginSetting) -> some View {
         let key = key(setting.key)
         let loggedIn = !(SettingsStore.shared.get(key: key) as String).isEmpty
@@ -1208,7 +1208,7 @@ extension SettingView {
 
 // MARK: Page View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func pageView(value: PageSetting) -> some View {
         Button {
             if value.authToOpen ?? false {
@@ -1360,7 +1360,7 @@ struct SettingPageDestination: View {
 
 // MARK: Editable List View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func editableListView(value: EditableListSetting) -> some View {
         let items = ForEach(stringListBinding, id: \.self) { item in
             Text(item)
@@ -1446,7 +1446,7 @@ extension SettingView {
 
 // MARK: Picker View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func pickerView(value: PickerSetting) -> some View {
         Picker(selection: $stringBinding) {
             ForEach(value.values.indices, id: \.self) { offset in
@@ -1473,7 +1473,7 @@ extension SettingView {
 
 // MARK: Custom View
 extension SettingView {
-    @ViewBuilder
+    @ContentBuilder
     func customView() -> some View {
         Group {
             if let customContentHandler {

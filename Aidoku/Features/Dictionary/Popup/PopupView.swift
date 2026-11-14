@@ -239,7 +239,7 @@ struct PopupView: View {
         return result
     }
 
-    @ViewBuilder
+    @ContentBuilder
     private var actionBar: some View {
         VStack(spacing: 0) {
             HStack(spacing: 24) {
@@ -279,7 +279,7 @@ struct PopupView: View {
         }
     }
 
-//    @ViewBuilder
+//    @ContentBuilder
 //    private func sasayakiControls(for cue: SasayakiMatch, player: SasayakiPlayer) -> some View {
 //        VStack(spacing: 0) {
 //            HStack(spacing: 20) {

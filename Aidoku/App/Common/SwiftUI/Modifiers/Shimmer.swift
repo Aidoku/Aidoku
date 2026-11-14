@@ -104,7 +104,7 @@ extension View {
     ///   - gradient: A custom gradient. Defaults to ``Shimmer/defaultGradient``.
     ///   - bandSize: The size of the animated mask's "band". Defaults to 0.3 unit points, which corresponds to
     /// 20% of the extent of the gradient.
-    @ViewBuilder func shimmering(
+    @ContentBuilder func shimmering(
         active: Bool = true,
         animation: Animation = Shimmer.defaultAnimation,
         gradient: Gradient = Shimmer.defaultGradient,

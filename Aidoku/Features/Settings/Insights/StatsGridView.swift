@@ -87,7 +87,7 @@ struct StatsGridView: View {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     var mainContent: some View {
         // monthly chart
         if #available(iOS 16.0, *) {
@@ -267,7 +267,7 @@ struct StatsGridView: View {
         }
     }
 
-    @ViewBuilder
+    @ContentBuilder
     func squareView(index: Int, size: CGSize, expanded: Bool) -> some View {
         InsightPlatterView {
             ZStack {

@@ -24,7 +24,7 @@ struct WrappingHStack<Data, ID, Content>: View where Data: RandomAccessCollectio
         .frame(height: totalHeight)
     }
 
-    @ViewBuilder
+    @ContentBuilder
     private func generateContent(in geometry: GeometryProxy) -> some View {
         ZStack(alignment: .topLeading) {
             let holder = TagModifier.WidthHeightHolder()
@@ -52,7 +52,7 @@ struct WrappingHStack<Data, ID, Content>: View where Data: RandomAccessCollectio
 // MARK: Initializers
 
 // extension WrappingHStack where ID == Data.Element.ID, Data.Element: Identifiable {
-//    init(_ data: Data, @ViewBuilder content: @escaping (Data.Element) -> Content) {
+//    init(_ data: Data, @ContentBuilder content: @escaping (Data.Element) -> Content) {
 //        self.data = data
 //        self.id = \.id
 //        self.content = content
@@ -60,7 +60,7 @@ struct WrappingHStack<Data, ID, Content>: View where Data: RandomAccessCollectio
 // }
 
 extension WrappingHStack {
-    init(_ data: Data, id: KeyPath<Data.Element, ID>, @ViewBuilder content: @escaping (Data.Element) -> Content) {
+    init(_ data: Data, id: KeyPath<Data.Element, ID>, @ContentBuilder content: @escaping (Data.Element) -> Content) {
         self.data = data
         self.id = id
         self.content = content

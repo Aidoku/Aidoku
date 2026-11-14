@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TextFieldWrapper<Content: View>: View {
     var hasError: Bool = false
-    @ViewBuilder let content: Content
+    @ContentBuilder let content: Content
 
     var body: some View {
         HStack(spacing: 4) {
