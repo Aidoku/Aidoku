@@ -15,7 +15,7 @@ struct SettingsAboutView: View {
                     Text(NSLocalizedString("VERSION"))
                     Spacer()
                     let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String
-                    ?? NSLocalizedString("UNKNOWN")
+                        ?? NSLocalizedString("UNKNOWN")
                     Text(version)
                         .foregroundStyle(.secondary)
                 }
@@ -24,10 +24,14 @@ struct SettingsAboutView: View {
                     Text(NSLocalizedString("BUILD"))
                     Spacer()
                     let version = Bundle.main.infoDictionary?["CFBundleVersion"] as? String
-                    ?? NSLocalizedString("UNKNOWN")
+                        ?? NSLocalizedString("UNKNOWN")
                     Text(version)
                         .foregroundStyle(.secondary)
                 }
+            } footer: {
+#if DEBUG
+                Text("This is a debug build.")
+#endif
             }
 
             Section {
