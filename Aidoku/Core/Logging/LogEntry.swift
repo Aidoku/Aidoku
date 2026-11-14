@@ -12,9 +12,13 @@ struct LogEntry {
     let type: LogType
     let message: String
 
-    func formatted() -> String {
+    private static let dateFormatter: DateFormatter = {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MM/dd HH:mm:ss.SSS"
-        return "[\(dateFormatter.string(from: date))] \(type != .default ? "[\(type.toString())] " : "")\(message)"
+        return dateFormatter
+    }()
+
+    func formatted() -> String {
+        "[\(Self.dateFormatter.string(from: date))] \(type != .default ? "[\(type.toString())] " : "")\(message)"
     }
 }
