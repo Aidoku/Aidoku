@@ -29,7 +29,9 @@ enum CoverRecovery {
             case let .dataLoadingFailed(loadingError) = pipelineError,
             let dataErr = loadingError as? DataLoader.Error,
             case let .statusCodeUnacceptable(code) = dataErr
-        else { return false }
+        else {
+            return false
+        }
         return staleStatusCodes.contains(code)
     }
 
@@ -37,10 +39,16 @@ enum CoverRecovery {
         guard shouldRecover(from: error) else { return nil }
         guard await tracker.claim(identifier) else { return nil }
         let stub = AidokuRunner.Manga(sourceKey: identifier.sourceKey, key: identifier.mangaKey, title: "")
+        let hasEditedCover = await CoreDataManager.shared.container.performBackgroundTask {
+            CoreDataManager.shared.hasEditedKey(mangaId: identifier, key: .cover, context: $0)
+        }
         guard
+            !hasEditedCover,
             let newCover = await MangaManager.shared.resetCover(manga: stub),
             let url = URL(string: newCover)
-        else { return nil }
+        else {
+            return nil
+        }
         return url
     }
 }
