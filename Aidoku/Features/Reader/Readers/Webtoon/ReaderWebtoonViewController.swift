@@ -18,9 +18,57 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
     var readingMode: ReadingMode = .webtoon {
         didSet {
             let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
-            layout?.spacing = readingMode == .webtoon ? 0 : 15
+            layout?.isHorizontal = isHorizontal
+            layout?.spacing = readingMode == .continuous ? 15 : 0
+            scrollView.alwaysBounceVertical = !isHorizontal
+            scrollView.alwaysBounceHorizontal = isHorizontal
+            zoomView.contentInsets = isHorizontal ? view.safeAreaInsets : .zero
             collectionNode.invalidateCalculatedLayout()
         }
+    }
+
+    private var isHorizontal: Bool {
+        readingMode == .continuousRTL
+    }
+
+    private var viewportLength: CGFloat {
+        isHorizontal ? collectionNode.bounds.width : collectionNode.bounds.height
+    }
+
+    private var maximumOffset: CGFloat {
+        max(0, isHorizontal
+            ? scrollView.contentSize.width - scrollView.bounds.width
+            : scrollView.contentSize.height - scrollView.bounds.height)
+    }
+
+    private var readingOffset: CGFloat {
+        isHorizontal ? maximumOffset - collectionNode.contentOffset.x : collectionNode.contentOffset.y
+    }
+
+    private func contentOffset(for position: CGFloat) -> CGPoint {
+        if isHorizontal {
+            CGPoint(x: maximumOffset - min(max(position, 0), maximumOffset), y: scrollView.contentOffset.y)
+        } else {
+            CGPoint(x: scrollView.contentOffset.x, y: min(max(position, 0), maximumOffset))
+        }
+    }
+
+    private var horizontalSliderRange: ClosedRange<CGFloat>? {
+        guard
+            let chapter,
+            let chapterIndex = chapters.firstIndex(of: chapter),
+            let currentPages = pages[safe: chapterIndex],
+            let firstImage = currentPages.firstIndex(where: { $0.type == .imagePage }),
+            let lastImage = currentPages.lastIndex(where: { $0.type == .imagePage }),
+            let firstFrame = collectionNode.collectionViewLayout
+                .layoutAttributesForItem(at: IndexPath(item: firstImage, section: chapterIndex))?.frame,
+            let lastFrame = collectionNode.collectionViewLayout
+                .layoutAttributesForItem(at: IndexPath(item: lastImage, section: chapterIndex))?.frame
+        else { return nil }
+
+        let start = scrollView.contentSize.width - firstFrame.maxX
+        let distance = max(0, firstFrame.maxX - lastFrame.minX - viewportLength)
+        return start...(start + distance)
     }
 
     private let pillarboxLayoutState = ReaderPillarboxLayoutState()
@@ -145,6 +193,11 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         pillarboxLayoutState.setIsPortrait(isPortrait)
     }
 
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
+        zoomView.contentInsets = isHorizontal ? view.safeAreaInsets : .zero
+    }
+
     override func observe() {
         addObserver(forName: "Reader.verticalInfiniteScroll") { [weak self] notification in
             self?.infinite = notification.object as? Bool ?? UserDefaults.standard.bool(forKey: "Reader.verticalInfiniteScroll")
@@ -190,10 +243,15 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
         let additional: CGFloat
         switch pos {
             case .top: additional = 0
-            case .middle: additional = collectionNode.bounds.height / 2
-            case .bottom: additional = collectionNode.bounds.height
+            case .middle: additional = viewportLength / 2
+            case .bottom: additional = viewportLength
         }
-        let currentPoint = CGPoint(x: collectionNode.contentOffset.x, y: collectionNode.contentOffset.y + additional)
+        let currentPoint = isHorizontal
+            ? CGPoint(
+                x: collectionNode.contentOffset.x + collectionNode.bounds.width - max(additional, 1),
+                y: collectionNode.contentOffset.y + collectionNode.bounds.height / 2
+            )
+            : CGPoint(x: collectionNode.contentOffset.x, y: collectionNode.contentOffset.y + additional)
         return collectionNode.indexPathForItem(at: currentPoint)
     }
 
@@ -234,6 +292,9 @@ class ReaderWebtoonViewController: ZoomableCollectionViewController {
             lastFrame.height > 0
         else { return false }
         let visible = CGRect(origin: collectionNode.contentOffset, size: collectionNode.bounds.size)
+        if isHorizontal {
+            return firstFrame.minX >= visible.maxX || lastFrame.maxX <= visible.minX
+        }
         return lastFrame.maxY <= visible.minY || firstFrame.minY >= visible.maxY
     }
 
@@ -324,6 +385,18 @@ extension ReaderWebtoonViewController {
 
         let speed = max(UserDefaults.standard.integer(forKey: "Reader.autoScrollSpeed"), 1)
         let distance = CGFloat(speed * 100) * CGFloat(displayLink.timestamp - previousTimestamp)
+        if isHorizontal {
+            let nextOffset = min(readingOffset + distance, maximumOffset)
+            scrollView.setContentOffset(contentOffset(for: nextOffset), animated: false)
+            if nextOffset >= maximumOffset {
+                stopAutoScroll()
+                if infinite {
+                    isScrolling = false
+                    checkInfiniteLoad()
+                }
+            }
+            return
+        }
         let minimumY = -scrollView.adjustedContentInset.top
         let maximumY = max(
             minimumY,
@@ -396,6 +469,11 @@ extension ReaderWebtoonViewController {
         if previousPage != page {
             previousPage = page
             delegate?.setCurrentPage(page, position: nil)
+        }
+        if isHorizontal, let range = horizontalSliderRange {
+            let distance = range.upperBound - range.lowerBound
+            let value = distance > 0 ? (readingOffset - range.lowerBound) / distance : 0
+            delegate?.setSliderOffset(min(max(value, 0), 1))
         }
     }
 
@@ -736,6 +814,9 @@ extension ReaderWebtoonViewController {
         // trim the newest section once the window is full
         let trimIndex = pages.count - 1
         if !loadingNext, canTrimSection(at: trimIndex) {
+            if isHorizontal {
+                layout?.preserveOffsetAcrossChangeAbove()
+            }
             chapters.removeLast()
             pages.removeLast()
             await collectionNode.performBatch(animated: false) {
@@ -781,6 +862,11 @@ extension ReaderWebtoonViewController {
         }
         chapters.append(nextChapter)
         pages.append(chapterPages)
+
+        if isHorizontal {
+            let layout = collectionNode.collectionViewLayout as? VerticalContentOffsetPreservingLayout
+            layout?.preserveOffsetAcrossChangeAbove()
+        }
 
         // disable animations and adjust offset before re-enabling
         CATransaction.begin()
@@ -864,35 +950,31 @@ extension ReaderWebtoonViewController {
 // MARK: - Reader Delegate
 extension ReaderWebtoonViewController: ReaderReaderDelegate {
     func moveLeft() {
-        let offset = CGPoint(
-            x: collectionNode.contentOffset.x,
-            y: max(
-                0,
-                collectionNode.contentOffset.y - collectionNode.bounds.height * 2/3
-            )
-        )
+        let distance = viewportLength * 2/3
         scrollView.setContentOffset(
-            offset,
+            contentOffset(for: readingOffset + (isHorizontal ? distance : -distance)),
             animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
         )
     }
 
     func moveRight() {
-        let offset = CGPoint(
-            x: collectionNode.contentOffset.x,
-            y: min(
-                scrollView.contentSize.height - scrollView.bounds.height,
-                collectionNode.contentOffset.y + collectionNode.bounds.height * 2/3
-            )
-        )
+        let distance = viewportLength * 2/3
         scrollView.setContentOffset(
-            offset,
+            contentOffset(for: readingOffset + (isHorizontal ? -distance : distance)),
             animated: UserDefaults.standard.bool(forKey: "Reader.animatePageTransitions")
         )
     }
 
     func sliderMoved(value: CGFloat) {
         isSliding = true
+
+        if isHorizontal {
+            guard let range = horizontalSliderRange else { return }
+            let distance = range.upperBound - range.lowerBound
+            scrollView.setContentOffset(contentOffset(for: range.lowerBound + distance * value), animated: false)
+            delegate?.displayPage(getCurrentPage())
+            return
+        }
 
         // get slider area
         guard
@@ -979,7 +1061,7 @@ extension ReaderWebtoonViewController: ReaderReaderDelegate {
             // scroll to first page
             collectionNode.scrollToItem(
                 at: IndexPath(row: startPage, section: 0),
-                at: .top,
+                at: isHorizontal ? .right : .top,
                 animated: false
             )
             scrollView.contentOffset = collectionNode.contentOffset
@@ -1035,6 +1117,7 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                     temporaryPageStore: temporaryPageStore,
                     pillarboxLayoutState: self.pillarboxLayoutState
                 )
+                cell.isHorizontal = self.isHorizontal
                 cell.delegate = self
                 if #available(iOS 18.0, *) {
                     self.bindDictionaryOverlayTap(to: cell)
@@ -1057,7 +1140,7 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                 ? self.delegate?.getPreviousChapter()
                 : self.delegate?.getNextChapter()
             return {
-                ReaderWebtoonTransitionNode(
+                let cell = ReaderWebtoonTransitionNode(
                     transition: .init(
                         type: page.type == .prevInfoPage ? .prev : .next,
                         from: chapter,
@@ -1065,6 +1148,8 @@ extension ReaderWebtoonViewController: ASCollectionDataSource {
                     ),
                     pillarboxLayoutState: self.pillarboxLayoutState
                 )
+                cell.isHorizontal = self.isHorizontal
+                return cell
             }
         }
     }

@@ -23,6 +23,12 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
         set { minimumLineSpacing = newValue }
     }
 
+    var isHorizontal = false {
+        didSet {
+            scrollDirection = isHorizontal ? .horizontal : .vertical
+        }
+    }
+
     private var scale: CGFloat = 1
 
     private var contentSize = CGSize.zero
@@ -51,8 +57,12 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             let attributes = layoutAttributesForElements(in: bounds)?
                 .filter({ $0.representedElementCategory == .cell && $0.frame.width > 0 && $0.frame.height > 0 })
                 .min(by: {
-                    let first = max($0.frame.minY - center.y, center.y - $0.frame.maxY, 0)
-                    let second = max($1.frame.minY - center.y, center.y - $1.frame.maxY, 0)
+                    let first = self.isHorizontal
+                        ? max($0.frame.minX - center.x, center.x - $0.frame.maxX, 0)
+                        : max($0.frame.minY - center.y, center.y - $0.frame.maxY, 0)
+                    let second = self.isHorizontal
+                        ? max($1.frame.minX - center.x, center.x - $1.frame.maxX, 0)
+                        : max($1.frame.minY - center.y, center.y - $1.frame.maxY, 0)
                     return first < second
                 })
         else {
@@ -92,10 +102,16 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
         // Anchor the top visible cell using the previous layout
         let anchor = isChangingCellsAbove ? currentAttributes.values
-            .filter { $0.frame.maxY > collectionView.contentOffset.y }
-            .min { $0.frame.minY < $1.frame.minY } : nil
+            .filter {
+                isHorizontal
+                    ? $0.frame.minX < collectionView.bounds.maxX
+                    : $0.frame.maxY > collectionView.contentOffset.y
+            }
+            .min {
+                isHorizontal ? $0.frame.maxX > $1.frame.maxX : $0.frame.minY < $1.frame.minY
+            } : nil
         let anchorIdentifier = anchor.flatMap { itemIdentifiers[$0.indexPath] }
-        let oldAnchorY = anchor?.frame.minY
+        let oldAnchorPosition = isHorizontal ? anchor?.frame.maxX : anchor?.frame.minY
         isChangingCellsAbove = false
 
         // calculate collection view size
@@ -110,17 +126,27 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
                 let indexPath = IndexPath(item: itemIndex, section: section)
                 let attributes = UICollectionViewLayoutAttributes(forCellWith: indexPath)
 
-                let size = CGSize(width: width, height: getHeight(for: indexPath))
-                attributes.frame = CGRect(origin: CGPoint(x: 0, y: origin), size: size)
+                let size = isHorizontal
+                    ? CGSize(width: getWidth(for: indexPath), height: collectionView.bounds.height)
+                    : CGSize(width: width, height: getHeight(for: indexPath))
+                let position = isHorizontal ? CGPoint(x: origin, y: 0) : CGPoint(x: 0, y: origin)
+                attributes.frame = CGRect(origin: position, size: size)
                 currentAttributes[indexPath] = attributes
                 itemIdentifiers[indexPath] = itemIdentifier(for: indexPath)
 
-                origin += attributes.frame.size.height + minimumLineSpacing
+                origin += (isHorizontal ? size.width : size.height) + minimumLineSpacing
             }
         }
 
         // scale for zoom
-        let size = CGSize(width: width, height: origin)
+        let size = isHorizontal
+            ? CGSize(width: max(origin, width), height: collectionView.bounds.height)
+            : CGSize(width: width, height: origin)
+        if isHorizontal {
+            for attributes in currentAttributes.values {
+                attributes.frame.origin.x = size.width - attributes.frame.maxX
+            }
+        }
         let transform = CGAffineTransform(scaleX: scale, y: scale)
         contentSize = size.applying(transform)
 
@@ -133,7 +159,7 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
                         let frame = CGRect(
                             origin: CGPoint(
                                 x: origFrame.origin.x / size.width * contentSize.width,
-                                y: origFrame.origin.y / origin * contentSize.height
+                                y: origFrame.origin.y / size.height * contentSize.height
                             ),
                             size: origFrame.size.applying(transform)
                         )
@@ -151,14 +177,14 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
 
         // Only movement of the anchor counts, not resizing of cells
         if
-            let anchorIdentifier, let oldAnchorY,
+            let anchorIdentifier, let oldAnchorPosition,
             let newIndexPath = itemIdentifiers.first(where: { $0.value == anchorIdentifier })?.key,
-            let newAnchorY = currentAttributes[newIndexPath]?.frame.minY
+            let newFrame = currentAttributes[newIndexPath]?.frame
         {
             UIView.performWithoutAnimation {
                 let offset = CGPoint(
-                    x: collectionView.contentOffset.x,
-                    y: collectionView.contentOffset.y + newAnchorY - oldAnchorY
+                    x: collectionView.contentOffset.x + (isHorizontal ? newFrame.maxX - oldAnchorPosition : 0),
+                    y: collectionView.contentOffset.y + (isHorizontal ? 0 : newFrame.minY - oldAnchorPosition)
                 )
                 collectionView.contentOffset = offset
                 onOffsetPreserved?(offset)
@@ -183,6 +209,14 @@ class VerticalContentOffsetPreservingLayout: UICollectionViewFlowLayout {
             return 0
         }
         return node.getHeight(for: collectionView.bounds.size)
+    }
+
+    func getWidth(for indexPath: IndexPath) -> CGFloat {
+        guard let collectionView = collectionView as? ASCollectionView else { return 0 }
+        if let node = collectionView.collectionNode?.nodeForItem(at: indexPath) as? ReaderWebtoonPageNode {
+            return collectionView.bounds.height / (node.ratio ?? ReaderWebtoonPageNode.defaultRatio)
+        }
+        return collectionView.bounds.height
     }
 
     func getHeightFor(section: Int, range: Range<Int>? = nil) -> CGFloat {

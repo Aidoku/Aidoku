@@ -17,6 +17,13 @@ class ZoomableCollectionView: ASDisplayNode {
     let layout: UICollectionViewLayout
     private let dummyZoomView: UIView
 
+    var contentInsets: UIEdgeInsets = .zero {
+        didSet {
+            guard contentInsets != oldValue else { return }
+            setNeedsLayout()
+        }
+    }
+
     var onZoomScaleChanged: ((CGFloat) -> Void)?
     var doubleTapEnabled: Bool {
         get { zoomingTap.isEnabled }
@@ -68,7 +75,10 @@ class ZoomableCollectionView: ASDisplayNode {
     }
 
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
-        ASOverlayLayoutSpec(child: collectionNode, overlay: scrollNode)
+        ASInsetLayoutSpec(
+            insets: contentInsets,
+            child: ASOverlayLayoutSpec(child: collectionNode, overlay: scrollNode)
+        )
     }
 
     override func layoutDidFinish() {
@@ -233,7 +243,17 @@ extension ZoomableCollectionView {
             scales.append(scale)
             // set offset
             let point: CGPoint
-            if out {
+            if (layout as? VerticalContentOffsetPreservingLayout)?.isHorizontal == true {
+                let xStep = (scale - 1) * scrollNode.view.bounds.width
+                let yStep = (scale - 1) * scrollNode.view.bounds.height
+                let newX = startX * scale / from
+                    + (out ? 0 : min(max(0, 2 * xStep * xLoc - xStep / 2), xStep))
+                let newY = out
+                    ? startY - (1 - (scale - 1)/(from - 1)) * startY
+                    : min(max(0, 2 * yStep * yLoc - yStep / 2), yStep)
+                let maximumX = max(0, layout.collectionViewContentSize.width / from * scale - scrollNode.view.bounds.width)
+                point = CGPoint(x: min(max(newX, 0), maximumX), y: newY)
+            } else if out {
                 let newX = startX - (1 - (scale - 1)/(from - 1)) * startX
                 point = CGPoint(x: newX, y: scrollNode.view.contentOffset.y)
             } else {
@@ -276,7 +296,7 @@ extension ZoomableCollectionView {
         Task { @MainActor in
             self.scrollNode.view.zoomScale = scale
             self.scrollViewDidZoom(self.scrollNode.view)
-            if zoomOut {
+            if zoomOut && (self.layout as? VerticalContentOffsetPreservingLayout)?.isHorizontal != true {
                 self.scrollNode.view.setContentOffset(
                     CGPoint(x: point.x, y: self.scrollNode.view.contentOffset.y),
                     animated: false

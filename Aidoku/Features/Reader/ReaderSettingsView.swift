@@ -11,11 +11,12 @@ struct ReaderSettingsView: View {
     let mangaId: MangaIdentifier
     let reader: ReaderViewController.Reader
     let chapterLanguage: String?
+    private let getReadingMode: () -> ReadingMode
 
     @State private var sourceLanguageCodes: [String] = []
     @State private var sourceLanguageTitles: [String] = []
 
-    @State private var readingMode: ReadingMode?
+    @State private var readingMode: ReadingMode
     @State private var tapZones: DefaultTapZones
     @State private var lookupGestureLocksQuickActions: Bool
     @State private var lookupGestureLocksDoubleTap: Bool
@@ -37,15 +38,18 @@ struct ReaderSettingsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    init(mangaId: MangaIdentifier, reader: ReaderViewController.Reader, chapterLanguage: String?) {
+    init(
+        mangaId: MangaIdentifier,
+        reader: ReaderViewController.Reader,
+        chapterLanguage: String?,
+        getReadingMode: @escaping () -> ReadingMode
+    ) {
         self.mangaId = mangaId
         self.reader = reader
         self.chapterLanguage = chapterLanguage
+        self.getReadingMode = getReadingMode
 
-        self._readingMode = State(
-            initialValue: UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)")
-                .flatMap(ReadingMode.init)
-        )
+        self._readingMode = State(initialValue: getReadingMode())
         self._tapZones = State(
             initialValue: UserDefaults.standard.string(forKey: "Reader.tapZones")
                 .flatMap(DefaultTapZones.init) ?? .disabled
@@ -144,11 +148,11 @@ struct ReaderSettingsView: View {
                         }
                     }
 
-                    if readingMode == .rtl || readingMode == .ltr || readingMode == .vertical || readingMode == nil {
+                    if readingMode == .rtl || readingMode == .ltr || readingMode == .vertical {
                         pagedSection
                     }
 
-                    if readingMode == .webtoon || readingMode == .continuous || readingMode == nil {
+                    if readingMode == .webtoon || readingMode == .continuous || readingMode == .continuousRTL {
                         webtoonSection
                     }
                 }
@@ -165,8 +169,11 @@ struct ReaderSettingsView: View {
                     }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: .readerReadingMode)) { _ in
-                readingMode = UserDefaults.standard.string(forKey: "Reader.readingMode.\(mangaId)").flatMap(ReadingMode.init)
+            .onReceive(
+                NotificationCenter.default.publisher(for: .init("Reader.readingMode.\(mangaId)"))
+                    .receive(on: RunLoop.main)
+            ) { _ in
+                readingMode = getReadingMode()
             }
             .onReceive(NotificationCenter.default.publisher(for: .readerTapZones)) { _ in
                 tapZones = UserDefaults.standard.string(forKey: "Reader.tapZones").flatMap(DefaultTapZones.init) ?? .disabled
@@ -209,7 +216,8 @@ extension ReaderSettingsView {
                                 "ltr",
                                 "vertical",
                                 "webtoon",
-                                "continuous"
+                                "continuous",
+                                "continuousRTL"
                             ],
                             titles: [
                                 NSLocalizedString("DEFAULT"),
@@ -218,7 +226,8 @@ extension ReaderSettingsView {
                                 NSLocalizedString("LTR"),
                                 NSLocalizedString("VERTICAL"),
                                 NSLocalizedString("WEBTOON"),
-                                NSLocalizedString("CONTINUOUS_WITH_GAPS")
+                                NSLocalizedString("CONTINUOUS_WITH_GAPS"),
+                                NSLocalizedString("CONTINUOUS_RTL")
                             ]
                         ))
                     )
@@ -513,7 +522,7 @@ extension ReaderSettingsView {
             SettingView(
                 setting: .init(
                     key: "Reader.verticalInfiniteScroll",
-                    title: NSLocalizedString("INFINITE_VERTICAL_SCROLL"),
+                    title: NSLocalizedString(readingMode == .continuousRTL ? "INFINITE_HORIZONTAL_SCROLL" : "INFINITE_VERTICAL_SCROLL"),
                     value: .toggle(.init())
                 )
             )
@@ -546,40 +555,44 @@ extension ReaderSettingsView {
                     )
                 )
             }
-            SettingView(
-                setting: .init(
-                    key: "Reader.pillarbox",
-                    title: NSLocalizedString("PILLARBOX"),
-                    value: .toggle(.init())
+            if readingMode != .continuousRTL {
+                SettingView(
+                    setting: .init(
+                        key: "Reader.pillarbox",
+                        title: NSLocalizedString("PILLARBOX"),
+                        value: .toggle(.init())
+                    )
                 )
-            )
-            SettingView(
-                setting: .init(
-                    key: "Reader.pillarboxAmount",
-                    title: NSLocalizedString("PILLARBOX_AMOUNT"),
-                    requires: "Reader.pillarbox",
-                    value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
+                SettingView(
+                    setting: .init(
+                        key: "Reader.pillarboxAmount",
+                        title: NSLocalizedString("PILLARBOX_AMOUNT"),
+                        requires: "Reader.pillarbox",
+                        value: .stepper(.init(minimumValue: 5, maximumValue: 95, stepValue: 5))
+                    )
                 )
-            )
-            SettingView(
-                setting: .init(
-                    key: "Reader.pillarboxOrientation",
-                    title: NSLocalizedString("PILLARBOX_ORIENTATION"),
-                    requires: "Reader.pillarbox",
-                    value: .select(.init(
-                        values: ["both", "portrait", "landscape"],
-                        titles: [
-                            NSLocalizedString("BOTH"),
-                            NSLocalizedString("PORTRAIT"),
-                            NSLocalizedString("LANDSCAPE")
-                        ]
-                    ))
+                SettingView(
+                    setting: .init(
+                        key: "Reader.pillarboxOrientation",
+                        title: NSLocalizedString("PILLARBOX_ORIENTATION"),
+                        requires: "Reader.pillarbox",
+                        value: .select(.init(
+                            values: ["both", "portrait", "landscape"],
+                            titles: [
+                                NSLocalizedString("BOTH"),
+                                NSLocalizedString("PORTRAIT"),
+                                NSLocalizedString("LANDSCAPE")
+                            ]
+                        ))
+                    )
                 )
-            )
+            }
         } header: {
-            Text(NSLocalizedString("WEBTOON"))
+            Text(NSLocalizedString(readingMode == .continuousRTL ? "CONTINUOUS_RTL" : "WEBTOON"))
         } footer: {
-            Text(NSLocalizedString("PILLARBOX_ORIENTATION_INFO"))
+            if readingMode != .continuousRTL {
+                Text(NSLocalizedString("PILLARBOX_ORIENTATION_INFO"))
+            }
         }
     }
 

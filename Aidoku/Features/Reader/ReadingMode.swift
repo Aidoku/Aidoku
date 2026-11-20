@@ -11,6 +11,7 @@ enum ReadingMode: Int {
     case vertical = 3
     case webtoon = 4
     case continuous = 5
+    case continuousRTL = 6
 
     init?(_ stringValue: String) {
         switch stringValue {
@@ -19,6 +20,7 @@ enum ReadingMode: Int {
             case "vertical": self = .vertical
             case "webtoon": self = .webtoon
             case "continuous": self = .continuous
+            case "continuousRTL": self = .continuousRTL
             default: return nil
         }
     }

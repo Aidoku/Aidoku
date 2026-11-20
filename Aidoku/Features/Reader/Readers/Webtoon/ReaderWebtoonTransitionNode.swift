@@ -11,6 +11,8 @@ class ReaderWebtoonTransitionNode: BaseObservingCellNode {
     let transition: Transition
     let pillarboxLayoutState: ReaderPillarboxLayoutState
 
+    var isHorizontal = false
+
     var pillarbox = UserDefaults.standard.bool(forKey: "Reader.pillarbox")
     var pillarboxAmount: CGFloat = CGFloat(UserDefaults.standard.double(forKey: "Reader.pillarboxAmount"))
     var pillarboxOrientation = UserDefaults.standard.string(forKey: "Reader.pillarboxOrientation")
@@ -46,6 +48,9 @@ class ReaderWebtoonTransitionNode: BaseObservingCellNode {
     override func layoutSpecThatFits(_ constrainedSize: ASSizeRange) -> ASLayoutSpec {
         transitionNode.referenceWidth = constrainedSize.max.width
 
+        if isHorizontal {
+            return ASRatioLayoutSpec(ratio: 1, child: transitionNode)
+        }
         if pillarbox && isPillarboxOrientation() {
             let percent = (100 - pillarboxAmount) / 100
             let height = constrainedSize.max.width * percent

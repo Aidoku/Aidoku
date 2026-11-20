@@ -470,7 +470,7 @@ class ReaderViewController: BaseObservingViewController {
 
 extension ReaderViewController {
     func disableSwipeGestures() {
-        let isVerticalReader = reader is ReaderWebtoonViewController || readingMode == .vertical
+        let isVerticalReader = (reader is ReaderWebtoonViewController && readingMode != .continuousRTL) || readingMode == .vertical
 
         // the view with the target gesture recognizers changes based on if it was presented from uikit or swiftui
         let gestureRecognizers = (parent?.view.gestureRecognizers ?? []) + (parent?.view.superview?.superview?.gestureRecognizers ?? [])
@@ -635,7 +635,8 @@ extension ReaderViewController {
             rootView: ReaderSettingsView(
                 mangaId: manga.identifier,
                 reader: currentReader,
-                chapterLanguage: chapter.language ?? source?.languages.first
+                chapterLanguage: chapter.language ?? source?.languages.first,
+                getReadingMode: { [weak self] in self?.readingMode ?? .rtl }
             )
         )
         if currentReader == .text {
@@ -691,6 +692,7 @@ extension ReaderViewController {
             case "vertical": readingMode = .vertical
             case "scroll", "webtoon": readingMode = .webtoon
             case "continuous": readingMode = .continuous
+            case "continuousRTL": readingMode = .continuousRTL
             case "default":
                 let defaultMode = UserDefaults.standard.string(forKey: "Reader.readingMode")
                 if defaultMode == "default" {
@@ -721,7 +723,7 @@ extension ReaderViewController {
             switch readingMode {
                 case .ltr, .rtl, .vertical:
                     setReader(.paged)
-                case .webtoon, .continuous:
+                case .webtoon, .continuous, .continuousRTL:
                     setReader(.scroll)
             }
         }
@@ -742,8 +744,9 @@ extension ReaderViewController {
                     pageController = nil
                 }
             case .scroll:
-                toolbarView.sliderView.direction = .forward
-                if !(reader is ReaderWebtoonViewController) {
+                toolbarView.sliderView.direction = readingMode == .continuousRTL ? .backward : .forward
+                if !(reader is ReaderWebtoonViewController)
+                    || (reader?.readingMode == .continuousRTL) != (readingMode == .continuousRTL) {
                     pageController = ReaderWebtoonViewController(source: source, manga: manga, temporaryPageStore: temporaryPageStore)
                 } else {
                     pageController = nil
@@ -1159,7 +1162,7 @@ extension ReaderViewController: @MainActor ReaderHoldingDelegate {
                 switch readingMode {
                     case .ltr, .rtl, .vertical:
                         setReader(.paged)
-                    case .webtoon, .continuous:
+                    case .webtoon, .continuous, .continuousRTL:
                         setReader(.scroll)
                 }
                 setChapter(chapter)
@@ -1340,7 +1343,7 @@ extension ReaderViewController {
         let tapZone: TapZone? = switch enabledTapZone {
             case "auto": switch reader {
                 case is ReaderPagedViewController: .leftRight
-                case is ReaderWebtoonViewController: .lShaped
+                case is ReaderWebtoonViewController: readingMode == .continuousRTL ? .leftRight : .lShaped
                 case is ReaderTextViewController: .lShaped
                 case is ReaderPagedTextViewController: .leftRight  // Kindle-style tap zones
                 default: .leftRight
@@ -1514,14 +1517,14 @@ extension ReaderViewController: UIPencilInteractionDelegate {
 
     private func nextPage() {
         switch readingMode {
-            case .rtl: reader?.moveLeft()
+            case .rtl, .continuousRTL: reader?.moveLeft()
             default: reader?.moveRight()
         }
     }
 
     private func previousPage() {
         switch readingMode {
-            case .rtl: reader?.moveRight()
+            case .rtl, .continuousRTL: reader?.moveRight()
             default: reader?.moveLeft()
         }
     }

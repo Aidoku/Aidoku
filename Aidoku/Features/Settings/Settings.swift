@@ -381,7 +381,8 @@ extension Settings {
                         "ltr",
                         "vertical",
                         "webtoon",
-                        "continuous"
+                        "continuous",
+                        "continuousRTL"
                     ],
                     titles: [
                         NSLocalizedString("AUTOMATIC"),
@@ -389,7 +390,8 @@ extension Settings {
                         NSLocalizedString("LTR"),
                         NSLocalizedString("VERTICAL"),
                         NSLocalizedString("WEBTOON"),
-                        NSLocalizedString("CONTINUOUS_WITH_GAPS")
+                        NSLocalizedString("CONTINUOUS_WITH_GAPS"),
+                        NSLocalizedString("CONTINUOUS_RTL")
                     ]
                 ))
             ),

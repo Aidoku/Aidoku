@@ -804,6 +804,8 @@
 "FAILED_CHAPTER_LOAD_INFO" = "You might be offline or the source may be having issues.";
 "WEBTOON" = "Webtoon";
 "CONTINUOUS_WITH_GAPS" = "Continuous with Gaps";
+"CONTINUOUS_RTL" = "Continuous Right to Left";
+"INFINITE_HORIZONTAL_SCROLL" = "Infinite Horizontal Scroll";
 "REMOVE_FROM_CATEGORY" = "Remove from Category";
 "PINNED" = "Pinned";
 "%i_CHAPTERS" = "%i Chapters";
