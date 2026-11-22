@@ -194,10 +194,6 @@ private extension BangumiApi {
     }
 
     func dataWithAuthRetry(for request: URLRequest) async throws -> (Data, URLResponse) {
-        if await oauth.tokens == nil {
-            await oauth.loadTokens()
-        }
-
         var (data, response) = try await URLSession.shared.data(for: request)
         guard (response as? HTTPURLResponse)?.statusCode == 401 else {
             return (data, response)
@@ -211,8 +207,7 @@ private extension BangumiApi {
 
         // Retry the original request with the refreshed token.
         var retried = request
-        if let authorization = await oauth.authorizedRequest(for: url)
-            .value(forHTTPHeaderField: "Authorization") {
+        if let authorization = await oauth.authorizedRequest(for: url).value(forHTTPHeaderField: "Authorization") {
             retried.setValue(authorization, forHTTPHeaderField: "Authorization")
         }
         (data, response) = try await URLSession.shared.data(for: retried)
