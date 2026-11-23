@@ -149,13 +149,11 @@ class ReaderPagedTextViewController: BaseObservingViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
-        // Repaginate if view size changed significantly (e.g., rotation)
-        let newSize = view.bounds.size
-        if !pages.isEmpty && lastPaginationSize != .zero {
-            if abs(lastPaginationSize.width - newSize.width) > 10 ||
-               abs(lastPaginationSize.height - newSize.height) > 10 {
-                repaginate()
-            }
+        // Repaginate on any view size change (rotation, window resizing). Even a
+        // sub-point mismatch between the paginated and displayed size makes the
+        // text view wrap differently and drop the lines that no longer fit.
+        if !pages.isEmpty && lastPaginationSize != .zero && lastPaginationSize != view.bounds.size {
+            repaginate()
         }
     }
 
@@ -228,8 +226,13 @@ class ReaderPagedTextViewController: BaseObservingViewController {
 
         let pageSize: CGSize
         if usesDoublePages {
-            // For double page, each page is half width
-            pageSize = CGSize(width: safeWidth / 2, height: safeHeight)
+            // For double page, each page is half the view width, and each text view
+            // applies both horizontal safe area insets (see `textInsets`). This must
+            // match TextDoublePageViewController's layout exactly, otherwise lines wrap
+            // differently on screen than predicted and the page's last lines overflow.
+            // Rounded down so sub-pixel rounding of the split can't make it too wide.
+            let halfWidth = (view.bounds.width / 2).rounded(.down)
+            pageSize = CGSize(width: halfWidth - windowSafeArea.left - windowSafeArea.right, height: safeHeight)
         } else {
             pageSize = CGSize(width: safeWidth, height: safeHeight)
         }
@@ -309,6 +312,15 @@ class ReaderPagedTextViewController: BaseObservingViewController {
         } else {
             // In-session repagination (font/size change) – use current character offset
             targetIndex = pages.lastIndex(where: { $0.range.location <= currentCharacterOffset }) ?? 0
+
+            // Keep the original anchor instead of letting move(toPage:) snap it to the
+            // start of the new page. Otherwise every repagination moves the position
+            // backwards, e.g. when the system lays the app out in the other orientation
+            // for app switcher snapshots and back again (one spread lost per round trip).
+            let anchorOffset = currentCharacterOffset
+            move(toPage: targetIndex, animated: false)
+            currentCharacterOffset = anchorOffset
+            return
         }
 
         move(toPage: min(targetIndex, max(0, pages.count - 1)), animated: false)

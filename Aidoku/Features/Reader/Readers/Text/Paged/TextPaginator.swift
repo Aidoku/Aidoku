@@ -460,28 +460,33 @@ class TextPaginator {
             return NSRange(location: proposedRange.location, length: paragraphBreak.location - proposedRange.location + 1)
         }
 
-        // Try to find sentence break (. ! ?) in the tail
+        // Try to find sentence break (. ! ?) in the tail. Only accept an ender that
+        // is followed by whitespace; otherwise tokens like "3.5", "example.com" or
+        // a closing quote after the period would be split across pages.
         let sentenceEnders = CharacterSet(charactersIn: ".!?")
-        let sentenceBreak = text.rangeOfCharacter(
-            from: sentenceEnders,
-            options: .backwards,
-            range: searchRange
-        )
+        var sentenceSearch = searchRange
+        while sentenceSearch.length > 0 {
+            let sentenceBreak = text.rangeOfCharacter(
+                from: sentenceEnders,
+                options: .backwards,
+                range: sentenceSearch
+            )
+            guard sentenceBreak.location != NSNotFound else { break }
 
-        if sentenceBreak.location != NSNotFound {
-            // Include the sentence ender. Also include the following character
-            // only if it's whitespace so we never split a word across pages.
-            var breakEnd = sentenceBreak.location + 1
-            if breakEnd < text.length {
-                // UnicodeScalar(_: UInt16) is nil for surrogate halves (e.g. emoji);
-                // those are never whitespace, so skip extending the break past them
-                let nextChar = text.character(at: breakEnd)
-                if let scalar = UnicodeScalar(nextChar), CharacterSet.whitespacesAndNewlines.contains(scalar) {
-                    breakEnd += 1
-                }
+            // UnicodeScalar(_: UInt16) is nil for surrogate halves (e.g. emoji);
+            // those are never whitespace, so they don't count as a break either
+            let breakEnd = sentenceBreak.location + 1
+            if
+                breakEnd < text.length,
+                let scalar = UnicodeScalar(text.character(at: breakEnd)),
+                CharacterSet.whitespacesAndNewlines.contains(scalar)
+            {
+                // Include the sentence ender and the whitespace after it
+                return NSRange(location: proposedRange.location, length: breakEnd + 1 - proposedRange.location)
             }
-            breakEnd = min(breakEnd, text.length)
-            return NSRange(location: proposedRange.location, length: breakEnd - proposedRange.location)
+
+            // Keep looking for an earlier sentence ender
+            sentenceSearch.length = sentenceBreak.location - sentenceSearch.location
         }
 
         // Try to find word break (space) in the tail

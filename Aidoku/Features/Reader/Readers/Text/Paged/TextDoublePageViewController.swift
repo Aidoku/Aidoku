@@ -20,7 +20,6 @@ class TextDoublePageViewController: UIViewController {
         let sv = UIStackView()
         sv.axis = .horizontal
         sv.distribution = .fillEqually
-        sv.spacing = 1
         return sv
     }()
 

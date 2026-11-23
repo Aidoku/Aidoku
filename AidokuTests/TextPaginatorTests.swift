@@ -45,6 +45,25 @@ import UIKit
         }
     }
 
+    @Test("Pages never break in the middle of a token")
+    func pagesDoNotSplitTokens() {
+        // Regression test: a sentence ender inside a token ("3.5", "example.com")
+        // or before a closing quote was treated as a page break point.
+        // A single paragraph (no newlines) forces the sentence-break path.
+        let sentence = "It cost 3.5 units at example.com and she said \"Hello.\" before leaving "
+        let markdown = String(repeating: sentence, count: 300)
+
+        let paginator = TextPaginator()
+        let pages = paginator.paginate(markdown: markdown, pageSize: pageSize)
+
+        #expect(pages.count > 1)
+        for (page, nextPage) in zip(pages, pages.dropFirst()) {
+            let endsWithSpace = page.attributedContent.string.last?.isWhitespace == true
+            let startsWithSpace = nextPage.attributedContent.string.first?.isWhitespace == true
+            #expect(endsWithSpace || startsWithSpace)
+        }
+    }
+
     @Test("Empty markdown does not crash")
     func paginateEmptyMarkdown() {
         let paginator = TextPaginator()
