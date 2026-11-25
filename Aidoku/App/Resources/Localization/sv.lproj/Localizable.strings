@@ -367,7 +367,7 @@
 "IMPORT" = "Importera";
 "IMPORT_FILE" = "Importera fil";
 "LOCAL_FILE_IMPORT" = "Lokal filimport";
-"LOCAL_FILE_IMPORT_TEXT" = "Importera en CBZ- eller ZIP-fil som innehåller bilder för att läsa in.";
+"LOCAL_FILE_IMPORT_TEXT" = "Importera en CBZ- eller ZIP-fil som innehåller bilder att läsa in.";
 "CHAPTER_TITLE" = "Kapiteltitel";
 "SERIES_TITLE" = "Serietitel";
 "DESCRIPTION" = "Beskrivning";
@@ -728,3 +728,15 @@
 "DONT_MIGRATE" = "Migrera ej";
 "MIGRATE_%i_OF_%i" = "Migrerade (%i/%i)";
 "SHOW_ENTRY" = "Visa objekt";
+"DOWNLOAD_INCOMPLETE" = "Ofullständig nedladdning";
+"LIBRARY_REFRESH_INTERRUPTED" = "Uppdatering av biblioteket avbröts";
+"LIBRARY_REFRESH_INTERRUPTED_TEXT" = "Den senaste uppdateringen av biblioteket avbröts innan den slutfördes. Vill du återuppta den?";
+"DISABLE" = "Inaktivera";
+"ENABLE" = "Aktivera";
+"RESTART" = "Starta om";
+"HTML_ERROR" = "HTML-fel";
+"JSON_ERROR" = "JSON-fel";
+"SOURCE_CRASHED" = "Källan kraschade";
+"EPUB_NAME" = "EPUB";
+"SUWAYOMI" = "Suwayomi";
+"INVALID_KEY" = "Ogiltig nyckel";
