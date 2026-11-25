@@ -141,6 +141,10 @@ class LibraryViewModel {
 
     var categories: [String] = []
     var filterGroups: [FilterGroup] = []
+    // Whether the category list has been loaded from the database at least once.
+    // The header must not be created before this, otherwise it would show only
+    // "All"/"Uncategorized" and never get refreshed after the real categories load.
+    private(set) var hasLoadedCategories = false
     lazy var currentCategory: String? = AppSettings.library.currentCategory.get() {
         didSet {
             AppSettings.library.currentCategory.set(currentCategory)
@@ -202,6 +206,7 @@ extension LibraryViewModel {
                 CoreDataManager.shared.getFilterGroups(context: context)
             )
         }
+        hasLoadedCategories = true
         if !skipDataLoad {
             let isInFilterGroup = filterGroups.contains(where: { $0.title == currentCategory })
             let showUncategorized = AppSettings.library.showUncategorizedCategory.get()

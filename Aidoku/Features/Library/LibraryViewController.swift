@@ -196,6 +196,9 @@ class LibraryViewController: OldMangaCollectionViewController {
             await viewModel.refreshCategories(skipDataLoad: true)
             // refresh header
             collectionView.collectionViewLayout = self.makeCollectionViewLayout()
+            // the header may have been created before the categories finished loading,
+            // so explicitly rebuild its tabs once the list is available
+            updateHeaderCategories()
             updateNavbarItems()
 
             // load library
@@ -438,7 +441,7 @@ class LibraryViewController: OldMangaCollectionViewController {
         config.interSectionSpacing = layout.configuration.interSectionSpacing
         if !viewModel.categories.isEmpty
             || !viewModel.filterGroups.isEmpty
-            || AppSettings.library.showUncategorizedCategory.get() {
+            || (AppSettings.library.showUncategorizedCategory.get() && viewModel.hasLoadedCategories) {
             let globalHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: NSCollectionLayoutSize(
                     widthDimension: .fractionalWidth(1),
